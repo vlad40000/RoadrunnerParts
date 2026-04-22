@@ -298,7 +298,11 @@ function parseRootDomain(value) {
   }
 }
 
-function resolvePartSource(part = {}, allowedDomains = [], groundedSources = []) {
+function resolvePartSource(
+  part: { source?: string } = {},
+  allowedDomains: string[] = [],
+  groundedSources: Array<{ uri?: string }> = [],
+) {
   const explicit = parseRootDomain(part.source);
   if (allowedDomains.includes(explicit)) return explicit;
 
