@@ -138,12 +138,9 @@ export function getConfiguredModelName(modelOrRole) {
   return resolveModelName(modelOrRole);
 }
 
-type GeminiGenerateTextConfig = {
+type GeminiGenerateConfig = {
   tools?: any[];
-  thinkingConfig?: {
-    thinkingLevel: string;
-    [key: string]: any;
-  };
+  thinkingConfig?: any;
   temperature?: number;
   responseMimeType?: string;
   responseSchema?: any;
@@ -160,7 +157,7 @@ export async function generateText({
   model?: string;
   role?: string;
   contents: any;
-  config?: GeminiGenerateTextConfig;
+  config?: GeminiGenerateConfig;
 }) {
   const genAI = createClient();
   const modelName = resolveModelName(model || role);
@@ -172,7 +169,7 @@ export async function generateText({
 
     const { tools, thinkingConfig, ...generationConfig } = config;
 
-    const generationConfigFinal = {
+    const generationConfigFinal: GeminiGenerateConfig = {
       temperature: 0.1,
       ...generationConfig,
     };
@@ -195,7 +192,7 @@ export async function generateText({
       model: modelName,
       sources: getGroundingSources(response),
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error(`[Gemini API Error - Text] Model: ${modelName}`, error);
     throw new Error(`Failed to generate text using ${modelName}: ${error.message}`);
   }
@@ -217,7 +214,7 @@ export async function generateStructuredJson({
   schema: any;
   tools?: any[];
   temperature?: number;
-  config?: GeminiGenerateTextConfig;
+  config?: GeminiGenerateConfig;
   fallback?: any;
 }) {
   const { text, response, model: modelName, sources } = await generateText({
