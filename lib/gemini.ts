@@ -138,7 +138,30 @@ export function getConfiguredModelName(modelOrRole) {
   return resolveModelName(modelOrRole);
 }
 
-export async function generateText({ model, role, contents, config = {} }) {
+type GeminiGenerateTextConfig = {
+  tools?: any[];
+  thinkingConfig?: {
+    thinkingLevel: string;
+    [key: string]: any;
+  };
+  temperature?: number;
+  responseMimeType?: string;
+  responseSchema?: any;
+  systemInstruction?: string;
+  [key: string]: any;
+};
+
+export async function generateText({
+  model,
+  role,
+  contents,
+  config = {},
+}: {
+  model?: string;
+  role?: string;
+  contents: any;
+  config?: GeminiGenerateTextConfig;
+}) {
   const genAI = createClient();
   const modelName = resolveModelName(model || role);
 
@@ -187,6 +210,15 @@ export async function generateStructuredJson({
   temperature = 0.1,
   config = {},
   fallback = {},
+}: {
+  model?: string;
+  role?: string;
+  contents: any;
+  schema: any;
+  tools?: any[];
+  temperature?: number;
+  config?: GeminiGenerateTextConfig;
+  fallback?: any;
 }) {
   const { text, response, model: modelName, sources } = await generateText({
     model,
