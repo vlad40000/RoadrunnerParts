@@ -5,7 +5,7 @@
  * A premium BOM intelligence dashboard for appliance parts lookup and diagnostics.
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
@@ -116,15 +116,14 @@ export default function App() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDeepDiagnostic = async (isGlobal = false) => {
-    const queryToUse = isGlobal ? diagQuery : diagQuery; // They use the same state for simplicity
-    if (!queryToUse) return;
+  const handleDeepDiagnostic = async () => {
+    if (!diagQuery) return;
     setIsDiagLoading(true);
     setDiagResult(null);
     try {
       const response = await ai.models.generateContent({
         model: "gemini-3.1-pro-preview",
-        contents: `Diagnostic Query: ${queryToUse}. 
+        contents: `Diagnostic Query: ${diagQuery}. 
         Machine Model: ${lookupModel || 'Not Specified (Analyze based on Query)'}. 
         
         As a Master Appliance Engineer, provide:
@@ -1166,7 +1165,7 @@ Return a JSON object with two keys:
                       />
                       <div className="absolute bottom-3 right-3">
                         <button
-                          onClick={() => handleDeepDiagnostic(true)}
+                          onClick={() => handleDeepDiagnostic()}
                           disabled={isDiagLoading || !diagQuery}
                           className="pro-button pro-button-primary py-1.5"
                         >
