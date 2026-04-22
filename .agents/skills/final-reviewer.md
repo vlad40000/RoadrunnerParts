@@ -1,6 +1,6 @@
 ---
 name: final-reviewer
-model: gemini-3.1-pro-preview
+model: gemini-3.1-pro
 description: Quality control, consistency checking, and final output generation.
 tools: [read_file, write_file]
 max_steps: 5

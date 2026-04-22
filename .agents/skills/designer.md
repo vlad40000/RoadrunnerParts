@@ -1,6 +1,6 @@
 ---
 name: designer
-model: gemini-3.1-flash-image-preview
+model: gemini-3-pro-image
 description: Asset creation and visual design.
 tools: [read_file, write_file, generate_image]
 max_steps: 5

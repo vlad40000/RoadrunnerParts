@@ -220,6 +220,8 @@ export default function PartsSearchClient() {
   const [pricingMessage, setPricingMessage] = useState(null);
   const [lastPricedSubset, setLastPricedSubset] = useState([]);
   const [lastPricingSelection, setLastPricingSelection] = useState([]);
+  const [countLookupBusy, setCountLookupBusy] = useState(false);
+  const [countLookupMessage, setCountLookupMessage] = useState(null);
 
   const nameplateInputRef = useRef(null);
   const manualPdfInputRef = useRef(null);
@@ -272,6 +274,8 @@ export default function PartsSearchClient() {
     setPricingMessage(null);
     setLastPricedSubset([]);
     setLastPricingSelection([]);
+    setCountLookupBusy(false);
+    setCountLookupMessage(null);
   }
 
   async function createEmptyJob() {
@@ -432,6 +436,74 @@ export default function PartsSearchClient() {
       if (manualPdfInputRef.current) {
         manualPdfInputRef.current.value = '';
       }
+    }
+  }
+
+  async function handleLookupExpectedParts() {
+    const fallbackModel = identityReview?.model || results?.model || '';
+    const model = manualModelNumber.trim() || fallbackModel.trim();
+
+    if (!model) {
+      setError('Enter or confirm a model number first.');
+      return;
+    }
+
+    setError(null);
+    setCountLookupMessage(null);
+    setCountLookupBusy(true);
+
+    try {
+      let currentJobId = jobId;
+      if (!currentJobId) {
+        currentJobId = await createEmptyJob();
+        setJobId(currentJobId);
+      }
+
+      const payload = {
+        jobId: currentJobId,
+        model,
+        brand: manualBrand.trim() || identityReview?.brand || results?.brand || undefined,
+        serial: manualSerial.trim() || identityReview?.serial || results?.serial || undefined,
+        productType: manualProductType.trim() || identityReview?.productType || results?.productType || undefined,
+      };
+
+      const res = await fetch('/api/bom/expected-count', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await readApiResponse(res);
+      if (!res.ok) {
+        throw new Error(toDisplayErrorMessage(data?.detail || data?.error || 'Sears count lookup failed'));
+      }
+
+      setIdentityReview((prev) => ({
+        ...(prev || {}),
+        brand: payload.brand || prev?.brand || '',
+        resolvedBrand: prev?.resolvedBrand || payload.brand || '',
+        model,
+        serial: payload.serial || prev?.serial || '',
+        productType: payload.productType || prev?.productType || '',
+        confidence: typeof prev?.confidence === 'number' ? prev.confidence : 1,
+        searchConfidence: typeof prev?.searchConfidence === 'number' ? prev.searchConfidence : 1,
+        familyKey: prev?.familyKey || '',
+        adapterKey: prev?.adapterKey || '',
+        expectedPartsTotal: Number(data?.expectedPartsTotal || 0),
+        expectedPartsSource: data?.expectedPartsSource || '',
+        coveragePct: prev?.coveragePct || 0,
+        actualUniqueParts: prev?.actualUniqueParts || 0,
+      }));
+
+      if (data?.found && Number(data?.expectedPartsTotal || 0) > 0) {
+        setCountLookupMessage(`SearsPartsDirect exact-match estimate found: ${Number(data.expectedPartsTotal)} parts for ${model}.`);
+      } else {
+        setCountLookupMessage(`No SearsPartsDirect exact-match part count was found for ${model}, but the model is ready for the normal BOM flow.`);
+      }
+    } catch (lookupError) {
+      setError(lookupError instanceof Error ? lookupError.message : 'Sears count lookup failed');
+    } finally {
+      setCountLookupBusy(false);
     }
   }
 
@@ -755,23 +827,50 @@ export default function PartsSearchClient() {
                   className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm shadow-md placeholder:text-slate-400 focus:border-blue-500 focus:outline-none"
                 />
 
-                <button
-                  type="submit"
-                  disabled={isLoading || !manualModelNumber.trim()}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
-                >
-                  {loadingMode === 'identity' && !jobId ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 animate-spin" />
-                      Creating Identity Job
-                    </>
-                  ) : (
-                    <>
-                      <Search className="h-4 w-4" />
-                      Start from Manual Identity
-                    </>
-                  )}
-                </button>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <button
+                    type="submit"
+                    disabled={isLoading || !manualModelNumber.trim()}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-300"
+                  >
+                    {loadingMode === 'identity' && !jobId ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Creating Identity Job
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4" />
+                        Start from Manual Identity
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleLookupExpectedParts}
+                    disabled={isLoading || countLookupBusy || !manualModelNumber.trim()}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:bg-slate-300"
+                  >
+                    {countLookupBusy ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Checking Sears Count
+                      </>
+                    ) : (
+                      <>
+                        <BarChart3 className="h-4 w-4" />
+                        Complete BOM
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {countLookupMessage ? (
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                    {countLookupMessage}
+                  </div>
+                ) : null}
               </form>
 
               <div className="my-4 h-px bg-slate-100" />

@@ -82,8 +82,14 @@ export async function runAndPersistBomExtraction(input: {
       await completeBomJob(input.jobId, {
         brand: cached.brand || 'Unknown',
         model: cached.normalizedModel,
+        serial: null,
+        productType: cached.category || null,
+        rawRowCount: cached.parts.length,
         uniqueRowCount: cached.parts.length,
+        coverageScore: 1,
         resultStatus: 'cache_hit',
+        issues: ["Restored from persistent model cache."],
+        unmatchedCallouts: [],
         finalRows: cached.parts,
       });
 

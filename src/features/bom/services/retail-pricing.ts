@@ -145,6 +145,7 @@ async function resolveEncompassPriceForPart(input: {
         `"${baseModel}" "${input.partNumber}"`,
         `"${input.partNumber}" "Encompass"`,
       ],
+      domain: "encompass.com",
       maxResults: 6,
     }),
   );

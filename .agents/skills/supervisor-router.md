@@ -1,6 +1,6 @@
 ---
 name: supervisor-router
-model: gemini-3.1-pro-preview
+model: gemini-3.1-pro
 description: Intent routing, task breakdown, and delegation.
 tools: [read_file, write_file]
 max_steps: 5

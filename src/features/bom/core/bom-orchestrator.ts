@@ -164,7 +164,7 @@ export async function buildBomJob(input: {
     await runWithConcurrency(
       retrievedSources,
       parseInt(process.env.BOM_EXTRACTOR_CONCURRENCY ?? "3", 10),
-      async (source) => {
+      async (source: BuildBomJobOutput["retrievedSources"][number]) => {
         try {
           const rows = await runPartsExtractor({
             sourceUrl: source.sourceUrl,

@@ -38,11 +38,16 @@ import {
   Mic,
   MicOff,
   Send,
-  Sparkles
+  Sparkles,
+  Image as ImageIcon
 } from 'lucide-react';
 import { partsData, sections, Part } from './partsData';
 import { auth, signIn, signOut } from './lib/firebase';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+// import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+type FirebaseUser = any;
+const onAuthStateChanged = (auth: any, callback: (u: any) => void) => {
+  return () => {}; // Unsubscribe mock
+};
 import { 
   getPartMetadata, 
   getPartReviews, 
@@ -905,6 +910,17 @@ Return a JSON object with two keys:
                 >
                   {isScanning ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
                 </button>
+                <button 
+                  onClick={() => {
+                    setScanType('search');
+                    document.getElementById('image-upload-input')?.click();
+                  }}
+                  className={`pro-button px-3 ${isScanning ? 'pro-button-primary animate-pulse' : 'pro-button-secondary'}`}
+                  title="Upload model tag image"
+                  disabled={isScanning}
+                >
+                  <ImageIcon size={20} />
+                </button>
               </div>
             </div>
             <p className="text-[9px] text-pro-slate-400 mt-1.5 flex items-center gap-1 px-1">
@@ -1334,6 +1350,17 @@ Return a JSON object with two keys:
                             >
                               {isScanning && scanType === 'compatibility' ? <Loader2 className="animate-spin" size={16} /> : <Camera size={16} />}
                             </button>
+                            <button 
+                              onClick={() => {
+                                setScanType('compatibility');
+                                document.getElementById('image-upload-input')?.click();
+                              }}
+                              className={`pro-button px-3 shrink-0 ${isScanning && scanType === 'compatibility' ? 'pro-button-primary animate-pulse' : 'pro-button-secondary'}`}
+                              title="Upload tag image to pre-fill model"
+                              disabled={isScanning}
+                            >
+                              <ImageIcon size={16} />
+                            </button>
                           </div>
 
                           <AnimatePresence mode="wait">
@@ -1580,7 +1607,7 @@ Return a JSON object with two keys:
                         />
                         <div className="absolute bottom-4 right-4">
                           <button 
-                            onClick={handleDeepDiagnostic}
+                            onClick={() => handleDeepDiagnostic()}
                             disabled={isDiagLoading || !diagQuery}
                             className="pro-button pro-button-primary px-6 shadow-pro-md"
                           >
@@ -1643,6 +1670,13 @@ Return a JSON object with two keys:
         type="file"
         accept="image/*"
         capture="environment"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+      <input 
+        id="image-upload-input"
+        type="file"
+        accept="image/*"
         className="hidden"
         onChange={handleFileUpload}
       />
