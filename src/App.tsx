@@ -126,8 +126,8 @@ export default function App() {
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [videoResult, setVideoResult] = useState<string | null>(null);
 
-  const handleDeepDiagnostic = async (isGlobal = false) => {
-    const queryToUse = isGlobal ? diagQuery : diagQuery; // They use the same state for simplicity
+  const handleDeepDiagnostic = async () => {
+    const queryToUse = diagQuery;
     if (!queryToUse) return;
     setIsDiagLoading(true);
     setDiagResult(null);
