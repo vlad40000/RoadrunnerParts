@@ -473,6 +473,7 @@ Return a JSON object with two keys:
       ];
 
       let lastResult = null;
+      let lastError: unknown = null;
 
       for (const [rotation, crop] of attempts) {
         try {
@@ -499,7 +500,7 @@ Return a JSON object with two keys:
       }
 
       if (!lastResult) {
-        throw new Error("Validation Failure: All extraction attempts failed. Ensure the manufacturer tag is well-lit and the text is sharp.");
+        throw lastError instanceof Error ? lastError : new Error('Validation Failure: All extraction attempts failed. Ensure the manufacturer tag is well-lit and the text is sharp.');
       }
 
       // STAGE 2: Preserve Raw Values exactly
