@@ -43,26 +43,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { partsData, sections, Part } from './partsData';
-export interface PartReview {
-  id?: string;
-  partNumber: string;
-  rating: number;
-  comment: string;
-  userId: string;
-  userEmail: string;
-  status: 'installed' | 'used';
-  createdAt: any;
-}
 
-export interface PartMetadata {
-  partNumber: string;
-  avgRating: number;
-  reviewCount: number;
-}
-
-const getPartMetadata = async (partNumber: string): Promise<PartMetadata | null> => null;
-const getPartReviews = async (partNumber: string): Promise<PartReview[]> => [];
-const submitReview = async (review: Omit<PartReview, 'id' | 'createdAt'>) => { };
 
 import { GoogleGenAI, ThinkingLevel, Modality } from "@google/genai";
 import { ApplianceDecoder, DecodeResult } from './lib/decoder';
@@ -86,13 +67,7 @@ export default function App() {
     suggestions: Part[];
   } | null>(null);
 
-  // Review state
-  const [reviews, setReviews] = useState<PartReview[]>([]);
-  const [metadata, setMetadata] = useState<PartMetadata | null>(null);
-  const [newRating, setNewRating] = useState(5);
-  const [newComment, setNewComment] = useState('');
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const [isScanning, setIsScanning] = useState(false);
   const [isAILoading, setIsAILoading] = useState(false);
@@ -445,7 +420,6 @@ Return a JSON object with two keys:
 
   useEffect(() => {
     if (selectedPart) {
-      loadPartData(selectedPart.partNumber);
       setCompatibilityResult(null);
       setCheckModel('');
     }
@@ -488,14 +462,7 @@ Return a JSON object with two keys:
     }
   };
 
-  const loadPartData = async (partNumber: string) => {
-    const [meta, revs] = await Promise.all([
-      getPartMetadata(partNumber),
-      getPartReviews(partNumber)
-    ]);
-    setMetadata(meta);
-    setReviews(revs);
-  };
+
 
   const handleVideoDiagnostic = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -535,16 +502,14 @@ Return a JSON object with two keys:
 
   const handleExportCSV = () => {
     const dataSource = aiParts.length > 0 ? aiParts : partsData;
-    const headers = ['Ref ID', 'Part Number', 'Description', 'Price (USD)', 'Price Source', 'Assembly Section', 'Rating', 'Reviews'];
+    const headers = ['Ref ID', 'Part Number', 'Description', 'Price (USD)', 'Price Source', 'Assembly Section'];
     const rows = dataSource.map(part => [
       part.id,
       part.partNumber,
       `"${part.description.replace(/"/g, '""')}"`,
       part.price || 0,
       `"${(part.priceSource || 'N/A').replace(/"/g, '""')}"`,
-      `"${part.section.replace(/"/g, '""')}"`,
-      part.avgRating,
-      part.reviewCount
+      `"${part.section.replace(/"/g, '""')}"`
     ]);
 
     const csvContent = [
@@ -574,7 +539,6 @@ Return a JSON object with two keys:
     });
 
     return [...filtered].sort((a, b) => {
-      if (sortBy === 'rating') return (b.avgRating || 0) - (a.avgRating || 0);
       if (sortBy === 'popularity') return (b.reviewCount || 0) - (a.reviewCount || 0);
       return a.id - b.id;
     });
@@ -925,7 +889,6 @@ Return a JSON object with two keys:
                   className="text-xs font-semibold text-pro-slate-700 bg-transparent focus:outline-none appearance-none cursor-pointer hover:text-pro-blue transition-colors px-2 py-1"
                 >
                   <option value="id">Sequence</option>
-                  <option value="rating">Reviews</option>
                   <option value="popularity">Demand</option>
                 </select>
                 <ChevronDown size={12} className="text-pro-slate-400 -ml-1" />
@@ -1012,10 +975,6 @@ Return a JSON object with two keys:
                       <span className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">
                         Item ID {part.id}
                       </span>
-                      <div className="flex items-center gap-1 group">
-                        <Star size={10} className="fill-amber-400 text-amber-400" />
-                        <span className="text-[10px] font-bold text-pro-slate-600">{part.avgRating} <span className="text-pro-slate-400">({part.reviewCount})</span></span>
-                      </div>
                     </div>
                     <h3 className="text-sm font-bold text-pro-slate-900 mb-2 leading-snug group-hover:text-pro-blue transition-colors">
                       {part.description}
@@ -1057,7 +1016,6 @@ Return a JSON object with two keys:
                       <th className="px-4 py-3 text-left text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">OEM Identifier</th>
                       <th className="px-4 py-3 text-left text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">Component Description</th>
                       <th className="px-4 py-3 text-left text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest w-24">Market Cost</th>
-                      <th className="px-4 py-3 text-left text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest w-24">Rating</th>
                       <th className="px-4 py-3 text-left text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">Assembly</th>
                     </tr>
                   </thead>
@@ -1079,12 +1037,6 @@ Return a JSON object with two keys:
                           <div className="flex flex-col">
                             <span className="text-sm font-black text-pro-slate-900">${part.price?.toFixed(2) || 'N/A'}</span>
                             <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tight">{part.priceSource || 'Market'}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1">
-                            <Star size={10} className="fill-amber-400 text-amber-400" />
-                            <span className="text-xs font-bold text-pro-slate-600">{part.avgRating}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
@@ -1237,11 +1189,6 @@ Return a JSON object with two keys:
                     <span className="bg-pro-blue text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest">
                       OEM CERTIFIED
                     </span>
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/10 rounded-md">
-                      <Star size={12} className="fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-bold">{metadata?.avgRating?.toFixed(1) || selectedPart.avgRating}</span>
-                      <span className="text-white/40 text-[9px] font-medium uppercase tracking-tighter">({metadata?.reviewCount || selectedPart.reviewCount} Reports)</span>
-                    </div>
                   </div>
                   <h2 className="text-2xl md:text-3xl font-black tracking-tight leading-none uppercase">
                     {selectedPart.description}
@@ -1425,42 +1372,6 @@ Return a JSON object with two keys:
                               </div>
                             </div>
                           )}
-                        </div>
-
-                        <div className="h-px bg-pro-slate-100 my-4"></div>
-                        <span className="text-[10px] font-black text-pro-slate-400 uppercase tracking-widest mb-2 block">Part History Log</span>
-
-                        {reviews.length === 0 ? (
-                          <div className="py-12 text-center text-pro-slate-400 italic text-xs font-medium border-2 border-dashed border-pro-slate-100 rounded-xl px-4">
-                            No service history logs available for this component.
-                          </div>
-                        ) : (
-                          reviews.map((rev) => (
-                            <div key={rev.id} className="pro-card p-4 bg-white rounded-xl shadow-sm border-pro-slate-100">
-                              <div className="flex justify-between items-start mb-3">
-                                <div className="flex gap-0.5">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={10} className={i < rev.rating ? 'fill-amber-400 text-amber-400' : 'text-pro-slate-200'} />
-                                  ))}
-                                </div>
-                                <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded border ${rev.status === 'installed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-pro-slate-100 text-pro-slate-500 border-pro-slate-200'}`}>
-                                  {rev.status}
-                                </span>
-                              </div>
-                              <p className="text-xs text-pro-slate-600 font-medium leading-relaxed mb-3">"{rev.comment}"</p>
-                              <div className="flex items-center justify-between text-[9px] font-bold text-pro-slate-400 border-t border-pro-slate-50 pt-2">
-                                <span className="flex items-center gap-1"><User size={10} /> {rev.userEmail.split('@')[0]}</span>
-                                <span>{new Date(rev.createdAt?.seconds * 1000).toLocaleDateString()}</span>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      {/* Review Submission */}
-                      <div className="mt-6 pt-6 border-t border-pro-slate-200">
-                        <div className="py-6 text-center text-pro-slate-400 italic text-[10px] font-bold uppercase tracking-widest border-t border-pro-slate-100">
-                          Session logging currently restricted to local technical briefing.
                         </div>
                       </div>
                     </div>
