@@ -1,5 +1,5 @@
-import { db } from '../../../../server/db';
-import { modelPartsCache } from '../../../../server/db/schema/model-parts-cache';
+import { db } from '@/src/server/db';
+import { modelPartsCache } from '@/src/server/db/schema/model-parts-cache';
 import { eq } from 'drizzle-orm';
 
 /**
