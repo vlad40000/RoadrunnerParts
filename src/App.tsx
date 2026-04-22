@@ -45,12 +45,9 @@ import {
 } from 'lucide-react';
 import { partsData, Part } from './partsData';
 
-
-import { GoogleGenAI, ThinkingLevel, Modality } from "@google/genai";
 import { ApplianceDecoder, DecodeResult } from './lib/decoder';
 import { computeCurrentMarketValue, ApplianceCondition, ValuationResult } from './lib/valuation';
 
-const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || "MISSING_API_KEY" });
 const decoder = new ApplianceDecoder();
 
 /**
@@ -165,27 +162,26 @@ export default function App() {
     setIsDiagLoading(true);
     setDiagResult(null);
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: `Diagnostic Query: ${diagQuery}. 
-        Machine Model: ${lookupModel || 'Not Specified (Analyze based on Query)'}. 
-        
-        As a Master Appliance Engineer, provide:
-        1. REASONING: Analyze the symptoms and machine logic.
-        2. POTENTIAL FAULTY PARTS: List specific OEM-style parts that are likely failing.
-        3. TROUBLESHOOTING STEPS: Detailed, step-by-step instructions for testing and repair.
-        4. ERROR CODES: Relevant codes for this specific model series.`,
-        config: {
-          systemInstruction: "You are a world-class Master Appliance Engineer with 30 years of field experience. Use your deep reasoning to diagnose complex appliance failures. Be precise, technical, and prioritize safety. Use logic to narrow down the most likely failure points.",
-          thinkingConfig: {
-            thinkingLevel: ThinkingLevel.HIGH
-          }
-        }
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'diagnose',
+          query: diagQuery,
+          model: lookupModel || 'Not Specified'
+        }),
       });
-      setDiagResult(response.text || "No diagnostic results found.");
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Diagnostic engine failed');
+      }
+
+      const result = await response.json();
+      setDiagResult(result || "No diagnostic results found.");
     } catch (error) {
       console.error(error);
-      alert("Diagnostic engine failed. Please try again.");
+      alert(error instanceof Error ? error.message : "Diagnostic engine failed. Please try again.");
     } finally {
       setIsDiagLoading(false);
     }
@@ -266,86 +262,26 @@ Focus on:
     setIsAILoading(true);
 
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: `${promptTitle}
-${currentSerial ? `Serial Number: ${currentSerial}` : ""}
-${manufactureDate ? `Approximate Manufacture Date: ${manufactureDate}` : ""}
-
-CURRENT PASS NUMBER: ${passNumber}
-
-${passInstruction}
-
-KNOWN PART NUMBERS ALREADY FOUND:
-${existingPartNumbers.length > 0 ? existingPartNumbers.join(", ") : "NONE"}
-
-First, identify the Brand and Category.
-I require the deepest possible OEM service BOM.
-Use REAL OEM part numbers for the identified manufacturer.
-Categorize strictly into the provided assembly sections.
-
-CRITICAL:
-- Search for missing parts that are NOT already in the known list.
-- Prefer exact OEM part numbers.
-- Focus on completeness.
-- Return only valid serviceable or diagram-listed parts.
-- Avoid duplicates of known part numbers.
-
-ALSO:
-Use GOOGLE SEARCH to verify the EXACT CURRENT RETAIL PRICE for each part.
-For EVERY price provided, specify the source website.
-Focus specifically on Encompass.com.
-    
-Return a JSON object with two keys:
-- "parts" (array)
-- "modelMSRP" (number, optional if high confidence only).`,
-        config: {
-          systemInstruction:
-            "You are the world's leading Universal Appliance Master Technician and Parts Cataloger. Your task is to maximize BOM completeness across repeated passes while avoiding duplicate part numbers.",
-          responseMimeType: "application/json",
-          tools: [{ googleSearch: {} }],
-          responseSchema: {
-            type: "OBJECT",
-            properties: {
-              modelMSRP: { type: "NUMBER" },
-              parts: {
-                type: "ARRAY",
-                items: {
-                  type: "OBJECT",
-                  properties: {
-                    id: { type: "NUMBER" },
-                    partNumber: { type: "STRING" },
-                    description: { type: "STRING" },
-                    section: {
-                      type: "STRING",
-                    },
-                    compatibleModels: {
-                      type: "ARRAY",
-                      items: { type: "STRING" },
-                    },
-
-                    price: { type: "NUMBER" },
-                    priceSource: { type: "STRING" },
-                  },
-                  required: [
-                    "id",
-                    "partNumber",
-                    "description",
-                    "section",
-                    "compatibleModels",
-
-                    "price",
-                    "priceSource",
-                  ],
-                },
-              },
-            },
-            required: ["parts"],
-          },
-        },
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'bom',
+          query,
+          serial: currentSerial,
+          manufactureDate,
+          passNumber,
+          isExhaustive,
+          existingPartNumbers
+        }),
       });
 
-      const parsed = JSON.parse(response.text || '{"parts": []}');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'AI Lookup failed');
+      }
+
+      const parsed = await response.json();
       const rawParts = Array.isArray(parsed.parts) ? parsed.parts : [];
 
       const processedParts = rawParts.map((p: any) => ({
@@ -485,7 +421,10 @@ Return a JSON object with two keys:
             body: JSON.stringify({ image: base64, mimeType: file.type })
           });
 
-          if (!response.ok) throw new Error("API_FAIL");
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`OCR API failed (${response.status}): ${errorData.error || 'Unknown server error'}`);
+          }
 
           const result = await response.json();
           
@@ -598,21 +537,24 @@ Return a JSON object with two keys:
       reader.readAsDataURL(file);
       const base64 = await base64Promise;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-pro-preview",
-        contents: [
-          { inlineData: { mimeType: file.type, data: base64 } },
-          {
-            text: `Analyze this video of an appliance in failure state. The model is ${lookupModel || 'Whirlpool Washer'}. 
-            What sounds, oscillations, or visual errors do you detect? 
-            Suggest specific mechanical or electrical root causes based on the video evidence.` }
-        ],
-        config: {
-          systemInstruction: "You are an expert diagnostic engineer specialized in visual and acoustic failure analysis. Analyze the provided video with extreme detail.",
-          thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
-        }
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'video',
+          videoData: base64,
+          mimeType: file.type,
+          model: lookupModel
+        }),
       });
-      setVideoResult(response.text || "Video analysis complete, but no specific errors detected.");
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Video analysis engine failed');
+      }
+
+      const result = await response.json();
+      setVideoResult(result || "Video analysis complete, but no specific errors detected.");
     } catch (error) {
       console.error(error);
       alert("Video analysis engine encountered a problem.");
@@ -745,14 +687,22 @@ Return a JSON object with two keys:
 
   const processAudioNote = async (base64Data: string) => {
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          { inlineData: { mimeType: "audio/webm", data: base64Data } },
-          { text: "Transcribe this technical field note for an appliance repair. Return ONLY the clear text transcription." }
-        ]
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'audio',
+          audioData: base64Data,
+          mimeType: 'audio/webm'
+        }),
       });
-      const transcript = response.text || "";
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Transcription failed');
+      }
+
+      const transcript = await response.json();
       if (transcript) {
 
         setFieldChatMessages(prev => [...prev,
@@ -773,23 +723,27 @@ Return a JSON object with two keys:
     setIsFieldChatLoading(true);
 
     try {
-      const chat = ai.chats.create({
-        model: "gemini-3-flash-preview",
-        config: {
-          systemInstruction: `You are a Technical Field Assistant for Roadrunner Appliance Inc. 
-          You are helping a technician with the part: ${selectedPart?.description} (${selectedPart?.partNumber}).
-          Current Model context: ${checkModel || lookupModel || 'Unknown'}.
-          Help the technician troubleshoot, find specifications, or record field notes. 
-          Keep responses concise, technical, and high-accuracy.`,
-        },
-        history: fieldChatMessages.map(m => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }]
-        }))
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'chat',
+          message,
+          context: {
+            part: selectedPart,
+            model: checkModel || lookupModel
+          },
+          history: fieldChatMessages
+        }),
       });
 
-      const response = await chat.sendMessage({ message });
-      setFieldChatMessages(prev => [...prev, { role: 'assistant', text: response.text || "System error. Please retry." }]);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Field AI Chat failed');
+      }
+
+      const result = await response.json();
+      setFieldChatMessages(prev => [...prev, { role: 'assistant', text: result || "System error. Please retry." }]);
     } catch (error) {
       console.error("Field AI Chat Error", error);
     } finally {

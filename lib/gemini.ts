@@ -659,4 +659,243 @@ export async function extractPartsFromHtmlPage(html, { model, section }) {
   return data.parts || [];
 }
 
+
+/**
+ * Generate a Bill of Materials (BOM) pass for a specific appliance model.
+ */
+export async function generateBOM({
+  query,
+  serial,
+  manufactureDate,
+  passNumber,
+  isExhaustive,
+  existingPartNumbers = []
+}) {
+  let passInstruction = "";
+  let promptTitle = "";
+
+  if (!isExhaustive) {
+    promptTitle = `Generate a QUICK BOM PASS (approx 40 parts) for appliance model: ${query}.`;
+    passInstruction = `
+QUICK BOM PASS:
+Target approximately 40 valid OEM parts with broad coverage across major categories.
+Focus on speed and reliability for the most common serviceable parts.`;
+  } else {
+    promptTitle = `Generate an ABSOLUTELY EXHAUSTIVE, MASTER-LEVEL Bill of Materials (BOM) for appliance model: ${query}.`;
+    
+    if (passNumber === 1) {
+      passInstruction = `
+COMPLETE BOM PASS (EXHAUSTIVE):
+Attempt the most exhaustive BOM possible across all valid OEM/serviceable parts.
+No hard cap is required. Include major assemblies, controls, motors, pumps, valves, boards, sensors, panels, wiring, clips, brackets, seals, hardware, supports, covers, and tubing.`;
+    } else if (passNumber === 2) {
+      passInstruction = `
+COMPLETE BOM PASS - FALLBACK CHUNK (Drive & Power):
+Focus specifically on MORE parts missed in:
+- motors
+- gearcase
+- pump
+- drive components
+- sub-harnesses
+- wiring
+- sub-assembly specific pieces`;
+    } else if (passNumber === 3) {
+      passInstruction = `
+COMPLETE BOM PASS - FALLBACK CHUNK (Control & Structures):
+Focus on:
+- controls
+- boards
+- sensors
+- internal structure
+- basket
+- tub
+- panels
+- brackets
+- supports`;
+    } else {
+      passInstruction = `
+COMPLETE BOM PASS - FALLBACK CHUNK (Hardware & Finishing):
+Focus on:
+- seals
+- gaskets
+- clips
+- retainers
+- shields
+- covers
+- internal tubing
+- screws, bolts, and small service hardware`;
+    }
+  }
+
+  const prompt = `${promptTitle}
+${serial ? `Serial Number: ${serial}` : ""}
+${manufactureDate ? `Approximate Manufacture Date: ${manufactureDate}` : ""}
+
+CURRENT PASS NUMBER: ${passNumber}
+
+${passInstruction}
+
+KNOWN PART NUMBERS ALREADY FOUND:
+${existingPartNumbers.length > 0 ? existingPartNumbers.join(", ") : "NONE"}
+
+First, identify the Brand and Category.
+I require the deepest possible OEM service BOM.
+Use REAL OEM part numbers for the identified manufacturer.
+Categorize strictly into the provided assembly sections.
+
+CRITICAL:
+- Search for missing parts that are NOT already in the known list.
+- Prefer exact OEM part numbers.
+- Focus on completeness.
+- Return only valid serviceable or diagram-listed parts.
+- Avoid duplicates of known part numbers.
+
+ALSO:
+Use GOOGLE SEARCH to verify the EXACT CURRENT RETAIL PRICE for each part.
+For EVERY price provided, specify the source website.
+Focus specifically on Encompass.com.
+    
+Return a JSON object with two keys:
+- "parts" (array)
+- "modelMSRP" (number, optional if high confidence only).`;
+
+  const responseSchema = {
+    type: "OBJECT",
+    properties: {
+      modelMSRP: { type: "NUMBER" },
+      parts: {
+        type: "ARRAY",
+        items: {
+          type: "OBJECT",
+          properties: {
+            id: { type: "NUMBER" },
+            partNumber: { type: "STRING" },
+            description: { type: "STRING" },
+            section: { type: "STRING" },
+            compatibleModels: {
+              type: "ARRAY",
+              items: { type: "STRING" },
+            },
+            price: { type: "NUMBER" },
+            priceSource: { type: "STRING" },
+          },
+          required: [
+            "id",
+            "partNumber",
+            "description",
+            "section",
+            "compatibleModels",
+            "price",
+            "priceSource",
+          ],
+        },
+      },
+    },
+    required: ["parts"],
+  };
+
+  const { data } = await generateStructuredJson({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    tools: [{ googleSearch: {} }],
+    schema: responseSchema,
+    config: {
+      systemInstruction: "You are the world's leading Universal Appliance Master Technician and Parts Cataloger. Your task is to maximize BOM completeness across repeated passes while avoiding duplicate part numbers."
+    }
+  });
+
+  return data;
+}
+
+/**
+ * Deep diagnostics for an appliance symptom.
+ */
+export async function diagnoseIssue({ query, model }) {
+  const prompt = `Diagnostic Query: ${query}. 
+  Machine Model: ${model || 'Not Specified (Analyze based on Query)'}. 
+  
+  As a Master Appliance Engineer, provide:
+  1. REASONING: Analyze the symptoms and machine logic.
+  2. POTENTIAL FAULTY PARTS: List specific OEM-style parts that are likely failing.
+  3. TROUBLESHOOTING STEPS: Detailed, step-by-step instructions for testing and repair.
+  4. ERROR CODES: Relevant codes for this specific model series.`;
+
+  const { text } = await generateText({
+    model: 'gemini-3.1-pro-preview',
+    contents: prompt,
+    config: {
+      systemInstruction: "You are a world-class Master Appliance Engineer with 30 years of field experience. Use your deep reasoning to diagnose complex appliance failures. Be precise, technical, and prioritize safety. Use logic to narrow down the most likely failure points.",
+      thinkingConfig: {
+        thinkingLevel: 'HIGH'
+      }
+    }
+  });
+
+  return text;
+}
+
+/**
+ * Analyze a video of a failing appliance.
+ */
+export async function analyzeVideo({ videoData, mimeType, model }) {
+  const prompt = `Analyze this video of an appliance in failure state. The model is ${model || 'Whirlpool Washer'}. 
+  What sounds, oscillations, or visual errors do you detect? 
+  Suggest specific mechanical or electrical root causes based on the video evidence.`;
+
+  const { text } = await generateText({
+    model: 'gemini-3.1-pro-preview',
+    contents: [
+      { inlineData: { mimeType, data: videoData } },
+      { text: prompt }
+    ],
+    config: {
+      systemInstruction: "You are an expert diagnostic engineer specialized in visual and acoustic failure analysis. Analyze the provided video with extreme detail.",
+      thinkingConfig: { thinkingLevel: 'HIGH' }
+    }
+  });
+
+  return text;
+}
+
+/**
+ * Transcribe a technical audio note.
+ */
+export async function transcribeAudio({ audioData, mimeType }) {
+  const { text } = await generateText({
+    model: 'gemini-3-flash-preview',
+    contents: [
+      { inlineData: { mimeType, data: audioData } },
+      { text: "Transcribe this technical field note for an appliance repair. Return ONLY the clear text transcription." }
+    ]
+  });
+
+  return text;
+}
+
+/**
+ * Field AI Chat assistant.
+ */
+export async function chatField({ message, context, history = [] }) {
+  const genAI = createClient();
+  const model = genAI.getGenerativeModel({
+    model: "gemini-3-flash-preview",
+    systemInstruction: `You are a Technical Field Assistant for Roadrunner Appliance Inc. 
+    You are helping a technician.
+    Context: ${JSON.stringify(context)}.
+    Help the technician troubleshoot, find specifications, or record field notes. 
+    Keep responses concise, technical, and high-accuracy.`,
+  });
+
+  const chat = model.startChat({
+    history: history.map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.text }]
+    }))
+  });
+
+  const result = await chat.sendMessage(message);
+  const response = await result.response;
+  return response.text();
+}
+
 export { ALL_SOURCES };

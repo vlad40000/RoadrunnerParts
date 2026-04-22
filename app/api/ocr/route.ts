@@ -30,8 +30,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error('[OCR API Error]', error);
+    const message = error instanceof Error ? error.message : 'Unknown OCR server error';
     return NextResponse.json(
-      { error: 'Failed to extract nameplate data' },
+      { error: message },
       { status: 500 }
     );
   }
