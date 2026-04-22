@@ -14,7 +14,7 @@ import {
   Package,
   Shield,
   ClipboardList,
-  PenTool as Tool,
+
   CheckCircle2,
   XCircle,
   Star,
@@ -728,14 +728,7 @@ Return a JSON object with two keys:
             </nav>
           </section>
 
-          <section className="pro-card p-4 rounded-xl border-dashed">
-            <h3 className="pro-section-title flex items-center gap-2 mb-2">
-              <Tool size={14} className="text-amber-500" /> Maintenance Tip
-            </h3>
-            <p className="text-xs leading-relaxed text-pro-slate-600">
-              Verify the <span className="font-bold text-pro-slate-900 underline decoration-pro-blue/30">Serial Range</span> before ordering logic boards to ensure firmware parity.
-            </p>
-          </section>
+
         </aside>
 
         {/* Parts Explorer */}
