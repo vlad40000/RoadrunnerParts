@@ -719,9 +719,7 @@ Return a JSON object with two keys:
         {/* Professional Sidebar */}
         <aside className="lg:col-span-1 space-y-8">
           <section>
-            <h2 className="pro-section-title flex items-center gap-2">
-              <Package size={14} className="text-pro-blue" /> Machine Systems
-            </h2>
+
             <nav className="flex flex-col gap-1">
               <button
                 onClick={() => setSelectedSection(null)}
@@ -887,10 +885,7 @@ Return a JSON object with two keys:
                 </button>
               </div>
             </div>
-            <p className="text-[9px] text-pro-slate-400 mt-1.5 flex items-center gap-1 px-1">
-              <span className="font-bold text-pro-blue uppercase tracking-widest">Scanner Tip:</span>
-              Align the MOD/SER plate in landscape, ensure bright lighting, and avoid glare for forensic accuracy.
-            </p>
+
           </div>
 
           {/* View Mode and Sorting Controls */}
