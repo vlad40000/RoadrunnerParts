@@ -1,5 +1,5 @@
-import PartsSearchClient from '@/components/parts-search-client';
+import App from '@/src/App';
 
 export default function HomePage() {
-  return <PartsSearchClient />;
+  return <App />;
 }
