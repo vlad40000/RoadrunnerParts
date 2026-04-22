@@ -262,23 +262,22 @@ Focus on:
     setIsAILoading(true);
 
     try {
-      const response = await fetch('/api/ai', {
+      const response = await fetch('/api/bom', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          task: 'bom',
-          query,
-          serial: currentSerial,
+          model: query,
+          serial: currentSerial || null,
           manufactureDate,
           passNumber,
-          isExhaustive,
-          existingPartNumbers
+          passInstruction,
+          knownPartNumbers: existingPartNumbers,
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'AI Lookup failed');
+        const errorText = await response.text();
+        throw new Error(`BOM API failed (${response.status}): ${errorText}`);
       }
 
       const parsed = await response.json();
@@ -339,7 +338,7 @@ Focus on:
       setViewMode("table");
     } catch (error) {
       console.error("AI Lookup failed:", error);
-      alert("AI lookup failed. Please try again.");
+      alert(error instanceof Error ? error.message : 'AI lookup failed. Please try again.');
     } finally {
       setIsAILoading(false);
     }
@@ -1622,4 +1621,3 @@ Focus on:
     </div>
   );
 }
-
