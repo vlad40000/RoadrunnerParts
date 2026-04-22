@@ -141,7 +141,7 @@ export default function App() {
     }
   };
 
-  const handleAILookup = async (modelToSearch?: string, serialToSearch?: string) => {
+  const handleAILookup = async (modelToSearch?: string, serialToSearch?: string, isExhaustive = false) => {
     const query = modelToSearch || searchTerm;
     if (!query || query.length < 3) return;
 
@@ -158,56 +158,59 @@ export default function App() {
     const passNumber = existingParts.length > 0 ? bomPassCount + 1 : 1;
 
     let passInstruction = "";
-    if (passNumber === 1) {
+    let promptTitle = "";
+
+    if (!isExhaustive) {
+      promptTitle = `Generate a QUICK BOM PASS (approx 40 parts) for appliance model: ${query}.`;
       passInstruction = `
-INITIAL PASS:
-Build the broadest possible OEM BOM for this model.
-Return the main assemblies, controls, pumps, motors, valves, boards, panels, hoses, sensors, and serviceable internal components.`;
-    } else if (passNumber === 2) {
-      passInstruction = `
-SECOND PASS:
-I already have an initial BOM. Search for MORE parts that were missed.
+QUICK BOM PASS:
+Target approximately 40 valid OEM parts with broad coverage across major categories.
+Focus on speed and reliability for the most common serviceable parts.`;
+    } else {
+      promptTitle = `Generate an ABSOLUTELY EXHAUSTIVE, MASTER-LEVEL Bill of Materials (BOM) for appliance model: ${query}.`;
+      
+      if (passNumber === 1) {
+        passInstruction = `
+COMPLETE BOM PASS (EXHAUSTIVE):
+Attempt the most exhaustive BOM possible across all valid OEM/serviceable parts.
+No hard cap is required. Include major assemblies, controls, motors, pumps, valves, boards, sensors, panels, wiring, clips, brackets, seals, hardware, supports, covers, and tubing.`;
+      } else if (passNumber === 2) {
+        passInstruction = `
+COMPLETE BOM PASS - FALLBACK CHUNK (Drive & Power):
+Focus specifically on MORE parts missed in:
+- motors
+- gearcase
+- pump
+- drive components
+- sub-harnesses
+- wiring
+- sub-assembly specific pieces`;
+      } else if (passNumber === 3) {
+        passInstruction = `
+COMPLETE BOM PASS - FALLBACK CHUNK (Control & Structures):
 Focus on:
+- controls
+- boards
+- sensors
 - internal structure
+- basket
+- tub
+- panels
 - brackets
-- retainers
+- supports`;
+      } else {
+        passInstruction = `
+COMPLETE BOM PASS - FALLBACK CHUNK (Hardware & Finishing):
+Focus on:
+- seals
+- gaskets
 - clips
-- supports
+- retainers
 - shields
 - covers
 - internal tubing
-- sub-harnesses
-- wiring
-- detailed assembly-specific pieces
-
-DO NOT repeat parts already found unless the part number is different.`;
-    } else if (passNumber === 3) {
-      passInstruction = `
-THIRD PASS:
-Go deeper and search for the remaining small service parts and overlooked items.
-Focus on:
-- screws
-- nuts
-- bolts
-- washers
-- spacers
-- bushings
-- grommets
-- springs
-- clamps
-- seals
-- bearings
-- pins
-- small mounts
-- harness connectors
-- minor hardware included in exploded diagrams
-
-I need the missing long-tail parts to push toward a complete BOM.`;
-    } else {
-      passInstruction = `
-ADDITIONAL GAP-FILL PASS:
-I already have a partial expanded BOM. Search specifically for remaining omitted parts from diagrams, subassemblies, hardware packs, internal supports, and low-visibility service items.
-Only return NEW part numbers not already found.`;
+- screws, bolts, and small service hardware`;
+      }
     }
 
     setIsAILoading(true);
@@ -215,7 +218,7 @@ Only return NEW part numbers not already found.`;
     try {
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: `Generate an ABSOLUTELY EXHAUSTIVE, MASTER-LEVEL Bill of Materials (BOM) for appliance model: ${query}.
+        contents: `${promptTitle}
 ${currentSerial ? `Serial Number: ${currentSerial}` : ""}
 ${manufactureDate ? `Approximate Manufacture Date: ${manufactureDate}` : ""}
 
@@ -839,20 +842,38 @@ Return a JSON object with two keys:
                   <BrainCircuit size={16} className="text-pro-blue" />
                   <span className="hidden xl:inline">Diagnostics</span>
                 </button>
-                <button
-                  className="pro-button pro-button-blue px-6 flex-1 md:flex-initial"
-                  onClick={() => handleAILookup()}
-                  disabled={isAILoading}
-                >
-                  {isAILoading ? (
-                    <Loader2 className="animate-spin" size={16} />
-                  ) : (
-                    <>
-                      <Zap className={`${aiParts.length > 0 ? 'fill-yellow-300' : 'fill-white'}`} size={16} />
-                      <span>{aiParts.length > 0 ? `Complete BOM Pass ${Math.min(bomPassCount + 1, 4)}` : 'AI Deep Scan'}</span>
-                    </>
-                  )}
-                </button>
+                <div className="flex gap-2 flex-1 md:flex-initial">
+                  <button
+                    className="pro-button pro-button-blue px-6 flex-1 md:flex-initial"
+                    onClick={() => handleAILookup(undefined, undefined, false)}
+                    disabled={isAILoading}
+                    title="Quick BOM Pass (~40 parts)"
+                  >
+                    {isAILoading && !bomPassCount ? (
+                      <Loader2 className="animate-spin" size={16} />
+                    ) : (
+                      <>
+                        <Zap className={`${aiParts.length > 0 ? 'fill-yellow-300' : 'fill-white'}`} size={16} />
+                        <span>{aiParts.length > 0 ? `Quick Pass ${bomPassCount + 1}` : 'Quick BOM'}</span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    className="pro-button pro-button-navy px-6 flex-1 md:flex-initial"
+                    onClick={() => handleAILookup(undefined, undefined, true)}
+                    disabled={isAILoading}
+                    title="Complete BOM Pass (Exhaustive)"
+                  >
+                    {isAILoading && bomPassCount > 0 ? (
+                      <Loader2 className="animate-spin" size={16} />
+                    ) : (
+                      <>
+                        <BrainCircuit className="text-pro-blue" size={16} />
+                        <span>{aiParts.length > 0 ? `Exhaustive Pass ${bomPassCount + 1}` : 'Complete BOM'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
                 <button
                   onClick={() => {
                     setScanType('search');
