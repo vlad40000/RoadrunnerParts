@@ -41,7 +41,7 @@ import {
   MicOff,
   Send,
   Sparkles,
-  Image
+  Image as ImageIcon
 } from 'lucide-react';
 import { partsData, Part } from './partsData';
 
@@ -52,6 +52,50 @@ import { computeCurrentMarketValue, ApplianceCondition, ValuationResult } from '
 
 const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || "MISSING_API_KEY" });
 const decoder = new ApplianceDecoder();
+
+/**
+ * Image processing helpers for the OCR rescue pipeline.
+ */
+const rotateImage = async (base64: string, mimeType: string, degrees: number): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(base64); return; }
+      if (degrees === 90 || degrees === 270) {
+        canvas.width = img.height;
+        canvas.height = img.width;
+      } else {
+        canvas.width = img.width;
+        canvas.height = img.height;
+      }
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((degrees * Math.PI) / 180);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      resolve(canvas.toDataURL(mimeType).split(',')[1]);
+    };
+    img.src = `data:${mimeType};base64,${base64}`;
+  });
+};
+
+const cropImage = async (base64: string, mimeType: string, factor = 0.8): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(base64); return; }
+      const w = img.width * factor;
+      const h = img.height * factor;
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(img, (img.width - w) / 2, (img.height - h) / 2, w, h, 0, 0, w, h);
+      resolve(canvas.toDataURL(mimeType).split(',')[1]);
+    };
+    img.src = `data:${mimeType};base64,${base64}`;
+  });
+};
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -370,71 +414,129 @@ Return a JSON object with two keys:
     if (!file || !scanType) return;
 
     setIsScanning(true);
+    
+    // Helper to rotate or crop image using canvas
+    const transformImage = async (img: HTMLImageElement, rotation: number, crop: boolean): Promise<string> => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      
+      let width = img.width;
+      let height = img.height;
+      
+      if (rotation === 90 || rotation === 270) {
+        canvas.width = height;
+        canvas.height = width;
+      } else {
+        canvas.width = width;
+        canvas.height = height;
+      }
+      
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.drawImage(img, -width / 2, -height / 2);
+      
+      if (crop) {
+        // Simple center crop (70% of size)
+        const cropCanvas = document.createElement('canvas');
+        const cropCtx = cropCanvas.getContext('2d')!;
+        const cropW = canvas.width * 0.7;
+        const cropH = canvas.height * 0.7;
+        cropCanvas.width = cropW;
+        cropCanvas.height = cropH;
+        cropCtx.drawImage(canvas, (canvas.width - cropW) / 2, (canvas.height - cropH) / 2, cropW, cropH, 0, 0, cropW, cropH);
+        return cropCanvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+      }
+      
+      return canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+    };
+
+    const loadImage = (url: string): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = url;
+      });
+    };
+
     try {
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve) => {
-        reader.onload = () => {
-          const base64 = (reader.result as string).split(',')[1];
-          resolve(base64);
-        };
-      });
-      reader.readAsDataURL(file);
-      const base64 = await base64Promise;
+      const originalUrl = URL.createObjectURL(file);
+      const img = await loadImage(originalUrl);
+      
+      // Define retry strategy: [rotation, crop]
+      const attempts = [
+        [0, false],   // Original
+        [90, false],  // Rotate 90
+        [270, false], // Rotate 270
+        [0, true],    // Center crop
+        [90, true],   // Crop + Rotate
+      ];
 
-      const prompt = scanType === 'search'
-        ? "ACT AS A FORENSIC TECH. This is an image of an appliance model tag. Extract the exact OEM Part Number, Model Number (MOD), and Serial Number (SER). BE EXTREMELY PRECISE with alphanumeric characters (e.g., don't confuse '0' and 'O', '1' and 'I'). ALSO look for technical markers: identify 'refrigerant' (e.g. R600a, R134a) and 'features' (e.g. WiFi, SmartThings, Slate finish, Inverter). Return a JSON object with keys: 'partNumber', 'modelNumber', 'serialNumber', 'refrigerant', 'features' (array)."
-        : "ACT AS A FORENSIC TECH. This is an image of an appliance model tag. Extract the exact Model Number (MOD) and Serial Number (SER). BE EXTREMELY PRECISE with alphanumeric characters (e.g., don't confuse '0' and 'O', '1' and 'I'). ALSO look for 'refrigerant' and 'features' (WiFi, Smart Diagnosis, etc). Return a JSON object with keys: 'modelNumber', 'serialNumber', 'refrigerant', 'features' (array).";
+      let lastResult = null;
+      let lastError = null;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: [
-          { inlineData: { mimeType: file.type, data: base64 } },
-          { text: prompt }
-        ],
-        config: {
-          responseMimeType: "application/json",
-          thinkingConfig: {
-            thinkingLevel: ThinkingLevel.HIGH
+      for (const [rotation, crop] of attempts) {
+        try {
+          const base64 = await transformImage(img, rotation as number, crop as boolean);
+          
+          const response = await fetch('/api/ocr', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64, mimeType: 'image/jpeg' })
+          });
+
+          if (!response.ok) throw new Error("API_FAIL");
+
+          const result = await response.json();
+          
+          if (result.modelNumber || result.serialNumber || result.partNumber) {
+            lastResult = result;
+            break; // SUCCESS!
           }
+        } catch (err) {
+          lastError = err;
+          continue;
         }
-      });
-
-      const text = response.text;
-      if (!text) throw new Error("Cloud Vision engine returned an empty response. Check internet connection.");
-
-      const result = JSON.parse(text);
-      const model = (result.modelNumber || result.model || '').toString().trim().toUpperCase();
-      const serial = (result.serialNumber || result.serial || '').toString().trim().toUpperCase();
-      const part = (result.partNumber || result.part || '').toString().trim().toUpperCase();
-      const features = result.features || [];
-      const refrigerant = result.refrigerant || '';
-
-      if (!model && !serial && !part) {
-        throw new Error("Validation Failure: Could not identify Model or Serial number. Ensure the manufacturer tag is well-lit and the text is sharp.");
       }
 
+      if (!lastResult) {
+        throw new Error("Validation Failure: Could not identify Model or Serial number after multiple forensic passes. Ensure the manufacturer tag is well-lit and not blurry.");
+      }
+
+      const result = lastResult;
+        throw new Error("Validation Failure: All extraction attempts failed. Ensure the manufacturer tag is well-lit and the text is sharp.");
+      }
+
+      // STAGE 2: Preserve Raw Values exactly
+      const model = (lastResult.modelNumber || '').toString().trim().toUpperCase();
+      const serial = (lastResult.serialNumber || '').toString().trim().toUpperCase();
+      const brand = lastResult.brand;
+      
       if (serial) {
-        const decoded = decoder.decode(serial, model, features, refrigerant);
-        setManufactureInfo(decoded);
+        // Use the server-returned decode result if available
+        setManufactureInfo(lastResult.decodeResult || decoder.decode(serial, model));
       }
 
       if (scanType === 'search') {
         if (model) {
           setAIParts([]);
           setBomPassCount(0);
+          
+          // STAGE 5: Lookup Cascade (Handled by the server providing candidates)
+          // The frontend still uses the "main" model for display
           setSearchTerm(model);
           setLookupModel(model);
           setLookupSerial(serial);
+          
+          // Trigger BOM lookup
           handleAILookup(model, serial);
-        } else if (part) {
-          setSearchTerm(part);
         }
       } else {
         setCheckModel(model);
         setTimeout(() => handleCheckCompatibility(model), 100);
       }
     } catch (error) {
-      console.error("Forensic OCR failed", error);
+      console.error("Forensic OCR Rescue Pipeline failed", error);
       alert(error instanceof Error ? error.message : "Optical analysis failed. Please enter the data manually.");
     } finally {
       setIsScanning(false);
@@ -915,7 +1017,7 @@ Return a JSON object with two keys:
                           }}
                           className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-pro-slate-600 hover:bg-pro-slate-50 hover:text-pro-blue transition-colors"
                         >
-                          <Image size={14} />
+                          <ImageIcon size={14} />
                           UPLOAD IMAGE
                         </button>
                       </motion.div>
@@ -1357,7 +1459,7 @@ Return a JSON object with two keys:
                                       }}
                                       className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-pro-slate-600 hover:bg-pro-slate-50 hover:text-pro-blue transition-colors"
                                     >
-                                      <Image size={14} />
+                                      <ImageIcon size={14} />
                                       UPLOAD IMAGE
                                     </button>
                                   </motion.div>
