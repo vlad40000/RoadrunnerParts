@@ -295,9 +295,9 @@ Return a JSON object with two keys:
       const parsed = JSON.parse(response.text || '{"parts": []}');
       const rawParts = Array.isArray(parsed.parts) ? parsed.parts : [];
 
-      const processedParts = rawParts.map((p: any, idx: number) => ({
+      const processedParts = rawParts.map((p: any) => ({
         ...p,
-        id: p.id > 1000 ? p.id : 10000 + (p.id || idx),
+        partNumber: (p.partNumber || "").toUpperCase().trim(),
       }));
 
       const mergedParts = [...existingParts];
@@ -308,15 +308,26 @@ Return a JSON object with two keys:
       );
 
       for (const np of processedParts) {
-        const pn = (np.partNumber || "").toUpperCase().trim();
-        if (!pn) continue;
-        if (!seen.has(pn)) {
-          seen.add(pn);
+        if (!np.partNumber) continue;
+        if (!seen.has(np.partNumber)) {
+          seen.add(np.partNumber);
           mergedParts.push(np);
         }
       }
 
-      setAIParts(mergedParts);
+      // Generate stable display IDs based on sorted results
+      const finalParts = mergedParts
+        .sort((a, b) => {
+          const sectionCompare = (a.section || "").localeCompare(b.section || "");
+          if (sectionCompare !== 0) return sectionCompare;
+          return (a.partNumber || "").localeCompare(b.partNumber || "");
+        })
+        .map((part, index) => ({
+          ...part,
+          id: 10001 + index,
+        }));
+
+      setAIParts(finalParts);
       setBomPassCount(passNumber);
 
       if (parsed.modelMSRP) {
