@@ -7,19 +7,19 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Search, 
-  ChevronRight, 
-  X, 
-  Package, 
-  Shield, 
-  ClipboardList, 
-  PenTool as Tool, 
-  CheckCircle2, 
-  XCircle, 
-  Star, 
-  User, 
-  LogOut, 
+import {
+  Search,
+  ChevronRight,
+  X,
+  Package,
+  Shield,
+  ClipboardList,
+  PenTool as Tool,
+  CheckCircle2,
+  XCircle,
+  Star,
+  User,
+  LogOut,
   MessageSquare,
   AlertCircle,
   Camera,
@@ -62,7 +62,7 @@ export interface PartMetadata {
 
 const getPartMetadata = async (partNumber: string): Promise<PartMetadata | null> => null;
 const getPartReviews = async (partNumber: string): Promise<PartReview[]> => [];
-const submitReview = async (review: Omit<PartReview, 'id' | 'createdAt'>) => {};
+const submitReview = async (review: Omit<PartReview, 'id' | 'createdAt'>) => { };
 
 import { GoogleGenAI, ThinkingLevel, Modality } from "@google/genai";
 import { ApplianceDecoder, DecodeResult } from './lib/decoder';
@@ -76,9 +76,9 @@ export default function App() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [bomPassCount, setBomPassCount] = useState(0);
-  
 
-  
+
+
   // Compatibility state
   const [checkModel, setCheckModel] = useState('');
   const [compatibilityResult, setCompatibilityResult] = useState<{
@@ -110,7 +110,7 @@ export default function App() {
 
   // AI Chat & Voice states
   const [isRecording, setIsRecording] = useState(false);
-  const [fieldChatMessages, setFieldChatMessages] = useState<{role: 'user' | 'assistant', text: string}[]>([]);
+  const [fieldChatMessages, setFieldChatMessages] = useState<{ role: 'user' | 'assistant', text: string }[]>([]);
   const [isFieldChatLoading, setIsFieldChatLoading] = useState(false);
   const [recorder, setRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
@@ -126,8 +126,8 @@ export default function App() {
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [videoResult, setVideoResult] = useState<string | null>(null);
 
-  const handleDeepDiagnostic = async () => {
-    const queryToUse = diagQuery;
+  const handleDeepDiagnostic = async (isGlobal = false) => {
+    const queryToUse = isGlobal ? diagQuery : diagQuery; // They use the same state for simplicity
     if (!queryToUse) return;
     setIsDiagLoading(true);
     setDiagResult(null);
@@ -381,7 +381,7 @@ Return a JSON object with two keys:
       reader.readAsDataURL(file);
       const base64 = await base64Promise;
 
-      const prompt = scanType === 'search' 
+      const prompt = scanType === 'search'
         ? "ACT AS A FORENSIC TECH. This is an image of an appliance model tag. Extract the exact OEM Part Number, Model Number (MOD), and Serial Number (SER). BE EXTREMELY PRECISE with alphanumeric characters (e.g., don't confuse '0' and 'O', '1' and 'I'). ALSO look for technical markers: identify 'refrigerant' (e.g. R600a, R134a) and 'features' (e.g. WiFi, SmartThings, Slate finish, Inverter). Return a JSON object with keys: 'partNumber', 'modelNumber', 'serialNumber', 'refrigerant', 'features' (array)."
         : "ACT AS A FORENSIC TECH. This is an image of an appliance model tag. Extract the exact Model Number (MOD) and Serial Number (SER). BE EXTREMELY PRECISE with alphanumeric characters (e.g., don't confuse '0' and 'O', '1' and 'I'). ALSO look for 'refrigerant' and 'features' (WiFi, Smart Diagnosis, etc). Return a JSON object with keys: 'modelNumber', 'serialNumber', 'refrigerant', 'features' (array).";
 
@@ -471,7 +471,7 @@ Return a JSON object with two keys:
       setTimeout(() => {
         const decoded = decoder.decode(lookupSerial, lookupModel || '');
         setManufactureInfo(decoded);
-        
+
         if (modelMSRP) {
           const val = computeCurrentMarketValue(
             modelMSRP,
@@ -514,7 +514,8 @@ Return a JSON object with two keys:
         model: "gemini-3.1-pro-preview",
         contents: [
           { inlineData: { mimeType: file.type, data: base64 } },
-          { text: `Analyze this video of an appliance in failure state. The model is ${lookupModel || 'Whirlpool Washer'}. 
+          {
+            text: `Analyze this video of an appliance in failure state. The model is ${lookupModel || 'Whirlpool Washer'}. 
             What sounds, oscillations, or visual errors do you detect? 
             Suggest specific mechanical or electrical root causes based on the video evidence.` }
         ],
@@ -564,7 +565,7 @@ Return a JSON object with two keys:
   const filteredParts = useMemo(() => {
     const dataSource = aiParts.length > 0 ? aiParts : partsData;
     const filtered = dataSource.filter(part => {
-      const matchesSearch = 
+      const matchesSearch =
         part.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         part.partNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         part.compatibleModels.some(m => m.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -592,16 +593,16 @@ Return a JSON object with two keys:
   const handleCheckCompatibility = (modelOverride?: string) => {
     const modelToUse = modelOverride || checkModel;
     if (!selectedPart || !modelToUse) return;
-    
+
     const normalizedModel = modelToUse.trim().toUpperCase();
-    const isCompatible = selectedPart.compatibleModels.some(m => 
+    const isCompatible = selectedPart.compatibleModels.some(m =>
       m === normalizedModel || m === 'Universal'
     );
 
     let suggestions: Part[] = [];
     if (!isCompatible) {
-      suggestions = partsData.filter(p => 
-        p.section === selectedPart.section && 
+      suggestions = partsData.filter(p =>
+        p.section === selectedPart.section &&
         p.partNumber !== selectedPart.partNumber &&
         p.compatibleModels.includes(normalizedModel)
       ).slice(0, 3);
@@ -659,7 +660,7 @@ Return a JSON object with two keys:
 
   const processAudioNote = async (base64Data: string) => {
     try {
-       const response = await ai.models.generateContent({
+      const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: [
           { inlineData: { mimeType: "audio/webm", data: base64Data } },
@@ -669,9 +670,9 @@ Return a JSON object with two keys:
       const transcript = response.text || "";
       if (transcript) {
         setNewComment(prev => prev ? `${prev}\n${transcript}` : transcript);
-        setFieldChatMessages(prev => [...prev, 
-          { role: 'user', text: "[Voice Log Recorded]" },
-          { role: 'assistant', text: `Captured Note: "${transcript}". I've added this to your technical log.` }
+        setFieldChatMessages(prev => [...prev,
+        { role: 'user', text: "[Voice Log Recorded]" },
+        { role: 'assistant', text: `Captured Note: "${transcript}". I've added this to your technical log.` }
         ]);
       }
     } catch (error) {
@@ -681,11 +682,11 @@ Return a JSON object with two keys:
 
   const handleFieldAIChat = async (message: string) => {
     if (!message.trim()) return;
-    
+
     const userMsg = { role: 'user' as const, text: message };
     setFieldChatMessages(prev => [...prev, userMsg]);
     setIsFieldChatLoading(true);
-    
+
     try {
       const chat = ai.chats.create({
         model: "gemini-3-flash-preview",
@@ -741,11 +742,10 @@ Return a JSON object with two keys:
             <nav className="flex flex-col gap-1">
               <button
                 onClick={() => setSelectedSection(null)}
-                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all rounded-lg ${
-                  selectedSection === null 
-                    ? 'bg-pro-navy text-white shadow-pro' 
-                    : 'text-pro-slate-600 hover:bg-pro-slate-100 hover:text-pro-slate-900'
-                }`}
+                className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all rounded-lg ${selectedSection === null
+                  ? 'bg-pro-navy text-white shadow-pro'
+                  : 'text-pro-slate-600 hover:bg-pro-slate-100 hover:text-pro-slate-900'
+                  }`}
               >
                 All Components
               </button>
@@ -753,11 +753,10 @@ Return a JSON object with two keys:
                 <button
                   key={section}
                   onClick={() => setSelectedSection(section)}
-                  className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all rounded-lg ${
-                    selectedSection === section 
-                      ? 'bg-pro-navy text-white shadow-pro' 
-                      : 'text-pro-slate-600 hover:bg-pro-slate-100 hover:text-pro-slate-900'
-                  }`}
+                  className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-all rounded-lg ${selectedSection === section
+                    ? 'bg-pro-navy text-white shadow-pro'
+                    : 'text-pro-slate-600 hover:bg-pro-slate-100 hover:text-pro-slate-900'
+                    }`}
                 >
                   {section}
                 </button>
@@ -787,11 +786,11 @@ Return a JSON object with two keys:
                   <span className="text-[9px] font-bold text-pro-blue">MSRP: ${modelMSRP}</span>
                 )}
               </div>
-              
+
               <div className="pro-card p-3 rounded-xl flex flex-col gap-0.5 relative group">
                 <div className="flex justify-between items-start">
                   <span className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest leading-none">Manufactured</span>
-                  <button 
+                  <button
                     onClick={handleManufactureRefresh}
                     className="p-1 hover:bg-pro-slate-100 rounded text-pro-slate-400 hover:text-pro-blue transition-colors"
                   >
@@ -802,10 +801,9 @@ Return a JSON object with two keys:
                   {manufactureInfo ? `${manufactureInfo.manufactureYear} • ${manufactureInfo.timeValue?.unit === 'month' ? 'M' : 'W'}${manufactureInfo.timeValue?.value}` : 'UNDETECTED'}
                 </span>
                 {manufactureInfo && (
-                  <span className={`text-[8px] font-black uppercase text-white px-1 rounded-sm w-fit ${
-                    manufactureInfo.confidence === 'high' ? 'bg-emerald-500' : 
+                  <span className={`text-[8px] font-black uppercase text-white px-1 rounded-sm w-fit ${manufactureInfo.confidence === 'high' ? 'bg-emerald-500' :
                     manufactureInfo.confidence === 'medium' ? 'bg-pro-blue' : 'bg-amber-500'
-                  }`}>{manufactureInfo.confidence} Confidence</span>
+                    }`}>{manufactureInfo.confidence} Confidence</span>
                 )}
               </div>
 
@@ -814,7 +812,7 @@ Return a JSON object with two keys:
                 <span className="text-base font-black text-emerald-600 leading-none">
                   {valuation ? `$${valuation.currentMarketValue.toFixed(2)}` : '--'}
                 </span>
-                <select 
+                <select
                   className="text-[9px] font-bold text-pro-slate-500 bg-transparent focus:outline-none cursor-pointer uppercase tracking-tighter"
                   value={applianceCondition}
                   onChange={(e) => setApplianceCondition(e.target.value as ApplianceCondition)}
@@ -828,7 +826,7 @@ Return a JSON object with two keys:
 
               <div className="pro-card p-3 rounded-xl flex flex-col gap-0.5">
                 <span className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest leading-none">Active Serial</span>
-                <input 
+                <input
                   type="text"
                   placeholder="ENTER SERIAL #"
                   value={lookupSerial || ''}
@@ -858,9 +856,9 @@ Return a JSON object with two keys:
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              
+
               <div className="flex gap-2">
-                <button 
+                <button
                   className="pro-button pro-button-secondary"
                   onClick={() => setIsMainDiagOpen(true)}
                   title="Run deep AI diagnostic"
@@ -868,7 +866,7 @@ Return a JSON object with two keys:
                   <BrainCircuit size={16} className="text-pro-blue" />
                   <span className="hidden xl:inline">Diagnostics</span>
                 </button>
-                <button 
+                <button
                   className="pro-button pro-button-blue px-6 flex-1 md:flex-initial"
                   onClick={() => handleAILookup()}
                   disabled={isAILoading}
@@ -882,7 +880,7 @@ Return a JSON object with two keys:
                     </>
                   )}
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     setScanType('search');
                     document.getElementById('ocr-input')?.click();
@@ -896,7 +894,7 @@ Return a JSON object with two keys:
               </div>
             </div>
             <p className="text-[9px] text-pro-slate-400 mt-1.5 flex items-center gap-1 px-1">
-              <span className="font-bold text-pro-blue uppercase tracking-widest">Scanner Tip:</span> 
+              <span className="font-bold text-pro-blue uppercase tracking-widest">Scanner Tip:</span>
               Align the MOD/SER plate in landscape, ensure bright lighting, and avoid glare for forensic accuracy.
             </p>
           </div>
@@ -904,13 +902,13 @@ Return a JSON object with two keys:
           {/* View Mode and Sorting Controls */}
           <div className="flex items-center justify-between border-y border-pro-slate-200/60 py-2">
             <div className="flex items-center gap-1 bg-pro-slate-100 p-1 rounded-lg">
-              <button 
+              <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white text-pro-navy shadow-sm' : 'text-pro-slate-400 hover:text-pro-slate-600'}`}
               >
                 <LayoutGrid size={16} />
               </button>
-              <button 
+              <button
                 onClick={() => setViewMode('table')}
                 className={`p-1.5 rounded-md transition-all ${viewMode === 'table' ? 'bg-white text-pro-navy shadow-sm' : 'text-pro-slate-400 hover:text-pro-slate-600'}`}
               >
@@ -921,8 +919,8 @@ Return a JSON object with two keys:
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">Sort By</span>
-                <select 
-                  value={sortBy} 
+                <select
+                  value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="text-xs font-semibold text-pro-slate-700 bg-transparent focus:outline-none appearance-none cursor-pointer hover:text-pro-blue transition-colors px-2 py-1"
                 >
@@ -936,7 +934,7 @@ Return a JSON object with two keys:
               <div className="h-4 w-px bg-pro-slate-200"></div>
 
               <div className="flex items-center gap-2">
-                <button 
+                <button
                   onClick={() => window.print()}
                   className="p-1.5 text-pro-slate-400 hover:text-pro-slate-900 transition-colors"
                   title="Print BOM"
@@ -945,7 +943,7 @@ Return a JSON object with two keys:
                 </button>
                 {stats.isAI && (
                   <>
-                    <button 
+                    <button
                       onClick={() => {
                         const blob = new Blob([JSON.stringify(aiParts, null, 2)], { type: 'application/json' });
                         const url = URL.createObjectURL(blob);
@@ -959,7 +957,7 @@ Return a JSON object with two keys:
                     >
                       <FileJson size={16} />
                     </button>
-                    <button 
+                    <button
                       onClick={handleExportCSV}
                       className="p-1.5 text-pro-slate-400 hover:text-pro-slate-900 transition-colors"
                       title="Export CSV"
@@ -982,15 +980,15 @@ Return a JSON object with two keys:
                 We couldn't find any components matching <span className="font-semibold text-pro-slate-900">"{searchTerm}"</span> in our local database. You can try an AI-powered deep scan.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <button 
+                <button
                   onClick={() => handleAILookup(searchTerm)}
                   disabled={isAILoading}
                   className="pro-button pro-button-primary px-8"
                 >
-                  {isAILoading ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />} 
+                  {isAILoading ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />}
                   Deep Intelligence Lookup
                 </button>
-                <button 
+                <button
                   onClick={() => setSearchTerm('')}
                   className="pro-button pro-button-secondary px-8"
                 >
@@ -1024,7 +1022,7 @@ Return a JSON object with two keys:
                     </h3>
                     <p className="text-[10px] font-mono text-pro-slate-400 uppercase tracking-tighter">PN: {part.partNumber}</p>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-6 pt-4 border-t border-pro-slate-50">
                     <div>
                       {part.price && (
@@ -1045,11 +1043,11 @@ Return a JSON object with two keys:
             <div className="pro-card rounded-xl overflow-hidden border-pro-slate-200">
               <div className="bg-pro-navy px-4 py-2 border-b border-pro-navy flex items-center justify-between text-[10px] text-white/70 font-bold tracking-[0.15em] uppercase">
                 <div className="flex items-center gap-2">
-                  <BrainCircuit size={12} className="text-pro-blue animate-pulse" /> 
+                  <BrainCircuit size={12} className="text-pro-blue animate-pulse" />
                   Advanced Technical Dataset
                 </div>
                 <div className="flex items-center gap-2 text-[9px] opacity-60">
-                   RT Engine 3.1 • Neural High-Thinking
+                  RT Engine 3.1 • Neural High-Thinking
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -1065,8 +1063,8 @@ Return a JSON object with two keys:
                   </thead>
                   <tbody className="divide-y divide-pro-slate-100">
                     {filteredParts.map((part) => (
-                      <tr 
-                        key={part.id} 
+                      <tr
+                        key={part.id}
                         onClick={() => setSelectedPart(part)}
                         className="hover:bg-pro-slate-50 cursor-pointer transition-colors group"
                       >
@@ -1136,26 +1134,26 @@ Return a JSON object with two keys:
                   <X />
                 </button>
               </div>
-              
+
               <div className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Text Diagnostic Input */}
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">Symptom Description</label>
                     <div className="relative">
-                      <textarea 
+                      <textarea
                         placeholder="ENTER SYMPTOMS (E.G. NO DRAIN, GRINDING NOISE)..."
                         className="pro-input w-full p-4 min-h-[160px] resize-none"
                         value={diagQuery}
                         onChange={(e) => setDiagQuery(e.target.value)}
                       />
                       <div className="absolute bottom-3 right-3">
-                        <button 
+                        <button
                           onClick={() => handleDeepDiagnostic(true)}
                           disabled={isDiagLoading || !diagQuery}
                           className="pro-button pro-button-primary py-1.5"
                         >
-                          {isDiagLoading ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} />} 
+                          {isDiagLoading ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} />}
                           <span>Analyze</span>
                         </button>
                       </div>
@@ -1164,15 +1162,15 @@ Return a JSON object with two keys:
 
                   {/* Video Diagnostic Input */}
                   <div className="space-y-3">
-                     <label className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">Acoustic / Video Analysis</label>
+                    <label className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">Acoustic / Video Analysis</label>
                     <div className="pro-card border-dashed p-6 flex flex-col items-center justify-center text-center hover:bg-pro-slate-50 transition-all cursor-pointer relative h-[160px] rounded-lg">
-                      <input 
-                        type="file" 
-                        accept="video/*" 
+                      <input
+                        type="file"
+                        accept="video/*"
                         className="absolute inset-0 opacity-0 cursor-pointer z-10"
                         onChange={handleVideoDiagnostic}
                       />
-                      
+
                       {isVideoLoading ? (
                         <div className="space-y-2">
                           <Loader2 className="animate-spin text-pro-blue mx-auto" size={24} />
@@ -1195,7 +1193,7 @@ Return a JSON object with two keys:
 
                 {/* Analysis Result Display */}
                 {(diagResult || videoResult) && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="pro-card bg-pro-navy p-6 rounded-xl relative overflow-hidden"
@@ -1268,13 +1266,13 @@ Return a JSON object with two keys:
 
               {/* Advanced Diagnostics Tab */}
               <div className="bg-pro-slate-50 px-6 flex border-b border-pro-slate-100">
-                <button 
+                <button
                   onClick={() => setShowDiagPanel(false)}
                   className={`py-4 px-6 text-xs font-bold uppercase tracking-widest transition-all border-b-2 ${!showDiagPanel ? 'border-pro-blue text-pro-navy' : 'border-transparent text-pro-slate-400 hover:text-pro-slate-600'}`}
                 >
                   Technical Specifications
                 </button>
-                <button 
+                <button
                   onClick={() => setShowDiagPanel(true)}
                   className={`py-4 px-6 text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 border-b-2 ${showDiagPanel ? 'border-pro-blue text-pro-navy' : 'border-transparent text-pro-slate-400 hover:text-pro-slate-600'}`}
                 >
@@ -1294,7 +1292,7 @@ Return a JSON object with two keys:
                         <div className="space-y-4">
                           <div className="flex gap-2">
                             <div className="relative flex-1">
-                              <input 
+                              <input
                                 type="text"
                                 placeholder="ENTER MODEL NUMBER TO VERIFY"
                                 className="pro-input py-2 text-xs font-bold"
@@ -1305,13 +1303,13 @@ Return a JSON object with two keys:
                                 }}
                               />
                             </div>
-                            <button 
+                            <button
                               onClick={() => handleCheckCompatibility()}
                               className="pro-button pro-button-primary shrink-0"
                             >
                               Verify
                             </button>
-                            <button 
+                            <button
                               onClick={() => {
                                 setScanType('compatibility');
                                 document.getElementById('ocr-input')?.click();
@@ -1326,15 +1324,14 @@ Return a JSON object with two keys:
 
                           <AnimatePresence mode="wait">
                             {compatibilityResult && (
-                              <motion.div 
+                              <motion.div
                                 initial={{ opacity: 0, y: 5 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 5 }}
-                                className={`pro-card p-4 border-dashed rounded-lg ${
-                                  compatibilityResult.isCompatible 
-                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
-                                    : 'bg-red-50 border-red-200 text-red-900'
-                                }`}
+                                className={`pro-card p-4 border-dashed rounded-lg ${compatibilityResult.isCompatible
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                                  : 'bg-red-50 border-red-200 text-red-900'
+                                  }`}
                               >
                                 <div className="flex items-center gap-2 mb-3">
                                   {compatibilityResult.isCompatible ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
@@ -1342,13 +1339,13 @@ Return a JSON object with two keys:
                                     {compatibilityResult.isCompatible ? 'Validated Compatible' : 'Incompatible Variant'}
                                   </span>
                                 </div>
-                                
+
                                 {!compatibilityResult.isCompatible && compatibilityResult.suggestions.length > 0 && (
                                   <div className="mt-4 pt-4 border-t border-red-100">
                                     <p className="text-[10px] font-bold uppercase mb-3 text-red-700">Recommended Alternatives:</p>
                                     <div className="space-y-2">
                                       {compatibilityResult.suggestions.map(s => (
-                                        <button 
+                                        <button
                                           key={s.id}
                                           onClick={() => setSelectedPart(s)}
                                           className="w-full pro-card p-3 bg-white hover:border-pro-blue flex justify-between items-center rounded-lg shadow-sm"
@@ -1409,11 +1406,10 @@ Return a JSON object with two keys:
                           )}
                           {fieldChatMessages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`max-w-[90%] p-3 rounded-2xl text-[11px] leading-relaxed shadow-sm ${
-                                msg.role === 'user' 
-                                  ? 'bg-pro-blue text-white rounded-tr-none' 
-                                  : 'bg-white text-pro-navy rounded-tl-none border border-pro-slate-100'
-                              }`}>
+                              <div className={`max-w-[90%] p-3 rounded-2xl text-[11px] leading-relaxed shadow-sm ${msg.role === 'user'
+                                ? 'bg-pro-blue text-white rounded-tr-none'
+                                : 'bg-white text-pro-navy rounded-tl-none border border-pro-slate-100'
+                                }`}>
                                 <div className="flex items-center gap-1.5 mb-1 opacity-60 font-black uppercase text-[8px]">
                                   {msg.role === 'user' ? <User size={8} /> : <Sparkles size={8} />}
                                   {msg.role === 'user' ? 'Technician' : 'Logic Assistant'}
@@ -1484,19 +1480,19 @@ Return a JSON object with two keys:
                     <div className="space-y-4">
                       <label className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">Analyze Symptoms</label>
                       <div className="relative">
-                        <textarea 
+                        <textarea
                           placeholder=" DESCRIBE SPECIFIC FAILURE MODES (E.G. ERROR F3, BURNING SMELL DURING CYCLE)..."
                           className="pro-input w-full p-6 text-sm min-h-[160px] bg-pro-slate-50 border-none focus:bg-white"
                           value={diagQuery}
                           onChange={(e) => setDiagQuery(e.target.value)}
                         />
                         <div className="absolute bottom-4 right-4">
-                          <button 
+                          <button
                             onClick={() => handleDeepDiagnostic()}
                             disabled={isDiagLoading || !diagQuery}
                             className="pro-button pro-button-primary px-6 shadow-pro-md"
                           >
-                            {isDiagLoading ? <Loader2 className="animate-spin" size={16} /> : <Zap size={16} />} 
+                            {isDiagLoading ? <Loader2 className="animate-spin" size={16} /> : <Zap size={16} />}
                             <span>Generate Logic</span>
                           </button>
                         </div>
@@ -1504,12 +1500,12 @@ Return a JSON object with two keys:
                     </div>
 
                     {diagResult && (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="pro-card bg-pro-navy p-6 rounded-2xl relative overflow-hidden"
                       >
-                         <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                        <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
                           <span className="text-[10px] font-bold text-pro-blue uppercase tracking-widest">Trace Diagnostics Report</span>
                         </div>
                         <div className="whitespace-pre-wrap text-white/90 font-medium text-xs leading-relaxed max-h-[400px] overflow-y-auto pr-4 custom-scrollbar">
@@ -1536,7 +1532,7 @@ Return a JSON object with two keys:
             <p className="text-[10px] font-bold text-pro-slate-400 uppercase">Master Catalog System • Production Build v2.5.0</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-8">
           <div className="text-right hidden sm:block">
             <p className="text-[10px] font-bold uppercase text-pro-slate-400">Environment</p>
@@ -1550,7 +1546,7 @@ Return a JSON object with two keys:
       </footer>
 
       {/* Hidden OCR Input */}
-      <input 
+      <input
         id="ocr-input"
         type="file"
         accept="image/*"
@@ -1561,3 +1557,4 @@ Return a JSON object with two keys:
     </div>
   );
 }
+
