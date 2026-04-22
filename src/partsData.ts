@@ -11,14 +11,7 @@ export interface Part {
   priceSource?: string;
 }
 
-export const sections = [
-  "Cover Sheet & Documentation",
-  "Top and Cabinet Parts",
-  "Console and Water Inlet Parts",
-  "Basket and Tub Parts",
-  "Gearcase, Motor, and Pump Parts",
-  "Optional / Installation Parts",
-];
+
 
 // Helper to generate some standard compatible models for VMW (Vertical Modular Washer) parts
 const standardVMW = ["WTW5000DW0", "WTW5000DW1", "WTW5000DW2", "WTW4915EW", "WTW4816FW", "MVWX655DW"];

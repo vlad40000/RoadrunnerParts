@@ -42,7 +42,7 @@ import {
   Send,
   Sparkles
 } from 'lucide-react';
-import { partsData, sections, Part } from './partsData';
+import { partsData, Part } from './partsData';
 
 
 import { GoogleGenAI, ThinkingLevel, Modality } from "@google/genai";
@@ -57,6 +57,12 @@ export default function App() {
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [bomPassCount, setBomPassCount] = useState(0);
+
+  const dynamicSections = useMemo(() => {
+    const source = aiParts.length > 0 ? aiParts : partsData;
+    const unique = Array.from(new Set(source.map(p => p.section).filter(Boolean)));
+    return unique.sort().slice(0, 6);
+  }, [aiParts]);
 
 
 
@@ -549,7 +555,7 @@ Return a JSON object with two keys:
     return {
       total: dataSource.length,
       filtered: filteredParts.length,
-      sections: sections.length,
+      sections: dynamicSections.length,
       isAI: aiParts.length > 0
     };
   }, [filteredParts, aiParts]);
@@ -713,7 +719,7 @@ Return a JSON object with two keys:
               >
                 All Components
               </button>
-              {sections.map((section) => (
+              {dynamicSections.map((section) => (
                 <button
                   key={section}
                   onClick={() => setSelectedSection(section)}
