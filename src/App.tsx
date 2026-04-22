@@ -452,7 +452,7 @@ Return a JSON object with two keys:
 
     const loadImage = (url: string): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => resolve(img);
         img.onerror = reject;
         img.src = url;
@@ -473,7 +473,6 @@ Return a JSON object with two keys:
       ];
 
       let lastResult = null;
-      let lastError = null;
 
       for (const [rotation, crop] of attempts) {
         try {
@@ -482,7 +481,7 @@ Return a JSON object with two keys:
           const response = await fetch('/api/ocr', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: base64, mimeType: 'image/jpeg' })
+            body: JSON.stringify({ image: base64, mimeType: file.type })
           });
 
           if (!response.ok) throw new Error("API_FAIL");
@@ -500,17 +499,12 @@ Return a JSON object with two keys:
       }
 
       if (!lastResult) {
-        throw new Error("Validation Failure: Could not identify Model or Serial number after multiple forensic passes. Ensure the manufacturer tag is well-lit and not blurry.");
-      }
-
-      const result = lastResult;
         throw new Error("Validation Failure: All extraction attempts failed. Ensure the manufacturer tag is well-lit and the text is sharp.");
       }
 
       // STAGE 2: Preserve Raw Values exactly
       const model = (lastResult.modelNumber || '').toString().trim().toUpperCase();
       const serial = (lastResult.serialNumber || '').toString().trim().toUpperCase();
-      const brand = lastResult.brand;
       
       if (serial) {
         // Use the server-returned decode result if available
@@ -522,8 +516,7 @@ Return a JSON object with two keys:
           setAIParts([]);
           setBomPassCount(0);
           
-          // STAGE 5: Lookup Cascade (Handled by the server providing candidates)
-          // The frontend still uses the "main" model for display
+          // STAGE 5: Lookup Cascade
           setSearchTerm(model);
           setLookupModel(model);
           setLookupSerial(serial);
