@@ -7,7 +7,7 @@
     "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
-    "clean": "rm -rf .next dist",
+    "clean": "rm -rf .next",
     "typecheck": "tsc --noEmit",
     "lint": "npm run typecheck"
   },
@@ -15,7 +15,6 @@
     "@neondatabase/serverless": "^1.0.2",
     "@google/genai": "^1.29.0",
     "@google/generative-ai": "^0.24.1",
-    "@tailwindcss/vite": "^4.1.14",
     "@vercel/blob": "^2.3.3",
     "cheerio": "^1.2.0",
     "dotenv": "^17.2.3",
