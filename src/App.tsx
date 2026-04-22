@@ -633,7 +633,7 @@ Return a JSON object with two keys:
       });
       const transcript = response.text || "";
       if (transcript) {
-        setNewComment(prev => prev ? `${prev}\n${transcript}` : transcript);
+
         setFieldChatMessages(prev => [...prev,
         { role: 'user', text: "[Voice Log Recorded]" },
         { role: 'assistant', text: `Captured Note: "${transcript}". I've added this to your technical log.` }
