@@ -58,11 +58,7 @@ export default function App() {
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [bomPassCount, setBomPassCount] = useState(0);
 
-  const dynamicSections = useMemo(() => {
-    const source = aiParts.length > 0 ? aiParts : partsData;
-    const unique = Array.from(new Set(source.map(p => p.section).filter(Boolean)));
-    return unique.sort().slice(0, 6);
-  }, [aiParts]);
+
 
 
 
@@ -88,6 +84,12 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [sortBy, setSortBy] = useState<'id' | 'rating' | 'popularity'>('id');
+
+  const dynamicSections = useMemo(() => {
+    const source = aiParts.length > 0 ? aiParts : partsData;
+    const unique = Array.from(new Set(source.map(p => p.section).filter(Boolean)));
+    return unique.sort().slice(0, 6);
+  }, [aiParts]);
 
   // AI Chat & Voice states
   const [isRecording, setIsRecording] = useState(false);
