@@ -40,7 +40,8 @@ import {
   Mic,
   MicOff,
   Send,
-  Sparkles
+  Sparkles,
+  Image
 } from 'lucide-react';
 import { partsData, Part } from './partsData';
 
@@ -108,6 +109,12 @@ export default function App() {
   // Video state
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [videoResult, setVideoResult] = useState<string | null>(null);
+
+  // Image Source Chooser state
+  const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false);
+  const [isCompatSourceMenuOpen, setIsCompatSourceMenuOpen] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const handleDeepDiagnostic = async (isGlobal = false) => {
     const queryToUse = isGlobal ? diagQuery : diagQuery; // They use the same state for simplicity
@@ -872,17 +879,50 @@ Return a JSON object with two keys:
                     )}
                   </button>
                 </div>
-                <button
-                  onClick={() => {
-                    setScanType('search');
-                    document.getElementById('ocr-input')?.click();
-                  }}
-                  className={`pro-button px-3 ${isScanning ? 'pro-button-primary animate-pulse' : 'pro-button-secondary'}`}
-                  title="Scan model tag via camera"
-                  disabled={isScanning}
-                >
-                  {isScanning ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsSourceMenuOpen(!isSourceMenuOpen)}
+                    className={`pro-button px-3 ${isScanning ? 'pro-button-primary animate-pulse' : 'pro-button-secondary'}`}
+                    title="Scan model tag"
+                    disabled={isScanning}
+                  >
+                    {isScanning ? <Loader2 className="animate-spin" size={20} /> : <Camera size={20} />}
+                  </button>
+
+                  <AnimatePresence>
+                    {isSourceMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 bottom-full mb-2 w-48 bg-white border border-pro-slate-200 rounded-xl shadow-pro-lg z-50 overflow-hidden"
+                      >
+                        <button
+                          onClick={() => {
+                            setScanType('search');
+                            cameraInputRef.current?.click();
+                            setIsSourceMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-pro-slate-600 hover:bg-pro-slate-50 hover:text-pro-blue transition-colors border-b border-pro-slate-100"
+                        >
+                          <Camera size={14} />
+                          TAKE PHOTO
+                        </button>
+                        <button
+                          onClick={() => {
+                            setScanType('search');
+                            uploadInputRef.current?.click();
+                            setIsSourceMenuOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-pro-slate-600 hover:bg-pro-slate-50 hover:text-pro-blue transition-colors"
+                        >
+                          <Image size={14} />
+                          UPLOAD IMAGE
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
@@ -1281,17 +1321,50 @@ Return a JSON object with two keys:
                             >
                               Verify
                             </button>
-                            <button
-                              onClick={() => {
-                                setScanType('compatibility');
-                                document.getElementById('ocr-input')?.click();
-                              }}
-                              className={`pro-button px-3 shrink-0 ${isScanning && scanType === 'compatibility' ? 'pro-button-primary animate-pulse' : 'pro-button-secondary'}`}
-                              title="Scan tag to pre-fill model"
-                              disabled={isScanning}
-                            >
-                              {isScanning && scanType === 'compatibility' ? <Loader2 className="animate-spin" size={16} /> : <Camera size={16} />}
-                            </button>
+                            <div className="relative">
+                              <button
+                                onClick={() => setIsCompatSourceMenuOpen(!isCompatSourceMenuOpen)}
+                                className={`pro-button px-3 shrink-0 ${isScanning && scanType === 'compatibility' ? 'pro-button-primary animate-pulse' : 'pro-button-secondary'}`}
+                                title="Scan tag to pre-fill model"
+                                disabled={isScanning}
+                              >
+                                {isScanning && scanType === 'compatibility' ? <Loader2 className="animate-spin" size={16} /> : <Camera size={16} />}
+                              </button>
+
+                              <AnimatePresence>
+                                {isCompatSourceMenuOpen && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute right-0 bottom-full mb-2 w-48 bg-white border border-pro-slate-200 rounded-xl shadow-pro-lg z-50 overflow-hidden"
+                                  >
+                                    <button
+                                      onClick={() => {
+                                        setScanType('compatibility');
+                                        cameraInputRef.current?.click();
+                                        setIsCompatSourceMenuOpen(false);
+                                      }}
+                                      className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-pro-slate-600 hover:bg-pro-slate-50 hover:text-pro-blue transition-colors border-b border-pro-slate-100"
+                                    >
+                                      <Camera size={14} />
+                                      TAKE PHOTO
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setScanType('compatibility');
+                                        uploadInputRef.current?.click();
+                                        setIsCompatSourceMenuOpen(false);
+                                      }}
+                                      className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-pro-slate-600 hover:bg-pro-slate-50 hover:text-pro-blue transition-colors"
+                                    >
+                                      <Image size={14} />
+                                      UPLOAD IMAGE
+                                    </button>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
                           </div>
 
                           <AnimatePresence mode="wait">
@@ -1481,12 +1554,19 @@ Return a JSON object with two keys:
         </div>
       </footer>
 
-      {/* Hidden OCR Input */}
+      {/* Hidden OCR Inputs */}
       <input
-        id="ocr-input"
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+      <input
+        ref={uploadInputRef}
+        type="file"
+        accept="image/*"
         className="hidden"
         onChange={handleFileUpload}
       />
