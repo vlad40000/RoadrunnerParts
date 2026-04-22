@@ -1,0 +1,18 @@
+scoring_dimensions:
+  completeness:
+    0: "Major elements of the user prompt are missing."
+    1: "Core request answered, minor details missing."
+    2: "All parts of the request are fully addressed."
+  accuracy:
+    0: "Obvious factual errors or broken logic."
+    1: "Generally correct, but lacks source verification or depth."
+    2: "Highly accurate and logically sound."
+  constraint_compliance:
+    0: "Violated negative constraints (e.g., used forbidden formatting, ignored limits)."
+    1: "Followed most constraints, minor formatting deviations."
+    2: "Perfect adherence to all system and user constraints."
+
+decision_thresholds:
+  approve: "Total score >= 5 AND no dimension is scored 0."
+  revise: "Total score < 5 OR any dimension scored 0. Generate specific delta list for specialists."
+  escalate_human: "Task exceeds max_retries_per_task OR flagged for policy violation."

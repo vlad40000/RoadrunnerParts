@@ -1,0 +1,15 @@
+global_policy:
+  max_retries_per_task: 2
+  timeout_seconds: 60
+  retry_strategy: exponential_backoff
+
+routing_logic:
+  designer:
+    trigger_keywords: ["image", "mockup", "banner", "picture", "visual", "design"]
+    action: dispatch_designer
+  analyzer:
+    trigger_keywords: ["verify", "fact", "source", "data", "parse", "report", "check"]
+    action: dispatch_analyzer
+  parallel_execution:
+    condition: "Request contains keywords from multiple domains."
+    action: "Dispatch appropriate agents simultaneously. Await all completions before reviewer handoff."
