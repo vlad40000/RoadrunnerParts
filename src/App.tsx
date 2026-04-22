@@ -1492,7 +1492,7 @@ Return a JSON object with two keys:
                         />
                         <div className="absolute bottom-4 right-4">
                           <button 
-                            onClick={handleDeepDiagnostic}
+                            onClick={() => handleDeepDiagnostic()}
                             disabled={isDiagLoading || !diagQuery}
                             className="pro-button pro-button-primary px-6 shadow-pro-md"
                           >
