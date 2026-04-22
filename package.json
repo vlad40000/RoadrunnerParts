@@ -12,9 +12,10 @@
     "lint": "npm run typecheck"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.2",
     "@google/genai": "^1.29.0",
     "@google/generative-ai": "^0.24.1",
+    "@neondatabase/serverless": "^1.0.2",
+    "@tailwindcss/postcss": "^4.2.4",
     "@vercel/blob": "^2.3.3",
     "cheerio": "^1.2.0",
     "dotenv": "^17.2.3",
@@ -24,15 +25,16 @@
     "motion": "^12.23.24",
     "next": "^16.0.0",
     "pdf-parse": "^1.1.1",
+    "postcss": "^8.5.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "autoprefixer": "^10.4.21",
     "drizzle-kit": "^0.31.7",
     "eslint": "^9.38.0",
