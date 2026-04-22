@@ -259,8 +259,8 @@ export async function generateImageAsset({
     const response = await result.response;
 
     const parts = response.candidates?.[0]?.content?.parts ?? [];
-    const imagePart = parts.find((part) => part.inlineData?.data || part.inlineData?.imageBytes);
-    const imageBytes = imagePart?.inlineData?.data || imagePart?.inlineData?.imageBytes;
+    const imagePart: any = parts.find((part: any) => part.inlineData?.data);
+    const imageBytes = imagePart?.inlineData?.data;
 
     if (!imageBytes) {
       throw new Error('No image bytes were returned by the model.');
