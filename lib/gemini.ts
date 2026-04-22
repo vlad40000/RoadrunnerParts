@@ -317,7 +317,20 @@ function resolvePartSource(
   return explicit;
 }
 
-export async function fetchPartsList(modelNumber, providerPlan = {}) {
+type ProviderPlan = {
+  manufacturerDomains?: string[];
+  distributorFallbacks?: string[];
+  allowedDomains?: string[];
+  truthOrder?: string[];
+  truthSource?: string;
+  strategy?: string;
+  brand?: string;
+};
+
+export async function fetchPartsList(
+  modelNumber: string,
+  providerPlan: ProviderPlan = {},
+) {
   const responseSchema = {
     type: 'object',
     properties: {
