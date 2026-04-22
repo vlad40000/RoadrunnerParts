@@ -265,14 +265,12 @@ Return a JSON object with two keys:
                     description: { type: "STRING" },
                     section: {
                       type: "STRING",
-                      enum: sections,
                     },
                     compatibleModels: {
                       type: "ARRAY",
                       items: { type: "STRING" },
                     },
-                    avgRating: { type: "NUMBER" },
-                    reviewCount: { type: "NUMBER" },
+
                     price: { type: "NUMBER" },
                     priceSource: { type: "STRING" },
                   },
@@ -282,8 +280,7 @@ Return a JSON object with two keys:
                     "description",
                     "section",
                     "compatibleModels",
-                    "avgRating",
-                    "reviewCount",
+
                     "price",
                     "priceSource",
                   ],
