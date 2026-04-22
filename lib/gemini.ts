@@ -259,7 +259,7 @@ export async function generateImageAsset({
     const response = await result.response;
 
     const parts = response.candidates?.[0]?.content?.parts ?? [];
-    const imagePart: any = parts.find((part: any) => part.inlineData?.data);
+    const imagePart = parts.find((part: any) => part.inlineData?.data);
     const imageBytes = imagePart?.inlineData?.data;
 
     if (!imageBytes) {
