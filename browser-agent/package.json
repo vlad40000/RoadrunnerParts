@@ -1,0 +1,23 @@
+{
+  "name": "browser-agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "extract:fix": "node agent.mjs --provider fix",
+    "check": "node --check agent.mjs && node --check fix-com-agent.mjs && node --check sears-agent.mjs && node --check cove-verifier.mjs && node --check cove-reviewer.mjs && node --check cove-reviewer-prompt.mjs",
+    "install:browsers": "playwright install chromium"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@neondatabase/serverless": "^1.1.0",
+    "dotenv": "^17.4.2",
+    "playwright": "^1.59.1",
+    "playwright-stealth": "^0.0.1",
+    "zod": "^4.4.1"
+  }
+}

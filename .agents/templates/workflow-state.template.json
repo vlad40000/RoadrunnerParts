@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "jobId": "job_example",
+  "mode": "agentic",
+  "status": "created",
+  "originalRequest": {},
+  "metadata": {
+    "summaryRequested": false
+  },
+  "tasks": [],
+  "artifacts": {},
+  "review": null,
+  "errors": [],
+  "createdAt": "2026-03-25T00:00:00.000Z",
+  "updatedAt": "2026-03-25T00:00:00.000Z"
+}

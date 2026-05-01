@@ -1,0 +1,72 @@
+[
+  {
+    "site": "Sears PartsDirect",
+    "recommended_role": "primary_diagram",
+    "product_page_grounding_score": 7,
+    "diagram_grounding_score": 11,
+    "confidence": "high"
+  },
+  {
+    "site": "PartSelect",
+    "recommended_role": "primary_diagram",
+    "product_page_grounding_score": 9,
+    "diagram_grounding_score": 14,
+    "confidence": "high"
+  },
+  {
+    "site": "Parts Dr",
+    "recommended_role": "fallback_diagram",
+    "product_page_grounding_score": 9,
+    "diagram_grounding_score": 12,
+    "confidence": "high"
+  },
+  {
+    "site": "AppliancePartsPros",
+    "recommended_role": "fallback_diagram",
+    "product_page_grounding_score": 10,
+    "diagram_grounding_score": 12,
+    "confidence": "high"
+  },
+  {
+    "site": "Reliable Parts",
+    "recommended_role": "fallback_diagram",
+    "product_page_grounding_score": 8,
+    "diagram_grounding_score": 10,
+    "confidence": "medium"
+  },
+  {
+    "site": "Repair Clinic",
+    "recommended_role": "fallback_diagram",
+    "product_page_grounding_score": 8,
+    "diagram_grounding_score": 10,
+    "confidence": "high"
+  },
+  {
+    "site": "eReplacementParts",
+    "recommended_role": "fallback_diagram",
+    "product_page_grounding_score": 9,
+    "diagram_grounding_score": 9,
+    "confidence": "medium"
+  },
+  {
+    "site": "Certified Appliance Parts",
+    "recommended_role": "product_only",
+    "product_page_grounding_score": 10,
+    "diagram_grounding_score": 6,
+    "confidence": "medium"
+  },
+  {
+    "site": "A-1 Appliance Parts",
+    "recommended_role": "product_only",
+    "product_page_grounding_score": 7,
+    "diagram_grounding_score": 7,
+    "confidence": "low"
+  },
+  {
+    "site": "HD Supply",
+    "recommended_role": "ignore",
+    "product_page_grounding_score": 4,
+    "diagram_grounding_score": 2,
+    "confidence": "high"
+  }
+]

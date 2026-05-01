@@ -1,0 +1,23 @@
+{
+  "model": "GTW500ASN0WS",
+  "brand": "GE",
+  "productType": "Washer",
+  "applianceType": "Top-load Washer",
+  "fuelType": "electric",
+  "serial": "TM978239G",
+  "sources": {
+    "fix.com": {
+      "modelPage": "https://www.fix.com/models/washer/ge/gtw500asn0ws/",
+      "partsPage": "https://www.fix.com/models/washer/ge/gtw500asn0ws/parts/",
+      "diagramsPage": "https://www.fix.com/models/washer/ge/gtw500asn0ws/diagrams/"
+    }
+  },
+  "extraction_rules": [
+    "ACT AS A FORENSIC APPLIANCE TECHNICIAN",
+    "LOOK FOR PATTERNS: MODEL NO, SERIAL NO, BRAND, PRODUCT TYPE",
+    "BE EXTREMELY PRECISE with alphanumeric characters (0 vs O, 1 vs I)",
+    "PRESERVE ALL PUNCTUATION",
+    "STEP-BACK: Identify 4-6 core functional sub-systems",
+    "CoT: Operational reasoning for each system"
+  ]
+}
