@@ -53,6 +53,35 @@ export const stage2OutputSchema = normalizedIdentitySchema.extend({
 
 export type Stage2Output = z.infer<typeof stage2OutputSchema>;
 
+export const bomRowSchema = z.object({
+  section: z.string().min(1),
+  sectionOriginal: z.string().nullable().optional(),
+  diagramNumber: z.union([z.number(), z.string()]),
+  originalPartNumber: z.string().nullable(),
+  currentServicePartNumber: z.string().nullable(),
+  description: z.string().min(1),
+  nlaStatus: z.boolean(),
+  sourceUrl: z.string().min(1),
+  sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "seeded"]),
+  imageUrl: z.string().nullable().optional(),
+  evidence: z.string().nullable().optional(),
+  replacementNote: z.string().nullable().optional(),
+  serialNote: z.string().nullable().optional(),
+  serialApplicability: z.array(z.string()).optional(),
+  confidence: z.number().min(0).max(1),
+
+  retailPrice: z.number().nullable().optional(),
+  retailPriceText: z.string().nullable().optional(),
+  retailAvailability: z.string().nullable().optional(),
+  retailPricingUrl: z.string().nullable().optional(),
+  retailPriceSource: z.string().nullable().optional(),
+  retailPriceVerified: z.boolean().optional(),
+  retailPricedAt: z.string().nullable().optional(),
+
+  price: z.number().nullable().optional(),
+  priceMissing: z.boolean().default(true),
+});
+
 export const stage3WorkerOutputSchema = z.object({
   rows: z.array(bomRowSchema),
   expectedPartCount: z.number().nullable(),
@@ -61,6 +90,48 @@ export const stage3WorkerOutputSchema = z.object({
 });
 
 export type Stage3WorkerOutput = z.infer<typeof stage3WorkerOutputSchema>;
+
+export const completionProofSchema = z.object({
+  expectedPartCount: z.number().int().nonnegative(),
+  totalExtracted: z.number().int().nonnegative(),
+  coverageRatio: z.number().min(0).max(1),
+  sourceAgreement: z.boolean(),
+});
+
+export const bomResultSchema = z.object({
+  brand: z.string().nullable(),
+  model: z.string().nullable(),
+  serial: z.string().nullable(),
+  productType: z.string().nullable(),
+  sectionsFound: z.array(z.string()),
+  rawRowCount: z.number().int().nonnegative(),
+  uniqueRowCount: z.number(),
+  unmatchedCallouts: z.array(z.string()).default([]),
+  status: bomStatusSchema,
+  rows: z.array(bomRowSchema),
+  issues: z.array(z.string()).default([]),
+  notices: z.array(
+    z.object({
+      type: z.enum(["info", "success", "warning", "error"]),
+      stage: z.string(),
+      message: z.string(),
+    })
+  ).default([]),
+  msrp: z.object({
+    amount: z.number().nullable(),
+    currency: z.string().default("USD"),
+    confidence: z.enum(["high", "medium", "low", "none"]),
+    sourceUrl: z.string().nullable(),
+    evidence: z.string().nullable(),
+  }).optional(),
+  manufactureDate: z.string().nullable().optional(),
+  coverageScore: z.number().min(0).max(1).default(0),
+  truthSource: z.string().nullable().optional(),
+  sourceStrategy: z.string().nullable().optional(),
+  expectedPartsTotal: z.number().int().nullable().optional(),
+  expectedPartsSource: z.string().nullable().optional(),
+  completionProof: completionProofSchema.optional(),
+});
 
 export const stage4OutputSchema = bomResultSchema;
 
@@ -119,34 +190,6 @@ export const buildBomJobStateSchema = z.object({
 
 export type BuildBomJobState = z.infer<typeof buildBomJobStateSchema>;
 
-export const bomRowSchema = z.object({
-  section: z.string().min(1),
-  sectionOriginal: z.string().nullable().optional(),
-  diagramNumber: z.union([z.number(), z.string()]),
-  originalPartNumber: z.string().nullable(),
-  currentServicePartNumber: z.string().nullable(),
-  description: z.string().min(1),
-  nlaStatus: z.boolean(),
-  sourceUrl: z.string().min(1),
-  sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "seeded"]),
-  imageUrl: z.string().nullable().optional(),
-  evidence: z.string().nullable().optional(),
-  replacementNote: z.string().nullable().optional(),
-  serialNote: z.string().nullable().optional(),
-  serialApplicability: z.array(z.string()).optional(),
-  confidence: z.number().min(0).max(1),
-
-  retailPrice: z.number().nullable().optional(),
-  retailPriceText: z.string().nullable().optional(),
-  retailAvailability: z.string().nullable().optional(),
-  retailPricingUrl: z.string().nullable().optional(),
-  retailPriceSource: z.string().nullable().optional(),
-  retailPriceVerified: z.boolean().optional(),
-  retailPricedAt: z.string().nullable().optional(),
-
-  price: z.number().nullable().optional(),
-  priceMissing: z.boolean().default(true),
-});
 
 export const identitySchema = z.object({
   brand: z.string().nullable(),
@@ -180,47 +223,6 @@ export const diagramParseSchema = z.object({
   sections: z.array(diagramSectionSchema),
 });
 
-export const completionProofSchema = z.object({
-  expectedPartCount: z.number().int().nonnegative(),
-  totalExtracted: z.number().int().nonnegative(),
-  coverageRatio: z.number().min(0).max(1),
-  sourceAgreement: z.boolean(),
-});
-
-export const bomResultSchema = z.object({
-  brand: z.string().nullable(),
-  model: z.string().nullable(),
-  serial: z.string().nullable(),
-  productType: z.string().nullable(),
-  sectionsFound: z.array(z.string()),
-  rawRowCount: z.number().int().nonnegative(),
-  uniqueRowCount: z.number(),
-  unmatchedCallouts: z.array(z.string()).default([]),
-  status: bomStatusSchema,
-  rows: z.array(bomRowSchema),
-  issues: z.array(z.string()).default([]),
-  notices: z.array(
-    z.object({
-      type: z.enum(["info", "success", "warning", "error"]),
-      stage: z.string(),
-      message: z.string(),
-    })
-  ).default([]),
-  msrp: z.object({
-    amount: z.number().nullable(),
-    currency: z.string().default("USD"),
-    confidence: z.enum(["high", "medium", "low", "none"]),
-    sourceUrl: z.string().nullable(),
-    evidence: z.string().nullable(),
-  }).optional(),
-  manufactureDate: z.string().nullable().optional(),
-  coverageScore: z.number().min(0).max(1).default(0),
-  truthSource: z.string().nullable().optional(),
-  sourceStrategy: z.string().nullable().optional(),
-  expectedPartsTotal: z.number().int().nullable().optional(),
-  expectedPartsSource: z.string().nullable().optional(),
-  completionProof: completionProofSchema.optional(),
-});
 
 export type BomStatus = z.infer<typeof bomStatusSchema>;
 export type BomRow = z.infer<typeof bomRowSchema>;
