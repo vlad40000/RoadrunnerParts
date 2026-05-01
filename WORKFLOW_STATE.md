@@ -7,7 +7,8 @@
 - **Phase 4: Build & Deployment (Complete)**: Resolved "Module not found" errors, fixed all TypeScript errors.
 - **Phase 6: Code Quality & Maintenance (Complete)**: Comprehensive refactoring of `partselect.ts` and `encompass-family.ts`. Resolved all informational IDE linting messages (named interfaces, explicit return types, `Array<T>` notation).
 - **Phase 7: Type Synchronization (Complete)**: Synchronized `ProviderSourceType` and `BomStatus`/`RetrievalState` across the core extraction pipeline.
-- **RetrievalState Standardization**: Standardized `RetrievalState` to a narrow, 8-value set (`no_result`, `identity_only`, `sources_resolved`, `parts_partial`, `parts_complete_pricing_missing`, `parts_complete_pricing_partial`, `bom_complete`, `failed`) across schemas, agents, and database logic.
+- **Phase 9: Pipeline Hardening & Deterministic Routing (Complete)**: Implemented `BrandSourceGate` to enforce brand-compatible domain resolution. Optimized model tiers (Gemini 3.1 Flash Lite for Identity). Hardened search grounding with structured XML resolver prompts.
+- **RetrievalState Standardization**: Standardized `RetrievalState` and `BomStatus` schemas to include all system states (23 values), ensuring type-safety across Single and Batch orchestrators. Resolved Gemini tool schema compatibility issues.
 - **Contract Enforcement**: Implemented `determineRetrievalState` in a new `contract.ts` service. Integrated this logic into the agent dispatcher to ensure the "BOM Completion Gate" is governed by deterministic rules rather than AI heuristics.
 - **Diagram-Indexed Manifest Contract**: Parts completeness now uses a trusted exact-model `total_part_count` as the target, builds a full diagram manifest as the expected row set, and maps canonical BOM rows against required manifest rows before completion can be claimed.
 - **Source Routing & Tiering**: Standardized distributor tiers (Tier 1: Encompass, Sears, PartsDr, APP) and family-specific routing rules (e.g., GE assembly-first, Frigidaire distributor-first). Verified Encompass `WHI` prefixing and non-derivable `assemblyId` extraction.
@@ -32,6 +33,11 @@
 - **Generic Agent Loop**: Created a reusable `runAgentLoop` that manages tool execution and chat history, allowing agents to call local functions in a loop.
 - **Asset-Backed Extraction**: Implemented an `AssetStore` to manage temporary HTML and data artifacts during multi-agent sessions, enabling agents to pass page references between tools.
 - **Machine Priority Scoring**: Implemented the final Core stage of the BOM pipeline. Created a scoring engine that ranks machines (0-1000) based on MSRP, high-value part counts, and brand desirability.
+- **Deterministic Brand Routing**: Implemented `BRAND_SOURCE_GATE` to prevent cross-brand domain leakage (e.g., GE assembly sites only for GE models). Integrated this into the `searchExistingGroundingLayer` adapter.
+- **Model Efficiency Optimization**: Re-tiered the pipeline to use `lite` models (`gemini-3.1-flash-lite-preview`) for low-risk OCR and Identity normalization, reducing latency and cost without regression in quality.
+- **Search Grounding Hardening**: Refactored the `SOURCE_RESOLVER_PROMPT` to a rigid XML-based contract that enforces domain-compatibility and schema-driven URL resolution.
+- **TypeScript Build Resolution**: Resolved 100% of remaining build-blocking type errors by aligning `RetrievalState` registries and fixing Gemini tool parameter schemas.
+
 
 ## System Boundaries & Core Rules
 
