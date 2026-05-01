@@ -1,5 +1,5 @@
-import { listBomJobs } from "@/src/features/bom/services/job-store";
-import { BomJobsTable } from "@/src/features/bom/components/bom-jobs-table";
+import { listBomJobs } from "@/features/bom/services/job-store";
+import { BomJobsTable } from "@/features/bom/components/bom-jobs-table";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,3 +20,4 @@ export default async function BomJobsPage() {
     </main>
   );
 }
+

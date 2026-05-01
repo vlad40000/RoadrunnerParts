@@ -1,4 +1,4 @@
-import { runText } from '../../bom/services/model-runner';
+import { runText } from '@/features/bom/services/model-runner';
 import { audioTranscribePrompt } from '../prompts/diagnostic-prompts';
 
 export async function runAudioTranscriber({
@@ -14,3 +14,4 @@ export async function runAudioTranscriber({
     files: [{ mimeType, data: audioData }],
   });
 }
+

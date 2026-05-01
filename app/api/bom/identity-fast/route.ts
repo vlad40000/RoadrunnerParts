@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runIdentityExtractor } from "@/src/features/bom/agents/identity-extractor";
+import { runIdentityExtractor } from "@/features/bom/agents/identity-extractor";
 
 export const runtime = "nodejs";
 
@@ -31,3 +31,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message, detail: message }, { status: 500 });
   }
 }
+

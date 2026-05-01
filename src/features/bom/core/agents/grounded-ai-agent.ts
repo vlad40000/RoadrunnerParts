@@ -13,7 +13,6 @@ export async function runGroundedAiAgent(input: {
     model: input.model,
     applianceType: input.applianceType || null,
     fuelType: input.fuelType || null,
-    dbState: 'not_checked',
   });
 
   if (result.rows.length > 0 && input.onPartialResult) {

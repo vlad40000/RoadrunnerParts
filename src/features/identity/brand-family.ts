@@ -1,5 +1,5 @@
 import "server-only";
-import { normalizeBrandLabel } from "./normalize";
+import { normalizeBrandLabel } from "@/features/identity/normalize";
 
 export enum DecoderFamily {
   GE_FAMILY = "GE_FAMILY",

@@ -346,7 +346,7 @@ export async function buildBomJob(input: {
     sectionsFound: finalSectionsFound,
     rawRowCount: extractedRowsRaw.length,
     uniqueRowCount: finalRows.length,
-    unmatchedCallouts,
+    unmatchedCallouts: unmatchedCallouts.map(String),
     status,
     rows: finalRows,
     issues: [],

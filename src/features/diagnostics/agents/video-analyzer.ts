@@ -1,4 +1,4 @@
-import { runText } from '../../bom/services/model-runner';
+import { runText } from '@/features/bom/services/model-runner';
 import { videoAnalyzePrompt } from '../prompts/diagnostic-prompts';
 
 export async function runVideoAnalyzer({
@@ -15,3 +15,4 @@ export async function runVideoAnalyzer({
     systemInstruction: 'Analyze appliance failure videos for mechanical or electrical symptoms.',
   });
 }
+

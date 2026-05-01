@@ -1,4 +1,4 @@
-import { runText } from '../../bom/services/model-runner';
+import { runText } from '@/features/bom/services/model-runner';
 import { diagnosePrompt } from '../prompts/diagnostic-prompts';
 
 export async function runDiagnoseAgent({

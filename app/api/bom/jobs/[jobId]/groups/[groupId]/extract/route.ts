@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { extractDiagramGroupForJob } from "@/src/features/bom/core/grouped-bom";
+import { extractDiagramGroupForJob } from "@/features/bom/core/grouped-bom";
 
 export const runtime = "nodejs";
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runStructuredJson } from "@/src/features/bom/services/model-runner";
-import { EBAY_PROMPT_LISTING_DRAFT } from "@/src/features/bom/prompts/engine";
-import { ebayDraftSchema } from "@/src/features/ebay/schemas";
+import { runStructuredJson } from "@/features/bom/services/model-runner";
+import { EBAY_PROMPT_LISTING_DRAFT } from "@/features/bom/prompts/engine";
+import { ebayDraftSchema } from "@/features/ebay/schemas";
 
 export const runtime = "nodejs";
 
@@ -27,3 +27,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
-import { runBomSupervisor } from "@/src/features/bom/core/agents/supervisor";
+import { runBomSupervisor } from "@/features/bom/core/agents/supervisor";
 
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     after(async () => {
       console.log(`[CompileApi] Background supervisor started for ${jobId}`);
       try {
-        const { getBomJob, failBomJob, completeBomJob } = await import("@/src/features/bom/services/job-store");
+        const { getBomJob, failBomJob, completeBomJob } = await import("@/features/bom/services/job-store");
         const job = await getBomJob(jobId);
         
         if (!job) {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       } catch (err) {
         console.error(`[Background Supervisor Error]`, err);
         const message = err instanceof Error ? err.message : String(err);
-        const { failBomJob } = await import("@/src/features/bom/services/job-store");
+        const { failBomJob } = await import("@/features/bom/services/job-store");
         await failBomJob(jobId, message);
       }
     });

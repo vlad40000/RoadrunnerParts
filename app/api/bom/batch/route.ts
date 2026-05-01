@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { findCompleteCachedBom, normalizeModelKey } from '@/src/features/bom/services/model-parts-cache';
-import { orchestrateBomRetrieval } from '@/src/features/bom/services/bom-orchestrator';
+import { findCompleteCachedBom, normalizeModelKey } from '@/features/bom/services/model-parts-cache';
+import { orchestrateBomRetrieval } from '@/features/bom/services/bom-orchestrator';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // Batch can take longer
@@ -65,3 +65,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Internal batch error' }, { status: 500 });
   }
 }
+

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBomJob, saveBomArtifacts } from "@/src/features/bom/services/job-store";
-import { enrichBomRowsWithRetailPricing } from "@/src/features/bom/services/retail-pricing";
-import { bomRowSchema, type BomRow } from "@/src/features/bom/schemas/bom";
+import { getBomJob, saveBomArtifacts } from "@/features/bom/services/job-store";
+import { enrichBomRowsWithRetailPricing } from "@/features/bom/services/retail-pricing";
+import { bomRowSchema, type BomRow } from "@/features/bom/schemas/bom";
 
 export const runtime = "nodejs";
 
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       );
     }
 
-    const { enrichBomRowsWithRetailPricing } = await import("@/src/features/bom/services/retail-pricing");
+    const { enrichBomRowsWithRetailPricing } = await import("@/features/bom/services/retail-pricing");
     const pricingResults = await enrichBomRowsWithRetailPricing({
       brand: job.brand,
       model: job.model,

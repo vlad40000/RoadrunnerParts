@@ -1,8 +1,4 @@
 import { NextResponse } from 'next/server';
-import {
-  continueApplianceSearchSession,
-  startApplianceSearchSession,
-} from '@/lib/parts-service';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120;
@@ -30,12 +26,7 @@ export async function POST(req: Request) {
     const revision = body.revision || null;
 
     if (searchSessionId) {
-      const payload = await continueApplianceSearchSession({
-        searchSessionId,
-        revision,
-      });
-
-      return NextResponse.json(payload);
+      return NextResponse.json({ error: 'Session continuation not supported' }, { status: 501 });
     }
 
     if (!modelNumber) {
@@ -45,12 +36,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const payload = await startApplianceSearchSession({
-      modelNumber,
-      serialNumber,
-      brand,
-      productType,
-      exhaustiveMode,
+    const { orchestrateBomRetrieval } = await import('@/features/bom/services/bom-orchestrator');
+    const payload = await orchestrateBomRetrieval({
+      model: modelNumber,
+      serial: serialNumber,
+      brand: brand,
     });
 
     return NextResponse.json(payload);

@@ -546,12 +546,12 @@ export async function extractAllDiagramGroupsForJob(input: {
           diagramRows = aiParts.map(p => ({
             part_number: String(p.partNumber).toUpperCase(),
             description: p.description,
-            diagram_ref: p.diagramRef,
+            diagram_ref: p.diagramRef == null ? null : String(p.diagramRef),
             qty: p.qty || 1,
             source: group.source,
             source_url: sourceUrl,
             is_substitute: !!p.replacementNote,
-            replacement_note: p.replacementNote,
+            replacement_note: p.replacementNote || null,
             nla_status: p.nlaStatus,
             diagram_group: group.groupName
           }));
@@ -630,4 +630,3 @@ export async function extractAllDiagramGroupsForJob(input: {
     isComplete: true,
   };
 }
-

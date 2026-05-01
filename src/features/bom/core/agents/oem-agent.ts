@@ -36,16 +36,17 @@ export async function runOemAgent(input: {
 
   const extractedRows = (
     await runWithConcurrency(oemSources, 2, async (source) => {
-      const rows = await runPartsExtractor({
+      const result = await runPartsExtractor({
         sourceUrl: source.sourceUrl,
         sourceType: source.sourceType,
         sourceText: source.text,
         modelNumber: input.model || "UNKNOWN",
       });
+      const rows = result.rows || [];
       if (rows && rows.length > 0 && input.onPartialResult) {
         input.onPartialResult(rows as any[]);
       }
-      return rows || [];
+      return rows;
     })
   ).flat();
 

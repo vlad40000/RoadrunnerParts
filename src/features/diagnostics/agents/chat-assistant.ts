@@ -1,4 +1,4 @@
-import { runText } from '../../bom/services/model-runner';
+import { runText } from '@/features/bom/services/model-runner';
 import { chatAssistantPrompt } from '../prompts/diagnostic-prompts';
 
 export async function runChatAssistant({
@@ -14,3 +14,4 @@ export async function runChatAssistant({
     text: `User Message: ${message}\nContext: ${JSON.stringify(context || {})}`,
   });
 }
+

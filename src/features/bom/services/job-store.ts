@@ -1,8 +1,8 @@
 import "server-only";
 import crypto from "crypto";
 import { desc, eq } from "drizzle-orm";
-import { db } from "@/src/server/db";
-import { bomJobs } from "@/src/server/db/schema/bom-jobs";
+import { db } from "@/server/db";
+import { bomJobs } from "@/server/db/schema/bom-jobs";
 import { normalizeBomStatus } from "../core/bom-status";
 import { uploadSourceEvidence } from "./blob-store";
 
@@ -311,4 +311,5 @@ export async function saveCompilationArtifacts(
     })
     .where(eq(bomJobs.id, jobId));
 }
+
 

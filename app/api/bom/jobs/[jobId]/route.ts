@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBomJob } from "@/src/features/bom/services/job-store";
+import { getBomJob } from "@/features/bom/services/job-store";
 
 export const runtime = "nodejs";
 

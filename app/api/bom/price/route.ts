@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PRICE_PROMPT_RETAIL_ENRICHMENT } from "@/src/features/bom/prompts/engine";
-import { runStructuredJson } from "@/src/features/bom/services/model-runner";
+import { PRICE_PROMPT_RETAIL_ENRICHMENT } from "@/features/bom/prompts/engine";
+import { runStructuredJson } from "@/features/bom/services/model-runner";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -40,3 +40,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

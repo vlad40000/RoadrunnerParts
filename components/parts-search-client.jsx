@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getBomStatusMeta } from '@/src/features/bom/core/bom-status';
+import { getBomStatusMeta } from '@/features/bom/core/bom-status';
 import {
   AlertCircle,
   Camera,
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 import LoadingSkeleton from '@/components/loading-skeleton';
-import { ebaySearchUrl, ebaySoldSearchUrl, getBomRowPartNumber } from '@/src/features/bom/services/ebay-links';
+import { ebaySearchUrl, ebaySoldSearchUrl, getBomRowPartNumber } from '@/features/bom/services/ebay-links';
 
 const popularModels = ['MVWC565FW0', 'RF28R7351SR', 'WDT730PAHZ'];
 
@@ -1695,3 +1695,4 @@ function getIdentityReviewFromExtractor(identity) {
     actualUniqueParts: 0,
   };
 }
+

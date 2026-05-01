@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runAndPersistBomExtraction } from "@/src/features/bom/core/run-bom-extraction";
-import { getBomJob, resetBomJobForRetry } from "@/src/features/bom/services/job-store";
-import { resetBomJobGroups } from "@/src/features/bom/services/job-group-store";
+import { runAndPersistBomExtraction } from "@/features/bom/core/run-bom-extraction";
+import { getBomJob, resetBomJobForRetry } from "@/features/bom/services/job-store";
+import { resetBomJobGroups } from "@/features/bom/services/job-group-store";
 
 export const runtime = "nodejs";
 

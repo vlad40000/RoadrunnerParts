@@ -1,8 +1,8 @@
 import "server-only";
 import crypto from "crypto";
 import { and, asc, eq } from "drizzle-orm";
-import { db } from "@/src/server/db";
-import { bomJobGroups } from "@/src/server/db/schema/bom-job-groups";
+import { db } from "@/server/db";
+import { bomJobGroups } from "@/server/db/schema/bom-job-groups";
 
 export type BomJobGroupRecord = {
   source: string;
@@ -99,3 +99,4 @@ export async function failBomJobGroup(jobId: string, groupId: string, errorText:
 export async function resetBomJobGroups(jobId: string) {
   await db.delete(bomJobGroups).where(eq(bomJobGroups.jobId, jobId));
 }
+

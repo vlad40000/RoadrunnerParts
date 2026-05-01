@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { startApplianceSearchSession } from '@/lib/parts-service';
-import { runDiagnoseAgent } from '@/src/features/diagnostics/agents/diagnose';
-import { runVideoAnalyzer } from '@/src/features/diagnostics/agents/video-analyzer';
-import { runAudioTranscriber } from '@/src/features/diagnostics/agents/audio-transcriber';
-import { runChatAssistant } from '@/src/features/diagnostics/agents/chat-assistant';
+import { runDiagnoseAgent } from '@/features/diagnostics/agents/diagnose';
+import { runVideoAnalyzer } from '@/features/diagnostics/agents/video-analyzer';
+import { runAudioTranscriber } from '@/features/diagnostics/agents/audio-transcriber';
+import { runChatAssistant } from '@/features/diagnostics/agents/chat-assistant';
 
 export const runtime = 'nodejs';
 
@@ -34,12 +33,11 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        result = await startApplianceSearchSession({
-          modelNumber,
-          serialNumber: params.serialNumber || params.serial || '',
+        const { orchestrateBomRetrieval } = await import('@/features/bom/services/bom-orchestrator');
+        result = await orchestrateBomRetrieval({
+          model: modelNumber,
+          serial: params.serialNumber || params.serial || '',
           brand: params.brand || null,
-          productType: params.productType || null,
-          exhaustiveMode: params.exhaustiveMode === true,
         });
         break;
       }
@@ -92,3 +90,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { startApplianceSearchSession, continueApplianceSearchSession } from '@/lib/parts-service';
+
  
 export const runtime = 'nodejs';
 export const maxDuration = 120; // Extended to support Google Search + Thinking
@@ -25,16 +25,14 @@ export async function POST(req: Request) {
 
     if (searchSessionId) {
       // Continue an existing session (e.g. after variant resolution or for price enrichment)
-      const payload = await continueApplianceSearchSession({ searchSessionId, revision });
-      return NextResponse.json(payload);
+      // Note: New orchestrator doesn't currently support session continuation via this path
+      return NextResponse.json({ error: 'Session continuation not supported' }, { status: 501 });
     } else {
-      // Start a new session - DATABASE-FIRST RULE is enforced inside this service
-      const payload = await startApplianceSearchSession({
-        modelNumber: model,
-        serialNumber: serial,
-        brand,
-        productType,
-        exhaustiveMode,
+      const { orchestrateBomRetrieval } = await import('@/features/bom/services/bom-orchestrator');
+      const payload = await orchestrateBomRetrieval({
+        model: model,
+        brand: brand || null,
+        serial: serial || null,
       });
       return NextResponse.json(payload);
     }

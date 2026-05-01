@@ -67,11 +67,20 @@ export const stage4OutputSchema = bomResultSchema;
 export type Stage4Output = z.infer<typeof stage4OutputSchema>;
 
 export const bomStatusSchema = z.enum([
+  "not_checked",
   "no_result",
   "summary_only",
   "needs_fallback",
   "parts_partial",
+  "bom_near_complete",
   "bom_complete",
+  "db_complete",
+  "seed_route_only",
+  "seed_sections_only",
+  "seed_parts_partial",
+  "seed_bom_candidate",
+  "needs_live_gap_fill",
+  "cache_hit",
   "failed"
 ]);
 

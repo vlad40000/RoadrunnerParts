@@ -3,7 +3,7 @@ import {
   fetchFixModelPage,
   parseFixDiagramLinks,
   parseFixPartCount,
-} from '@/src/features/bom/services/providers/fix-com';
+} from '@/features/bom/services/providers/fix-com';
 
 export const runtime = 'nodejs';
 
@@ -86,3 +86,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

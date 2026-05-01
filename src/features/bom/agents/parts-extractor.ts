@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { bomRowSchema, type BomRow, type Stage3WorkerOutput } from "../schemas/bom";
-import { buildPartsExtractionPrompt } from "../prompts/parts";
 import { runStructuredJson } from "../services/model-runner";
 import { logger } from "@/lib/logger";
 

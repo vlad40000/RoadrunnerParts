@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { runIdentityExtractor } from '@/src/features/bom/agents/identity-extractor';
+import { runIdentityExtractor } from '@/features/bom/agents/identity-extractor';
 
 export const runtime = 'nodejs';
 
@@ -31,14 +31,19 @@ export async function POST(req: NextRequest) {
     const modelNumber = identity.model || null;
     const serialNumber = identity.serial || null;
 
-    const { getLookupCandidates } = await import('@/lib/identity-service');
-    const candidates = getLookupCandidates(modelNumber);
+    const { resolvePartsSources } = await import('@/lib/partsSourceRegistry');
+    const { primaryRoutes } = resolvePartsSources({ 
+      brand: identity.brand, 
+      applianceType: identity.productType, 
+      modelNumber: modelNumber 
+    });
+    const candidates = primaryRoutes;
 
     let decodeResult = null;
 
     if (serialNumber) {
       try {
-        const { decodeSerialNumber } = await import('@/lib/serial/decoder');
+        const { decodeSerialNumber } = await import('@/features/identity/decoder');
 
         decodeResult = await decodeSerialNumber(serialNumber, {
           brand: identity.brand,
@@ -68,3 +73,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

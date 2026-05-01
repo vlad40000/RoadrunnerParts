@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBomJob } from "@/src/features/bom/services/job-store";
-import { listBomJobGroups } from "@/src/features/bom/services/job-group-store";
-import { discoverDiagramGroupsForJob } from "@/src/features/bom/core/grouped-bom";
+import { getBomJob } from "@/features/bom/services/job-store";
+import { listBomJobGroups } from "@/features/bom/services/job-group-store";
+import { discoverDiagramGroupsForJob } from "@/features/bom/core/grouped-bom";
 
 export const runtime = "nodejs";
 

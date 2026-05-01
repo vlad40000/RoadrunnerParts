@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runTargetedBomRecovery } from "@/src/features/bom/core/run-bom-recovery";
+import { runTargetedBomRecovery } from "@/features/bom/core/run-bom-recovery";
 
 export const runtime = "nodejs";
 

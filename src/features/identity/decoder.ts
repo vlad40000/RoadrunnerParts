@@ -1,6 +1,6 @@
 import "server-only";
-import { stripSerialNoise } from "./normalize";
-import { resolveDecoderFamily, DecoderFamily } from "./brand-family";
+import { stripSerialNoise } from "@/features/identity/normalize";
+import { resolveDecoderFamily, DecoderFamily } from "@/features/identity/brand-family";
 
 export type SerialConfidence = "low" | "medium" | "high";
 

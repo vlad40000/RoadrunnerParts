@@ -6,9 +6,9 @@ import {
   saveBomArtifacts,
   setBomJobStage,
   updateBomJobSummary,
-} from "@/src/features/bom/services/job-store";
-import { uploadBomFileToBlob } from "@/src/features/bom/services/blob-upload";
-import { runIdentityExtractor } from "@/src/features/bom/agents/identity-extractor";
+} from "@/features/bom/services/job-store";
+import { uploadBomFileToBlob } from "@/features/bom/services/blob-upload";
+import { runIdentityExtractor } from "@/features/bom/agents/identity-extractor";
 
 export const runtime = "nodejs";
 
@@ -138,3 +138,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
