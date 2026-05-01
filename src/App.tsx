@@ -627,9 +627,48 @@ Focus on:
 
           const result = await response.json();
           
-          if (result.modelNumber || result.serialNumber || result.partNumber) {
-            lastResult = result;
-            break; // SUCCESS!
+          const candidate =
+            result?.candidate_identity ??
+            result?.candidateIdentity ??
+            result?.normalizedIdentity ??
+            result?.identity ??
+            result;
+
+          const extractedModel =
+            result?.modelNumber ??
+            result?.model ??
+            candidate?.model ??
+            candidate?.modelNumber ??
+            null;
+
+          const extractedSerial =
+            result?.serialNumber ??
+            result?.serial ??
+            candidate?.serial ??
+            candidate?.serialNumber ??
+            null;
+
+          const extractedTypeCode =
+            result?.typeCode ??
+            result?.type_code ??
+            candidate?.type_code ??
+            candidate?.typeCode ??
+            null;
+
+          const extractedPartNumber =
+            result?.partNumber ??
+            candidate?.partNumber ??
+            null;
+
+          if (extractedModel || extractedSerial || extractedPartNumber) {
+            lastResult = {
+              ...result,
+              modelNumber: extractedModel,
+              serialNumber: extractedSerial,
+              typeCode: extractedTypeCode,
+              candidate_identity: candidate,
+            };
+            break;
           }
         } catch (err) {
           lastError = err;
@@ -638,7 +677,11 @@ Focus on:
       }
 
       if (!lastResult) {
-        throw lastError instanceof Error ? lastError : new Error('Validation Failure: All extraction attempts failed. Ensure the manufacturer tag is well-lit and the text is sharp.');
+        throw lastError instanceof Error
+          ? lastError
+          : new Error(
+              'OCR completed but no model or serial field was mapped. Check the OCR response schema before retaking the photo.'
+            );
       }
 
       // STAGE 2: Preserve Raw Values exactly
