@@ -53,26 +53,30 @@ Example 1:
 Input text: "MODEL WTW7500GC2 SERIAL C91370070"
 Output:
 {
-  "brand": "Whirlpool",
-  "model": "WTW7500GC2",
-  "serial": "C91370070",
-  "confidence": 0.95,
-  "warnings": []
+  "candidate_identity": {
+    "brand": "Whirlpool",
+    "model": "WTW7500GC2",
+    "serial": "C91370070"
+  },
+  "confidence": { "model": 0.95 },
+  "evidence_used": ["model_number_label"]
 }
 
 Example 2:
 Input text: "RF263TEAESG/AA"
 Output:
 {
-  "brand": "Samsung",
-  "model": "RF263TEAESG/AA",
-  "variant": "AA",
-  "warnings": ["Samsung variant must be preserved"]
+  "candidate_identity": {
+    "brand": "Samsung",
+    "model": "RF263TEAESG/AA",
+    "type_code": "AA"
+  },
+  "manual_review_flags": ["Samsung variant preserved"]
 }
 </structured_examples>
 
 <context>
-[INSERT NAMEPLATE IMAGE, OCR TEXT, OR USER-PROVIDED NAMEPLATE TEXT]
+{{raw_text}}
 </context>
 
 <task>
@@ -80,8 +84,7 @@ Perform this stage only.
 </task>
 
 <output_contract>
-Return function call only:
-ocr_extract_nameplate(...)
+Return plain JSON object only.
 </output_contract>
 `.trim();
 
@@ -156,17 +159,13 @@ normalize_appliance_identity({ "brand": "Samsung", "model": "RF263TEAESG/AA" })
 </structured_examples>
 
 <context>
-{
-  "brand": null,
-  "resolved_oem_brand": null,
-  "manufacturer_family": null,
-  "model": null,
-  "serial": null,
-  "type_code": null,
-  "appliance_type": null,
-  "fuel_type": null,
-  "manual_review_flags": []
-}
+{{stage_1_output}}
+
+BRAND_ALIAS_MAP:
+{{brand_alias_map}}
+
+OEM_REGEX_RULES:
+{{oem_regex_rules}}
 </context>
 
 <task>
@@ -174,7 +173,6 @@ Perform this stage only.
 </task>
 
 <output_contract>
-Return function call only:
-normalize_appliance_identity(...)
+Return plain JSON object only.
 </output_contract>
 `.trim();

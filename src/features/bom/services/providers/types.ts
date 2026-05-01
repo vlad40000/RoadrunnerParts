@@ -6,6 +6,7 @@ export type ProviderSourceType =
   | "manual"
   | "diagram"
   | "fallback"
+  | "seeded"
   | "distributor-merged-with-partselect";
 
 export interface RetrievedSource {

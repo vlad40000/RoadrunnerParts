@@ -126,9 +126,9 @@ export const bomRowSchema = z.object({
   originalPartNumber: z.string().nullable(),
   currentServicePartNumber: z.string().nullable(),
   description: z.string().min(1),
-  nlaStatus: z.boolean(),
+  nlaStatus: z.boolean().default(false),
   sourceUrl: z.string().min(1),
-  sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "seeded"]),
+  sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "seeded", "distributor-merged-with-partselect"]),
   imageUrl: z.string().nullable().optional(),
   evidence: z.string().nullable().optional(),
   replacementNote: z.string().nullable().optional(),
@@ -157,6 +157,8 @@ export const bomRowSchema = z.object({
   price: z.number().nullable().optional(),
   priceMissing: z.boolean().default(true),
 });
+
+export type BomRow = z.infer<typeof bomRowSchema>;
 
 export const stage3WorkerOutputSchema = z.object({
   rows: z.array(bomRowSchema),
@@ -262,6 +264,8 @@ export const bomResultSchema = z.object({
   expectedPartsSource: z.string().nullable().optional(),
   completionProof: completionProofSchema.optional(),
 });
+
+export type BomResult = z.infer<typeof bomResultSchema>;
 
 export const stage4OutputSchema = bomResultSchema;
 
@@ -409,9 +413,7 @@ export const diagramParseSchema = z.object({
 });
 
 
-export type BomRow = z.infer<typeof bomRowSchema>;
 export type Identity = z.infer<typeof identitySchema>;
 export type DiagramParse = z.infer<typeof diagramParseSchema>;
-export type BomResult = z.infer<typeof bomResultSchema>;
 export type Clue = z.infer<typeof clueSchema>;
 export type NormalizedIdentity = z.infer<typeof normalizedIdentitySchema>;

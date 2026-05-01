@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
 
     const { resolvePartsSources } = await import('@/lib/partsSourceRegistry');
     const { primaryRoutes } = resolvePartsSources({ 
-      brand: identity.brand, 
-      applianceType: identity.productType, 
+      brand: identity.brand || null, 
+      applianceType: identity.appliance_type || identity.productType || null, 
       modelNumber: modelNumber 
     });
     const candidates = primaryRoutes;

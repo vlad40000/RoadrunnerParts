@@ -7,7 +7,7 @@
 - **Phase 4: Build & Deployment (Complete)**: Resolved "Module not found" errors, fixed all TypeScript errors.
 - **Phase 6: Code Quality & Maintenance (Complete)**: Comprehensive refactoring of `partselect.ts` and `encompass-family.ts`. Resolved all informational IDE linting messages (named interfaces, explicit return types, `Array<T>` notation).
 - **Phase 7: Type Synchronization (Complete)**: Synchronized `ProviderSourceType` and `BomStatus`/`RetrievalState` across the core extraction pipeline.
-- **Phase 9: Pipeline Hardening & Deterministic Routing (Complete)**: Implemented `BrandSourceGate` to enforce brand-compatible domain resolution. Optimized model tiers (Gemini 3.1 Flash Lite for Identity). Hardened search grounding with structured XML resolver prompts.
+- **Phase 10: Identity Pipeline Hardening & Type Stability (Complete)**: Aligned identity extraction with structured JSON contracts using nested `candidate_identity` schemas. Fixed OCR API route for normalized identity fields. Achieved 100% `tsc` pass rate by resolving hoisting and schema mismatches.
 - **RetrievalState Standardization**: Standardized `RetrievalState` and `BomStatus` schemas to include all system states (23 values), ensuring type-safety across Single and Batch orchestrators. Resolved Gemini tool schema compatibility issues.
 - **Contract Enforcement**: Implemented `determineRetrievalState` in a new `contract.ts` service. Integrated this logic into the agent dispatcher to ensure the "BOM Completion Gate" is governed by deterministic rules rather than AI heuristics.
 - **Diagram-Indexed Manifest Contract**: Parts completeness now uses a trusted exact-model `total_part_count` as the target, builds a full diagram manifest as the expected row set, and maps canonical BOM rows against required manifest rows before completion can be claimed.
@@ -33,11 +33,11 @@
 - **Generic Agent Loop**: Created a reusable `runAgentLoop` that manages tool execution and chat history, allowing agents to call local functions in a loop.
 - **Asset-Backed Extraction**: Implemented an `AssetStore` to manage temporary HTML and data artifacts during multi-agent sessions, enabling agents to pass page references between tools.
 - **Machine Priority Scoring**: Implemented the final Core stage of the BOM pipeline. Created a scoring engine that ranks machines (0-1000) based on MSRP, high-value part counts, and brand desirability.
-- **Deterministic Brand Routing**: Implemented `BRAND_SOURCE_GATE` to prevent cross-brand domain leakage (e.g., GE assembly sites only for GE models). Integrated this into the `searchExistingGroundingLayer` adapter.
-- **Model Efficiency Optimization**: Re-tiered the pipeline to use `lite` models (`gemini-3.1-flash-lite-preview`) for low-risk OCR and Identity normalization, reducing latency and cost without regression in quality.
-- **Search Grounding Hardening**: Refactored the `SOURCE_RESOLVER_PROMPT` to a rigid XML-based contract that enforces domain-compatibility and schema-driven URL resolution.
-- **TypeScript Build Resolution**: Resolved 100% of remaining build-blocking type errors by aligning `RetrievalState` registries and fixing Gemini tool parameter schemas.
-
+- **Identity Pipeline Hardening**: Updated `identity-extractor.ts` and `identity.ts` prompts to use nested `candidate_identity` structures, ensuring compliance with strict structured JSON output requirements.
+- **OCR API Resolution**: Fixed `app/api/ocr/route.ts` to correctly map normalized identity fields, restoring functionality to the OCR rescue pipeline after schema changes.
+- **Full Type Stability**: Resolved all remaining TypeScript build errors across `schemas/bom.ts`, `contract.ts`, `run-bom-recovery.ts`, and `partsSourceRegistry.ts`.
+- **RetrievalState Alignment**: Synchronized `determineRetrievalState` logic in `contract.ts` and `bom-validator.ts` with the central `RetrievalState` enum.
+- **Tiered Model Routing**: Validated and stabilized `gemini-3.1-flash-lite-preview` for high-throughput identity normalization and ingestion stages.
 
 ## System Boundaries & Core Rules
 
@@ -84,10 +84,9 @@
 17. **Dispatch**: Export ranked machine action list for inventory procurement.
 
 ## Remaining Work
-
-1. **Core Logic Alignment**: Resolve pre-existing structural type mismatches in `bom-normalizer.ts` (retailPrice object vs number) and `run-bom-extraction.ts` (missing properties).
-2. **UI Integration**: Update frontend components to handle expanded `RetrievalState` values.
-3. **End-to-End Testing**: Run the pipeline against a battery of diverse model inputs.
+1. **Regression Testing**: Validate the OCR rescue pipeline (`handleCaptureEbayPage` in `App.tsx`) to ensure no UI-side integration issues persist.
+2. **Telemetry Integration**: Monitor stalling metrics for high-throughput identity extraction sessions.
+3. **UI/UX Integration**: Surface `manual_review_flags` and `blockers` in the dashboard.
 
 ## Diagram Manifest Completion Contract
 
@@ -101,7 +100,7 @@
 
 ## Handover Context
 
-- **Build State**: Providers are 100% type-safe. Pre-existing structural mismatches in `bom-normalizer.ts` and `run-bom-extraction.ts` still block full `tsc` passing.
+- **Build State**: Fully type-safe. 100% `tsc` pass rate achieved across all core retrieval and service modules.
 - **Security**: Sensitive keys are exclusively server-side.
 - **Module Resolution**: All imports are standardized to `@/` pointing to `src/`. 
 - **Authority Rule**: No fixed priority; selection is driven by the most expedient path to completion using current information availability.

@@ -87,6 +87,7 @@ export const KENMORE_OEM_MAP: Record<string, string> = {
 export const PARTS_SOURCE_REGISTRY: Record<string, BrandSourceConfig> = {
   Electrolux: {
     canonicalBrand: "Electrolux",
+    routes: {},
     genericRoutes: [
       { label: "Electrolux parts category", url: "https://www.guaranteedparts.com/category/electrolux.html" },
     ],
@@ -108,22 +109,27 @@ export const PARTS_SOURCE_REGISTRY: Record<string, BrandSourceConfig> = {
   },
   GE: {
     canonicalBrand: "GE",
+    routes: {},
     genericRoutes: [{ label: "GE parts search", url: "https://www.geappliances.com/ge/parts/search/" }],
   },
   Cafe: {
     canonicalBrand: "Cafe",
+    routes: {},
     genericRoutes: [{ label: "Cafe replacement parts", url: "https://www.geapplianceparts.com/cafe-replacement-parts.html" }],
   },
   Monogram: {
     canonicalBrand: "Monogram",
+    routes: {},
     genericRoutes: [{ label: "Monogram replacement parts", url: "https://www.geapplianceparts.com/monogram-replacement-parts.html" }],
   },
   Haier: {
     canonicalBrand: "Haier",
+    routes: {},
     genericRoutes: [{ label: "Haier replacement parts", url: "https://www.geapplianceparts.com/haier-replacement-parts.html" }],
   },
   Hotpoint: {
     canonicalBrand: "Hotpoint",
+    routes: {},
     genericRoutes: [{ label: "Hotpoint replacement parts", url: "https://www.geapplianceparts.com/hotpoint-replacement-parts.html" }],
   },
   Bosch: {
@@ -194,11 +200,13 @@ export const PARTS_SOURCE_REGISTRY: Record<string, BrandSourceConfig> = {
   },
   Kenmore: {
     canonicalBrand: "Kenmore",
+    routes: {},
     genericRoutes: [{ label: "Kenmore brand parts", url: "https://www.searspartsdirect.com/brand/0582/kenmore-parts" }],
     fallbackRoutes: [{ label: "RepairClinic Roper/Kenmore-family search", url: "https://www.repairclinic.com/Shop-For-Parts?searchwithin=roper" }],
   },
   Roper: {
     canonicalBrand: "Roper",
+    routes: {},
     genericRoutes: [{ label: "RepairClinic Roper search", url: "https://www.repairclinic.com/Shop-For-Parts?searchwithin=roper" }],
   },
 };

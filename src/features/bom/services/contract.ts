@@ -97,7 +97,7 @@ export function validatePartsCompleteness(input: {
   if (!input.trustedTotalPartCount) {
     return {
       partsComplete: false,
-      state: "sources_resolved" as const,
+      state: "sources_resolved" as RetrievalState,
       reason: "No trusted total part count has been accepted.",
     };
   }
@@ -105,14 +105,14 @@ export function validatePartsCompleteness(input: {
   if (input.actualCanonicalPartCount < input.trustedTotalPartCount) {
     return {
       partsComplete: false,
-      state: "parts_partial" as const,
+      state: "parts_partial" as RetrievalState,
       reason: `Stored ${input.actualCanonicalPartCount} parts, trusted source requires ${input.trustedTotalPartCount}.`,
     };
   }
 
   return {
     partsComplete: true,
-    state: "parts_complete" as const,
+    state: "parts_complete_pricing_missing" as RetrievalState,
     reason: "Stored canonical parts meet trusted total part count.",
   };
 }
@@ -137,7 +137,7 @@ export function validateManifestCoverage(input: {
   if (!input.trustedTotalPartCount) {
     return {
       partsComplete: false,
-      state: "sources_resolved" as const,
+      state: "sources_resolved" as RetrievalState,
       reason: "No trusted total part count has been accepted.",
     };
   }
@@ -145,7 +145,7 @@ export function validateManifestCoverage(input: {
   if (input.manifestRowCount < input.trustedTotalPartCount) {
     return {
       partsComplete: false,
-      state: "parts_partial" as const,
+      state: "parts_partial" as RetrievalState,
       reason: `Manifest has ${input.manifestRowCount} rows, trusted source requires ${input.trustedTotalPartCount}.`,
     };
   }
@@ -153,7 +153,7 @@ export function validateManifestCoverage(input: {
   if (input.requiredManifestRowCount <= 0) {
     return {
       partsComplete: false,
-      state: "parts_partial" as const,
+      state: "parts_partial" as RetrievalState,
       reason: "Manifest has no required rows.",
     };
   }
@@ -161,7 +161,7 @@ export function validateManifestCoverage(input: {
   if (input.unresolvedRequiredManifestRowCount > 0) {
     return {
       partsComplete: false,
-      state: "parts_partial" as const,
+      state: "parts_partial" as RetrievalState,
       reason: `${input.unresolvedRequiredManifestRowCount} required manifest rows are unresolved.`,
     };
   }
@@ -169,7 +169,7 @@ export function validateManifestCoverage(input: {
   if (input.mappedRequiredManifestRowCount < input.requiredManifestRowCount) {
     return {
       partsComplete: false,
-      state: "parts_partial" as const,
+      state: "parts_partial" as RetrievalState,
       reason: `Mapped ${input.mappedRequiredManifestRowCount} required rows, manifest requires ${input.requiredManifestRowCount}.`,
     };
   }
@@ -177,14 +177,14 @@ export function validateManifestCoverage(input: {
   if (input.actualCanonicalPartCount < input.trustedTotalPartCount) {
     return {
       partsComplete: false,
-      state: "parts_partial" as const,
+      state: "parts_partial" as RetrievalState,
       reason: `Stored ${input.actualCanonicalPartCount} canonical parts, trusted source requires ${input.trustedTotalPartCount}.`,
     };
   }
 
   return {
     partsComplete: true,
-    state: "parts_complete" as const,
+    state: "parts_complete_pricing_missing" as RetrievalState,
     reason: "Manifest rows are fully mapped to stored canonical parts.",
   };
 }

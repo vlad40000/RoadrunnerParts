@@ -134,12 +134,32 @@ export async function runIdentityExtraction({
   const inputText = JSON.stringify({ userHints });
   const prompt = identityExtractionPrompt.replace('{{raw_text}}', inputText);
 
-  const rawResult = await runStructuredJson<unknown>({
+  const rawResult = await runStructuredJson<any>({
     model: "lite",
     prompt,
     text: `INPUT:\n${inputText}`,
     files,
     temperature: 1.0,
+    responseSchema: {
+      type: "object",
+      properties: {
+        candidate_identity: {
+          type: "object",
+          properties: {
+            brand: { type: "string", nullable: true },
+            model: { type: "string", nullable: true },
+            serial: { type: "string", nullable: true },
+            type_code: { type: "string", nullable: true },
+            product_type: { type: "string", nullable: true },
+            appliance_type: { type: "string", nullable: true },
+            fuel_type: { type: "string", nullable: true },
+          }
+        },
+        confidence: { type: "object", properties: { model: { type: "number" } } },
+        evidence_used: { type: "array", items: { type: "string" } },
+        manual_review_flags: { type: "array", items: { type: "string" } },
+      }
+    }
   });
 
   const parsedResult = asRecord(parseMaybeStringifiedJson(rawResult));
@@ -175,11 +195,28 @@ export async function runIdentityNormalization(extractionResult: Stage1Output): 
     .replace('{{stage_1_output}}', stage1Payload);
 
   try {
-    const rawResult = await runStructuredJson<unknown>({
+    const rawResult = await runStructuredJson<any>({
       model: "lite",
       prompt,
       text: `INPUT:\n${stage1Payload}`,
       temperature: 1.0,
+      responseSchema: {
+        type: "object",
+        properties: {
+          brand: { type: "string", nullable: true },
+          resolved_oem_brand: { type: "string", nullable: true },
+          manufacturer_family: { type: "string", nullable: true },
+          model: { type: "string", nullable: true },
+          serial: { type: "string", nullable: true },
+          type_code: { type: "string", nullable: true },
+          appliance_type: { type: "string", nullable: true },
+          fuel_type: { type: "string", nullable: true },
+          expectedPartCount: { type: "number", nullable: true },
+          normalization_status: { type: "string" },
+          evidence: { type: "array", items: { type: "string" } },
+          blockers: { type: "array", items: { type: "string" } },
+        }
+      }
     });
 
     const parsedResult = parseMaybeStringifiedJson(rawResult);

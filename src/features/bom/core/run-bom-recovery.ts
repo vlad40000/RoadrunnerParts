@@ -63,12 +63,14 @@ async function extractRowsFromSources(input: {
   const allowed = new Set(input.targetSections.map((s) => normalizeSection(s)));
 
   for (const source of input.sources) {
-    const { rows = [] } = (await runPartsExtractor({
+    const result = await runPartsExtractor({
       sourceText: source.text ?? source.sourceText ?? "",
       sourceUrl: source.sourceUrl,
       sourceType: source.sourceType,
       modelNumber: input.modelNumber,
-    })) || {};
+    });
+
+    const rows = result?.rows || [];
 
     if (allowed.size > 0) {
       incrementalRows.push(
