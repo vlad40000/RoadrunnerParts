@@ -38,7 +38,11 @@ export async function POST(req: NextRequest, { params }: Params) {
           mode: "full",
         });
 
-        await completeBomJob(jobId, compiled.result);
+        await completeBomJob(jobId, {
+          ...compiled.result,
+          resultStatus: compiled.result.status,
+          finalRows: compiled.result.rows,
+        } as any);
       } catch (err) {
         console.error(`[Background Supervisor Error]`, err);
         const message = err instanceof Error ? err.message : String(err);
