@@ -24,4 +24,6 @@
 - State is persisted in `scratch/state_{jobId}.json`.
 - The pipeline now adheres to the "Rail-First" design with strict JSON contracts.
 - **Module Resolution**: All imports are standardized to `@/` pointing to `src/`. Relative imports for cross-feature logic have been converted to absolute.
+- **Repository Realignment**: The repository root has been moved from the `RoadrunnerParts-main` subdirectory to the workspace root `RoadrunnerParts-main (13)` to fix Git resolution issues in external tools.
+- **Git State**: All pending module resolution fixes have been committed (`bbc5436`). The repository is currently clean.
 - Machine states are: `no_result`, `summary_only`, `needs_fallback`, `parts_partial`, `bom_complete`, `failed`.
