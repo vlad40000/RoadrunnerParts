@@ -2,7 +2,8 @@ import { runAgentLoop, AgentConfig } from "./agent-loop";
 import { CORE_BOM_TOOLS } from "./tool-definitions";
 import { dispatchBomToolCall } from "./bom-agent-dispatcher";
 import { buildSourceResolverPrompt } from "../../prompts/engine";
-
+import { identityExtractionPrompt } from "../../prompts/identity";
+import { partsExtractionPrompt } from "../../prompts/parts";
 
 export async function orchestrateAgentPipeline(input: {
   model: string;
@@ -14,7 +15,7 @@ export async function orchestrateAgentPipeline(input: {
   // STAGE 1: Identity & Cache Check
   const identityAgent: AgentConfig = {
     stage: "ocr_ingest",
-    systemInstruction: "You are the OCR and Identity Resolver. Extract and normalize appliance information.",
+    systemInstruction: identityExtractionPrompt,
     tools: CORE_BOM_TOOLS.filter(t => ["ocr_extract_nameplate", "normalize_appliance_identity", "db_get_model_record", "db_get_model_part_count", "validate_cached_bom_completeness"].includes(t.name)),
     mode: "AUTO"
   };
@@ -51,7 +52,7 @@ export async function orchestrateAgentPipeline(input: {
   // STAGE 3: Parts Extraction
   const extractionAgent: AgentConfig = {
     stage: "parts_extraction",
-    systemInstruction: "You are the Parts Extraction Agent. Build a full diagram-indexed manifest, extract canonical part rows, map found parts to manifest rows, then validate manifest coverage.",
+    systemInstruction: partsExtractionPrompt,
     tools: CORE_BOM_TOOLS.filter(t => [
       "fetch_source_page",
       "extract_diagram_sections",
@@ -80,3 +81,4 @@ export async function orchestrateAgentPipeline(input: {
     summary: extractionResponse
   };
 }
+

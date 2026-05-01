@@ -26,6 +26,9 @@ You MUST use these specific Gemini models. **DO NOT change these identifiers und
 ## Prompt Boundary Rule (STRICT)
 The `seededProvider` is a deterministic source provider and MUST NEVER invoke model prompting. PROMPT_ENGINEERING_STANDARD.md applies only when a model is asked to extract or audit BOM data from unstructured HTML/text. Seed rows must be replayed exactly as stored, with no inferred parts, no generated assemblies, and no model-expanded section coverage.
 
+## Prompt Engineering Rubric (STRICT)
+Before modifying any file under `src/features/bom/prompts`, grade the prompt against `.agents/policies/prompt_engineering_rubric.md`. Do not ship prompts that fail any mandatory requirement or hard-fail trigger.
+
 ### Seeded Provider Emission Rules:
 - **provider_part_seed_rows** → one `RetrievedSource` per section with `ROW|` lines.
 - **provider_assembly_sections** → one `RetrievedSource` per section with `NO_PART_ROWS: TRUE`.

@@ -26,11 +26,17 @@ export async function runAgentLoop(input: {
   if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelId = process.env.GEMINI_MODEL_PRO || "gemini-3-pro-preview";
+  // Default to pro for complex orchestration, otherwise follow policy
+  const modelId = input.config.stage === "cache_check" || input.config.stage === "ocr_ingest" 
+    ? (process.env.GEMINI_MODEL_FAST || "gemini-3-flash-preview")
+    : (process.env.GEMINI_MODEL_PRO || "gemini-3-pro-preview");
 
   const model = genAI.getGenerativeModel({
     model: modelId,
     systemInstruction: input.config.systemInstruction,
+    generationConfig: {
+      temperature: 1.0, // No temperature 0
+    },
     tools: [{ functionDeclarations: input.config.tools }],
     toolConfig: input.config.mode ? {
       functionCallingConfig: {

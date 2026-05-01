@@ -11,6 +11,14 @@
 - **Phase 11: Distributor-Only Policy & Source Resolution (Complete)**: Implemented strict "distributor-only" policy for BOM retrieval. OEM official site searches are now prohibited and removed from the agent tool surface. Hardened source resolution with zero-latency deterministic fast-paths, tiered distributor routing (Encompass/Sears/PartsDr -> APP/PartSelect/Fix/RepairClinic), and soft-validation for 403-blocked domains. Rewired the extraction sequence in `discoverDiagramGroupsForJob` to follow this tiering.
 - **Phase 12: Structural Pricing Dependency (Complete)**: Hardened the BOM completion contract. Pricing completeness now strictly requires parts completeness. Implemented state machine transitions in `bom-validator.ts` and `contract.ts` that prevent `bom_complete` status until both manifest coverage and verified retail pricing are 100% satisfied. Introduced granular `parts_complete_pricing_missing` and `parts_complete_pricing_partial` statuses. Verified with unit tests.
 - **Phase 13: Live Batching & Timeout Flushing (Complete)**: Established a high-performance, distributor-first batch delivery pipeline. Implemented 40-row incremental publishing in `extractAllDiagramGroupsForJob` using a queued `progressWrite` pattern. Added timeout-safe flushing that preserves currently accepted rows during agent failures. Standardized completion logic to require 100% manifest coverage, eliminating the legacy 90% upgrade heuristic. Updated the frontend action buttons to use server-state placeholders and safe progress labeling.
+- **Phase 14: Prompt Optimization & Policy Governance [COMPLETED]**:
+    - [x] Consolidated `contract.ts` into tiny specific reminders.
+    - [x] Removed `MODEL_POLICY` from prompts and enforced in `model-runner.ts` and `agent-loop.ts`.
+    - [x] Refactored `engine.ts` and `parts.ts` for lean tasks and strict JSON output.
+    - [x] Deleted redundant prompt files (`diagram.ts`, `review.ts`, `consistency.ts`).
+    - [x] Created `.agents/policies/prompt_engineering_rubric.md` to govern future prompt development.
+    - [x] Hardened `RULE.md` with mandatory prompt grading requirement.
+    - [x] Fixed pricing prompt output contract to return `enrichments`.
 - **RetrievalState Standardization**: Standardized `RetrievalState` and `BomStatus` schemas to include all system states (23 values), ensuring type-safety across Single and Batch orchestrators. Resolved Gemini tool schema compatibility issues.
 - **Contract Enforcement**: Implemented `determineRetrievalState` in a new `contract.ts` service. Integrated this logic into the agent dispatcher to ensure the "BOM Completion Gate" is governed by deterministic rules rather than AI heuristics.
 - **Diagram-Indexed Manifest Contract**: Parts completeness now uses a trusted exact-model `total_part_count` as the target, builds a full diagram manifest as the expected row set, and maps canonical BOM rows against required manifest rows before completion can be claimed.

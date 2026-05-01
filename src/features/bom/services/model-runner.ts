@@ -39,7 +39,7 @@ export async function runStructuredJson<T>(
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: input.responseSchema,
-      temperature: input.temperature ?? 1.0,
+      temperature: Math.max(0.1, input.temperature ?? 1.0), // No temperature 0
     },
     systemInstruction: input.systemInstruction,
   };
