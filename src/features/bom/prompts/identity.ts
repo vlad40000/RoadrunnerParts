@@ -31,6 +31,7 @@ Extract visible appliance identity clues from uploaded nameplate evidence.
 4. Return null for unreadable fields.
 5. Do not search sources.
 6. Do not check DB.
+7. DETECT ROTATED TEXT: If the nameplate is vertical or rotated (common on appliance door frames), normalize the orientation and extract text accurately. Look for "MOD" and "SER" labels regardless of their orientation.
 </hard_constraints>
 
 ${BOM_DEFINITIONS}
