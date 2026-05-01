@@ -20,6 +20,16 @@ export const BOM_STATUS_META: Record<
     description: "No model or sources could be identified for this search.",
     tone: "red",
   },
+  identity_only: {
+    label: "identity only",
+    description: "Model identified, but source lookup has not yet completed.",
+    tone: "neutral",
+  },
+  sources_resolved: {
+    label: "sources resolved",
+    description: "Trusted retrieval sources identified, pending parts extraction.",
+    tone: "neutral",
+  },
   summary_only: {
     label: "summary only",
     description: "Model found, but no diagrams or parts were extracted.",
@@ -27,7 +37,17 @@ export const BOM_STATUS_META: Record<
   },
   parts_partial: {
     label: "partial rows",
-    description: "Some accepted rows were extracted, but coverage is low.",
+    description: "Some accepted rows were extracted, but coverage is below target.",
+    tone: "amber",
+  },
+  parts_complete_pricing_missing: {
+    label: "parts complete, pricing missing",
+    description: "All parts found, but zero verified retail prices discovered.",
+    tone: "amber",
+  },
+  parts_complete_pricing_partial: {
+    label: "parts complete, pricing partial",
+    description: "All parts found, but some are missing verified retail prices.",
     tone: "amber",
   },
   needs_fallback: {
@@ -42,7 +62,7 @@ export const BOM_STATUS_META: Record<
   },
   bom_complete: {
     label: "bom complete",
-    description: "BOM is fully extracted and verified against targets.",
+    description: "BOM is fully extracted and verified with all prices checked.",
     tone: "green",
   },
   db_complete: {
@@ -84,6 +104,26 @@ export const BOM_STATUS_META: Record<
     label: "failed",
     description: "The extraction failed due to a technical error.",
     tone: "red",
+  },
+  identity_extraction: {
+    label: "extracting identity",
+    description: "Currently extracting model identity from inputs.",
+    tone: "neutral",
+  },
+  identity_normalization: {
+    label: "normalizing identity",
+    description: "Currently normalizing extracted model identity.",
+    tone: "neutral",
+  },
+  stage0_seed_intake: {
+    label: "seed intake",
+    description: "Initial check for existing seed data.",
+    tone: "neutral",
+  },
+  bom_synthesis: {
+    label: "synthesizing bom",
+    description: "Combining extracted parts into a final bill of materials.",
+    tone: "neutral",
   },
 };
 

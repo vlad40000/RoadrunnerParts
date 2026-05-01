@@ -12,6 +12,8 @@ import {
   normalizeModel,
   uniqueBy,
 } from "./utils";
+import { buildLgPartsUrl, buildLgSupportUrl, buildEncompassUrl } from "./deterministic-urls";
+import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
 import {
   searchExistingGroundingLayer,
   dedupeSearchHits,
@@ -177,8 +179,37 @@ export const lgFamilyProvider: SourceProvider = {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
+    // Stage 1: Official Support Validation
+    const supportUrl = buildLgSupportUrl(model);
+    let identityVerified = false;
+    try {
+      const supportHtml = await fetchHtml(supportUrl);
+      if (supportHtml.toUpperCase().includes(model)) {
+        identityVerified = true;
+      }
+    } catch {
+      // ignore
+    }
+
+    // Stage 2: Routing to Encompass (LG Authorized Partner)
+    const encompassUrl = buildEncompassUrl({ brand: "LG", model });
+    if (encompassUrl) {
+      try {
+        const encompassHtml = await fetchHtml(encompassUrl);
+        if (encompassHtml.toUpperCase().includes(model)) {
+          // If we have Encompass, the encompass-family provider will also pick it up, 
+          // but we can return it here as an authoritative OEM-tier source if it resolves.
+          // Note: The factory orchestrator handles de-duplication if same URL is returned.
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // Stage 3: Fallback to lgparts.com search
     const hits = await searchLgPartPages(model);
-    if (!hits.length) return [];
+    
+    if (!hits.length && !identityVerified) return [];
 
     const parsed = [];
 
@@ -195,7 +226,7 @@ export const lgFamilyProvider: SourceProvider = {
 
     const uniqueRows = uniqueBy(parsed, (row) => row.partNumber);
 
-    return uniqueRows.map((row) => ({
+    const sources: RetrievedSource[] = uniqueRows.map((row) => ({
       sourceUrl: row.sourceUrl,
       sourceType: "oem" as const,
       provider: "lg-family",
@@ -210,5 +241,18 @@ export const lgFamilyProvider: SourceProvider = {
         sectionType: "compatible-model-part-page",
       },
     }));
+
+    if (identityVerified && !sources.length) {
+      sources.push({
+        sourceUrl: supportUrl,
+        sourceType: "oem",
+        provider: "lg-family",
+        sectionName: "Model Identity Verified",
+        text: `SOURCE_PROVIDER: lg-family\nMODEL: ${model}\nSECTION: Model Identity Verified\nIDENTITY_CONFIRMED: true`,
+        meta: { identityVerified: true }
+      });
+    }
+
+    return sources;
   },
 };

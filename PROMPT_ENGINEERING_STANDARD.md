@@ -11,7 +11,7 @@ Never invent model numbers, serial numbers, part numbers, compatibility, substit
 ### Source-of-Truth Hierarchy:
 1. **Physical appliance evidence**: nameplate photos, part photos, labels, harness tags, board labels.
 2. **Seeded database records**: known model routes, known provider URLs, known assembly sections, known part rows.
-3. **Exact-model trusted sources**: official/OEM diagrams, Fix.com, Sears PartsDirect, Encompass, PartSelect, RepairClinic, service manuals.
+3. **Exact-model trusted sources (Tier 1)**: official/OEM diagrams, Fix.com, Sears PartsDirect, Encompass, PartSelect, RepairClinic, Parts Dr, AppliancePartsPros, service manuals.
 4. **AI extraction/audit**: Only when parsing messy OCR, HTML, diagrams, or manuals.
 5. **AI is never the source of truth**.
 
@@ -33,7 +33,7 @@ Every agent must write a compact handoff after its step:
 Do not rely on chat history as state. The next agent consumes the handoff JSON.
 
 ## 4. Co-Equal Authority Rule
-Fix.com and Sears PartsDirect are treated as **co-equal authoritative sources**. No source is prioritized over the other in terms of technical "truth." The agent must respect the diagram structures and part counts of either provider with equal forensic weight.
+Fix.com, Sears PartsDirect, Encompass.com, Parts Dr, and AppliancePartsPros are treated as **co-equal authoritative sources**. No source is prioritized over the other in terms of technical "truth." The agent must respect the diagram structures and part counts of any of these providers with equal forensic weight.
 
 ## 5. Token Stewardship (Optimization)
 To maintain high-fidelity without excessive token spend:
@@ -52,3 +52,10 @@ The seeded database is the first source layer. Seeded provider lookup is a first
 
 Seed rows must be replayed exactly as stored, with no inferred parts or generated assemblies.
 
+## 7. Source Classification & Routing
+The system distinguishes between source types to optimize extraction quality:
+- **Hybrid Sources** (Sears, Encompass, Parts Dr, AppliancePartsPros): Priority for model -> diagram/section -> BOM rows.
+- **Retail Sources** (Fix, PartSelect, RepairClinic): Primary for price, availability, substitutions, and gap-fill.
+- **Regional/OEM-Retail Fallbacks** (Appliance Parts Group, Reliable Parts, etc.): Used only after Tier 1 fails or for part-number validation.
+
+**Routing Rule**: Always attempt Tier 1 hybrid sources first to establish the BOM structure before using retail sources for enrichment.

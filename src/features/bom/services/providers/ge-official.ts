@@ -15,6 +15,8 @@ import {
   normalizeModel,
   uniqueBy,
 } from "./utils";
+import { buildGeOfficialAssemblyUrl } from "./deterministic-urls";
+import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
 
 const GE_FAMILY_BRANDS = new Set([
   "ge",
@@ -217,7 +219,7 @@ export const geOfficialProvider: SourceProvider = {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
-    const assemblyUrl = `https://www.geapplianceparts.com/store/parts/assembly/${model}`;
+    const assemblyUrl = buildGeOfficialAssemblyUrl(model);
     const html = await fetchHtml(assemblyUrl);
     const bodyText = htmlToText(html);
 
@@ -242,6 +244,39 @@ export const geOfficialProvider: SourceProvider = {
         }
       } catch {
         // Continue. One bad section should not kill the job.
+      }
+    }
+
+    if (!sectionLinks.length) {
+      // Fallback: try specs page validation
+      const specsSearch = await resolveExactModelUrl({
+        model,
+        domain: "products.geappliances.com",
+        preferredQueries: [
+          `site:products.geappliances.com/appliance/gea-specs "${model}" parts`,
+          `site:products.geappliances.com "${model}"`
+        ]
+      });
+
+      if (specsSearch?.url) {
+        try {
+          const specsHtml = await fetchHtml(specsSearch.url);
+          const specsText = htmlToText(specsHtml);
+          if (specsText.includes(model)) {
+             // If we found a specs page, it confirms model identity, but often doesn't have a direct parts table.
+             // We can return a source that triggers a distributor fallback if no parts rows found.
+             return [{
+               sourceUrl: specsSearch.url,
+               sourceType: "oem",
+               provider: "ge-official",
+               sectionName: "Model Identity Verified",
+               text: `SOURCE_PROVIDER: ge-official\nMODEL: ${model}\nSECTION: Model Identity Verified\nIDENTITY_CONFIRMED: true\nSPECS_URL: ${specsSearch.url}`,
+               meta: { identityVerified: true }
+             }];
+          }
+        } catch {
+          // ignore
+        }
       }
     }
 

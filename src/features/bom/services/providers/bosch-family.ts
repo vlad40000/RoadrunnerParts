@@ -18,6 +18,8 @@ import {
   searchExistingGroundingLayer,
   dedupeSearchHits,
 } from "../search/search-adapter";
+import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
+import { buildBoschSupportUrl } from "./deterministic-urls";
 
 const BOSCH_ONLY_BRANDS = new Set(["bosch"]);
 
@@ -237,7 +239,7 @@ function parseBoschRowsFromText(pageText: string): ParsedBoschRow[] {
   ];
 
   for (const pattern of patterns) {
-    for (const match of normalizedText.matchAll(pattern)) {
+    for (const match of Array.from(normalizedText.matchAll(pattern))) {
       if (pattern === patterns[0]) {
         rows.push({
           positionNumber: cleanText(match[1]),
@@ -363,8 +365,28 @@ export const boschFamilyProvider: SourceProvider = {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
+    // Stage 1: Official E-Nr Validation via Support Portal
+    const supportLandingUrl = buildBoschSupportUrl();
     const support = await resolveBoschSupportDetailUrl(model);
-    if (!support) return [];
+    
+    // If we have FD number, include it in the validation context
+    const fdMatch = input.model.match(/FD\s*[:#]?\s*(\d{4})/i);
+    const fd = fdMatch ? fdMatch[1] : null;
+
+    if (!support) {
+       // Try a more aggressive exact model search if the support detail isn't found via normal hits
+       const exactSearch = await resolveExactModelUrl({
+         model,
+         domain: "bosch-home.com",
+         preferredQueries: [
+           `site:bosch-home.com/us/owner-support/spare-parts "${model}"`,
+           `site:bosch-home.com/us/shop/spare-parts "${model}"`
+         ]
+       });
+       
+       if (!exactSearch?.url) return [];
+       // continue with the resolved URL if found
+    }
 
     const discoveredLinks = extractBoschPartsLinksFromHtml(
       support.html,

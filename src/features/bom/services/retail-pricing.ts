@@ -16,13 +16,16 @@ import {
 } from "./providers/utils";
 
 type RetailPriceSnapshot = {
-  retailPrice: number;
-  retailPriceText: string;
+  status: "verified_price" | "encompass_no_price" | "fallback_verified_price" | "no_verified_price" | "ambiguous_match" | "blocked" | "source_error";
+  retailPrice: number | null;
+  retailPriceText: string | null;
   retailAvailability: string | null;
-  retailPricingUrl: string;
-  retailPriceSource: "encompass.com" | "searspartsdirect.com" | "fix.com";
-  retailPriceVerified: true;
-  retailPricedAt: string;
+  retailPricingUrl: string | null;
+  retailPriceSource: string | null;
+  retailPriceVerified: boolean;
+  retailPricedAt: string | null;
+  matchType?: "exact_part_number";
+  matchedPartNumber?: string;
 };
 
 function looksLikeSearsUrl(url: string | null | undefined) {
@@ -133,13 +136,16 @@ function extractSnapshotFromPageText(input: {
     const price = extractPriceFromWindow(windowText);
     if (price) {
       return {
+        status: "verified_price" as const,
         retailPrice: price.value,
         retailPriceText: price.text,
         retailAvailability: parseAvailability(windowText),
         retailPricingUrl: input.pricingUrl,
-        retailPriceSource: "encompass.com" as any,
-        retailPriceVerified: true as const,
+        retailPriceSource: "encompass.com",
+        retailPriceVerified: true,
         retailPricedAt: new Date().toISOString(),
+        matchType: "exact_part_number" as const,
+        matchedPartNumber: input.partNumber,
       };
     }
 
@@ -217,13 +223,16 @@ function extractSnapshotFromPage(input: {
   if (structured && structured.partNumber.toUpperCase().includes(input.partNumber.toUpperCase())) {
     if (structured.priceValue && structured.priceValue > 0) {
       return {
+        status: "verified_price" as const,
         retailPrice: structured.priceValue,
         retailPriceText: structured.priceText,
         retailAvailability: structured.availability,
         retailPricingUrl: input.pricingUrl,
-        retailPriceSource: EXTRACTION_TARGETS[input.targetKey].domain as any,
-        retailPriceVerified: true as const,
+        retailPriceSource: EXTRACTION_TARGETS[input.targetKey].domain,
+        retailPriceVerified: true,
         retailPricedAt: new Date().toISOString(),
+        matchType: "exact_part_number" as const,
+        matchedPartNumber: structured.partNumber || input.partNumber,
       };
     }
   }
@@ -526,7 +535,17 @@ export async function enrichBomRowsWithRetailPricing(input: {
 
     return {
       ...row,
-      retailPrice: snapshot.retailPrice,
+      retailPrice: {
+        status: snapshot.status,
+        source: snapshot.retailPriceSource ?? undefined,
+        listedPrice: snapshot.retailPrice,
+        currency: "USD" as const,
+        productUrl: snapshot.retailPricingUrl,
+        checkedAt: snapshot.retailPricedAt,
+        matchType: snapshot.matchType,
+        requestedPartNumber: partNumber,
+        matchedPartNumber: snapshot.matchedPartNumber,
+      },
       retailPriceText: snapshot.retailPriceText,
       retailAvailability: snapshot.retailAvailability,
       retailPricingUrl: snapshot.retailPricingUrl,
@@ -596,4 +615,43 @@ export async function verifyPartNumber(input: {
     console.error("[Retail Pricing] Verification failed:", error);
     return { isValid: false, source: null, price: null };
   }
+}
+
+export function validate_exact_price_evidence(input: {
+  requestedPartNumber: string;
+  matchedPartNumber: string;
+  html?: string;
+  text?: string;
+}) {
+  const normRequested = input.requestedPartNumber.toUpperCase().replace(/\s+/g, "");
+  const normMatched = input.matchedPartNumber.toUpperCase().replace(/\s+/g, "");
+  
+  if (normRequested !== normMatched) {
+    return {
+      valid: false,
+      reason: `Part number mismatch: requested ${normRequested}, matched ${normMatched}`,
+    };
+  }
+  
+  if (input.text && !input.text.toUpperCase().includes(normRequested)) {
+     return {
+      valid: false,
+      reason: `Part number ${normRequested} not found in evidence text`,
+    };
+  }
+  
+  return { valid: true };
+}
+
+export async function resolve_part_pricing_sources(input: {
+  partNumber: string;
+  brand?: string | null;
+}) {
+  const sources = [
+    { name: "Encompass", domain: "encompass.com", priority: 1 },
+    { name: "Sears PartsDirect", domain: "searspartsdirect.com", priority: 2 },
+    { name: "Fix.com", domain: "fix.com", priority: 3 },
+  ];
+  
+  return sources;
 }

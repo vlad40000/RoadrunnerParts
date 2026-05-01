@@ -2,11 +2,11 @@ import "server-only";
 import { db } from "@/server/db";
 import { getSeedPartsForModel, getSeedSectionsForModel, getSeedRoutesForModel } from "../seed-store";
 import { eq, and, sql } from "drizzle-orm";
-import type { RetrievedSource, SourceProvider, ProviderInput } from "./types";
+import type { RetrievedSource, SourceProvider, ProviderInput, ProviderSourceType } from "./types";
 import { normalizeModel } from "./utils";
 import { getSourceTypeForProvider } from "./source-type-map";
 
-function getSourceType(provider: string): "oem" | "distributor" {
+function getSourceType(provider: string): ProviderSourceType {
   return getSourceTypeForProvider(provider);
 }
 

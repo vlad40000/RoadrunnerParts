@@ -14,6 +14,7 @@ import {
   normalizeModel,
   uniqueBy,
 } from "./utils";
+import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
 
 const FRIGIDAIRE_FAMILY_BRANDS = new Set([
   "frigidaire",
@@ -380,23 +381,52 @@ export const frigidaireFamilyProvider: SourceProvider = {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
-    const sites = preferredSitesForBrand(input.brand);
+    // Stage 1: Distributor-First Resolver Order
+    const distributors = [
+      { domain: "partsdr.com", query: `site:partsdr.com/frigidaire "${model}"` },
+      { domain: "partselect.com", query: `site:partselect.com/Models "${model}" Frigidaire` },
+      { domain: "searspartsdirect.com", query: `site:searspartsdirect.com "${model}" Frigidaire parts` },
+      { domain: "encompass.com", query: `site:encompass.com "${model}" Electrolux Frigidaire parts` }
+    ];
 
-    for (const site of sites) {
+    const sources: RetrievedSource[] = [];
+
+    for (const dist of distributors) {
       try {
-        const sources = await fetchFamilySourcesFromSite({
-          site,
+        const resolution = await resolveExactModelUrl({
           model,
+          domain: dist.domain,
+          preferredQueries: [dist.query]
         });
 
-        if (sources.length) {
-          return sources;
+        if (resolution?.url) {
+           // If resolved, we can either extract here or let the specific provider 
+           // (e.g. sears-partsdirect) handle it. 
+           // For this family provider, we attempt to find the authoritative model page first.
         }
       } catch {
         // continue
       }
     }
 
-    return [];
+    // Existing official-like site lookup (RepairClinic family)
+    const sites = preferredSitesForBrand(input.brand);
+
+    for (const site of sites) {
+      try {
+        const siteSources = await fetchFamilySourcesFromSite({
+          site,
+          model,
+        });
+
+        if (siteSources.length) {
+          sources.push(...siteSources);
+        }
+      } catch {
+        // continue
+      }
+    }
+
+    return uniqueBy(sources, (s) => `${s.sectionName}|${s.sourceUrl}`);
   },
 };

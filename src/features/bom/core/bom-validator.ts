@@ -1,4 +1,4 @@
-import type { BomRow, DiagramParse } from "../schemas/bom";
+import type { BomRow, DiagramParse, RetrievalState } from "../schemas/bom";
 
 export function computeUnmatchedCallouts(
   diagramData: DiagramParse,
@@ -132,5 +132,73 @@ export function calculateCompletionProof(input: {
     totalExtracted: input.totalExtracted,
     coverageRatio: Number(coverageRatio.toFixed(3)),
     sourceAgreement,
+  };
+}
+export function determineRetrievalState(input: {
+  identityResolved: boolean;
+  expectedPartCount: number | null;
+  actualPartCount: number;
+  requiredPartCount: number;
+  verifiedPriceCount: number;
+  unpricedCount: number;
+  failed: boolean;
+}): RetrievalState {
+  if (input.failed) return "failed";
+  if (!input.identityResolved) return "no_result";
+  
+  // Rule: if we found parts but zero verified prices
+  if (input.actualPartCount > 0 && input.verifiedPriceCount === 0) {
+    return "parts_complete_pricing_missing";
+  }
+
+  // Rule: if we have parts and some prices, but not all
+  if (input.actualPartCount > 0 && input.verifiedPriceCount < input.actualPartCount) {
+    return "parts_complete_pricing_partial";
+  }
+
+  // Rule: hard completion gate
+  if (
+    input.actualPartCount > 0 && 
+    input.expectedPartCount !== null &&
+    input.actualPartCount >= input.expectedPartCount && 
+    input.verifiedPriceCount >= input.actualPartCount
+  ) {
+    return "bom_complete";
+  }
+
+  return "parts_partial";
+}
+
+export function validate_bom_completion(input: {
+  rows: BomRow[];
+  expectedPartCount: number | null;
+  identityResolved: boolean;
+}) {
+  const actualPartCount = input.rows.length;
+  const verifiedPriceCount = input.rows.filter(
+    (r) => r.retailPrice?.status === "verified_price" || r.retailPrice?.status === "fallback_verified_price"
+  ).length;
+  const unpricedCount = actualPartCount - verifiedPriceCount;
+
+  const retrievalState = determineRetrievalState({
+    identityResolved: input.identityResolved,
+    expectedPartCount: input.expectedPartCount,
+    actualPartCount,
+    requiredPartCount: input.expectedPartCount ?? actualPartCount,
+    verifiedPriceCount,
+    unpricedCount,
+    failed: false,
+  });
+
+  return {
+    retrievalState,
+    expectedPartCount: input.expectedPartCount,
+    actualPartCount,
+    requiredPriceCount: input.expectedPartCount ?? actualPartCount,
+    verifiedPriceCount,
+    unpricedCount,
+    bomComplete: retrievalState === "bom_complete",
+    partsComplete: input.expectedPartCount !== null ? actualPartCount >= input.expectedPartCount : actualPartCount > 0,
+    pricingComplete: verifiedPriceCount >= actualPartCount && actualPartCount > 0,
   };
 }

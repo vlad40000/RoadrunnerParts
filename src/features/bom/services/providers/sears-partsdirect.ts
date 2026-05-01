@@ -420,7 +420,7 @@ function groupRowsBySection(rows: SearsParsedRow[]) {
     map.get(sectionName)!.push(row);
   }
 
-  return [...map.entries()].map(([sectionName, groupedRows]) => ({
+  return Array.from(map.entries()).map(([sectionName, groupedRows]) => ({
     sectionName,
     rows: uniqueBy(
       groupedRows,

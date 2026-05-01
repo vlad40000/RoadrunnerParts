@@ -465,17 +465,23 @@ Focus on:
         partNumber: (p.partNumber || "").toUpperCase().trim(),
       }));
 
-      const mergedParts = [...existingParts];
-      const seen = new Set(
-        existingParts
-          .map((p) => (p.partNumber || "").toUpperCase().trim())
-          .filter(Boolean),
-      );
+      const seen = new Set<string>();
+      const mergedParts: any[] = [];
 
+      // Add existing parts first, ensuring uniqueness
+      for (const p of existingParts) {
+        const pn = (p.partNumber || "").toUpperCase().trim();
+        if (pn && !seen.has(pn)) {
+          seen.add(pn);
+          mergedParts.push(p);
+        }
+      }
+
+      // Add new processed parts
       for (const np of processedParts) {
-        if (!np.partNumber) continue;
-        if (!seen.has(np.partNumber)) {
-          seen.add(np.partNumber);
+        const pn = (np.partNumber || "").toUpperCase().trim();
+        if (pn && !seen.has(pn)) {
+          seen.add(pn);
           mergedParts.push(np);
         }
       }
@@ -1400,7 +1406,7 @@ Focus on:
                   layout
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  key={part.partNumber}
+                  key={`${part.partNumber}-${part.section}-${index}`}
                   onClick={() => setSelectedPart(part)}
                   className="pro-card pro-card-hover p-4 cursor-pointer flex flex-col justify-between rounded-xl h-full"
                 >
@@ -1470,7 +1476,7 @@ Focus on:
                   <tbody className="divide-y divide-pro-slate-100">
                     {filteredParts.map((part, index) => (
                       <tr
-                        key={part.partNumber}
+                        key={`${part.partNumber}-${part.section}-${index}`}
                         onClick={() => setSelectedPart(part)}
                         className="hover:bg-pro-slate-50 cursor-pointer transition-colors group"
                       >

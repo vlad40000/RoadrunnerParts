@@ -151,6 +151,15 @@ export async function updateBomJobSummary(
     truthSource?: string | null;
     sourceStrategy?: string | null;
     errorText?: string | null;
+    retrievalState?: string | null;
+    expectedPartCount?: number | null;
+    actualPartCount?: number | null;
+    requiredPriceCount?: number | null;
+    verifiedPriceCount?: number | null;
+    unpricedCount?: number | null;
+    bomComplete?: boolean | null;
+    partsComplete?: boolean | null;
+    pricingComplete?: boolean | null;
   },
 ) {
   const job = await getBomJob(jobId);
@@ -175,6 +184,15 @@ export async function updateBomJobSummary(
       truthSource: partial.truthSource ?? job.truthSource,
       sourceStrategy: partial.sourceStrategy ?? job.sourceStrategy,
       errorText: partial.errorText ?? job.errorText,
+      retrievalState: partial.retrievalState ?? job.retrievalState,
+      expectedPartCount: partial.expectedPartCount ?? job.expectedPartCount,
+      actualPartCount: partial.actualPartCount ?? job.actualPartCount,
+      requiredPriceCount: partial.requiredPriceCount ?? job.requiredPriceCount,
+      verifiedPriceCount: partial.verifiedPriceCount ?? job.verifiedPriceCount,
+      unpricedCount: partial.unpricedCount ?? job.unpricedCount,
+      bomComplete: partial.bomComplete ?? job.bomComplete,
+      partsComplete: partial.partsComplete ?? job.partsComplete,
+      pricingComplete: partial.pricingComplete ?? job.pricingComplete,
       updatedAt: new Date(),
     })
     .where(eq(bomJobs.id, jobId));
@@ -201,6 +219,15 @@ export async function completeBomJob(
     expectedPartsTotal?: number | null;
     expectedPartsSource?: string | null;
     finalRows: Array<Record<string, unknown>>;
+    retrievalState: string;
+    expectedPartCount: number | null;
+    actualPartCount: number;
+    requiredPriceCount: number;
+    verifiedPriceCount: number;
+    unpricedCount: number;
+    bomComplete: boolean;
+    partsComplete: boolean;
+    pricingComplete: boolean;
   },
 ) {
   const normalizedStatus = normalizeBomStatus(
@@ -236,6 +263,15 @@ export async function completeBomJob(
       expectedPartsTotal: result.expectedPartsTotal ?? job.expectedPartsTotal,
       expectedPartsSource: result.expectedPartsSource ?? job.expectedPartsSource,
       finalRows: result.finalRows,
+      retrievalState: result.retrievalState,
+      expectedPartCount: result.expectedPartCount,
+      actualPartCount: result.actualPartCount,
+      requiredPriceCount: result.requiredPriceCount,
+      verifiedPriceCount: result.verifiedPriceCount,
+      unpricedCount: result.unpricedCount,
+      bomComplete: result.bomComplete,
+      partsComplete: result.partsComplete,
+      pricingComplete: result.pricingComplete,
       retrievedSources: scrubbedSources,
       errorText: null,
       updatedAt: new Date(),

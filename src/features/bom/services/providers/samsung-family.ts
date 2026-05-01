@@ -13,6 +13,8 @@ import {
   normalizeModel,
   uniqueBy,
 } from "./utils";
+import { buildSamsungPartsUrl } from "./deterministic-urls";
+import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
 import {
   searchExistingGroundingLayer,
   dedupeSearchHits,
@@ -243,7 +245,28 @@ export const samsungFamilyProvider: SourceProvider = {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
+    // Stage 1: Deterministic SamsungParts lookup
+    const deterministicUrl = buildSamsungPartsUrl(model);
+    try {
+      const html = await fetchHtml(deterministicUrl);
+      if (html.toUpperCase().includes(model)) {
+        // If we land on a search page with exact match or model page, handle it.
+        // For now, we continue to search-based grounding to find deep product pages.
+      }
+    } catch {
+      // ignore
+    }
+
+    // Stage 2: Grounding search for variant-specific pages
     const hits = await searchSamsungPartPages(model);
+    
+    // Fallback: if no hits for full model, try base model
+    if (!hits.length && model.includes("/")) {
+      const base = baseModel(model);
+      const baseHits = await searchSamsungPartPages(base);
+      hits.push(...baseHits);
+    }
+
     if (!hits.length) return [];
 
     const parsed: ParsedSamsungPart[] = [];
@@ -273,6 +296,7 @@ export const samsungFamilyProvider: SourceProvider = {
       meta: {
         rowCount: 1,
         sectionType: "supported-model-part-page",
+        isVariantMatch: model.includes("/") && row.sourceUrl.includes(model.replace("/", ""))
       },
     }));
   },

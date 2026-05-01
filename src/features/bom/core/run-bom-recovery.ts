@@ -14,6 +14,7 @@ import { classifyBomResult, normalizeBomStatus } from "./bom-status";
 import { buildRecoveryPlan } from "./recovery-plan";
 import { normalizeSectionName } from "../../identity/normalize";
 import type { BomRow, BomStatus } from "../schemas/bom";
+import { type ProviderSourceType } from "../services/providers/types";
 
 function cleanText(value: string | null | undefined) {
   return (value ?? "").replace(/\s+/g, " ").trim();
@@ -24,7 +25,7 @@ function normalizeSection(value: string | null | undefined) {
 }
 
 function unique<T>(items: T[]) {
-  return [...new Set(items)];
+  return Array.from(new Set(items));
 }
 
 function uniqueSources<T extends { provider?: string; sourceUrl?: string; sectionName?: string }>(
@@ -53,7 +54,7 @@ async function extractRowsFromSources(input: {
     sourceText?: string;
     text?: string;
     sourceUrl: string;
-    sourceType: "oem" | "distributor" | "manual" | "diagram" | "fallback";
+    sourceType: ProviderSourceType;
   }>;
   targetSections: string[];
   modelNumber: string;
@@ -62,12 +63,12 @@ async function extractRowsFromSources(input: {
   const allowed = new Set(input.targetSections.map((s) => normalizeSection(s)));
 
   for (const source of input.sources) {
-    const rows = await runPartsExtractor({
+    const { rows = [] } = (await runPartsExtractor({
       sourceText: source.text ?? source.sourceText ?? "",
       sourceUrl: source.sourceUrl,
       sourceType: source.sourceType,
       modelNumber: input.modelNumber,
-    });
+    })) || {};
 
     if (allowed.size > 0) {
       incrementalRows.push(

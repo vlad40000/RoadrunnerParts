@@ -2,6 +2,7 @@ import { z } from "zod";
 import { bomRowSchema, type BomRow, type Stage3WorkerOutput } from "../schemas/bom";
 import { runStructuredJson } from "../services/model-runner";
 import { logger } from "@/lib/logger";
+import { type ProviderSourceType } from "../services/providers/types";
 
 const partsResultSchema = z.object({
   rows: z.array(
@@ -16,7 +17,7 @@ const partsResultSchema = z.object({
       replacementNote: z.string().nullable().optional(),
       confidence: z.number().default(0.5),
       sourceUrl: z.string().nullable().optional(),
-      sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "seeded"]).nullable().optional(),
+      sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "seeded", "distributor-merged-with-partselect"]).nullable().optional(),
       price: z.number().nullable().optional(),
       retailPrice: z.number().nullable().optional(),
     }),
@@ -40,7 +41,7 @@ function isExplicitNoRowsSource(sourceText: string) {
 function parseStructuredRows(
   sourceText: string,
   sourceUrl: string,
-  sourceType: "oem" | "distributor" | "manual" | "diagram" | "fallback" | "seeded",
+  sourceType: ProviderSourceType | "seeded",
 ): BomRow[] {
   const lines = sourceText
     .split("\n")
@@ -98,7 +99,7 @@ import {
 export async function runPartsExtractor(input: {
   sourceText: string;
   sourceUrl: string;
-  sourceType: "oem" | "distributor" | "manual" | "diagram" | "fallback" | "seeded";
+  sourceType: ProviderSourceType | "seeded";
   provider?: string;
   modelNumber: string;
   applianceType?: string | null;

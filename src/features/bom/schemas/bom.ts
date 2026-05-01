@@ -70,7 +70,25 @@ export const bomRowSchema = z.object({
   serialApplicability: z.array(z.string()).optional(),
   confidence: z.number().min(0).max(1),
 
-  retailPrice: z.number().nullable().optional(),
+  retailPrice: z.object({
+    status: z.enum([
+      "verified_price",
+      "encompass_no_price",
+      "fallback_verified_price",
+      "no_verified_price",
+      "ambiguous_match",
+      "blocked",
+      "source_error"
+    ]),
+    source: z.string().optional(),
+    listedPrice: z.number().nullable().optional(),
+    currency: z.literal("USD").optional(),
+    productUrl: z.string().nullable().optional(),
+    checkedAt: z.string().nullable().optional(),
+    matchType: z.literal("exact_part_number").optional(),
+    requestedPartNumber: z.string().optional(),
+    matchedPartNumber: z.string().optional(),
+  }).nullable().optional(),
   retailPriceText: z.string().nullable().optional(),
   retailAvailability: z.string().nullable().optional(),
   retailPricingUrl: z.string().nullable().optional(),
@@ -98,6 +116,38 @@ export const completionProofSchema = z.object({
   sourceAgreement: z.boolean(),
 });
 
+export const retrievalStateSchema = z.enum([
+  "not_checked",
+  "no_result",
+  "identity_only",
+  "identity_extraction",
+  "identity_normalization",
+  "sources_resolved",
+  "summary_only",
+  "parts_partial",
+  "parts_complete_pricing_missing",
+  "parts_complete_pricing_partial",
+  "needs_fallback",
+  "bom_near_complete",
+  "bom_complete",
+  "db_complete",
+  "seed_route_only",
+  "seed_sections_only",
+  "seed_parts_partial",
+  "seed_bom_candidate",
+  "needs_live_gap_fill",
+  "cache_hit",
+  "failed",
+  "stage0_seed_intake",
+  "bom_synthesis"
+]);
+
+export type RetrievalState = z.infer<typeof retrievalStateSchema>;
+
+export const bomStatusSchema = retrievalStateSchema;
+
+export type BomStatus = RetrievalState;
+
 export const bomResultSchema = z.object({
   brand: z.string().nullable(),
   model: z.string().nullable(),
@@ -108,6 +158,15 @@ export const bomResultSchema = z.object({
   uniqueRowCount: z.number(),
   unmatchedCallouts: z.array(z.string()).default([]),
   status: bomStatusSchema,
+  retrievalState: retrievalStateSchema,
+  expectedPartCount: z.number().int().nullable(),
+  actualPartCount: z.number().int().nonnegative(),
+  requiredPriceCount: z.number().int().nonnegative(),
+  verifiedPriceCount: z.number().int().nonnegative(),
+  unpricedCount: z.number().int().nonnegative(),
+  bomComplete: z.boolean(),
+  partsComplete: z.boolean(),
+  pricingComplete: z.boolean(),
   rows: z.array(bomRowSchema),
   issues: z.array(z.string()).default([]),
   notices: z.array(
@@ -137,23 +196,7 @@ export const stage4OutputSchema = bomResultSchema;
 
 export type Stage4Output = z.infer<typeof stage4OutputSchema>;
 
-export const bomStatusSchema = z.enum([
-  "not_checked",
-  "no_result",
-  "summary_only",
-  "needs_fallback",
-  "parts_partial",
-  "bom_near_complete",
-  "bom_complete",
-  "db_complete",
-  "seed_route_only",
-  "seed_sections_only",
-  "seed_parts_partial",
-  "seed_bom_candidate",
-  "needs_live_gap_fill",
-  "cache_hit",
-  "failed"
-]);
+
 
 export const stage0OutputSchema = z.object({
   seed_lookup_result: z.object({
@@ -168,13 +211,17 @@ export const stage0OutputSchema = z.object({
 export type Stage0Output = z.infer<typeof stage0OutputSchema>;
 
 export const buildBomJobStateSchema = z.object({
-  retrievalState: z.string(),
+  retrievalState: retrievalStateSchema,
   nextRequiredStep: z.string(),
   identity: stage1OutputSchema.nullable(),
   normalizedIdentity: stage2OutputSchema.nullable(),
   trustedSources: z.array(z.string()),
   rejectedSources: z.array(z.string()),
   expectedPartCount: z.number().nullable(),
+  actualPartCount: z.number().default(0),
+  requiredPriceCount: z.number().default(0),
+  verifiedPriceCount: z.number().default(0),
+  unpricedCount: z.number().default(0),
   coverageRatio: z.number().nullable(),
   paginationComplete: z.boolean(),
   bomRows: z.array(bomRowSchema),
@@ -224,7 +271,6 @@ export const diagramParseSchema = z.object({
 });
 
 
-export type BomStatus = z.infer<typeof bomStatusSchema>;
 export type BomRow = z.infer<typeof bomRowSchema>;
 export type Identity = z.infer<typeof identitySchema>;
 export type DiagramParse = z.infer<typeof diagramParseSchema>;

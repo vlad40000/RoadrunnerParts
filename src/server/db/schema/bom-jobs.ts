@@ -5,6 +5,7 @@ import {
   timestamp,
   integer,
   real,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -29,6 +30,16 @@ export const bomJobs = pgTable("bom_jobs", {
   coveragePct: real("coverage_pct"),
   truthSource: text("truth_source"),
   sourceStrategy: text("source_strategy"),
+
+  retrievalState: text("retrieval_state"),
+  expectedPartCount: integer("expected_part_count"),
+  actualPartCount: integer("actual_part_count"),
+  requiredPriceCount: integer("required_price_count"),
+  verifiedPriceCount: integer("verified_price_count"),
+  unpricedCount: integer("unpriced_count"),
+  bomComplete: boolean("bom_complete").default(false),
+  partsComplete: boolean("parts_complete").default(false),
+  pricingComplete: boolean("pricing_complete").default(false),
 
   uploadedFiles: jsonb("uploaded_files")
     .$type<

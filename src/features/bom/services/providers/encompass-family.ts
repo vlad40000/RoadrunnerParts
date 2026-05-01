@@ -6,9 +6,25 @@ import {
   defaultParseVariationLinks,
   type EncompassParsedRow,
 } from "./encompass-backed-family";
-import { cleanText, normalizeModel, uniqueBy } from "./utils";
+import { cleanText, normalizeModel, uniqueBy, normalizeBrand, absoluteUrl, fetchHtml } from "./utils";
+import { buildEncompassUrl, parseEncompassExplodedViewUrl } from "./deterministic-urls";
+import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
+import { type ProviderInput, type RetrievedSource } from "./types";
 
-function looksLikeEncompassModelUrl(url: string) {
+interface EncompassParseRowsInput {
+  html: string;
+  text: string;
+  model: string;
+  variationUrl: string;
+  variationCode: string | null;
+}
+
+interface EncompassSection {
+  name: string;
+  html: string;
+}
+
+function looksLikeEncompassModelUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     return (
@@ -21,7 +37,7 @@ function looksLikeEncompassModelUrl(url: string) {
   }
 }
 
-function isEncompassVariationUrl(url: string) {
+function isEncompassVariationUrl(url: string): boolean {
   try {
     const parts = new URL(url).pathname.split("/").filter(Boolean);
     const modelIndex = parts.findIndex((p) => p.toLowerCase() === "model");
@@ -31,7 +47,7 @@ function isEncompassVariationUrl(url: string) {
   }
 }
 
-function extractEncompassVariationCodeFromUrl(url: string) {
+function extractEncompassVariationCodeFromUrl(url: string): string | null {
   try {
     const parts = new URL(url).pathname.split("/").filter(Boolean);
     const modelIndex = parts.findIndex((p) => p.toLowerCase() === "model");
@@ -44,7 +60,7 @@ function extractEncompassVariationCodeFromUrl(url: string) {
   return null;
 }
 
-function buildEncompassQueries(model: string) {
+function buildEncompassQueries(model: string): string[] {
   const normalized = normalizeModel(model);
   return [
     `site:encompass.com/model "${normalized}"`,
@@ -53,7 +69,7 @@ function buildEncompassQueries(model: string) {
   ];
 }
 
-function encompassLandingHasMultipleVariations(text: string) {
+function encompassLandingHasMultipleVariations(text: string): boolean {
   const upper = text.toUpperCase();
   return (
     upper.includes("THIS MODEL HAS MULTIPLE VARIATIONS") ||
@@ -61,7 +77,7 @@ function encompassLandingHasMultipleVariations(text: string) {
   );
 }
 
-function encompassLandingHasPartsList(text: string) {
+function encompassLandingHasPartsList(text: string): boolean {
   const upper = text.toUpperCase();
   return (
     upper.includes("PARTS LIST") &&
@@ -119,14 +135,142 @@ function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
   return uniqueBy(rows, (row) => `${row.sectionName}|${row.partNumber}`);
 }
 
-function parseEncompassRows(input: {
-  html: string;
-  text: string;
-  model: string;
-  variationUrl: string;
-  variationCode: string | null;
-}) {
+function parseEncompassRows(input: EncompassParseRowsInput): EncompassParsedRow[] {
   return parseEncompassRowsFromTable(input.html);
+}
+
+async function fetchEncompassSources(input: ProviderInput): Promise<RetrievedSource[]> {
+  const model = normalizeModel(input.model);
+  const brand = normalizeBrand(input.brand ?? "");
+  
+  if (!model || !brand) return [];
+
+  const modelUrl = buildEncompassUrl({ brand, model });
+  let html: string | null = null;
+  let resolvedUrl = modelUrl;
+
+  if (modelUrl) {
+    try {
+      html = await fetchHtml(modelUrl);
+      if (!html.toUpperCase().includes(model)) {
+        html = null;
+      }
+    } catch {
+      html = null;
+    }
+  }
+
+  // If model page failed or didn't resolve, try targeted search for Exploded View
+  if (!html) {
+    // extract prefix if possible
+    let mfgCode = "WHI"; 
+    const b = brand.toLowerCase();
+    if (b.includes("ge") || b.includes("hotpoint") || b.includes("haier") || b.includes("monogram")) mfgCode = "HOT";
+    else if (b.includes("samsung")) mfgCode = "SAM";
+    else if (b.includes("lg")) mfgCode = "ZEN";
+    else if (b.includes("whirlpool") || b.includes("maytag") || b.includes("kitchenaid") || b.includes("amana") || b.includes("jennair")) mfgCode = "WHI";
+
+    const searchResolution = await resolveExactModelUrl({
+      model,
+      domain: "encompass.com",
+      preferredQueries: [
+        `site:encompass.com/Exploded-View-Assembly/${mfgCode} "${model}"`,
+        `site:encompass.com/model "${model}"`,
+      ]
+    });
+
+    if (searchResolution?.url) {
+      resolvedUrl = searchResolution.url;
+      try {
+        html = await fetchHtml(resolvedUrl);
+      } catch {
+        return [];
+      }
+    }
+  }
+
+  if (!html || !resolvedUrl) return [];
+
+  const $ = load(html);
+  
+  // Case A: We are on an Exploded View page
+  if (resolvedUrl.includes("/Exploded-View-Assembly/")) {
+    return extractFromEncompassExplodedView(html, resolvedUrl, model);
+  }
+
+  // Case B: We are on a Model page, look for Exploded View link
+  const explodedViewLink = $('a[href*="/Exploded-View-Assembly/"]').first();
+    const href = explodedViewLink.attr("href");
+    if (href) {
+      const explodedUrl = absoluteUrl(resolvedUrl, href);
+      try {
+        const explodedHtml = await fetchHtml(explodedUrl);
+        return extractFromEncompassExplodedView(explodedHtml, explodedUrl, model);
+      } catch {
+        // fallback to model page parsing
+      }
+    }
+
+  // Case C: Fallback to model page parts table
+  const rows = parseEncompassRowsFromTable(html);
+  if (rows.length > 0) {
+    return [{
+      sourceUrl: resolvedUrl,
+      sourceType: "distributor",
+      provider: "encompass-family",
+      sectionName: "All Model Parts",
+      text: [
+        "SOURCE_PROVIDER: encompass-family",
+        `MODEL: ${model}`,
+        "SECTION: All Model Parts",
+        ...rows.map(r => `ROW|diagram_number=${r.partNumber}|description=${r.description}|original_part_number=|current_service_part_number=${r.partNumber}|nla_status=${r.nlaStatus}|replacement_note=`)
+      ].join("\n"),
+      meta: { deterministic: true }
+    }];
+  }
+
+  return [];
+}
+
+async function extractFromEncompassExplodedView(
+  html: string,
+  url: string,
+  model: string
+): Promise<RetrievedSource[]> {
+  const $ = load(html);
+  const parsedUrl = parseEncompassExplodedViewUrl(url);
+  
+  // In Exploded View pages, there are often multiple sections shown as thumbnails or tabs
+  const sections: EncompassSection[] = [];
+  
+  // Simplified for now: treat the whole page as one if no explicit tabs found, 
+  // or look for section identifiers in the parts table
+  const rows = parseEncompassRowsFromTable(html);
+  if (!rows.length) return [];
+
+  // Group by section
+  const groups = uniqueBy(rows, r => r.sectionName).map(s => s.sectionName);
+  
+  return groups.map(sectionName => {
+    const sectionRows = rows.filter(r => r.sectionName === sectionName);
+    return {
+      sourceUrl: url,
+      sourceType: "oem", // Exploded views are effectively OEM-tier schematics
+      provider: "encompass-family",
+      sectionName: sectionName || "All Model Parts",
+      text: [
+        "SOURCE_PROVIDER: encompass-family",
+        `MODEL: ${model}`,
+        `SECTION: ${sectionName || "All Model Parts"}`,
+        ...sectionRows.map(r => `ROW|diagram_number=${r.partNumber}|description=${r.description}|original_part_number=|current_service_part_number=${r.partNumber}|nla_status=${r.nlaStatus}|replacement_note=`)
+      ].join("\n"),
+      meta: { 
+        mfgCode: parsedUrl?.mfgCode,
+        assemblyId: parsedUrl?.assemblyId,
+        isExplodedView: true
+      }
+    };
+  });
 }
 
 export const encompassFamilyProvider = createEncompassBackedFamilyProvider({
@@ -173,3 +317,13 @@ export const encompassFamilyProvider = createEncompassBackedFamilyProvider({
   },
   parseRows: parseEncompassRows,
 });
+
+// Hook up deterministic fetcher before search-based factory fetcher
+const originalFetchSources = encompassFamilyProvider.fetchSources;
+encompassFamilyProvider.fetchSources = async (input: ProviderInput): Promise<RetrievedSource[]> => {
+  const deterministicSources = await fetchEncompassSources(input);
+  if (deterministicSources.length > 0) {
+    return deterministicSources;
+  }
+  return originalFetchSources(input);
+};

@@ -118,7 +118,7 @@ export const searchExistingGroundingLayer: SearchAdapter = async (input) => {
       const sources = await runGroundedSourceSearch(
         input.domain
           ? `Find exact appliance model parts pages on ${input.domain} for this search query: ${query}`
-          : `Find exact appliance model parts pages on authoritative sites (Sears PartsDirect, PartSelect, or Fix.com) for this search query: ${query}`,
+          : `Find exact appliance model parts pages on authoritative sites (Sears PartsDirect, Encompass, Parts Dr, AppliancePartsPros, PartSelect, or Fix.com) for this search query: ${query}`,
       );
 
       return sources.map((s, index) =>

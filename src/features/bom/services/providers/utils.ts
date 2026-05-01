@@ -27,7 +27,7 @@ export function uniqueBy<T>(items: T[], keyFn: (item: T) => string) {
     map.set(keyFn(item), item);
   }
 
-  return [...map.values()];
+  return Array.from(map.values());
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

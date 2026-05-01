@@ -18,6 +18,8 @@ import { lgFamilyProvider } from "./providers/lg-family";
 import { samsungFamilyProvider } from "./providers/samsung-family";
 import { normalizeModel, runWithConcurrency, uniqueBy } from "./providers/utils";
 import { seededProvider } from "./providers/seeded-provider";
+import { appliancePartsProsProvider } from "./providers/appliancepartspros";
+import { partsDrProvider } from "./providers/partsdr";
 
 const ALL_PROVIDERS: SourceProvider[] = [
   seededProvider,
@@ -31,6 +33,8 @@ const ALL_PROVIDERS: SourceProvider[] = [
   frigidaireFamilyProvider,
   lgFamilyProvider,
   samsungFamilyProvider,
+  appliancePartsProsProvider,
+  partsDrProvider,
 ];
 
 const PROVIDER_BY_NAME: Record<string, SourceProvider> = Object.fromEntries(
@@ -43,6 +47,8 @@ const UNIVERSAL_FALLBACK_PROVIDER_NAMES = [
   "repairclinic-family",
   "encompass-family",
   "partselect.com",
+  "appliancepartspros",
+  "partsdr",
 ] as const;
 
 const FAMILY_FALLBACK_PROVIDER_NAMES: Record<string, string[]> = {
@@ -60,7 +66,7 @@ const ADAPTER_TO_PROVIDER_NAMES: Record<string, string[]> = {
   "lg-family": ["lg-family"],
   "samsung-family": ["samsung-family"],
   "bosch-family": ["bosch-family"],
-  "distributor-pass": ["fix.com", "sears-partsdirect", "encompass-family", "partselect.com"],
+  "distributor-pass": ["fix.com", "sears-partsdirect", "encompass-family", "partselect.com", "appliancepartspros", "partsdr"],
 };
 
 export type SourceProviderPlan = {
@@ -74,7 +80,7 @@ export type SourceProviderPlan = {
 };
 
 function dedupeStrings(values: Array<string | null | undefined>) {
-  return [...new Set(values.filter(Boolean) as string[])];
+  return Array.from(new Set(values.filter(Boolean) as string[]));
 }
 
 function filterByTargetSections(
@@ -234,11 +240,9 @@ export async function fetchAuthoritativeSources(input: {
     return uniqueBy(seededSources, (s) => `${s.provider}:${s.sourceUrl}`);
   }
 
-  // 1. Co-primary diagram/catalog sources: Sears PartsDirect + Fix.com.
-  // Run both before falling through so a weak hit from one provider does not
-  // suppress useful diagram/count evidence from the other.
+  // 1. Co-primary diagram/catalog sources: Sears PartsDirect + Fix.com + Encompass + AppliancePartsPros + Parts Dr.
   const coPrimarySources = await runProviders(
-    [searsPartsDirectProvider, fixComProvider],
+    [searsPartsDirectProvider, fixComProvider, encompassFamilyProvider, appliancePartsProsProvider, partsDrProvider],
     providerInput,
   );
   if (coPrimarySources.length > 0) {
@@ -258,8 +262,7 @@ export async function fetchAuthoritativeSources(input: {
   }
 
   // 4. General distributors
-  const encompassSources = await runProviders([encompassFamilyProvider], providerInput);
-  return uniqueBy(encompassSources, (s) => `${s.provider}:${s.sourceUrl}`);
+  return [];
 }
 
 /**

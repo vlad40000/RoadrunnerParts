@@ -16,7 +16,7 @@ export type PartsSourceRoute = {
 
 export type BrandSourceConfig = {
   canonicalBrand: string;
-  routes: Partial<Record<ApplianceType, PartsSourceRoute[]>>;
+  routes?: Partial<Record<ApplianceType, PartsSourceRoute[]>>;
   genericRoutes?: PartsSourceRoute[];
   fallbackRoutes?: PartsSourceRoute[];
 };

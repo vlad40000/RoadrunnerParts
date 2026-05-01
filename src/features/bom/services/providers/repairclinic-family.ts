@@ -325,7 +325,7 @@ function parseRowsFromHtml(html: string): ParsedRepairClinicRow[] {
 
 function parseRowsFromCategoryText(pageText: string): ParsedRepairClinicRow[] {
   const rows: ParsedRepairClinicRow[] = [];
-  const matches = [...pageText.matchAll(/([A-Z][A-Za-z0-9/&,'().\- ]+?)\s+Item #\s*(\d+)\s+[\s\S]*?OEM Part - Manufacturer #\s*([A-Z0-9-]+)/g)];
+  const matches = Array.from(pageText.matchAll(/([A-Z][A-Za-z0-9/&,'().\- ]+?)\s+Item #\s*(\d+)\s+[\s\S]*?OEM Part - Manufacturer #\s*([A-Z0-9-]+)/g));
 
   for (const match of matches) {
     rows.push({

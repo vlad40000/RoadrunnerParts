@@ -5,9 +5,10 @@ export type ProviderSourceType =
   | "distributor"
   | "manual"
   | "diagram"
-  | "fallback";
+  | "fallback"
+  | "distributor-merged-with-partselect";
 
-export type RetrievedSource = {
+export interface RetrievedSource {
   sourceUrl: string;
   sourceType: ProviderSourceType;
   provider: string;
@@ -15,16 +16,17 @@ export type RetrievedSource = {
   sectionOriginal?: string;
   text: string;
   meta?: Record<string, unknown>;
-};
+}
 
-export type ProviderInput = {
+export interface ProviderInput {
   brand: string | null;
   model: string | null;
-};
+  applianceType?: string | null;
+}
 
-export type SourceProvider = {
+export interface SourceProvider {
   name: string;
   priority: number;
   supports(input: ProviderInput): boolean;
   fetchSources(input: ProviderInput): Promise<RetrievedSource[]>;
-};
+}

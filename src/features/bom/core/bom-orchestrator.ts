@@ -7,13 +7,14 @@ import { runSeedIntake } from "../agents/seed-intake";
 import { runSourceLookup } from "../agents/source-lookup";
 import { fetchSources } from "../services/source-fetcher";
 import { normalizeBomRows } from "./bom-normalizer";
-import { classifyBomResult } from "./bom-classifier";
-import { computeUnmatchedCallouts, calculateCompletionProof } from "./bom-validator";
+import { enrichBomRowsWithRetailPricing } from "../services/retail-pricing";
+import { computeUnmatchedCallouts, calculateCompletionProof, validate_bom_completion } from "./bom-validator";
 import { coverageScore } from "./coverage-scorer";
-import type { BomRow, Identity, BomResult, DiagramParse, Clue, NormalizedIdentity, BuildBomJobState, BomStatus } from "../schemas/bom";
+import type { BomRow, Identity, BomResult, DiagramParse, Clue, NormalizedIdentity, BuildBomJobState, BomStatus, RetrievalState } from "../schemas/bom";
 import { ApplianceDecoder } from "@/lib/decoder";
 import { logger } from "@/lib/logger";
 import { runWithConcurrency } from "../services/utils";
+import { type ProviderSourceType } from "../services/providers/types";
 import fs from "fs/promises";
 import path from "path";
 
@@ -24,7 +25,7 @@ export type BuildBomJobOutput = {
   diagramParse: DiagramParse | null;
   retrievedSources: Array<{
     sourceUrl: string;
-    sourceType: "oem" | "distributor" | "manual" | "diagram" | "fallback";
+    sourceType: ProviderSourceType;
     provider: string;
     text: string;
     sectionName?: string;
@@ -59,13 +60,17 @@ export async function buildBomJob(input: {
   }
 
   let state: BuildBomJobState = {
-    retrievalState: "init",
+    retrievalState: "no_result",
     nextRequiredStep: "stage0_seed_intake",
     identity: null,
     normalizedIdentity: null,
     trustedSources: [],
     rejectedSources: [],
     expectedPartCount: null,
+    actualPartCount: 0,
+    requiredPriceCount: 0,
+    verifiedPriceCount: 0,
+    unpricedCount: 0,
     coverageRatio: null,
     paginationComplete: false,
     bomRows: [],
@@ -148,7 +153,7 @@ export async function buildBomJob(input: {
   await emitNotice("success", "identity_normalization", `Normalized identity to Brand: ${normalizedIdentity.brand}, Model: ${normalizedIdentity.model}`);
 
   state.normalizedIdentity = normalizedIdentity;
-  state.retrievalState = "identity_normalization";
+  state.retrievalState = "identity_only";
   state.nextRequiredStep = "source_lookup";
   await persistState(state);
 
@@ -165,6 +170,9 @@ export async function buildBomJob(input: {
       await emitNotice("warning", "source_lookup", `No trusted sources found for model ${normalizedIdentity.model}. Retrieval may fail or have low coverage.`);
     }
   }
+
+  state.retrievalState = "sources_resolved";
+  await persistState(state);
 
   const identity: Identity = {
     brand: normalizedIdentity.brand,
@@ -260,7 +268,7 @@ export async function buildBomJob(input: {
   }
   state.paginationComplete = validResults.every(r => r.paginationComplete);
   
-  state.retrievalState = "parallel_parts_extraction";
+  state.retrievalState = "parts_partial";
   state.nextRequiredStep = "bom_synthesis";
   await persistState(state);
 
@@ -300,27 +308,37 @@ export async function buildBomJob(input: {
   const diagramParse = hasUserDiagramFiles ? await runDiagramParser(input.diagramFiles!) : null;
   const unmatchedCallouts = hasUserDiagramFiles ? computeUnmatchedCallouts(diagramParse, finalRows) : [];
 
-  // Determine Machine Status
-  let status: BomStatus = "bom_complete";
-  if (finalRows.length === 0) {
-    status = "no_result";
-    await emitNotice("error", "bom_synthesis", "BOM Synthesis yielded 0 parts. Marking as no_result.");
-  } else if (finalRows.length < 10) {
-    status = "summary_only";
-    await emitNotice("warning", "bom_synthesis", `BOM Synthesis yielded only ${finalRows.length} parts (summary_only). Minimum viable threshold is 10.`);
-  } else if (state.expectedPartCount && state.expectedPartCount > 0 && state.coverageRatio! < 0.9) {
-    status = "parts_partial";
-    await emitNotice("warning", "bom_synthesis", `BOM Synthesis is partial. Coverage ratio is ${(state.coverageRatio! * 100).toFixed(1)}% (Threshold is 90% of expected ${state.expectedPartCount} parts).`);
-  } else if ((state.expectedPartCount === null || state.expectedPartCount === 0) && state.coverageRatio! < 1.0) {
-    status = "parts_partial";
-    const uniqueSources = new Set(extractedRowsRaw.map(r => r.sourceUrl)).size;
-    await emitNotice("warning", "bom_synthesis", `BOM Synthesis is partial. Unknown total count, reached ${finalRows.length}/40 parts from ${uniqueSources} sources.`);
-  } else if (!state.paginationComplete) {
-    status = "needs_fallback";
-    await emitNotice("warning", "bom_synthesis", "BOM Synthesis requires fallback due to incomplete pagination from sources.");
-  } else {
-    await emitNotice("success", "bom_synthesis", `BOM Synthesis complete. Generated ${finalRows.length} unique parts with ${(state.coverageRatio! * 100).toFixed(1)}% coverage.`);
-  }
+  // STAGE 5: Verified Retail Pricing
+  await input.onStage?.("retail_pricing_discovery");
+  const pricingResult = await enrichBomRowsWithRetailPricing({
+    brand: identity.brand,
+    model: identity.model,
+    rows: finalRows,
+  });
+  
+  const finalPricedRows = pricingResult.rows;
+  state.bomRows = finalPricedRows;
+
+  // Final Validation Gate
+  const completion = validate_bom_completion({
+    rows: finalPricedRows,
+    expectedPartCount: state.expectedPartCount,
+    identityResolved: true,
+  });
+
+  state.retrievalState = completion.retrievalState;
+  state.actualPartCount = completion.actualPartCount;
+  state.requiredPriceCount = completion.requiredPriceCount;
+  state.verifiedPriceCount = completion.verifiedPriceCount;
+  state.unpricedCount = completion.unpricedCount;
+  
+  await emitNotice(
+    completion.bomComplete ? "success" : "warning",
+    "retail_pricing_discovery",
+    `BOM Completion: ${completion.bomComplete ? "COMPLETE" : "INCOMPLETE"}. Status: ${completion.retrievalState}. Prices: ${completion.verifiedPriceCount}/${completion.actualPartCount}`
+  );
+  
+  await persistState(state);
 
   // STAGE 5: MSRP Discovery
   await input.onStage?.("msrp_discovery");
@@ -347,9 +365,18 @@ export async function buildBomJob(input: {
     rawRowCount: extractedRowsRaw.length,
     uniqueRowCount: finalRows.length,
     unmatchedCallouts: unmatchedCallouts.map(String),
-    status,
-    rows: finalRows,
-    issues: [],
+    status: state.retrievalState,
+    retrievalState: state.retrievalState,
+    expectedPartCount: state.expectedPartCount,
+    actualPartCount: state.actualPartCount,
+    requiredPriceCount: state.requiredPriceCount,
+    verifiedPriceCount: state.verifiedPriceCount,
+    unpricedCount: state.unpricedCount,
+    bomComplete: completion.bomComplete,
+    partsComplete: completion.partsComplete,
+    pricingComplete: completion.pricingComplete,
+    rows: state.bomRows,
+    issues: pricingResult.issues,
     notices: state.notices,
     coverageScore: state.coverageRatio ?? 0,
     truthSource: retrievedSources.length > 0 ? retrievedSources[0].sourceUrl : null,
@@ -358,11 +385,10 @@ export async function buildBomJob(input: {
       expectedPartCount: state.expectedPartCount,
       totalExtracted: finalRows.length,
       coverageRatio: state.coverageRatio!,
-      sourceAgreement: true, // Placeholder for actual agreement check
+      sourceAgreement: true,
     } : undefined
   };
 
-  state.retrievalState = "bom_complete";
   state.nextRequiredStep = "done";
   await persistState(state);
 
