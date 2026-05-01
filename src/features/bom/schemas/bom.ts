@@ -413,6 +413,32 @@ export const diagramParseSchema = z.object({
 });
 
 
+export const sourceResolutionCandidateSchema = z.object({
+  source: z.string(),
+  url: z.string(),
+  match_type: z.enum(["exact_model", "exact_variant", "rejected_nearby_model", "rejected_brand_mismatch"]),
+  confidence: z.enum(["high", "medium", "low"]),
+  evidence: z.string()
+});
+
+export const sourceResolutionResultSchema = z.object({
+  status: z.enum(["sources_resolved", "partial", "no_result"]),
+  source_policy: z.string().default("distributor_first_oem_disabled"),
+  model: z.string().nullable(),
+  brand: z.string().nullable(),
+  manufacturer_family: z.string().nullable(),
+  searched_sources: z.array(z.string()),
+  skipped_sources: z.array(z.object({
+    source: z.string(),
+    reason: z.string()
+  })).default([]),
+  resolved_candidates: z.array(sourceResolutionCandidateSchema),
+  next_tool: z.enum(["url_context", "browser_assist", "stop"]).default("stop"),
+});
+
+export type SourceResolutionCandidate = z.infer<typeof sourceResolutionCandidateSchema>;
+export type SourceResolutionResult = z.infer<typeof sourceResolutionResultSchema>;
+
 export type Identity = z.infer<typeof identitySchema>;
 export type DiagramParse = z.infer<typeof diagramParseSchema>;
 export type Clue = z.infer<typeof clueSchema>;

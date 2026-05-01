@@ -21,17 +21,28 @@ export type SourceKey =
   | "appliancepartspros"
   | "repairclinic-family"
   | "partselect.com"
-  | "fix.com";
+  | "fix.com"
+  | "marcone"
+  | "easyapplianceparts";
 
-const UNIVERSAL_DISTRIBUTOR_SOURCES: SourceKey[] = [
+const PRIMARY_SOURCES: SourceKey[] = [
   "encompass",
-  "encompass-family",
   "sears-partsdirect",
   "partsdr",
+];
+
+const SECONDARY_SOURCES: SourceKey[] = [
   "appliancepartspros",
   "repairclinic-family",
   "partselect.com",
   "fix.com",
+  "marcone",
+  "easyapplianceparts",
+];
+
+const UNIVERSAL_DISTRIBUTOR_SOURCES: SourceKey[] = [
+  ...PRIMARY_SOURCES,
+  ...SECONDARY_SOURCES,
 ];
 
 const OEM_SOURCE_KEYS: SourceKey[] = [
@@ -74,42 +85,60 @@ export const SOURCE_DOMAINS: Record<SourceKey, string[]> = {
   "fix.com": ["fix.com"],
 };
 
+export const SOURCE_POLICY = {
+  defaultMode: "distributor_first",
+  oemEnabledByDefault: false,
+  allowOemWhenUserProvidesUrl: true,
+  allowOemForIdentityRepair: true,
+  allowOemForSerialDecoding: true,
+  allowOemForKnownDeterministicPartsEndpoint: true
+};
+
 export const BRAND_SOURCE_GATE: Record<
   BrandFamily,
-  { approvedSources: SourceKey[]; forbiddenSources: SourceKey[] }
+  { primarySources: SourceKey[]; secondarySources: SourceKey[]; forbiddenSources: SourceKey[] }
 > = {
   "ge-family": {
-    approvedSources: ["ge-official", ...UNIVERSAL_DISTRIBUTOR_SOURCES],
-    forbiddenSources: OEM_SOURCE_KEYS.filter((source) => source !== "ge-official"),
+    primarySources: PRIMARY_SOURCES,
+    secondarySources: SECONDARY_SOURCES,
+    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "bosch-family": {
-    approvedSources: ["bosch-family", ...UNIVERSAL_DISTRIBUTOR_SOURCES],
-    forbiddenSources: OEM_SOURCE_KEYS.filter((source) => source !== "bosch-family"),
+    primarySources: PRIMARY_SOURCES,
+    secondarySources: SECONDARY_SOURCES,
+    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "frigidaire-family": {
-    approvedSources: ["frigidaire-family", ...UNIVERSAL_DISTRIBUTOR_SOURCES],
-    forbiddenSources: OEM_SOURCE_KEYS.filter((source) => source !== "frigidaire-family"),
+    primarySources: PRIMARY_SOURCES,
+    secondarySources: SECONDARY_SOURCES,
+    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "lg-family": {
-    approvedSources: ["lg-family", ...UNIVERSAL_DISTRIBUTOR_SOURCES],
-    forbiddenSources: OEM_SOURCE_KEYS.filter((source) => source !== "lg-family"),
+    primarySources: PRIMARY_SOURCES,
+    secondarySources: SECONDARY_SOURCES,
+    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "samsung-family": {
-    approvedSources: ["samsung-family", ...UNIVERSAL_DISTRIBUTOR_SOURCES],
-    forbiddenSources: OEM_SOURCE_KEYS.filter((source) => source !== "samsung-family"),
+    primarySources: PRIMARY_SOURCES,
+    secondarySources: SECONDARY_SOURCES,
+    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "whirlpool-family": {
-    approvedSources: ["whirlpool-family", ...UNIVERSAL_DISTRIBUTOR_SOURCES],
-    forbiddenSources: OEM_SOURCE_KEYS.filter((source) => source !== "whirlpool-family"),
+    primarySources: PRIMARY_SOURCES,
+    secondarySources: SECONDARY_SOURCES,
+    forbiddenSources: OEM_SOURCE_KEYS,
   },
   unknown: {
-    approvedSources: UNIVERSAL_DISTRIBUTOR_SOURCES,
+    primarySources: PRIMARY_SOURCES,
+    secondarySources: SECONDARY_SOURCES,
     forbiddenSources: OEM_SOURCE_KEYS,
   },
 };
 
 export type BrandSourceGate = {
   brandFamily: BrandFamily;
+  primarySources: SourceKey[];
+  secondarySources: SourceKey[];
   approvedSources: SourceKey[];
   forbiddenSources: SourceKey[];
   approvedDomains: string[];
@@ -181,11 +210,15 @@ export function resolveBrandSourceGate(input: {
       : normalizeBrandFamily(input.resolvedBrand ?? input.brand);
   const gate = BRAND_SOURCE_GATE[brandFamily];
 
+  const approvedSources = [...gate.primarySources, ...gate.secondarySources];
+
   return {
     brandFamily,
-    approvedSources: gate.approvedSources,
+    primarySources: gate.primarySources,
+    secondarySources: gate.secondarySources,
+    approvedSources,
     forbiddenSources: gate.forbiddenSources,
-    approvedDomains: domainsForSources(gate.approvedSources),
+    approvedDomains: domainsForSources(approvedSources),
     forbiddenDomains: domainsForSources(gate.forbiddenSources),
   };
 }
@@ -236,7 +269,8 @@ export function formatBrandSourceGateForPrompt(input: {
   return [
     "<brand_source_gate>",
     `brand_family: ${gate.brandFamily}`,
-    `approved_sources: ${gate.approvedSources.join(", ")}`,
+    `primary_sources: ${gate.primarySources.join(", ")}`,
+    `secondary_sources: ${gate.secondarySources.join(", ")}`,
     `approved_domains: ${gate.approvedDomains.join(", ")}`,
     `forbidden_sources: ${gate.forbiddenSources.join(", ")}`,
     `forbidden_domains: ${gate.forbiddenDomains.join(", ")}`,

@@ -200,7 +200,8 @@ function findZipEntries(buffer: Buffer): Array<ZipEntry> {
     const localHeaderOffset = buffer.readUInt32LE(offset + 42);
     const name = buffer
       .subarray(offset + 46, offset + 46 + fileNameLength)
-      .toString("utf8");
+      .toString("utf8")
+      .replace(/\\/g, "/");
 
     entries.push({
       name,

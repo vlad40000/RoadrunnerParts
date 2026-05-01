@@ -149,6 +149,35 @@ ${formatBrandSourceGateForPrompt(input)}
 - Do not query, cite, or store forbidden domains from brand_source_gate.
 </hard_constraints>
 
+<distributor_first_policy>
+DISTRIBUTOR-FIRST SOURCE POLICY
+
+The normal BOM retrieval path does not use OEM official sites.
+
+Use only:
+1. user-provided source domains, if supplied
+2. configured distributor / parts-source domains
+3. secondary fallback distributor domains if allowed
+
+Do not search OEM official sites unless:
+- the user provided that OEM URL
+- distributor sources failed identity validation
+- model identity is ambiguous
+- serial/version decoding is required
+- a deterministic OEM parts endpoint is explicitly configured for this brand
+
+For normal BOM retrieval, prioritize:
+- Encompass
+- Sears PartsDirect
+- PartsDr
+- AppliancePartsPros
+- PartSelect
+- Fix.com
+- RepairClinic
+
+Return oem_skipped_by_policy when an OEM source would otherwise be considered.
+</distributor_first_policy>
+
 <source_compatibility_rule>
 Before searching an OEM domain, compare the normalized brand family against brand_source_gate.
 If the domain is forbidden or not listed as approved, do not search it.
@@ -176,11 +205,18 @@ Resolve exact source URLs for the approved source list only.
 Return JSON only:
 {
   "status": "sources_resolved | partial | no_result",
+  "source_policy": "distributor_first_oem_disabled",
   "model": "{{model}}",
-  "brand_family": "{{brand_family}}",
-  "approved_sources_searched": [],
-  "forbidden_sources_skipped": [],
-  "candidates": [
+  "brand": "{{brand}}",
+  "manufacturer_family": "{{brand_family}}",
+  "searched_sources": [],
+  "skipped_sources": [
+    {
+      "source": "oem_official",
+      "reason": "OEM sources disabled by default for BOM retrieval"
+    }
+  ],
+  "resolved_candidates": [
     {
       "source": "",
       "url": "",
@@ -189,7 +225,7 @@ Return JSON only:
       "evidence": ""
     }
   ],
-  "next_action": ""
+  "next_tool": "url_context | browser_assist | stop"
 }
 </output_contract>
 `.trim();
