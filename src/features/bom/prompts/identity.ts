@@ -132,6 +132,22 @@ Normalize OCR output into canonical brand family, model, variant, manufacturer c
 
 ${BOM_DEFINITIONS}
 
+<output_schema>
+{
+  "brand": "string | null",
+  "resolved_oem_brand": "string | null",
+  "manufacturer_family": "string | null",
+  "model": "string | null",
+  "serial": "string | null",
+  "type_code": "string | null",
+  "appliance_type": "string | null",
+  "fuel_type": "electric | gas | other | null",
+  "normalization_status": "complete | partial | failed",
+  "evidence": ["string"],
+  "blockers": ["string"]
+}
+</output_schema>
+
 <input_contract>
 Required:
 - brand
@@ -160,8 +176,13 @@ Input:
   "brand": "Maytag",
   "model": "MED5600TQ0"
 }
-Output function intent:
-normalize_appliance_identity({ "brand": "Maytag", "model": "MED5600TQ0" })
+Output:
+{
+  "brand": "MAYTAG",
+  "model": "MED5600TQ0",
+  "manufacturer_family": "WHIRLPOOL",
+  "normalization_status": "complete"
+}
 </structured_examples>
 
 <context>

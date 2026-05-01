@@ -165,15 +165,19 @@ export async function runIdentityExtraction({
   const parsedResult = asRecord(parseMaybeStringifiedJson(rawResult));
   logger.info("Identity Extraction Result:", parsedResult);
 
+  // Robust default for status and raw_text if missing from model output
+  const status = (parsedResult.status || (parsedResult.candidate_identity?.model ? "complete" : "failed")) as "complete" | "success" | "failed";
+  const raw_text = String(parsedResult.raw_text || "");
+
   const parsed = stage1OutputSchema.safeParse({ 
     ...parsedResult, 
-    status: parsedResult.candidate_identity?.model ? "complete" : "failed",
-    raw_text: parsedResult.raw_text || ""
+    status,
+    raw_text
   });
 
   if (!parsed.success) {
     logger.error("Stage 1 Output parsing failed:", parsed.error.flatten());
-    return failedStage1Output(String(parsedResult.raw_text || ""), "Parse error in stage 1 output");
+    return failedStage1Output(raw_text, "Parse error in stage 1 output");
   }
 
   return parsed.data;
@@ -187,7 +191,7 @@ export async function runIdentityNormalization(extractionResult: Stage1Output): 
     return failedStage2Output("identity_extraction_failed");
   }
 
-  const stage1Payload = JSON.stringify(extractionResult.candidate_identity, null, 2);
+  const stage1Payload = JSON.stringify(extractionResult, null, 2);
   
   const prompt = identityNormalizationPrompt
     .replace('{{brand_alias_map}}', BRAND_ALIAS_MAP)

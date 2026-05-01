@@ -8,14 +8,14 @@ export const clueSchema = z.object({
 });
 
 export const normalizedIdentitySchema = z.object({
-  brand: z.string().nullable(),
-  resolved_oem_brand: z.string().nullable(),
-  manufacturer_family: z.string().nullable(),
-  model: z.string().nullable(),
-  serial: z.string().nullable(),
-  type_code: z.string().nullable(),
-  appliance_type: z.string().nullable(),
-  fuel_type: z.string().nullable(),
+  brand: z.string().nullable().optional(),
+  resolved_oem_brand: z.string().nullable().optional(),
+  manufacturer_family: z.string().nullable().optional(),
+  model: z.string().nullable().optional(),
+  serial: z.string().nullable().optional(),
+  type_code: z.string().nullable().optional(),
+  appliance_type: z.string().nullable().optional(),
+  fuel_type: z.string().nullable().optional(),
   expectedPartCount: z.number().int().optional(),
   manual_review_flags: z.array(z.string()).default([]),
   normalization_status: z.enum([
@@ -30,15 +30,15 @@ export const normalizedIdentitySchema = z.object({
 });
 
 export const candidateIdentitySchema = z.object({
-  brand: z.string().nullable(),
-  model: z.string().nullable(),
-  serial: z.string().nullable(),
-  type_code: z.string().nullable(),
-  product_type: z.string().nullable(),
-  appliance_type: z.string().nullable(),
-  fuel_type: z.string().nullable(),
+  brand: z.string().nullable().optional(),
+  model: z.string().nullable().optional(),
+  serial: z.string().nullable().optional(),
+  type_code: z.string().nullable().optional(),
+  product_type: z.string().nullable().optional(),
+  appliance_type: z.string().nullable().optional(),
+  fuel_type: z.string().nullable().optional(),
   voltage_or_power_clues: z.array(z.string()).default([]),
-  wire_connection: z.string().nullable(),
+  wire_connection: z.string().nullable().optional(),
 });
 
 export const stage1OutputSchema = z.object({

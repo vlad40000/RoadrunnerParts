@@ -657,7 +657,9 @@ Focus on:
 
           const extractedPartNumber =
             result?.partNumber ??
+            result?.part ??
             candidate?.partNumber ??
+            candidate?.part ??
             null;
 
           if (extractedModel || extractedSerial || extractedPartNumber) {
