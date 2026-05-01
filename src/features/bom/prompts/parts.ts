@@ -25,10 +25,12 @@ export const partsExtractionPrompt = partsExtractionStagePrompt();
 
 export function buildGroundedSynthesisPrompt(input: {
   model: string;
+  applianceType?: string | null;
+  fuelType?: string | null;
 }) {
   return `
 Reminder: ${REMARK_TRUTH_COUNT}
-<task>Map extracted parts to manifest for model: ${input.model}.</task>
+<task>Map extracted parts to manifest for model: ${input.model}${input.applianceType ? ` (${input.applianceType})` : ""}.</task>
 
 <output_contract>
 Return JSON only:
@@ -39,10 +41,12 @@ Return JSON only:
 
 export function buildPricingExtractionPrompt(input: {
   model: string;
+  applianceType?: string | null;
+  fuelType?: string | null;
 }) {
   return `
 Reminder: ${REMARK_RETAIL_ONLY}
-<task>Find exact source-listed retail pricing for parts in model: ${input.model}.</task>
+<task>Find exact source-listed retail pricing for parts in model: ${input.model}${input.applianceType ? ` (${input.applianceType})` : ""}.</task>
 
 <output_contract>
 Return JSON only:

@@ -552,7 +552,7 @@ export async function extractAllDiagramGroupsForJob(input: {
   const allRetrievedSources: any[] = Array.isArray(job.retrievedSources) ? [...job.retrievedSources] : [];
 
   let deliveredCount = Array.isArray(job.finalRows) ? job.finalRows.length : 0;
-  let progressWrite = Promise.resolve();
+  let progressWrite: Promise<any> = Promise.resolve();
 
   async function queueBatchPublish(args: {
     timedOut?: boolean;

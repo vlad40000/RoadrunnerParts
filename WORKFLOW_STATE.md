@@ -19,6 +19,7 @@
     - [x] Created `.agents/policies/prompt_engineering_rubric.md` to govern future prompt development.
     - [x] Hardened `RULE.md` with mandatory prompt grading requirement.
     - [x] Fixed pricing prompt output contract to return `enrichments`.
+    - [x] **Build Fix**: Restored missing legacy prompts (`DIAGRAM_PARTS_EXTRACT`, `PRICE_PROMPT_RETAIL_ENRICHMENT`, `EBAY_PROMPT_LISTING_DRAFT`, `diagramPrompt`) to `engine.ts` to resolve "Module not found" and "Export not found" errors in API routes and batch orchestrators.
 - **RetrievalState Standardization**: Standardized `RetrievalState` and `BomStatus` schemas to include all system states (23 values), ensuring type-safety across Single and Batch orchestrators. Resolved Gemini tool schema compatibility issues.
 - **Contract Enforcement**: Implemented `determineRetrievalState` in a new `contract.ts` service. Integrated this logic into the agent dispatcher to ensure the "BOM Completion Gate" is governed by deterministic rules rather than AI heuristics.
 - **Diagram-Indexed Manifest Contract**: Parts completeness now uses a trusted exact-model `total_part_count` as the target, builds a full diagram manifest as the expected row set, and maps canonical BOM rows against required manifest rows before completion can be claimed.

@@ -21,3 +21,9 @@ verified_listed_price = directly observed listed retail price for exact OEM part
 bom_complete = parts_complete AND pricing_complete.
 </definitions>
 `.trim();
+
+export const EXECUTION_CONTRACT = `
+- Return structured JSON only.
+- No conversational filler or explanations.
+- Follow the provided JSON_SHAPE exactly.
+`.trim();

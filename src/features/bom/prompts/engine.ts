@@ -173,3 +173,122 @@ JSON_SHAPE:
   "strategy": "string"
 }
 `.trim();
+
+/**
+ * LEGACY / BATCH PROMPTS
+ * Restored to maintain compatibility with batch-orchestrator and specific API routes.
+ */
+
+export function buildCountAndDiagramLocatorPrompt(input: { brand?: string | null } = {}) {
+  return `
+- Locate the exact parts diagram or BOM page for model: {{MODEL}}.
+- Brand: {{MAKE}} (Slug: {{FIX_BRAND_SLUG}}).
+- Appliance: {{APPLIANCE_TYPE}} (Slug: {{FIX_APPLIANCE_SLUG}}).
+- Search URL: {{CANDIDATE_URL}}.
+- Serial: {{SERIAL_OR_NULL}} (Confidence: {{SERIAL_CONFIDENCE}}, Year: {{MANUFACTURE_YEAR_OR_NULL}}).
+
+TASK: Resolve the canonical parts page and diagram list and return them in the specified JSON shape.
+
+JSON_SHAPE:
+{
+  "found": boolean,
+  "source": "string",
+  "sourceUrl": "string",
+  "totalPartsAvailable": number | null,
+  "diagrams": [
+    { "diagramName": "string", "diagramUrl": "string" }
+  ]
+}
+`.trim();
+}
+
+export const DIAGRAM_PARTS_EXTRACT = `
+- Extract all part rows from diagram: {{DIAGRAM_NAME}}.
+- Model: {{MODEL}}.
+- URL: {{DIAGRAM_URL}}.
+- Expected total for model: {{TOTAL_PARTS_AVAILABLE}}.
+- Known parts already found: {{KNOWN_PART_NUMBERS_JSON}}.
+
+TASK: Extract every part row including diagram position, part number, and description.
+
+JSON_SHAPE:
+{
+  "parts": [
+    {
+      "section": "string",
+      "diagramNumber": "string",
+      "originalPartNumber": "string",
+      "description": "string",
+      "nlaStatus": boolean
+    }
+  ]
+}
+`.trim();
+
+export const PRICE_PROMPT_RETAIL_ENRICHMENT = `
+- Find verified RETAIL pricing for the requested appliance parts.
+- DO NOT use eBay, Amazon, or marketplace pricing.
+- Use only authorized distributor or OEM retail prices.
+
+TASK: Find exact source-listed retail pricing and return them in the specified JSON shape.
+
+JSON_SHAPE:
+{
+  "enrichments": [
+    {
+      "partNumber": "string",
+      "price": number | null,
+      "priceSource": "string",
+      "availability": "string",
+      "url": "string"
+    }
+  ]
+}
+`.trim();
+
+export const EBAY_PROMPT_LISTING_DRAFT = `
+- Create an optimized eBay listing draft for an appliance part.
+- Use market signals and part details to maximize conversion.
+- Condition: Used (unless otherwise specified).
+
+TASK: Generate listing title, price, and description and return them in the specified JSON shape.
+
+JSON_SHAPE:
+{
+  "title": "string",
+  "suggestedPrice": number,
+  "shippingService": "string",
+  "description": "string",
+  "tags": ["string"]
+}
+`.trim();
+
+export const diagramPrompt = `
+- Parse the provided diagram image to identify callouts and section structure.
+- Extract section name and all visible reference numbers.
+
+TASK: Extract diagram sections and callouts and return them in the specified JSON shape.
+
+JSON_SHAPE:
+{
+  "sections": [
+    { "sectionName": "string", "callouts": ["string" | "number"] }
+  ]
+}
+`.trim();
+
+export const consistencyPrompt = `
+- Audit the extracted BOM for logical consistency and part number fidelity.
+- Check for duplicate part numbers with different descriptions.
+- Flag any parts that seem incompatible with the product type.
+
+TASK: Audit the BOM for consistency and return the audit result in the specified JSON shape.
+
+JSON_SHAPE:
+{
+  "ok": boolean,
+  "confidence": number,
+  "flags": ["string"],
+  "message": "string"
+}
+`.trim();

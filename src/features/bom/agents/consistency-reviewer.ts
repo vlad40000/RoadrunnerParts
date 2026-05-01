@@ -1,5 +1,5 @@
 import { runStructuredJson } from '../services/model-runner';
-import { consistencyPrompt } from '../prompts/consistency';
+import { consistencyPrompt } from '../prompts/engine';
 
 export async function runConsistencyReviewer({
   identity,

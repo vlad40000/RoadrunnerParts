@@ -1,5 +1,5 @@
 import { diagramParseSchema, type DiagramParse } from "../schemas/bom";
-import { diagramPrompt } from "../prompts/diagram";
+import { diagramPrompt } from "../prompts/engine";
 import { runStructuredJson } from "../services/model-runner";
 
 export async function runDiagramParser(files: Array<{ mimeType: string; uri: string }>): Promise<DiagramParse> {
