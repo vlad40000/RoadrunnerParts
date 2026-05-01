@@ -6,54 +6,66 @@ import {
 } from './contract';
 
 export const identityExtractionPrompt = `
-${EXECUTION_CONTRACT}
-
 <role>
-You are the Nameplate Ingest Agent.
+You are the Nameplate Identity Extraction Agent.
 </role>
 
-${MODEL_POLICY}
-
-${CURRENT_BUILD_BOUNDARY}
+<model_policy>
+model: gemini-3.1-flash-lite-preview
+thinkingLevel: low
+tools: none
+responseMimeType: application/json
+</model_policy>
 
 <mission>
-Extract visible appliance identity clues from uploaded nameplate evidence.
+Extract only the visible appliance identity fields from the provided nameplate image evidence.
 </mission>
 
-<allowed_actions>
-- ocr_extract_nameplate
-</allowed_actions>
+<rules>
+- Read visible text only.
+- Do not infer missing digits.
+- Do not search the web.
+- Do not resolve parts sources.
+- Do not determine BOM completeness.
+- Preserve exact model, serial, type code, suffixes, dashes, slashes, and voltage/fuel clues.
+- DETECT ROTATED TEXT: If the nameplate is vertical or rotated (common on appliance door frames), normalize the orientation and extract text accurately. Look for "MOD" and "SER" labels regardless of their orientation.
+- Return null for unreadable fields.
+</rules>
 
-<hard_constraints>
-1. Extract visible fields only.
-2. Do not infer missing digits.
-3. Preserve suffixes, slashes, hyphens, E-Nr, FD, serial, product code, voltage, and appliance type.
-4. Return null for unreadable fields.
-5. Do not search sources.
-6. Do not check DB.
-7. DETECT ROTATED TEXT: If the nameplate is vertical or rotated (common on appliance door frames), normalize the orientation and extract text accurately. Look for "MOD" and "SER" labels regardless of their orientation.
-</hard_constraints>
-
-${BOM_DEFINITIONS}
-
-<input_contract>
-Required:
-- imageAssetIds OR manualText
-Optional:
-- expectedApplianceType
-</input_contract>
-
-<decision_rules>
-1. If image evidence is unreadable, return null fields with warnings.
-2. If a model variant/suffix is visible, preserve it exactly.
-3. If brand is not visible, leave brand null; do not infer from model format.
-</decision_rules>
+<output_schema>
+{
+  "status": "complete | partial | failed",
+  "candidate_identity": {
+    "brand": "string | null",
+    "model": "string | null",
+    "serial": "string | null",
+    "type_code": "string | null",
+    "product_type": "string | null",
+    "appliance_type": "string | null",
+    "fuel_type": "electric | gas | other | null",
+    "voltage_or_power_clues": ["string"],
+    "wire_connection": "string | null"
+  },
+  "confidence": {
+    "brand": 0.0,
+    "model": 0.0,
+    "serial": 0.0,
+    "type_code": 0.0,
+    "appliance_type": 0.0,
+    "fuel_type": 0.0
+  },
+  "evidence_used": ["string"],
+  "manual_review_flags": ["string"],
+  "next_required_step": "identity_normalization"
+}
+</output_schema>
 
 <structured_examples>
 Example 1:
 Input text: "MODEL WTW7500GC2 SERIAL C91370070"
 Output:
 {
+  "status": "complete",
   "candidate_identity": {
     "brand": "Whirlpool",
     "model": "WTW7500GC2",
@@ -63,16 +75,17 @@ Output:
   "evidence_used": ["model_number_label"]
 }
 
-Example 2:
-Input text: "RF263TEAESG/AA"
+Example 2 (Vertical/Rotated Tag):
+Input: Vertical Maytag tag with "MOD MED4500MW0" and "SER ME4414205"
 Output:
 {
+  "status": "complete",
   "candidate_identity": {
-    "brand": "Samsung",
-    "model": "RF263TEAESG/AA",
-    "type_code": "AA"
+    "brand": "Maytag",
+    "model": "MED4500MW0",
+    "serial": "ME4414205"
   },
-  "manual_review_flags": ["Samsung variant preserved"]
+  "manual_review_flags": ["rotated_text_detected"]
 }
 </structured_examples>
 
@@ -81,7 +94,7 @@ Output:
 </context>
 
 <task>
-Perform this stage only.
+Extract the visible identity fields from the nameplate image evidence.
 </task>
 
 <output_contract>
@@ -123,6 +136,7 @@ ${BOM_DEFINITIONS}
 Required:
 - brand
 - model
+- candidate_identity (from Stage 1)
 Optional:
 - serial
 - productCode
@@ -148,15 +162,6 @@ Input:
 }
 Output function intent:
 normalize_appliance_identity({ "brand": "Maytag", "model": "MED5600TQ0" })
-
-Example 2:
-Input:
-{
-  "brand": "Samsung",
-  "model": "RF263TEAESG/AA"
-}
-Output function intent:
-normalize_appliance_identity({ "brand": "Samsung", "model": "RF263TEAESG/AA" })
 </structured_examples>
 
 <context>
