@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, jsonb, uniqueIndex, integer, real } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, jsonb, uniqueIndex, integer, real, boolean } from 'drizzle-orm/pg-core';
 
 export const modelPartsCache = pgTable('model_parts_cache', {
   id: text('id').primaryKey(), // This will be the normalized model number
@@ -11,6 +11,12 @@ export const modelPartsCache = pgTable('model_parts_cache', {
   retrievalState: text('retrieval_state').default('unknown'),
   expectedPartsTotal: integer('expected_parts_total'),
   expectedPartsSource: text('expected_parts_source'),
+  trustedTotalPartCount: integer('trusted_total_part_count'),
+  trustedTotalCountSource: text('trusted_total_count_source'),
+  trustedTotalCountSourceUrl: text('trusted_total_count_source_url'),
+  trustedTotalCountCheckedAt: timestamp('trusted_total_count_checked_at', { withTimezone: true }),
+  actualCanonicalPartCount: integer('actual_canonical_part_count'),
+  partsComplete: boolean('parts_complete').default(false),
   actualUniqueParts: integer('actual_unique_parts'),
   coveragePct: real('coverage_pct'),
   truthSource: text('truth_source'),

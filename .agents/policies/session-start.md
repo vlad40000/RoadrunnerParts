@@ -9,6 +9,7 @@ Before edits, extraction runs, or architecture decisions, read:
 - `RULE.md`
 - `WORKFLOW_STATE.md`
 - `AGENTS.md`
+- `.agents/policies/agent-manager.md`
 
 For BOM extraction, browser-agent, or CoVe work, also read:
 

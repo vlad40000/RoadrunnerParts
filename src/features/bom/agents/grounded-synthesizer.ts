@@ -33,7 +33,7 @@ export async function runGroundedSynthesizer(input: {
     })}`,
     enableSearch: true,
     files: input.diagramFiles,
-    temperature: 0,
+    temperature: 1.0,
   });
 
   const parsed = synthesisResultSchema.parse(result);

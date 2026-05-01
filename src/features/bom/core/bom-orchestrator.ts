@@ -9,6 +9,10 @@ import { fetchSources } from "../services/source-fetcher";
 import { normalizeBomRows } from "./bom-normalizer";
 import { enrichBomRowsWithRetailPricing } from "../services/retail-pricing";
 import { computeUnmatchedCallouts, calculateCompletionProof, validate_bom_completion } from "./bom-validator";
+import {
+  acceptTrustedPartCount,
+  normalizeTrustedCountSource,
+} from "../services/contract";
 import { coverageScore } from "./coverage-scorer";
 import type { BomRow, Identity, BomResult, DiagramParse, Clue, NormalizedIdentity, BuildBomJobState, BomStatus, RetrievalState } from "../schemas/bom";
 import { ApplianceDecoder } from "@/lib/decoder";
@@ -67,7 +71,12 @@ export async function buildBomJob(input: {
     trustedSources: [],
     rejectedSources: [],
     expectedPartCount: null,
+    trustedTotalPartCount: null,
+    trustedTotalCountSource: null,
+    trustedTotalCountSourceUrl: null,
+    trustedTotalCountCheckedAt: null,
     actualPartCount: 0,
+    actualCanonicalPartCount: 0,
     requiredPriceCount: 0,
     verifiedPriceCount: 0,
     unpricedCount: 0,
@@ -103,7 +112,7 @@ export async function buildBomJob(input: {
     await emitNotice("info", "stage0_seed_intake", "No high-confidence initial seed URL found. Proceeding with standard extraction.");
   }
   
-  state.retrievalState = "stage0_seed_intake";
+  state.retrievalState = "identity_only";
   state.nextRequiredStep = "identity_extraction";
   await persistState(state);
 
@@ -130,7 +139,7 @@ export async function buildBomJob(input: {
   await emitNotice("success", "identity_extraction", `Successfully extracted identity for model: ${extractionResult.candidate_identity.model}`);
 
   state.identity = extractionResult;
-  state.retrievalState = "identity_extraction";
+  state.retrievalState = "identity_only";
   state.nextRequiredStep = "identity_normalization";
   await persistState(state);
 
@@ -219,6 +228,58 @@ export async function buildBomJob(input: {
     productType: identity.productType,
   });
 
+  const normalizedModel = (identity.model || "").trim().toUpperCase();
+  const acceptedTrustedCount = retrievedSources
+    .map((source) => {
+      const meta = source.meta ?? {};
+      const trustedSource = normalizeTrustedCountSource(
+        String(meta.expectedPartsSource || source.provider),
+      );
+      if (!trustedSource) return null;
+      if (meta.exactModelMatch === false) return null;
+
+      const statedPartCount = Number(
+        meta.trustedTotalPartCount ??
+          meta.expectedPartsTotal ??
+          meta.totalPartsAvailable ??
+          0,
+      );
+      const sourceModel =
+        String(
+          meta.sourceModel ||
+            meta.matchedModel ||
+            meta.model ||
+            source.text.match(/^MODEL:\s*(.+)$/m)?.[1] ||
+            normalizedModel,
+        ).trim();
+
+      return acceptTrustedPartCount({
+        source: trustedSource,
+        normalizedModel,
+        sourceModel,
+        statedPartCount: Number.isFinite(statedPartCount)
+          ? statedPartCount
+          : null,
+        sourceUrl: String(meta.modelPageUrl || source.sourceUrl),
+      });
+    })
+    .find((result) => result?.accepted);
+
+  if (acceptedTrustedCount?.accepted) {
+    state.expectedPartCount = acceptedTrustedCount.trustedTotalPartCount;
+    state.trustedTotalPartCount = acceptedTrustedCount.trustedTotalPartCount;
+    state.trustedTotalCountSource = acceptedTrustedCount.trustedTotalCountSource;
+    state.trustedTotalCountSourceUrl =
+      acceptedTrustedCount.trustedTotalCountSourceUrl;
+    state.trustedTotalCountCheckedAt =
+      acceptedTrustedCount.trustedTotalCountCheckedAt.toISOString();
+    await emitNotice(
+      "info",
+      "parallel_parts_extraction",
+      `Accepted trusted total_part_count ${acceptedTrustedCount.trustedTotalPartCount} from ${acceptedTrustedCount.trustedTotalCountSource}.`,
+    );
+  }
+
   const extractionResults = await runWithConcurrency(
     retrievedSources,
     parseInt(process.env.BOM_EXTRACTOR_CONCURRENCY ?? "3", 10),
@@ -263,8 +324,17 @@ export async function buildBomJob(input: {
   
   // Update state with part count discovery
   const firstCountResult = validResults.find(r => r.expectedPartCount !== null);
-  if (firstCountResult) {
+  if (!state.trustedTotalPartCount && firstCountResult) {
     state.expectedPartCount = firstCountResult.expectedPartCount;
+    state.trustedTotalPartCount =
+      firstCountResult.trustedTotalPartCount ??
+      firstCountResult.expectedPartCount;
+    state.trustedTotalCountSource =
+      firstCountResult.trustedTotalCountSource ?? null;
+    state.trustedTotalCountSourceUrl =
+      firstCountResult.trustedTotalCountSourceUrl ?? null;
+    state.trustedTotalCountCheckedAt =
+      firstCountResult.trustedTotalCountCheckedAt ?? null;
   }
   state.paginationComplete = validResults.every(r => r.paginationComplete);
   
@@ -278,8 +348,9 @@ export async function buildBomJob(input: {
     productType: identity.productType || input.userHints?.productType
   });
   
-  state.retrievalState = "bom_synthesis";
+  state.retrievalState = "parts_partial";
   state.bomRows = finalRows;
+  state.actualCanonicalPartCount = finalRows.length;
   
   // Calculate coverage if expectedPartCount is known
   if (state.expectedPartCount !== null && state.expectedPartCount > 0) {
@@ -322,12 +393,13 @@ export async function buildBomJob(input: {
   // Final Validation Gate
   const completion = validate_bom_completion({
     rows: finalPricedRows,
-    expectedPartCount: state.expectedPartCount,
+    trustedTotalPartCount: state.trustedTotalPartCount,
     identityResolved: true,
   });
 
   state.retrievalState = completion.retrievalState;
   state.actualPartCount = completion.actualPartCount;
+  state.actualCanonicalPartCount = completion.actualCanonicalPartCount;
   state.requiredPriceCount = completion.requiredPriceCount;
   state.verifiedPriceCount = completion.verifiedPriceCount;
   state.unpricedCount = completion.unpricedCount;
@@ -368,7 +440,12 @@ export async function buildBomJob(input: {
     status: state.retrievalState,
     retrievalState: state.retrievalState,
     expectedPartCount: state.expectedPartCount,
+    trustedTotalPartCount: state.trustedTotalPartCount,
+    trustedTotalCountSource: state.trustedTotalCountSource,
+    trustedTotalCountSourceUrl: state.trustedTotalCountSourceUrl,
+    trustedTotalCountCheckedAt: state.trustedTotalCountCheckedAt,
     actualPartCount: state.actualPartCount,
+    actualCanonicalPartCount: state.actualCanonicalPartCount,
     requiredPriceCount: state.requiredPriceCount,
     verifiedPriceCount: state.verifiedPriceCount,
     unpricedCount: state.unpricedCount,
@@ -381,8 +458,10 @@ export async function buildBomJob(input: {
     coverageScore: state.coverageRatio ?? 0,
     truthSource: retrievedSources.length > 0 ? retrievedSources[0].sourceUrl : null,
     sourceStrategy: retrievedSources.length > 0 ? "deterministic-provider" : "ai-grounded-synthesis",
-    completionProof: state.expectedPartCount !== null ? {
-      expectedPartCount: state.expectedPartCount,
+    expectedPartsTotal: state.trustedTotalPartCount,
+    expectedPartsSource: state.trustedTotalCountSource,
+    completionProof: state.trustedTotalPartCount !== null ? {
+      expectedPartCount: state.trustedTotalPartCount,
       totalExtracted: finalRows.length,
       coverageRatio: state.coverageRatio!,
       sourceAgreement: true,

@@ -56,12 +56,12 @@ export async function findCompleteCachedBom(model: string) {
 
       // v2.0 Logic: Strict coverage or complete state
       if (version === CURRENT_VALIDATION_VERSION) {
-        if (cache.retrievalState === 'bom_complete' || (coverage >= 0.95 && cache.retrievalState === 'bom_near_complete')) {
+        if (cache.retrievalState === 'bom_complete' || (coverage >= 0.95 && cache.retrievalState === 'parts_complete_pricing_partial')) {
           return cache;
         }
       } 
       // v1.0 Logic (Legacy): Soft-allow if it was marked complete or near-complete
-      else if (cache.retrievalState === 'bom_complete' || cache.retrievalState === 'bom_near_complete') {
+      else if (cache.retrievalState === 'bom_complete' || cache.retrievalState === 'parts_complete_pricing_partial') {
         console.log(`[ModelPartsCache] Soft-HIT: Returning legacy v1 cache for ${normalizedModel}`);
         return {
           ...cache,
@@ -87,6 +87,12 @@ export async function upsertModelPartsCache(data: {
   retrievalState?: string;
   expectedPartsTotal?: number;
   expectedPartsSource?: string;
+  trustedTotalPartCount?: number;
+  trustedTotalCountSource?: string;
+  trustedTotalCountSourceUrl?: string;
+  trustedTotalCountCheckedAt?: string | Date;
+  actualCanonicalPartCount?: number;
+  partsComplete?: boolean;
   actualUniqueParts?: number;
   coveragePct?: number;
   truthSource?: string;
@@ -113,6 +119,18 @@ export async function upsertModelPartsCache(data: {
       retrievalState: data.retrievalState || 'unknown',
       expectedPartsTotal: data.expectedPartsTotal || null,
       expectedPartsSource: data.expectedPartsSource || null,
+      trustedTotalPartCount: data.trustedTotalPartCount || data.expectedPartsTotal || null,
+      trustedTotalCountSource: data.trustedTotalCountSource || data.expectedPartsSource || null,
+      trustedTotalCountSourceUrl: data.trustedTotalCountSourceUrl || data.truthSource || null,
+      trustedTotalCountCheckedAt: data.trustedTotalCountCheckedAt
+        ? new Date(data.trustedTotalCountCheckedAt)
+        : null,
+      actualCanonicalPartCount: data.actualCanonicalPartCount || data.actualUniqueParts || data.parts.length,
+      partsComplete: data.partsComplete ?? Boolean(
+        (data.trustedTotalPartCount || data.expectedPartsTotal) &&
+        (data.actualCanonicalPartCount || data.actualUniqueParts || data.parts.length) >=
+          (data.trustedTotalPartCount || data.expectedPartsTotal || 0),
+      ),
       actualUniqueParts: data.actualUniqueParts || null,
       coveragePct: data.coveragePct || null,
       truthSource: data.truthSource || null,

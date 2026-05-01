@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       model: "pro",
       prompt: EBAY_PROMPT_VISIBLE_PAGE_EXTRACT,
       text: text || html || "No content provided",
-      temperature: 0,
+      temperature: 1.0,
     });
 
     const parsed = responseSchema.parse(result);

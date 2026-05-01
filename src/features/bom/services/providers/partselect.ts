@@ -8,7 +8,7 @@ import {
   normalizeBrand,
   normalizeModel,
 } from "./utils";
-import { buildPartSelectSamsungUrl } from "./deterministic-urls";
+import { buildPartSelectSamsungUrl, buildPartSelectUrl } from "./deterministic-urls";
 
 interface PartSelectFetchInput extends ProviderInput {
   productType?: string | null;
@@ -103,10 +103,23 @@ export const partSelectProvider: SourceProvider = {
       }
     }
 
-    // Step 1: Resolve exact model URL
+    // Step 0: Try deterministic URL
+    const deterministicUrl = buildPartSelectUrl({ brand, model });
+    if (deterministicUrl) {
+      try {
+        const html = await fetchHtml(deterministicUrl);
+        if (html.toUpperCase().includes(model)) {
+          const sources = await extractFromPage(html, deterministicUrl, model);
+          if (sources.length > 0) return sources;
+        }
+      } catch {
+        // ignore and fallback
+      }
+    }
     const resolution = await resolveExactModelUrl({
       model,
       domain: "partselect.com",
+      brand: fetchInput.brand,
       preferredQueries: [
         `site:partselect.com "${model}" "Diagrams"`,
         `site:partselect.com "${model}" "Parts List"`,

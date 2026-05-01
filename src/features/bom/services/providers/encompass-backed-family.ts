@@ -133,9 +133,9 @@ function rowsToStructuredText(input: {
     lines.push(
       [
         "ROW",
-        `diagram_number=${row.diagramNumber ?? row.partNumber}`,
+        `diagram_number=${row.diagramNumber ?? ""}`,
         `description=${row.description}`,
-        `original_part_number=${row.originalPartNumber ?? row.partNumber}`,
+        `original_part_number=${row.originalPartNumber ?? ""}`,
         `current_service_part_number=${row.currentServicePartNumber ?? row.partNumber}`,
         `nla_status=${row.nlaStatus ? "true" : "false"}`,
         `replacement_note=${row.replacementNote ?? input.replacementNoteDefault ?? ""}`,
@@ -234,6 +234,7 @@ export function createEncompassBackedFamilyProvider(
       const resolution = await resolveExactModelUrl({
         model,
         domain: config.domain,
+        brand: input.brand,
         preferredQueries: config.buildPreferredQueries(model),
       });
 

@@ -65,7 +65,6 @@ function buildEncompassQueries(model: string): string[] {
   return [
     `site:encompass.com/model "${normalized}"`,
     `site:encompass.com "${normalized}" "Parts List"`,
-    `site:encompass.com "${normalized}" "Exploded View"`,
   ];
 }
 
@@ -99,10 +98,16 @@ function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
       .get();
 
     const headerText = headerCells.join(" | ");
+    const hasRef = headerText.includes("ref #") || headerText.includes("ref#") || headerText.includes("image #");
     const hasPartNumber = headerText.includes("part number") || headerText.includes("part #") || headerText.includes("model part");
     const hasDescription = headerText.includes("description") || headerText.includes("desc") || headerText.includes("part name");
 
     if (!hasPartNumber || !hasDescription) return;
+
+    // Identify column indices
+    const refIdx = headerCells.findIndex(h => h.includes("ref #") || h.includes("ref#") || h.includes("image #"));
+    const partIdx = headerCells.findIndex(h => h.includes("part number") || h.includes("part #") || h.includes("model part"));
+    const descIdx = headerCells.findIndex(h => h.includes("description") || h.includes("desc") || h.includes("part name"));
 
     $(table)
       .find("tr")
@@ -113,20 +118,26 @@ function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
           .map((___, td) => cleanText($(td).text()))
           .get();
 
-        if (cells.length < 3) return;
+        if (cells.length < 2) return;
 
-        const sectionName = cells[0] || "Miscellaneous";
-        const partNumber = (cells[1] || "").toUpperCase();
-        const description = cells[2] || "";
-        const tail = cells.slice(3).join(" ");
+        const refNumber = refIdx !== -1 ? cells[refIdx] : "";
+        const partNumber = (cells[partIdx] || "").toUpperCase();
+        const description = cells[descIdx] || "";
+        const tail = cells.join(" ");
 
         if (!partNumber || !description) return;
         if (!/^[A-Z0-9-]{4,}$/.test(partNumber)) return;
+
+        // Try to find section name from preceding header or sibling elements if not in table
+        let sectionName = "All Model Parts";
+        const precedingH3 = $(table).prevAll("h3, h4, h2").first().text();
+        if (precedingH3) sectionName = cleanText(precedingH3);
 
         rows.push({
           sectionName,
           partNumber,
           description,
+          diagramNumber: refNumber,
           nlaStatus: /\bNo\b/i.test(tail) && !/\bIn Stock\b/i.test(tail),
         });
       });
@@ -166,16 +177,16 @@ async function fetchEncompassSources(input: ProviderInput): Promise<RetrievedSou
     let mfgCode = "WHI"; 
     const b = brand.toLowerCase();
     if (b.includes("ge") || b.includes("hotpoint") || b.includes("haier") || b.includes("monogram")) mfgCode = "HOT";
-    else if (b.includes("samsung")) mfgCode = "SAM";
-    else if (b.includes("lg")) mfgCode = "ZEN";
     else if (b.includes("whirlpool") || b.includes("maytag") || b.includes("kitchenaid") || b.includes("amana") || b.includes("jennair")) mfgCode = "WHI";
+    else mfgCode = ""; // Fallback to broad search for LG/Samsung
 
     const searchResolution = await resolveExactModelUrl({
       model,
       domain: "encompass.com",
+      brand,
       preferredQueries: [
-        `site:encompass.com/Exploded-View-Assembly/${mfgCode} "${model}"`,
-        `site:encompass.com/model "${model}"`,
+        `site:encompass.com/model/${mfgCode} "${model}"`,
+        `site:encompass.com "${mfgCode}${model}"`
       ]
     });
 

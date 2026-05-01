@@ -42,7 +42,7 @@ export function buildFixModelUrl(input: {
   brand: string;
   applianceType: string;
   model: string;
-}) {
+}): string {
   const brand = input.brand || "Appliance";
   const brandSlug =
     FIX_BRAND_SLUGS[brand] ||
@@ -55,7 +55,7 @@ export function buildFixModelUrl(input: {
   return `https://www.fix.com/models/${applianceSlug}/${brandSlug}/${input.model.toUpperCase()}/`;
 }
 
-type SearsParsedRow = {
+export interface SearsParsedRow {
   sectionName: string;
   diagramNumber: string;
   description: string;
@@ -63,7 +63,7 @@ type SearsParsedRow = {
   currentServicePartNumber: string | null;
   nlaStatus: boolean;
   replacementNote: string | null;
-};
+}
 
 export async function resolveSearsModelPartCount(input: {
   model: string;
@@ -161,6 +161,7 @@ async function resolveSearsModelUrl(input: {
   return resolveExactModelUrl({
     model,
     domain: "searspartsdirect.com",
+    brand: input.brand,
     preferredQueries: [
       `site:searspartsdirect.com "${model}" "By Schematic"`,
       `site:searspartsdirect.com "${model}" "SELECT DIAGRAM"`,

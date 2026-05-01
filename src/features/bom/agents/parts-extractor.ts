@@ -24,6 +24,8 @@ const partsResultSchema = z.object({
   ),
   expectedPartCount: z.number().nullable().default(null),
   expectedPartCountEvidence: z.string().default(""),
+  source_total_part_count: z.number().nullable().optional(),
+  source_total_part_count_evidence: z.string().nullable().optional(),
   paginationComplete: z.boolean().default(false),
   manual_review_flags: z.array(z.string()).optional(),
 });
@@ -82,7 +84,6 @@ function parseStructuredRows(
       replacementNote: kv.replacement_note || null,
       confidence: 0.99,
       price: kv.price ? Number(kv.price) : null,
-      retailPrice: kv.price ? Number(kv.price) : null,
     };
   });
 }
@@ -156,10 +157,16 @@ export async function runPartsExtractor(input: {
   const raw = await runStructuredJson<any>({
     prompt,
     text: input.sourceText,
-    temperature: 0,
+    temperature: 1.0,
   });
 
   const parsed = partsResultSchema.parse(raw);
+  const trustedTotalPartCount =
+    parsed.source_total_part_count ?? parsed.expectedPartCount ?? null;
+  const trustedTotalCountCheckedAt =
+    trustedTotalPartCount && trustedTotalPartCount > 0
+      ? new Date().toISOString()
+      : null;
   
   const rows = (parsed.rows || [])
     .filter((row: any) => (row.confidence ?? 0.5) >= 0.7)
@@ -175,8 +182,14 @@ export async function runPartsExtractor(input: {
 
   return {
     rows,
-    expectedPartCount: parsed.expectedPartCount,
-    expectedPartCountEvidence: parsed.expectedPartCountEvidence,
+    expectedPartCount: trustedTotalPartCount,
+    expectedPartCountEvidence:
+      parsed.source_total_part_count_evidence ??
+      parsed.expectedPartCountEvidence,
+    trustedTotalPartCount,
+    trustedTotalCountSource: input.provider ?? null,
+    trustedTotalCountSourceUrl: input.sourceUrl,
+    trustedTotalCountCheckedAt,
     paginationComplete: parsed.paginationComplete,
   };
 }

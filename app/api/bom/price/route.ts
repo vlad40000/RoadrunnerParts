@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       model: "pro",
       prompt: PRICE_PROMPT_RETAIL_ENRICHMENT,
       text: JSON.stringify({ partNumbers, model }),
-      temperature: 0,
+      temperature: 1.0,
     });
 
     const parsed = enrichmentSchema.parse(result);

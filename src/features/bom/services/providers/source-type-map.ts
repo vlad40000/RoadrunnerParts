@@ -68,12 +68,15 @@ export const GROUNDING_TIERS = {
   tier_1: [
     "sears-partsdirect",
     "encompass",
-    "encompass-family",
     "partsdr",
     "appliancepartspros",
     "repairclinic-family",
     "partselect.com",
     "fix.com"
+  ],
+  tier_1_count_sources: [
+    "encompass",
+    "sears-partsdirect"
   ],
   tier_2: [
     "appliance-parts-group",
@@ -81,17 +84,22 @@ export const GROUNDING_TIERS = {
     "reliable-parts",
     "coast-appliance-parts"
   ],
+  tier_2_count_sources: [
+    "partsdr",
+    "appliancepartspros",
+    "partselect.com",
+    "fix.com"
+  ],
   tier_3: [
     "appliancefactoryparts",
     "partswarehouse",
     "ereplacementparts"
   ],
+  skip_for_grounding: [
+    "marcone",
+    "easyapplianceparts"
+  ]
 };
-
-export const SKIP_FOR_GROUNDING = [
-  "marcone",
-  "easyapplianceparts"
-];
 
 /**
  * Router Rules:

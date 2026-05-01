@@ -7,7 +7,12 @@ import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
 
 const PROVIDER_NAME = "partsdr";
 
-function parsePartsDrDiagrams(html: string, modelUrl: string) {
+interface PartsDrDiagram {
+  url: string;
+  name: string;
+}
+
+function parsePartsDrDiagrams(html: string, _modelUrl: string): PartsDrDiagram[] {
   const $ = load(html);
   // Parts Dr often has sections listed as links
   const diagrams = $('a[href*="/diagram/"], .model-diagram-link')
@@ -22,7 +27,7 @@ function parsePartsDrDiagrams(html: string, modelUrl: string) {
       };
     })
     .get()
-    .filter(Boolean) as Array<{ url: string; name: string }>;
+    .filter(Boolean) as PartsDrDiagram[];
     
   return uniqueBy(diagrams, (d) => d.url);
 }
@@ -59,6 +64,7 @@ export const partsDrProvider: SourceProvider = {
       const resolution = await resolveExactModelUrl({
         model,
         domain: "partsdr.com",
+        brand,
         preferredQueries: [
           `site:partsdr.com "${model}" "${brand}"`,
           `site:partsdr.com/appliance-models "${model}"`,

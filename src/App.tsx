@@ -48,6 +48,7 @@ import {
   Image as ImageIcon,
   History,
   TrendingUp,
+  BarChart3,
   FileText,
   Copy,
   ExternalLink
@@ -1017,6 +1018,26 @@ Focus on:
           </section>
 
 
+
+          <div className="mt-12 pt-8 border-t border-slate-100">
+            <p className="px-6 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Advanced Analysis</p>
+            <div className="flex flex-col gap-1 px-2">
+              <a 
+                href="/inventory"
+                className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all rounded-lg group"
+              >
+                <TrendingUp size={16} className="text-slate-400 group-hover:text-blue-600" />
+                Inventory Ranking
+              </a>
+              <a 
+                href="/market"
+                className="flex items-center gap-3 px-4 py-2.5 text-sm font-bold text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all rounded-lg group"
+              >
+                <BarChart3 size={16} className="text-slate-400 group-hover:text-blue-600" />
+                Market Intel
+              </a>
+            </div>
+          </div>
         </aside>
 
         {/* Parts Explorer */}
@@ -2131,6 +2152,10 @@ Focus on:
         </div>
 
         <div className="flex items-center gap-8">
+          <div className="flex flex-col gap-1 items-end mr-6 pr-6 border-r border-slate-200">
+            <a href="/inventory" className="text-[10px] font-black uppercase text-pro-blue hover:underline tracking-widest">Inventory Intelligence</a>
+            <a href="/market" className="text-[10px] font-black uppercase text-pro-blue hover:underline tracking-widest">Market Analysis</a>
+          </div>
           <div className="text-right hidden sm:block">
             <p className="text-[10px] font-bold uppercase text-pro-slate-400">Environment</p>
             <p className="text-xs font-bold uppercase text-pro-navy">Secure Cloud Relay</p>

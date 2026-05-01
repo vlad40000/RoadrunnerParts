@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       model: "pro",
       prompt: EBAY_PROMPT_RESALE_SUMMARY,
       text: JSON.stringify(listings),
-      temperature: 0,
+      temperature: 1.0,
     });
 
     const parsed = ebaySummarySchema.parse(result.summary || result);

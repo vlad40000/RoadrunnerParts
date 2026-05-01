@@ -26,6 +26,11 @@ export const bomJobs = pgTable("bom_jobs", {
 
   expectedPartsTotal: integer("expected_parts_total"),
   expectedPartsSource: text("expected_parts_source"),
+  trustedTotalPartCount: integer("trusted_total_part_count"),
+  trustedTotalCountSource: text("trusted_total_count_source"),
+  trustedTotalCountSourceUrl: text("trusted_total_count_source_url"),
+  trustedTotalCountCheckedAt: timestamp("trusted_total_count_checked_at", { withTimezone: true }),
+  actualCanonicalPartCount: integer("actual_canonical_part_count"),
   actualUniqueParts: integer("actual_unique_parts"),
   coveragePct: real("coverage_pct"),
   truthSource: text("truth_source"),

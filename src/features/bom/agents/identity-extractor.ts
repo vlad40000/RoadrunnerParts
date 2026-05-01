@@ -5,7 +5,6 @@ import {
   normalizedIdentitySchema, 
   stage1OutputSchema, 
   stage2OutputSchema, 
-  type NormalizedIdentity,
   type Stage1Output,
   type Stage2Output
 } from '../schemas/bom';
@@ -43,6 +42,85 @@ LG: ^[A-Z]{3}[0-9]{4,8}[A-Z0-9]*$
 ELECTROLUX: ^[A-Z]{1,2}[0-9]{6,12}$
 `.trim();
 
+function parseMaybeStringifiedJson(value: unknown): unknown {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (
+      (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+      (trimmed.startsWith("[") && trimmed.endsWith("]"))
+    ) {
+      try {
+        return parseMaybeStringifiedJson(JSON.parse(trimmed));
+      } catch {
+        return value;
+      }
+    }
+
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(parseMaybeStringifiedJson);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [
+        key,
+        parseMaybeStringifiedJson(entry),
+      ]),
+    );
+  }
+
+  return value;
+}
+
+function asRecord(value: unknown): Record<string, any> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, any>)
+    : {};
+}
+
+function failedStage1Output(rawText = "", reason = "identity_extraction_schema_validation_failed"): Stage1Output {
+  return stage1OutputSchema.parse({
+    status: "failed",
+    raw_text: rawText,
+    candidate_identity: {
+      brand: null,
+      model: null,
+      serial: null,
+      type_code: null,
+      product_type: null,
+      appliance_type: null,
+      fuel_type: null,
+      voltage_or_power_clues: [],
+      wire_connection: null,
+    },
+    evidence_used: [],
+    manual_review_flags: [reason],
+  });
+}
+
+function failedStage2Output(reason: string): Stage2Output {
+  return stage2OutputSchema.parse({
+    brand: null,
+    resolved_oem_brand: null,
+    manufacturer_family: null,
+    model: null,
+    serial: null,
+    type_code: null,
+    appliance_type: null,
+    fuel_type: null,
+    status: "failed",
+    expectedPartCount: undefined,
+    manual_review_flags: [reason],
+    normalization_status: "failed",
+    evidence: [],
+    blockers: [],
+    next_action: null,
+  });
+}
+
 /**
  * STAGE 1: Identity Extraction
  */
@@ -56,21 +134,29 @@ export async function runIdentityExtraction({
   const inputText = JSON.stringify({ userHints });
   const prompt = identityExtractionPrompt.replace('{{raw_text}}', inputText);
 
-  const result = await runStructuredJson<any>({
+  const rawResult = await runStructuredJson<unknown>({
+    model: "lite",
     prompt,
     text: `INPUT:\n${inputText}`,
     files,
-    temperature: 0,
+    temperature: 1.0,
   });
 
-  logger.info("Identity Extraction Result:", result);
-  
-  const status = result.candidate_identity?.model ? "complete" : "failed";
-  return stage1OutputSchema.parse({ 
-    ...result, 
-    status,
-    raw_text: result.raw_text || ""
+  const parsedResult = asRecord(parseMaybeStringifiedJson(rawResult));
+  logger.info("Identity Extraction Result:", parsedResult);
+
+  const parsed = stage1OutputSchema.safeParse({ 
+    ...parsedResult, 
+    status: parsedResult.candidate_identity?.model ? "complete" : "failed",
+    raw_text: parsedResult.raw_text || ""
   });
+
+  if (!parsed.success) {
+    logger.error("Stage 1 Output parsing failed:", parsed.error.flatten());
+    return failedStage1Output(String(parsedResult.raw_text || ""), "Parse error in stage 1 output");
+  }
+
+  return parsed.data;
 }
 
 /**
@@ -78,17 +164,7 @@ export async function runIdentityExtraction({
  */
 export async function runIdentityNormalization(extractionResult: Stage1Output): Promise<Stage2Output> {
   if (extractionResult.status === "failed") {
-    return stage2OutputSchema.parse({ 
-      brand: null, 
-      resolved_oem_brand: null,
-      manufacturer_family: null,
-      model: null, 
-      serial: null,
-      type_code: null,
-      appliance_type: null,
-      fuel_type: null,
-      status: "failed" 
-    });
+    return failedStage2Output("identity_extraction_failed");
   }
 
   const stage1Payload = JSON.stringify(extractionResult.candidate_identity, null, 2);
@@ -99,28 +175,26 @@ export async function runIdentityNormalization(extractionResult: Stage1Output): 
     .replace('{{stage_1_output}}', stage1Payload);
 
   try {
-    const result = await runStructuredJson<any>({
+    const rawResult = await runStructuredJson<unknown>({
+      model: "lite",
       prompt,
       text: `INPUT:\n${stage1Payload}`,
-      temperature: 0,
+      temperature: 1.0,
     });
 
-    const validated = normalizedIdentitySchema.parse(result);
-    logger.info("Identity Normalized:", validated);
-    return stage2OutputSchema.parse({ ...validated, status: "success" });
+    const parsedResult = parseMaybeStringifiedJson(rawResult);
+
+    const parseAttempt = normalizedIdentitySchema.safeParse(parsedResult);
+    if (!parseAttempt.success) {
+      logger.error("Identity Normalization parsing failed:", parseAttempt.error.flatten());
+      return failedStage2Output("Parse error in normalization output");
+    }
+    
+    logger.info("Identity Normalized:", parseAttempt.data);
+    return stage2OutputSchema.parse({ ...parseAttempt.data, status: "success" });
   } catch (err) {
     logger.error("Identity Normalization failed:", err);
-    return stage2OutputSchema.parse({ 
-      brand: null, 
-      resolved_oem_brand: null,
-      manufacturer_family: null,
-      model: null, 
-      serial: null,
-      type_code: null,
-      appliance_type: null,
-      fuel_type: null,
-      status: "failed" 
-    });
+    return failedStage2Output("Exception during normalization");
   }
 }
 
@@ -140,4 +214,3 @@ export async function runIdentityExtractor(input: {
     productType: normalization.manufacturer_family,
   };
 }
-

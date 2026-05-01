@@ -46,20 +46,20 @@ const FIX_APPLIANCE_SLUGS: Record<string, string> = {
   cooktop: "cooktop",
 };
 
-export type FixPartCount = {
+export interface FixPartCount {
   visibleCount: number | null;
   totalPartsAvailable: number | null;
   evidence: string | null;
-};
+}
 
-export type FixDiagramLink = {
+export interface FixDiagramLink {
   diagramName: string;
   diagramUrl: string;
   thumbnailUrl: string | null;
   evidence: string;
-};
+}
 
-export type FixRawPartRow = {
+export interface FixRawPartRow {
   source: "fix.com";
   sectionName: string;
   sectionUrl: string;
@@ -73,9 +73,9 @@ export type FixRawPartRow = {
   serialNote: string | null;
   evidenceUrl: string;
   rawPayload: Record<string, unknown>;
-};
+}
 
-export function absoluteFixUrl(path?: string | null, baseUrl = FIX_BASE) {
+export function absoluteFixUrl(path?: string | null, baseUrl = FIX_BASE): string | null {
   const value = cleanText(path ?? "");
   if (!value) return null;
   if (/^https?:\/\//i.test(value)) return value;
@@ -89,7 +89,7 @@ export function buildFixModelUrl(input: {
   applianceType?: string | null;
   productType?: string | null;
   model: string;
-}) {
+}): string {
   const rawBrand = cleanText(input.brand ?? input.make ?? "");
   const rawApplianceType = cleanText(input.applianceType ?? input.productType ?? "");
   const brandKey = rawBrand.toUpperCase();
@@ -164,6 +164,7 @@ export async function fetchFixModelPage(input: {
   const resolution = await resolveExactModelUrl({
     model,
     domain: "fix.com",
+    brand: input.brand,
     preferredQueries: [
       `site:fix.com/models "${model}" "Viewing" "of"`,
       `site:fix.com/models "${model}" "Part Number"`,

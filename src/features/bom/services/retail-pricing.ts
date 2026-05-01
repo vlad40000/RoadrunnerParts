@@ -16,7 +16,7 @@ import {
 } from "./providers/utils";
 
 type RetailPriceSnapshot = {
-  status: "verified_price" | "encompass_no_price" | "fallback_verified_price" | "no_verified_price" | "ambiguous_match" | "blocked" | "source_error";
+  status: "verified_price" | "fallback_verified_price" | "no_verified_price" | "exact_part_found_no_price" | "part_not_found" | "ambiguous_match" | "blocked" | "source_error";
   retailPrice: number | null;
   retailPriceText: string | null;
   retailAvailability: string | null;
@@ -556,7 +556,9 @@ export async function enrichBomRowsWithRetailPricing(input: {
   });
 
   const pricedRowCount = rows.filter(
-    (row) => typeof row.retailPrice === "number",
+    (row) =>
+      row.retailPrice?.status === "verified_price" ||
+      row.retailPrice?.status === "fallback_verified_price",
   ).length;
 
   const issues: string[] = [];

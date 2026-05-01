@@ -64,6 +64,7 @@ async function searchLgPartPages(model: string) {
     await searchExistingGroundingLayer({
       queries: [`site:lgparts.com/products "${model}"`],
       domain: "lgparts.com",
+      brandFamily: "lg-family",
       maxResults: 24,
     }),
   );

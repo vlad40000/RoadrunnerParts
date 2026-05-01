@@ -158,6 +158,7 @@ async function searchSamsungPartPages(model: string) {
     await searchExistingGroundingLayer({
       queries: buildSamsungQueries(model),
       domain: "samsungparts.com",
+      brandFamily: "samsung-family",
       maxResults: 30,
     }),
   );
@@ -260,11 +261,24 @@ export const samsungFamilyProvider: SourceProvider = {
     // Stage 2: Grounding search for variant-specific pages
     const hits = await searchSamsungPartPages(model);
     
-    // Fallback: if no hits for full model, try base model
+    // Fallback: if no hits for full model, try base model and candidate variants
     if (!hits.length && model.includes("/")) {
       const base = baseModel(model);
-      const baseHits = await searchSamsungPartPages(base);
-      hits.push(...baseHits);
+      const [modelMain, variant] = model.split("/");
+      
+      const candidateQueries = [
+        `site:samsungparts.com/products "${base}" Samsung`,
+        `site:samsungparts.com/products "${modelMain}/${variant}-00"`,
+        `site:samsungparts.com/products "${modelMain}/${variant}-03"`,
+      ];
+
+      const candidateHits = await searchExistingGroundingLayer({
+        queries: candidateQueries,
+        domain: "samsungparts.com",
+        brandFamily: "samsung-family",
+        maxResults: 15
+      });
+      hits.push(...dedupeSearchHits(candidateHits));
     }
 
     if (!hits.length) return [];

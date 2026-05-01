@@ -3,7 +3,7 @@ import { validateLiveParts } from "./bom-validator";
 import { normalizeBomRows } from "./bom-normalizer";
 import { runStructuredJson } from "../services/model-runner";
 import { buildFixModelUrl } from "../services/providers/fix-com";
-import { COUNT_AND_DIAGRAM_LOCATOR, DIAGRAM_PARTS_EXTRACT, PRICE_PROMPT_RETAIL_ENRICHMENT } from "../prompts/engine";
+import { buildCountAndDiagramLocatorPrompt, DIAGRAM_PARTS_EXTRACT, PRICE_PROMPT_RETAIL_ENRICHMENT } from "../prompts/engine";
 import type { BomRow, BomStatus } from "../schemas/bom";
 import { decodeSerialNumber } from "../../identity/decoder";
 import { filterPartsBySerialApplicability } from "../../identity/applicability";
@@ -55,7 +55,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
       console.log(`[BatchOrchestrator] Locating BOM Frame for ${model} via ${candidateUrl}`);
       const locatorResult = await runStructuredJson<any>({
         model: "pro",
-        prompt: COUNT_AND_DIAGRAM_LOCATOR
+        prompt: buildCountAndDiagramLocatorPrompt({ brand })
           .replace(/{{MODEL}}/g, model)
           .replace(/{{MAKE}}/g, brand)
           .replace(/{{FIX_BRAND_SLUG}}/g, brandSlug)
@@ -66,7 +66,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
           .replace(/{{MANUFACTURE_YEAR_OR_NULL}}/g, serialProfile?.selectedYear?.toString() || "null")
           .replace(/{{SERIAL_CONFIDENCE}}/g, serialProfile?.confidence || "low"),
         enableSearch: true,
-        temperature: 0,
+        temperature: 1.0,
       });
 
       if (!locatorResult.found) {
@@ -93,7 +93,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
               .replace(/{{KNOWN_PART_NUMBERS_JSON}}/g, JSON.stringify(knownPartNumbers)),
             enableSearch: false,
             text: `Extracting ${diag.diagramName}`,
-            temperature: 0,
+            temperature: 1.0,
           });
 
           if (extractResult.parts) {
@@ -173,7 +173,7 @@ async function enrichPartPrices(parts: BomRow[]): Promise<BomRow[]> {
         model: "fast",
         prompt: PRICE_PROMPT_RETAIL_ENRICHMENT,
         text: `Enriching: ${partNumbers.join(", ")}`,
-        temperature: 0,
+        temperature: 1.0,
         enableSearch: true,
       });
 
@@ -207,8 +207,7 @@ function determineNewState(input: { partsCount: number; expectedTotal: number })
   if (input.expectedTotal > 0) {
     const ratio = input.partsCount / input.expectedTotal;
     if (ratio >= 0.95) return "bom_complete";
-    if (ratio >= 0.7) return "bom_near_complete";
     return "parts_partial";
   }
-  return "summary_only";
+  return "parts_partial";
 }

@@ -135,6 +135,12 @@ function makeKey(row: BomRow) {
   return pn ? `pn:${pn}` : `sec:${section}:${normalizeModel(row.description)}`;
 }
 
+function getListedPrice(row: BomRow): number | null {
+  if (typeof row.price === "number") return row.price;
+  const listedPrice = row.retailPrice?.listedPrice;
+  return typeof listedPrice === "number" ? listedPrice : null;
+}
+
 export function normalizeBomRows(rows: BomRow[], context?: { productType?: string | null }): BomRow[] {
   const map = new Map<string, BomRow>();
 
@@ -147,6 +153,7 @@ export function normalizeBomRows(rows: BomRow[], context?: { productType?: strin
     const rawSection = cleanText(row.section);
     const canonicalSection = getCanonicalSection(rawSection);
     const partNumber = cleanPart(row.currentServicePartNumber || row.originalPartNumber);
+    const listedPrice = getListedPrice(row);
 
     const normalized: BomRow = {
       ...row,
@@ -162,8 +169,8 @@ export function normalizeBomRows(rows: BomRow[], context?: { productType?: strin
       sourceUrl: cleanText(row.sourceUrl),
       replacementNote: row.replacementNote ? cleanText(row.replacementNote) : null,
       confidence: Number.isFinite(row.confidence) ? row.confidence : 0.5,
-      price: row.price || row.retailPrice || null,
-      priceMissing: !(row.price || row.retailPrice),
+      price: listedPrice,
+      priceMissing: listedPrice === null,
     };
 
     // Use partNumber as the primary key for union

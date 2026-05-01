@@ -133,9 +133,10 @@ function buildBoschSupportQueries(model: string) {
 
   return uniqueBy(
     [
-      `site:bosch-home.com/us/supportdetail/product "${normalized}" "Model Number (E-Nr)"`,
-      `site:bosch-home.com/us/supportdetail/product "${base}" "Model Number (E-Nr)"`,
-      `site:bosch-home.com/us "${normalized}" "Spare parts, accessories & online support"`,
+      `site:bosch-home.com/us "${normalized}" "spare parts" "E-Nr"`,
+      `site:bosch-home.com/us "${base}" "spare parts" "E-Nr"`,
+      `site:bosch-home.com/us/owner-support/spare-parts "${normalized}"`,
+      `site:bosch-home.com/us/shop/spare-parts "${normalized}"`,
     ],
     (value) => value.toLowerCase(),
   );
@@ -148,9 +149,9 @@ function buildBoschPartsQueries(model: string) {
   return uniqueBy(
     [
       `site:bosch-home.com/us "${normalized}" "Position number" "Model Number (E-Nr)"`,
-      `site:bosch-home.com/us "${normalized}" "Enter part number" "Model Number (E-Nr)"`,
+      `site:bosch-home.com/us "${normalized}" "List of parts" "E-Nr"`,
       `site:bosch-home.com/us "${base}" "Position number" "Model Number (E-Nr)"`,
-      `site:bosch-home.com/us "${base}" "Enter part number" "Model Number (E-Nr)"`,
+      `site:bosch-home.com/us "${base}" "List of parts" "E-Nr"`,
     ],
     (value) => value.toLowerCase(),
   );
@@ -161,6 +162,7 @@ async function resolveBoschSupportDetailUrl(model: string) {
     await searchExistingGroundingLayer({
       queries: buildBoschSupportQueries(model),
       domain: "bosch-home.com",
+      brandFamily: "bosch-family",
       maxResults: 20,
     }),
   );
@@ -216,6 +218,7 @@ async function searchBoschPartsPages(model: string) {
     await searchExistingGroundingLayer({
       queries: buildBoschPartsQueries(model),
       domain: "bosch-home.com",
+      brandFamily: "bosch-family",
       maxResults: 20,
     }),
   );
@@ -378,6 +381,8 @@ export const boschFamilyProvider: SourceProvider = {
        const exactSearch = await resolveExactModelUrl({
          model,
          domain: "bosch-home.com",
+         brand: input.brand,
+         brandFamily: "bosch-family",
          preferredQueries: [
            `site:bosch-home.com/us/owner-support/spare-parts "${model}"`,
            `site:bosch-home.com/us/shop/spare-parts "${model}"`

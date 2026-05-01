@@ -10,6 +10,11 @@ export type SearchHit = {
 export type SearchAdapterInput = {
   queries: string[];
   domain: string;
+  model?: string | null;
+  applianceType?: string | null;
+  brand?: string | null;
+  brandFamily?: string | null;
+  resolvedBrand?: string | null;
   maxResults?: number;
 };
 

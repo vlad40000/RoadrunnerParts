@@ -396,6 +396,8 @@ export const frigidaireFamilyProvider: SourceProvider = {
         const resolution = await resolveExactModelUrl({
           model,
           domain: dist.domain,
+          brand: input.brand,
+          brandFamily: "frigidaire-family",
           preferredQueries: [dist.query]
         });
 

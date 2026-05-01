@@ -147,7 +147,7 @@ ${html.slice(0, 50000)}
     const result = await runStructuredJson<MsrpResult>({
       prompt,
       text: `HTML length: ${html.length}`,
-      temperature: 0,
+      temperature: 1.0,
     });
 
     return {

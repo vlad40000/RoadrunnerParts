@@ -15,12 +15,12 @@ import {
   uniqueBy,
 } from "./utils";
 
-type BrandConfig = {
+export interface BrandConfig {
   key: string;
   site: string;
   brandId: number;
   brandNames: string[];
-};
+}
 
 const BRAND_CONFIGS: BrandConfig[] = [
   {
@@ -114,14 +114,14 @@ const COMMON_CATEGORY_NAMES = new Set([
   "Dispenser",
 ]);
 
-type ParsedRepairClinicRow = {
+export interface ParsedRepairClinicRow {
   itemId: string;
   title: string;
   description: string;
   manufacturerPartNumber: string;
   nlaStatus: boolean;
   replacementNote: string | null;
-};
+}
 
 function normalizeProductType(value: string | null | undefined) {
   const v = cleanText(value).toLowerCase();

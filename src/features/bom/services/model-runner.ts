@@ -2,7 +2,7 @@ import "server-only";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export type ModelRunInput = {
-  model?: "fast" | "pro";
+  model?: "fast" | "pro" | "lite";
   prompt: string;
   files?: Array<{
     mimeType: string;
@@ -29,7 +29,9 @@ export async function runStructuredJson<T>(
 
   const modelId =
     input.model === "pro"
-      ? process.env.GEMINI_MODEL_PRO || "gemini-3-pro"
+      ? process.env.GEMINI_MODEL_PRO || "gemini-3-pro-preview"
+      : input.model === "lite"
+      ? process.env.GEMINI_MODEL_LITE || "gemini-3.1-flash-lite-preview"
       : process.env.GEMINI_MODEL_FAST || "gemini-3-flash-preview";
 
   const modelConfig: any = {
@@ -37,7 +39,7 @@ export async function runStructuredJson<T>(
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: input.responseSchema,
-      temperature: input.temperature ?? 0,
+      temperature: input.temperature ?? 1.0,
     },
     systemInstruction: input.systemInstruction,
   };
@@ -110,13 +112,15 @@ export async function runText(
 
   const modelId =
     input.model === "pro"
-      ? process.env.GEMINI_MODEL_PRO || "gemini-3-pro"
+      ? process.env.GEMINI_MODEL_PRO || "gemini-3-pro-preview"
+      : input.model === "lite"
+      ? process.env.GEMINI_MODEL_LITE || "gemini-3.1-flash-lite-preview"
       : process.env.GEMINI_MODEL_FAST || "gemini-3-flash-preview";
 
   const modelConfig: any = {
     model: modelId,
     generationConfig: {
-      temperature: input.temperature ?? 0.1,
+      temperature: input.temperature ?? 1.0,
     },
     systemInstruction: input.systemInstruction,
   };

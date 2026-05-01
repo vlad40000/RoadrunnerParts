@@ -21,7 +21,7 @@ export async function runConsistencyReviewer({
         partNumber: p.partNumber,
       })),
     }),
-    temperature: 0,
+    temperature: 1.0,
   });
 
   return {

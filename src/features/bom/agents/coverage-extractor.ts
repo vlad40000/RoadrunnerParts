@@ -39,7 +39,7 @@ export async function runCoverageExtractor(input: {
     model: "fast",
     prompt: COVERAGE_EXTRACTION_PROMPT,
     text: `Target URL: ${input.targetUrl}\nModel: ${input.modelNumber}\n\nHTML PAYLOAD:\n${input.htmlSnippet}`,
-    temperature: 0,
+    temperature: 1.0,
   });
 
   return coverageResultSchema.parse(raw);

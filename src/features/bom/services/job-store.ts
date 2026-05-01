@@ -148,6 +148,11 @@ export async function updateBomJobSummary(
     coveragePct?: number | null;
     expectedPartsTotal?: number | null;
     expectedPartsSource?: string | null;
+    trustedTotalPartCount?: number | null;
+    trustedTotalCountSource?: string | null;
+    trustedTotalCountSourceUrl?: string | null;
+    trustedTotalCountCheckedAt?: string | Date | null;
+    actualCanonicalPartCount?: number | null;
     truthSource?: string | null;
     sourceStrategy?: string | null;
     errorText?: string | null;
@@ -181,6 +186,13 @@ export async function updateBomJobSummary(
       coveragePct: partial.coveragePct ?? job.coveragePct,
       expectedPartsTotal: partial.expectedPartsTotal ?? job.expectedPartsTotal,
       expectedPartsSource: partial.expectedPartsSource ?? job.expectedPartsSource,
+      trustedTotalPartCount: partial.trustedTotalPartCount ?? job.trustedTotalPartCount,
+      trustedTotalCountSource: partial.trustedTotalCountSource ?? job.trustedTotalCountSource,
+      trustedTotalCountSourceUrl: partial.trustedTotalCountSourceUrl ?? job.trustedTotalCountSourceUrl,
+      trustedTotalCountCheckedAt: partial.trustedTotalCountCheckedAt
+        ? new Date(partial.trustedTotalCountCheckedAt)
+        : job.trustedTotalCountCheckedAt,
+      actualCanonicalPartCount: partial.actualCanonicalPartCount ?? job.actualCanonicalPartCount,
       truthSource: partial.truthSource ?? job.truthSource,
       sourceStrategy: partial.sourceStrategy ?? job.sourceStrategy,
       errorText: partial.errorText ?? job.errorText,
@@ -218,16 +230,21 @@ export async function completeBomJob(
     sourceStrategy?: string | null;
     expectedPartsTotal?: number | null;
     expectedPartsSource?: string | null;
+    trustedTotalPartCount?: number | null;
+    trustedTotalCountSource?: string | null;
+    trustedTotalCountSourceUrl?: string | null;
+    trustedTotalCountCheckedAt?: string | Date | null;
     finalRows: Array<Record<string, unknown>>;
-    retrievalState: string;
-    expectedPartCount: number | null;
-    actualPartCount: number;
-    requiredPriceCount: number;
-    verifiedPriceCount: number;
-    unpricedCount: number;
-    bomComplete: boolean;
-    partsComplete: boolean;
-    pricingComplete: boolean;
+    retrievalState?: string | null;
+    expectedPartCount?: number | null;
+    actualPartCount?: number;
+    actualCanonicalPartCount?: number;
+    requiredPriceCount?: number;
+    verifiedPriceCount?: number;
+    unpricedCount?: number;
+    bomComplete?: boolean;
+    partsComplete?: boolean;
+    pricingComplete?: boolean;
   },
 ) {
   const normalizedStatus = normalizeBomStatus(
@@ -262,16 +279,26 @@ export async function completeBomJob(
       sourceStrategy: result.sourceStrategy ?? job.sourceStrategy,
       expectedPartsTotal: result.expectedPartsTotal ?? job.expectedPartsTotal,
       expectedPartsSource: result.expectedPartsSource ?? job.expectedPartsSource,
+      trustedTotalPartCount: result.trustedTotalPartCount ?? job.trustedTotalPartCount,
+      trustedTotalCountSource: result.trustedTotalCountSource ?? job.trustedTotalCountSource,
+      trustedTotalCountSourceUrl: result.trustedTotalCountSourceUrl ?? job.trustedTotalCountSourceUrl,
+      trustedTotalCountCheckedAt: result.trustedTotalCountCheckedAt
+        ? new Date(result.trustedTotalCountCheckedAt)
+        : job.trustedTotalCountCheckedAt,
       finalRows: result.finalRows,
-      retrievalState: result.retrievalState,
-      expectedPartCount: result.expectedPartCount,
-      actualPartCount: result.actualPartCount,
-      requiredPriceCount: result.requiredPriceCount,
-      verifiedPriceCount: result.verifiedPriceCount,
-      unpricedCount: result.unpricedCount,
-      bomComplete: result.bomComplete,
-      partsComplete: result.partsComplete,
-      pricingComplete: result.pricingComplete,
+      retrievalState: result.retrievalState ?? job.retrievalState,
+      expectedPartCount: result.expectedPartCount ?? job.expectedPartCount,
+      actualPartCount: result.actualPartCount ?? result.uniqueRowCount,
+      actualCanonicalPartCount:
+        result.actualCanonicalPartCount ??
+        result.actualPartCount ??
+        result.uniqueRowCount,
+      requiredPriceCount: result.requiredPriceCount ?? job.requiredPriceCount,
+      verifiedPriceCount: result.verifiedPriceCount ?? job.verifiedPriceCount,
+      unpricedCount: result.unpricedCount ?? job.unpricedCount,
+      bomComplete: result.bomComplete ?? job.bomComplete,
+      partsComplete: result.partsComplete ?? job.partsComplete,
+      pricingComplete: result.pricingComplete ?? job.pricingComplete,
       retrievedSources: scrubbedSources,
       errorText: null,
       updatedAt: new Date(),

@@ -4,6 +4,10 @@ import {
   getManufacturerFamilyConfig,
   resolveTrueOemBrand,
 } from "@/lib/providers/manufacturer/family-config";
+import {
+  resolveBrandSourceGate,
+  type SourceKey,
+} from "../registry/brand-source-gate";
 
 import type { RetrievedSource, SourceProvider } from "./providers/types";
 import { repairClinicFamilyProvider } from "./providers/repairclinic-family";
@@ -41,32 +45,49 @@ const PROVIDER_BY_NAME: Record<string, SourceProvider> = Object.fromEntries(
   ALL_PROVIDERS.map((p) => [p.name, p])
 );
 
-const UNIVERSAL_FALLBACK_PROVIDER_NAMES = [
-  "fix.com",
-  "sears-partsdirect",
-  "repairclinic-family",
+const TIER_1_PROVIDERS = [
   "encompass-family",
-  "partselect.com",
-  "appliancepartspros",
-  "partsdr",
-] as const;
+  "sears-partsdirect",
+];
 
-const FAMILY_FALLBACK_PROVIDER_NAMES: Record<string, string[]> = {
-  "whirlpool-family": ["fix.com", "repairclinic-family", "sears-partsdirect", "partselect.com"],
-};
+const TIER_2_PROVIDERS = [
+  "partsdr",
+  "appliancepartspros",
+  "partselect.com",
+  "fix.com",
+];
+
+const TIER_3_PROVIDERS = [
+  "partswarehouse",
+  "ereplacementparts",
+  "appliancefactoryparts",
+  "reliable-parts",
+  "coast-appliance-parts",
+  "dey-appliance-parts",
+  "appliance-parts-group",
+];
+
+const SKIP_PROVIDERS = [
+  "marcone",
+  "easyapplianceparts",
+];
+
+const UNIVERSAL_FALLBACK_PROVIDER_NAMES = [
+  ...TIER_1_PROVIDERS,
+  ...TIER_2_PROVIDERS,
+];
 
 /**
- * Mapping of manufacturer adapter keys (from family-config.js) to their 
- * authoritative provider names.
+ * Mapping of manufacturer adapter keys to their authoritative provider names.
  */
 const ADAPTER_TO_PROVIDER_NAMES: Record<string, string[]> = {
   "ge-official": ["ge-official"],
-  "whirlpool-family": ["repairclinic-family"],
-  "frigidaire-family": ["frigidaire-family"],
-  "lg-family": ["lg-family"],
-  "samsung-family": ["samsung-family"],
+  "whirlpool-family": ["encompass-family", "sears-partsdirect", "partsdr", "appliancepartspros"],
+  "frigidaire-family": ["partsdr", "partselect.com", "sears-partsdirect", "encompass-family", "fix.com"],
+  "lg-family": ["lg-family", "encompass-family"],
+  "samsung-family": ["samsung-family", "encompass-family"],
   "bosch-family": ["bosch-family"],
-  "distributor-pass": ["fix.com", "sears-partsdirect", "encompass-family", "partselect.com", "appliancepartspros", "partsdr"],
+  "distributor-pass": [...TIER_1_PROVIDERS, ...TIER_2_PROVIDERS],
 };
 
 export type SourceProviderPlan = {
@@ -104,6 +125,24 @@ function selectProviders(providerNames: string[]) {
   return providerNames
     .map((name) => PROVIDER_BY_NAME[name] ?? null)
     .filter(Boolean) as SourceProvider[];
+}
+
+function filterProvidersByBrandGate(
+  providers: SourceProvider[],
+  input: { brand: string | null; model: string | null },
+) {
+  const resolvedBrand = input.model
+    ? resolveTrueOemBrand(input.brand, input.model)
+    : input.brand;
+  const gate = resolveBrandSourceGate({
+    brand: input.brand,
+    resolvedBrand,
+  });
+  const approved = new Set(gate.approvedSources);
+
+  return providers.filter((provider) =>
+    approved.has(provider.name as SourceKey),
+  );
 }
 
 async function runProviders(
@@ -177,9 +216,6 @@ export function resolveSourceProviderPlan(input: {
     : [];
 
   const fallbackProviderNames = dedupeStrings([
-    ...(family?.key
-      ? FAMILY_FALLBACK_PROVIDER_NAMES[family.key] ?? []
-      : []),
     ...UNIVERSAL_FALLBACK_PROVIDER_NAMES,
   ]);
 
@@ -240,23 +276,43 @@ export async function fetchAuthoritativeSources(input: {
     return uniqueBy(seededSources, (s) => `${s.provider}:${s.sourceUrl}`);
   }
 
-  // 1. Co-primary diagram/catalog sources: Sears PartsDirect + Fix.com + Encompass + AppliancePartsPros + Parts Dr.
+  // 1. OEM Official Providers (GE, Bosch, LG, Samsung, Frigidaire)
+  const oemProviders = [
+    geOfficialProvider,
+    boschFamilyProvider,
+    lgFamilyProvider,
+    samsungFamilyProvider,
+    frigidaireFamilyProvider,
+  ];
+  const oemSources = await runProviders(
+    filterProvidersByBrandGate(oemProviders, { brand, model }),
+    providerInput,
+  );
+  if (oemSources.length > 0) {
+    return uniqueBy(oemSources, (s) => `${s.provider}:${s.sourceUrl}`);
+  }
+
+  // 2. Co-primary diagram/catalog sources (Priority Group #1)
   const coPrimarySources = await runProviders(
-    [searsPartsDirectProvider, fixComProvider, encompassFamilyProvider, appliancePartsProsProvider, partsDrProvider],
+    filterProvidersByBrandGate([
+      searsPartsDirectProvider,
+      fixComProvider,
+      encompassFamilyProvider,
+      appliancePartsProsProvider,
+      partsDrProvider,
+      partSelectProvider,
+    ], { brand, model }),
     providerInput,
   );
   if (coPrimarySources.length > 0) {
     return uniqueBy(coPrimarySources, (s) => `${s.provider}:${s.sourceUrl}`);
   }
 
-  // 2. PartSelect (Viability Rank #2)
-  const partSelectSources = await runProviders([partSelectProvider], providerInput);
-  if (partSelectSources.length > 0) {
-    return uniqueBy(partSelectSources, (s) => `${s.provider}:${s.sourceUrl}`);
-  }
-
-  // 3. specialized families like RepairClinic
-  const familySources = await runProviders([repairClinicFamilyProvider], providerInput);
+  // 3. specialized families like RepairClinic (Priority Group #2)
+  const familySources = await runProviders(
+    filterProvidersByBrandGate([repairClinicFamilyProvider], { brand, model }),
+    providerInput,
+  );
   if (familySources.length > 0) {
     return uniqueBy(familySources, (s) => `${s.provider}:${s.sourceUrl}`);
   }

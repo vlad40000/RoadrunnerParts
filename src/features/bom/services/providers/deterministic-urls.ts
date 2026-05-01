@@ -43,7 +43,7 @@ export function buildPartsDrUrl(input: { brand: string; model: string; appliance
   const model = normalizeModel(input.model).toLowerCase();
   const type = cleanText(input.applianceType ?? "appliance").toLowerCase().replace(/\s+/g, "-");
   
-  // Pattern 1 is the most common according to user
+  // Primary Pattern: https://partsdr.com/appliance-parts/{model-lower}-{brand-lower}-{appliance}
   return `https://partsdr.com/appliance-parts/${model}-${brand}-${type}`;
 }
 
@@ -98,6 +98,25 @@ export function buildLgSupportUrl(model: string) {
 export function buildLgPartsUrl(model: string) {
   const normalized = normalizeModel(model).toLowerCase();
   return `https://lgparts.com/products/${normalized}`;
+}
+
+export function buildPartSelectUrl(input: { brand: string; model: string }) {
+  const brand = cleanText(input.brand).toUpperCase();
+  const model = normalizeModel(input.model);
+  
+  let mfgId = "";
+  if (brand.includes("WHIRLPOOL")) mfgId = "1";
+  else if (brand.includes("MAYTAG")) mfgId = "3";
+  else if (brand.includes("KITCHENAID")) mfgId = "4";
+  else if (brand.includes("AMANA")) mfgId = "5";
+  else if (brand.includes("JENN-AIR")) mfgId = "6";
+  else if (brand.includes("GE") || brand.includes("GENERAL ELECTRIC")) mfgId = "2";
+  else if (brand.includes("LG")) mfgId = "15";
+  else if (brand.includes("SAMSUNG")) mfgId = "13";
+  
+  if (!mfgId) return null;
+  
+  return `https://www.partselect.com/Models/${model}/Manufacturer/${mfgId}/`;
 }
 
 export function buildPartSelectSamsungUrl(input: { model: string; version?: string | null }) {

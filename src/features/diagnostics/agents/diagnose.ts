@@ -13,6 +13,6 @@ export async function runDiagnoseAgent({
     prompt: diagnosePrompt,
     text: `Diagnostic Query: ${query}${modelNumber ? `\nModel: ${modelNumber}` : ''}`,
     systemInstruction: 'You are a world-class Master Appliance Engineer. Provide troubleshooting steps and likely faulty parts.',
-    temperature: 0.1,
+    temperature: 1.0,
   });
 }

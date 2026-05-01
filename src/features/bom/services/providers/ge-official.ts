@@ -30,20 +30,20 @@ const GE_FAMILY_BRANDS = new Set([
   "monogram",
 ]);
 
-type ParsedGeRow = {
+export interface ParsedGeRow {
   diagramNumber: number;
   description: string;
   originalPartNumber: string;
   currentServicePartNumber: string;
   nlaStatus: boolean;
   replacementNote: string | null;
-};
+}
 
 function isGePartToken(token: string) {
   return /^(?=.*[A-Z])(?=.*\d)[A-Z0-9-]{5,}$/.test(token);
 }
 
-function extractSectionNameFromUrl(url: string) {
+function extractSectionNameFromUrl(url: string): string {
   const last = url.split("/").pop() ?? "";
   return decodeURIComponent(last)
     .replace(/_/g, " ")
@@ -51,7 +51,12 @@ function extractSectionNameFromUrl(url: string) {
     .trim();
 }
 
-function parseSectionLinks(html: string, model: string) {
+interface GeSectionLink {
+  url: string;
+  sectionName: string;
+}
+
+function parseSectionLinks(html: string, model: string): GeSectionLink[] {
   const base = `https://www.geapplianceparts.com`;
   const $ = load(html);
 
@@ -72,7 +77,7 @@ function parseSectionLinks(html: string, model: string) {
       };
     })
     .get()
-    .filter(Boolean) as Array<{ url: string; sectionName: string }>;
+    .filter(Boolean) as GeSectionLink[];
 
   return uniqueBy(links, (item) => item.url);
 }
@@ -252,9 +257,12 @@ export const geOfficialProvider: SourceProvider = {
       const specsSearch = await resolveExactModelUrl({
         model,
         domain: "products.geappliances.com",
+        brand: input.brand,
+        brandFamily: "ge-family",
         preferredQueries: [
-          `site:products.geappliances.com/appliance/gea-specs "${model}" parts`,
-          `site:products.geappliances.com "${model}"`
+          `site:geapplianceparts.com/store/parts/assembly "${model}"`,
+          `site:geapplianceparts.com "${model}" "parts"`,
+          `site:products.geappliances.com "${model}" "parts"`
         ]
       });
 

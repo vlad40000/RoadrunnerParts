@@ -202,6 +202,9 @@ export async function resolveExactModelUrl(
     await searchExistingGroundingLayer({
       queries,
       domain: input.domain,
+      brand: input.brand,
+      brandFamily: input.brandFamily,
+      resolvedBrand: input.resolvedBrand,
       maxResults: DEFAULT_MAX_RESULTS,
     }),
   );

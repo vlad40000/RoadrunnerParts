@@ -1,5 +1,5 @@
-import { pgTable, text, timestamp, numeric, bigserial, bigint, jsonb } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { pgTable, text, timestamp, numeric, bigserial, jsonb, check } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const partPriceSnapshots = pgTable("part_price_snapshot", {
   id: bigserial("id", { mode: "bigint" }).primaryKey(),
@@ -13,33 +13,38 @@ export const partPriceSnapshots = pgTable("part_price_snapshot", {
 
   productUrl: text("product_url"),
   productTitle: text("product_title"),
-  matchType: text("match_type").notNull(),
+  matchType: text("match_type"),
   priceStatus: text("price_status").notNull(),
 
   checkedAt: timestamp("checked_at", { withTimezone: true }).notNull().defaultNow(),
   sourceObservedAt: timestamp("source_observed_at", { withTimezone: true }),
   raw: jsonb("raw").notNull().default({}),
+}, (table) => {
+  return {
+    priceStatusCheck: check(
+      "part_price_status_check",
+      sql`price_status in (
+        'verified_price',
+        'fallback_verified_price',
+        'no_verified_price',
+        'exact_part_found_no_price',
+        'part_not_found',
+        'ambiguous_match',
+        'blocked',
+        'source_error'
+      )`
+    ),
+    noPriceCheck: check(
+      "no_price_without_verified_status",
+      sql`(
+        price_status in ('verified_price', 'fallback_verified_price')
+        and listed_price is not null
+      )
+      or
+      (
+        price_status not in ('verified_price', 'fallback_verified_price')
+        and listed_price is null
+      )`
+    ),
+  };
 });
-
-export const partPriceFallbacks = pgTable("part_price_fallback", {
-  id: bigserial("id", { mode: "bigint" }).primaryKey(),
-  snapshotId: bigint("snapshot_id", { mode: "bigint" }).references(() => partPriceSnapshots.id, { onDelete: "cascade" }),
-  source: text("source").notNull(),
-  price: numeric("price", { precision: 10, scale: 2 }),
-  currency: text("currency").default("USD"),
-  availability: text("availability"),
-  productUrl: text("product_url"),
-  confidence: text("confidence"),
-  raw: jsonb("raw").notNull().default({}),
-});
-
-export const partPriceSnapshotsRelations = relations(partPriceSnapshots, ({ many }) => ({
-  fallbacks: many(partPriceFallbacks),
-}));
-
-export const partPriceFallbacksRelations = relations(partPriceFallbacks, ({ one }) => ({
-  snapshot: one(partPriceSnapshots, {
-    fields: [partPriceFallbacks.snapshotId],
-    references: [partPriceSnapshots.id],
-  }),
-}));

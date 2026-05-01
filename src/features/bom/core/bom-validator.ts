@@ -1,4 +1,8 @@
 import type { BomRow, DiagramParse, RetrievalState } from "../schemas/bom";
+import {
+  validateManifestCoverage,
+  validatePartsCompleteness,
+} from "../services/contract";
 
 export function computeUnmatchedCallouts(
   diagramData: DiagramParse,
@@ -171,10 +175,35 @@ export function determineRetrievalState(input: {
 
 export function validate_bom_completion(input: {
   rows: BomRow[];
-  expectedPartCount: number | null;
+  expectedPartCount?: number | null;
+  trustedTotalPartCount?: number | null;
+  manifestRowCount?: number;
+  requiredManifestRowCount?: number;
+  mappedRequiredManifestRowCount?: number;
+  unresolvedRequiredManifestRowCount?: number;
   identityResolved: boolean;
 }) {
   const actualPartCount = input.rows.length;
+  const trustedTotalPartCount =
+    input.trustedTotalPartCount ?? input.expectedPartCount ?? null;
+  const hasManifest =
+    (input.manifestRowCount ?? 0) > 0 ||
+    (input.requiredManifestRowCount ?? 0) > 0;
+  const partsCompletion = hasManifest
+    ? validateManifestCoverage({
+        trustedTotalPartCount,
+        manifestRowCount: input.manifestRowCount ?? 0,
+        requiredManifestRowCount: input.requiredManifestRowCount ?? 0,
+        mappedRequiredManifestRowCount:
+          input.mappedRequiredManifestRowCount ?? 0,
+        unresolvedRequiredManifestRowCount:
+          input.unresolvedRequiredManifestRowCount ?? 0,
+        actualCanonicalPartCount: actualPartCount,
+      })
+    : validatePartsCompleteness({
+        trustedTotalPartCount,
+        actualCanonicalPartCount: actualPartCount,
+      });
   const verifiedPriceCount = input.rows.filter(
     (r) => r.retailPrice?.status === "verified_price" || r.retailPrice?.status === "fallback_verified_price"
   ).length;
@@ -182,9 +211,9 @@ export function validate_bom_completion(input: {
 
   const retrievalState = determineRetrievalState({
     identityResolved: input.identityResolved,
-    expectedPartCount: input.expectedPartCount,
+    expectedPartCount: trustedTotalPartCount,
     actualPartCount,
-    requiredPartCount: input.expectedPartCount ?? actualPartCount,
+    requiredPartCount: trustedTotalPartCount ?? actualPartCount,
     verifiedPriceCount,
     unpricedCount,
     failed: false,
@@ -192,13 +221,16 @@ export function validate_bom_completion(input: {
 
   return {
     retrievalState,
-    expectedPartCount: input.expectedPartCount,
+    expectedPartCount: trustedTotalPartCount,
+    trustedTotalPartCount,
     actualPartCount,
-    requiredPriceCount: input.expectedPartCount ?? actualPartCount,
+    actualCanonicalPartCount: actualPartCount,
+    requiredPriceCount: trustedTotalPartCount ?? actualPartCount,
     verifiedPriceCount,
     unpricedCount,
     bomComplete: retrievalState === "bom_complete",
-    partsComplete: input.expectedPartCount !== null ? actualPartCount >= input.expectedPartCount : actualPartCount > 0,
+    partsComplete: partsCompletion.partsComplete,
+    partsCompletenessReason: partsCompletion.reason,
     pricingComplete: verifiedPriceCount >= actualPartCount && actualPartCount > 0,
   };
 }

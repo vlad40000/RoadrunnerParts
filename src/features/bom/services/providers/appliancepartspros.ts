@@ -6,7 +6,12 @@ import { buildAppliancePartsProsUrl } from "./deterministic-urls";
 
 const PROVIDER_NAME = "appliancepartspros";
 
-function parseAppliancePartsProsDiagrams(html: string, modelUrl: string) {
+interface AppliancePartsProsDiagram {
+  url: string;
+  name: string;
+}
+
+function parseAppliancePartsProsDiagrams(html: string, _modelUrl: string): AppliancePartsProsDiagram[] {
   const $ = load(html);
   const diagrams = $('.model-section-card, a[href*="/diagram/"]')
     .map((_, el) => {
@@ -21,7 +26,7 @@ function parseAppliancePartsProsDiagrams(html: string, modelUrl: string) {
       };
     })
     .get()
-    .filter(Boolean) as Array<{ url: string; name: string }>;
+    .filter(Boolean) as AppliancePartsProsDiagram[];
     
   return uniqueBy(diagrams, (d) => d.url);
 }

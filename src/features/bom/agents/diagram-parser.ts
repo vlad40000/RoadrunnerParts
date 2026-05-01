@@ -6,7 +6,7 @@ export async function runDiagramParser(files: Array<{ mimeType: string; uri: str
   const raw = await runStructuredJson<any>({
     prompt: diagramPrompt,
     files,
-    temperature: 0,
+    temperature: 1.0,
   });
 
   return diagramParseSchema.parse(raw);

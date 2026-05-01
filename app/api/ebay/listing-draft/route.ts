@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       model: "pro",
       prompt: EBAY_PROMPT_LISTING_DRAFT,
       text: JSON.stringify({ partDetails, marketSummary }),
-      temperature: 0,
+      temperature: 1.0,
     });
 
     const parsed = ebayDraftSchema.parse(result.draft || result);
