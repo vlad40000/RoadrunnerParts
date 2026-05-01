@@ -8,7 +8,6 @@ export type BrandFamily =
   | "unknown";
 
 export type SourceKey =
-  | "encompass"
   | "encompass-family"
   | "sears-partsdirect"
   | "partsdr"
@@ -18,7 +17,7 @@ export type SourceKey =
   | "fix.com";
 
 export const DISTRIBUTOR_PRIMARY_SOURCES: SourceKey[] = [
-  "encompass",
+  "encompass-family",
   "sears-partsdirect",
   "partsdr",
 ];
@@ -67,7 +66,6 @@ export const BLOCKED_SOURCES = [
 ];
 
 export const SOURCE_DOMAINS: Record<SourceKey, string[]> = {
-  encompass: ["encompass.com"],
   "encompass-family": ["encompass.com"],
   "sears-partsdirect": ["searspartsdirect.com"],
   partsdr: ["partsdr.com"],

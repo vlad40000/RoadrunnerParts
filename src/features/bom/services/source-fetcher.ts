@@ -202,10 +202,27 @@ export async function fetchSourcesFromSpecificProviders(input: {
   providerNames: string[];
   targetSections?: string[];
 }): Promise<RetrievedSource[]> {
-  const providers = selectProviders(input.providerNames);
-  return runProviders(providers, {
+  const gate = resolveBrandSourceGate({
+    brand: input.brand,
+    resolvedBrand: input.model
+      ? resolveTrueOemBrand(input.brand, input.model)
+      : input.brand,
+  });
+
+  const approved = new Set(gate.approvedSources);
+
+  const providers = selectProviders(
+    input.providerNames.filter((name) => approved.has(name as SourceKey)),
+  );
+
+  const sources = await runProviders(providers, {
     brand: input.brand,
     model: input.model,
     productType: input.productType ?? null,
   });
+
+  return uniqueBy(
+    filterByTargetSections(sources, input.targetSections),
+    (s) => `${s.provider}|${s.sectionName}|${s.sourceUrl}`,
+  );
 }

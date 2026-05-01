@@ -114,7 +114,16 @@ export const GROUNDING_TIERS = {
     "partswarehouse",
     "ereplacementparts"
   ],
-  skip_for_grounding: []
+  skip_for_grounding: [
+    "ge-official",
+    "bosch-family",
+    "frigidaire-family",
+    "lg-family",
+    "samsung-family",
+    "whirlpool-family",
+    "marcone",
+    "easyapplianceparts"
+  ]
 };
 
 export function getSourceTypeForProvider(provider: string) {
