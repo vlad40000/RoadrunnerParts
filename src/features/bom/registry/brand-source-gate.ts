@@ -21,9 +21,7 @@ export type SourceKey =
   | "appliancepartspros"
   | "repairclinic-family"
   | "partselect.com"
-  | "fix.com"
-  | "marcone"
-  | "easyapplianceparts";
+  | "fix.com";
 
 const PRIMARY_SOURCES: SourceKey[] = [
   "encompass",
@@ -36,8 +34,6 @@ const SECONDARY_SOURCES: SourceKey[] = [
   "repairclinic-family",
   "partselect.com",
   "fix.com",
-  "marcone",
-  "easyapplianceparts",
 ];
 
 const UNIVERSAL_DISTRIBUTOR_SOURCES: SourceKey[] = [

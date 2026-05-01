@@ -1,3 +1,5 @@
+import { resolveBrandSourceGate } from "@/features/bom/registry/brand-source-gate";
+
 export type ApplianceType =
   | "washer"
   | "dryer"
@@ -211,6 +213,18 @@ export const PARTS_SOURCE_REGISTRY: Record<string, BrandSourceConfig> = {
   },
 };
 
+const SOURCE_TEMPLATES: Record<string, (model: string) => string> = {
+  encompass: (m) => `https://encompass.com/model/${m}`,
+  "sears-partsdirect": (m) => `https://www.searspartsdirect.com/model/${m}`,
+  partsdr: (m) => `https://partsdr.com/search?q=${m}`,
+  appliancepartspros: (m) => `https://www.appliancepartspros.com/search.aspx?q=${m}`,
+  "repairclinic-family": (m) => `https://www.repairclinic.com/Shop-For-Parts?SearchText=${m}`,
+  "partselect.com": (m) => `https://www.partselect.com/Models/${m}/`,
+  "fix.com": (m) => `https://www.fix.com/models/${m}/`,
+  marcone: (m) => `https://www.marcone.com/search/${m}`,
+  easyapplianceparts: (m) => `https://www.easyapplianceparts.com/Models/${m}/`,
+};
+
 export function normalizeApplianceType(raw: string | null | undefined): ApplianceType {
   const key = String(raw || "").trim().toUpperCase();
   return APPLIANCE_TYPE_ALIASES[key] || "unknown";
@@ -233,30 +247,32 @@ export function resolvePartsSources(input: {
 }) {
   const brand = normalizeBrand(input.brand);
   const applianceType = normalizeApplianceType(input.applianceType);
-  const modelNumber = String(input.modelNumber || "").trim();
+  const modelNumber = String(input.modelNumber || "").trim().toUpperCase();
 
-  let oemBrand: string | null = null;
-  if (brand === "Kenmore") {
-    oemBrand = resolveKenmoreOem(modelNumber);
-  }
+  const gate = resolveBrandSourceGate({
+    brand: input.brand,
+    resolvedBrand: brand
+  });
 
-  const primaryBrand = oemBrand || brand;
-  const primary = PARTS_SOURCE_REGISTRY[primaryBrand];
-  const secondary = brand !== primaryBrand ? PARTS_SOURCE_REGISTRY[brand] : null;
+  const primaryRoutes: PartsSourceRoute[] = gate.primarySources.map(key => ({
+    label: `${key} (${modelNumber})`,
+    url: SOURCE_TEMPLATES[key]?.(modelNumber) || `https://${key}.com/search?q=${modelNumber}`
+  }));
 
-  const typeRoutes = primary?.routes?.[applianceType] || [];
-  const genericRoutes = primary?.genericRoutes || [];
-  const fallbackRoutes = [
-    ...(secondary?.genericRoutes || []),
-    ...(primary?.fallbackRoutes || []),
-    ...(secondary?.fallbackRoutes || []),
-  ];
+  const secondaryRoutes: PartsSourceRoute[] = gate.secondarySources.map(key => ({
+    label: `${key} (${modelNumber})`,
+    url: SOURCE_TEMPLATES[key]?.(modelNumber) || `https://${key}.com/search?q=${modelNumber}`
+  }));
 
+  // Legacy fallback to specific registry if allowed by policy
+  // For now, we only use distributors as primary/secondary
+  
   return {
     requestedBrand: brand,
-    resolvedBrand: primaryBrand,
+    resolvedBrand: gate.brandFamily,
     applianceType,
-    primaryRoutes: [...typeRoutes, ...genericRoutes],
-    fallbackRoutes,
+    primaryRoutes,
+    secondaryRoutes,
+    forbiddenSources: gate.forbiddenSources
   };
 }

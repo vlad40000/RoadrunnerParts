@@ -8,6 +8,7 @@
 - **Phase 6: Code Quality & Maintenance (Complete)**: Comprehensive refactoring of `partselect.ts` and `encompass-family.ts`. Resolved all informational IDE linting messages (named interfaces, explicit return types, `Array<T>` notation).
 - **Phase 7: Type Synchronization (Complete)**: Synchronized `ProviderSourceType` and `BomStatus`/`RetrievalState` across the core extraction pipeline.
 - **Phase 10: Identity Pipeline Hardening & Type Stability (Complete)**: Aligned identity extraction with structured JSON contracts using nested `candidate_identity` schemas. Fixed OCR API route for normalized identity fields. Achieved 100% `tsc` pass rate by resolving hoisting and schema mismatches.
+- **Phase 11: Distributor-First Policy & Source Resolution (Complete)**: Implemented "distributor-first" policy for BOM retrieval. OEM sources are now disabled by default and used only for identity repair or serial decoding. Hardened source resolution with strict Zod schemas and tiered distributor routing (Primary/Secondary).
 - **RetrievalState Standardization**: Standardized `RetrievalState` and `BomStatus` schemas to include all system states (23 values), ensuring type-safety across Single and Batch orchestrators. Resolved Gemini tool schema compatibility issues.
 - **Contract Enforcement**: Implemented `determineRetrievalState` in a new `contract.ts` service. Integrated this logic into the agent dispatcher to ensure the "BOM Completion Gate" is governed by deterministic rules rather than AI heuristics.
 - **Diagram-Indexed Manifest Contract**: Parts completeness now uses a trusted exact-model `total_part_count` as the target, builds a full diagram manifest as the expected row set, and maps canonical BOM rows against required manifest rows before completion can be claimed.
@@ -38,6 +39,8 @@
 - **Full Type Stability**: Resolved all remaining TypeScript build errors across `schemas/bom.ts`, `contract.ts`, `run-bom-recovery.ts`, and `partsSourceRegistry.ts`.
 - **RetrievalState Alignment**: Synchronized `determineRetrievalState` logic in `contract.ts` and `bom-validator.ts` with the central `RetrievalState` enum.
 - **Tiered Model Routing**: Validated and stabilized `gemini-3.1-flash-lite-preview` for high-throughput identity normalization and ingestion stages.
+- **Distributor-First Policy**: Implemented `SOURCE_POLICY` to prioritize distributors (Encompass, Sears, PartsDr) over OEM official sites for BOM retrieval. Added `marcone` and `easyapplianceparts` to secondary distributor tiers.
+- **Source Resolution Hardening**: Implemented `sourceResolutionResultSchema` and `sourceResolutionCandidateSchema` for deterministic extraction of candidate URLs. Updated `engine.ts` prompts to enforce the new source policy and output contracts.
 
 ## System Boundaries & Core Rules
 
