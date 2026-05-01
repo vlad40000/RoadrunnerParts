@@ -28,6 +28,45 @@ import {
 import { runWithConcurrency } from "@/lib/concurrency-util";
 import { extractPartsFromHtmlPage } from "@/lib/gemini";
 
+const BATCH_SIZE = 40;
+
+function getNextBatch<T>(input: {
+  acceptedRows: T[];
+  alreadyDeliveredCount: number;
+  trustedTotalPartCount: number | null;
+  timedOut?: boolean;
+}) {
+  const acceptedSinceLastFlush =
+    input.acceptedRows.length - input.alreadyDeliveredCount;
+
+  const remainingByTotal =
+    input.trustedTotalPartCount == null
+      ? null
+      : Math.max(0, input.trustedTotalPartCount - input.alreadyDeliveredCount);
+
+  const batchLimit = input.timedOut
+    ? acceptedSinceLastFlush
+    : remainingByTotal == null
+      ? Math.min(BATCH_SIZE, acceptedSinceLastFlush)
+      : Math.min(BATCH_SIZE, remainingByTotal, acceptedSinceLastFlush);
+
+  const deliveredTotal = input.alreadyDeliveredCount + batchLimit;
+
+  return {
+    rows: input.acceptedRows.slice(input.alreadyDeliveredCount, deliveredTotal),
+    deliveredThisBatch: batchLimit,
+    deliveredTotal,
+    remainingCount:
+      input.trustedTotalPartCount == null
+        ? null
+        : Math.max(0, input.trustedTotalPartCount - deliveredTotal),
+    hasMore:
+      input.trustedTotalPartCount == null
+        ? batchLimit === BATCH_SIZE
+        : deliveredTotal < input.trustedTotalPartCount,
+  };
+}
+
 function cleanText(value: string | null | undefined): string {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
@@ -388,12 +427,14 @@ export async function extractDiagramGroupForJob(input: {
     const expectedTotal = Number(job.expectedPartsTotal || 0);
     const coveragePct = expectedTotal > 0 ? actualUniqueParts / expectedTotal : 0;
 
-    // The highest state we can assign here is parts_complete_pricing_missing.
     // Final bom_complete must be deferred to the pricing validator.
     let finalStatus = status === "bom_complete" ? "bom_near_complete" : status;
     if (expectedTotal > 0) {
-      if (coveragePct < 0.90) finalStatus = "parts_partial";
-      else finalStatus = "parts_complete_pricing_missing";
+      if (coveragePct >= 1.0) {
+        finalStatus = "parts_complete_pricing_missing";
+      } else {
+        finalStatus = "parts_partial";
+      }
     }
 
     await completeBomJobGroup(input.jobId, input.groupId, {
@@ -502,6 +543,104 @@ export async function extractAllDiagramGroupsForJob(input: {
   const allRawRows: any[] = Array.isArray(job.extractedRowsRaw) ? [...job.extractedRowsRaw] : [];
   const allRetrievedSources: any[] = Array.isArray(job.retrievedSources) ? [...job.retrievedSources] : [];
 
+  let deliveredCount = Array.isArray(job.finalRows) ? job.finalRows.length : 0;
+  let progressWrite = Promise.resolve();
+
+  async function queueBatchPublish(args: {
+    timedOut?: boolean;
+    timeoutReason?: string;
+  }) {
+    progressWrite = progressWrite
+      .catch(() => undefined)
+      .then(async () => {
+        const trustedTotal =
+          Number(job.expectedPartsTotal || job.trustedTotalPartCount || 0) || null;
+
+        const reconcileResult = await reconcileParts(
+          normalizeModelNumber(model),
+          allRawRows as any,
+          { persist: false, expectedTotal: trustedTotal ?? undefined },
+        );
+
+        const allAcceptedRows = toUiParts(reconcileResult.masterParts || []);
+
+        const acceptedSinceLastFlush =
+          allAcceptedRows.length - deliveredCount;
+
+        const remainingBefore =
+          trustedTotal == null
+            ? null
+            : Math.max(0, trustedTotal - deliveredCount);
+
+        const shouldFlush =
+          acceptedSinceLastFlush >= BATCH_SIZE ||
+          args.timedOut === true ||
+          (
+            remainingBefore !== null &&
+            remainingBefore < BATCH_SIZE &&
+            acceptedSinceLastFlush >= remainingBefore
+          );
+
+        if (!shouldFlush) return null;
+
+        const batch = getNextBatch({
+          acceptedRows: allAcceptedRows,
+          alreadyDeliveredCount: deliveredCount,
+          trustedTotalPartCount: trustedTotal,
+          timedOut: args.timedOut,
+        });
+
+        if (batch.deliveredThisBatch <= 0) return null;
+
+        const cumulativeRows = allAcceptedRows.slice(0, batch.deliveredTotal);
+
+        const retrievalState =
+          batch.remainingCount === 0
+            ? "parts_complete_pricing_missing"
+            : "parts_partial";
+
+        await saveBomArtifacts(input.jobId, {
+          retrievedSources: allRetrievedSources,
+          extractedRowsRaw: allRawRows as any,
+          finalRows: cumulativeRows as any,
+          issues: args.timedOut
+            ? [`Timeout flush: saved ${batch.deliveredThisBatch} accepted rows before timeout.`]
+            : [],
+          unmatchedCallouts: [],
+        });
+
+        await updateBomJobSummary(input.jobId, {
+          jobStage: args.timedOut
+            ? "partial_batch_flushed"
+            : batch.hasMore
+              ? "delivering_part_batches"
+              : "parts_batch_delivery_done",
+          resultStatus: retrievalState,
+          retrievalState,
+          uniqueRowCount: cumulativeRows.length,
+          actualPartCount: cumulativeRows.length,
+          actualCanonicalPartCount: cumulativeRows.length,
+          expectedPartCount: trustedTotal,
+          trustedTotalPartCount: trustedTotal,
+          partsComplete: retrievalState === "parts_complete_pricing_missing",
+          pricingComplete: false,
+          bomComplete: false,
+          requiredPriceCount: cumulativeRows.length,
+          verifiedPriceCount: 0,
+          unpricedCount: cumulativeRows.length,
+          errorText: args.timedOut
+            ? `Timeout flush saved ${batch.deliveredThisBatch} accepted rows. Retrieval can resume.`
+            : null,
+        } as any);
+
+        deliveredCount = batch.deliveredTotal;
+
+        return batch;
+      });
+
+    return progressWrite;
+  }
+
   await runWithConcurrency(pendingGroups, concurrency, async (group) => {
     try {
       await markBomJobGroupRunning(input.jobId, group.id);
@@ -574,9 +713,19 @@ export async function extractAllDiagramGroupsForJob(input: {
         rawRowCount: newRawRows.length,
         acceptedRowCount: newRawRows.length,
       });
+
+      await queueBatchPublish({});
     } catch (err) {
       console.error(`[BulkExtract] Failed for group ${group.id}:`, err);
       await failBomJobGroup(input.jobId, group.id, err instanceof Error ? err.message : "Extraction failed");
+      
+      // Attempt timeout flush on failure
+      if (err instanceof Error && (err.message.includes("timeout") || err.message.includes("deadline"))) {
+        await queueBatchPublish({
+          timedOut: true,
+          timeoutReason: "agent_timeout",
+        });
+      }
     }
   });
 
@@ -607,8 +756,11 @@ export async function extractAllDiagramGroupsForJob(input: {
   }
 
   if (expectedTotal > 0) {
-    if (coveragePct < 0.90) finalStatus = "parts_partial";
-    else finalStatus = "parts_complete_pricing_missing";
+    if (coveragePct >= 1.0) {
+      finalStatus = "parts_complete_pricing_missing";
+    } else {
+      finalStatus = "parts_partial";
+    }
   }
 
   await saveBomArtifacts(input.jobId, {
