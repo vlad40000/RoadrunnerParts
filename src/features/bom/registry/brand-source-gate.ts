@@ -8,12 +8,6 @@ export type BrandFamily =
   | "unknown";
 
 export type SourceKey =
-  | "ge-official"
-  | "bosch-family"
-  | "frigidaire-family"
-  | "lg-family"
-  | "samsung-family"
-  | "whirlpool-family"
   | "encompass"
   | "encompass-family"
   | "sears-partsdirect"
@@ -22,6 +16,15 @@ export type SourceKey =
   | "repairclinic-family"
   | "partselect.com"
   | "fix.com";
+
+const OEM_SOURCE_KEYS: string[] = [
+  "ge-official",
+  "bosch-family",
+  "frigidaire-family",
+  "lg-family",
+  "samsung-family",
+  "whirlpool-family",
+];
 
 const PRIMARY_SOURCES: SourceKey[] = [
   "encompass",
@@ -41,36 +44,28 @@ const UNIVERSAL_DISTRIBUTOR_SOURCES: SourceKey[] = [
   ...SECONDARY_SOURCES,
 ];
 
-const OEM_SOURCE_KEYS: SourceKey[] = [
-  "ge-official",
-  "bosch-family",
-  "frigidaire-family",
-  "lg-family",
-  "samsung-family",
-  "whirlpool-family",
+// OEM Sources are strictly forbidden for BOM retrieval
+const FORBIDDEN_OEM_DOMAINS = [
+  "geapplianceparts.com",
+  "geappliances.com",
+  "products.geappliances.com",
+  "bosch-home.com",
+  "frigidaire.com",
+  "frigidaireapplianceparts.com",
+  "lg.com",
+  "lgparts.com",
+  "samsung.com",
+  "samsungparts.com",
+  "samsungpartsusa.com",
+  "whirlpool.com",
+  "whirlpoolparts.com",
+  "maytag.com",
+  "kitchenaid.com",
+  "amana.com",
+  "jennair.com",
 ];
 
 export const SOURCE_DOMAINS: Record<SourceKey, string[]> = {
-  "ge-official": [
-    "geapplianceparts.com",
-    "geappliances.com",
-    "products.geappliances.com",
-  ],
-  "bosch-family": ["bosch-home.com"],
-  "frigidaire-family": [
-    "frigidaire.com",
-    "frigidaireapplianceparts.com",
-  ],
-  "lg-family": ["lg.com", "lgparts.com"],
-  "samsung-family": ["samsung.com", "samsungparts.com", "samsungpartsusa.com"],
-  "whirlpool-family": [
-    "whirlpool.com",
-    "whirlpoolparts.com",
-    "maytag.com",
-    "kitchenaid.com",
-    "amana.com",
-    "jennair.com",
-  ],
   encompass: ["encompass.com"],
   "encompass-family": ["encompass.com"],
   "sears-partsdirect": ["searspartsdirect.com"],
@@ -92,42 +87,35 @@ export const SOURCE_POLICY = {
 
 export const BRAND_SOURCE_GATE: Record<
   BrandFamily,
-  { primarySources: SourceKey[]; secondarySources: SourceKey[]; forbiddenSources: SourceKey[] }
+  { primarySources: SourceKey[]; secondarySources: SourceKey[] }
 > = {
   "ge-family": {
     primarySources: PRIMARY_SOURCES,
     secondarySources: SECONDARY_SOURCES,
-    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "bosch-family": {
     primarySources: PRIMARY_SOURCES,
     secondarySources: SECONDARY_SOURCES,
-    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "frigidaire-family": {
     primarySources: PRIMARY_SOURCES,
     secondarySources: SECONDARY_SOURCES,
-    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "lg-family": {
     primarySources: PRIMARY_SOURCES,
     secondarySources: SECONDARY_SOURCES,
-    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "samsung-family": {
     primarySources: PRIMARY_SOURCES,
     secondarySources: SECONDARY_SOURCES,
-    forbiddenSources: OEM_SOURCE_KEYS,
   },
   "whirlpool-family": {
     primarySources: PRIMARY_SOURCES,
     secondarySources: SECONDARY_SOURCES,
-    forbiddenSources: OEM_SOURCE_KEYS,
   },
   unknown: {
     primarySources: PRIMARY_SOURCES,
     secondarySources: SECONDARY_SOURCES,
-    forbiddenSources: OEM_SOURCE_KEYS,
   },
 };
 
@@ -136,7 +124,7 @@ export type BrandSourceGate = {
   primarySources: SourceKey[];
   secondarySources: SourceKey[];
   approvedSources: SourceKey[];
-  forbiddenSources: SourceKey[];
+  forbiddenSources: string[];
   approvedDomains: string[];
   forbiddenDomains: string[];
 };
@@ -213,9 +201,9 @@ export function resolveBrandSourceGate(input: {
     primarySources: gate.primarySources,
     secondarySources: gate.secondarySources,
     approvedSources,
-    forbiddenSources: gate.forbiddenSources,
+    forbiddenSources: OEM_SOURCE_KEYS,
     approvedDomains: domainsForSources(approvedSources),
-    forbiddenDomains: domainsForSources(gate.forbiddenSources),
+    forbiddenDomains: FORBIDDEN_OEM_DOMAINS,
   };
 }
 

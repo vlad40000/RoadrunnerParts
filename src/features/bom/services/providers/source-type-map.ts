@@ -21,10 +21,8 @@ export const SEEDED_SOURCE_TYPE_BY_PROVIDER: Record<string, "oem" | "distributor
   "reliable-parts": "distributor",
   "coast-appliance-parts": "distributor",
   "deyparts": "distributor",
-  "easyapplianceparts": "distributor-merged-with-partselect",
   "genuine-replacement-parts": "distributor",
   "tribles": "distributor",
-  "marcone": "distributor",
   "midwest-appliance-parts": "distributor",
   "automatic-appliance-parts": "distributor",
   "seneca-river-trading": "distributor",
@@ -95,10 +93,7 @@ export const GROUNDING_TIERS = {
     "partswarehouse",
     "ereplacementparts"
   ],
-  skip_for_grounding: [
-    "marcone",
-    "easyapplianceparts"
-  ]
+  skip_for_grounding: []
 };
 
 /**

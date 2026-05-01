@@ -1,6 +1,8 @@
 import { runAgentLoop, AgentConfig } from "./agent-loop";
 import { CORE_BOM_TOOLS } from "./tool-definitions";
 import { dispatchBomToolCall } from "./bom-agent-dispatcher";
+import { buildSourceResolverPrompt } from "../../prompts/engine";
+
 
 export async function orchestrateAgentPipeline(input: {
   model: string;
@@ -33,7 +35,7 @@ export async function orchestrateAgentPipeline(input: {
   // STAGE 2: Source Resolution
   const resolverAgent: AgentConfig = {
     stage: "source_resolution",
-    systemInstruction: "You are the Source Resolver. Find authoritative OEM and distributor URLs for the appliance.",
+    systemInstruction: buildSourceResolverPrompt({ brand: input.brand }),
     tools: CORE_BOM_TOOLS.filter(t => ["resolve_oem_model_sources", "resolve_distributor_sources", "accept_trusted_total_part_count", "db_upsert_model_sources"].includes(t.name)),
     mode: "ANY"
   };

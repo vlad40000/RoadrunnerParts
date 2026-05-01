@@ -39,7 +39,7 @@
 - **Full Type Stability**: Resolved all remaining TypeScript build errors across `schemas/bom.ts`, `contract.ts`, `run-bom-recovery.ts`, and `partsSourceRegistry.ts`.
 - **RetrievalState Alignment**: Synchronized `determineRetrievalState` logic in `contract.ts` and `bom-validator.ts` with the central `RetrievalState` enum.
 - **Tiered Model Routing**: Validated and stabilized `gemini-3.1-flash-lite-preview` for high-throughput identity normalization and ingestion stages.
-- **Distributor-First Policy**: Implemented `SOURCE_POLICY` to prioritize distributors (Encompass, Sears, PartsDr) over OEM official sites for BOM retrieval. Added `marcone` and `easyapplianceparts` to secondary distributor tiers.
+- **Distributor-First Policy**: Implemented `SOURCE_POLICY` to prioritize distributors (Encompass, Sears, PartsDr) over OEM official sites for BOM retrieval. Hardened source resolution with strict Zod schemas and tiered distributor routing (Primary/Secondary).
 - **Source Resolution Hardening**: Implemented `sourceResolutionResultSchema` and `sourceResolutionCandidateSchema` for deterministic extraction of candidate URLs. Updated `engine.ts` prompts to enforce the new source policy and output contracts.
 
 ## System Boundaries & Core Rules

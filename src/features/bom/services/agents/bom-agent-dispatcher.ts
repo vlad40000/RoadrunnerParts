@@ -8,7 +8,9 @@ import {
   getManufacturerFamilyConfig, 
   resolveTrueOemBrand 
 } from "@/lib/providers/manufacturer/family-config";
+import { resolvePartsSources } from "@/lib/partsSourceRegistry";
 import { agentAssetStore } from "./asset-store";
+
 import { calculateMachinePriority } from "../priority-scoring";
 import { CORE_BOM_TOOLS } from "./tool-definitions";
 import { EBAY_MARKET_TOOLS } from "./ebay-tool-definitions";
@@ -115,18 +117,28 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
      * 3. Source Resolver Functions
      */
     case "resolve_oem_model_sources":
+      // OEM sources are completely removed from the pipeline.
       return { 
-        sources: [
-          { name: "GE Appliances", url: `https://www.geapplianceparts.com/store/parts/assembly/${args.normalizedModel}`, confidence: 1.0 }
-        ] 
+        status: "oem_skipped_by_policy",
+        reason: "OEM official sites are removed from the allowed sourcing paths.",
+        sources: [] 
       };
 
-    case "resolve_distributor_sources":
+    case "resolve_distributor_sources": {
+      const result = resolvePartsSources({
+        brand: args.brand || "unknown",
+        applianceType: args.applianceType || "unknown",
+        modelNumber: args.normalizedModel
+      });
       return {
+        brandFamily: result.resolvedBrand,
         sources: [
-          { name: "Sears PartsDirect", url: "https://www.searspartsdirect.com/model/...", confidence: 0.9 }
-        ]
+          ...result.primaryRoutes.map(r => ({ name: r.label, url: r.url, confidence: 1.0, priority: "primary" })),
+          ...result.secondaryRoutes.map(r => ({ name: r.label, url: r.url, confidence: 0.9, priority: "secondary" }))
+        ],
+        forbidden_domains: result.forbiddenSources
       };
+    }
 
     case "fetch_source_page":
       return { 

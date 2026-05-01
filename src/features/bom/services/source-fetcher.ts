@@ -45,36 +45,22 @@ const PROVIDER_BY_NAME: Record<string, SourceProvider> = Object.fromEntries(
   ALL_PROVIDERS.map((p) => [p.name, p])
 );
 
-const TIER_1_PROVIDERS = [
+const DISTRIBUTOR_PRIMARY_PROVIDERS = [
   "encompass-family",
   "sears-partsdirect",
+  "partsdr",
 ];
 
-const TIER_2_PROVIDERS = [
-  "partsdr",
+const DISTRIBUTOR_SECONDARY_PROVIDERS = [
   "appliancepartspros",
   "partselect.com",
   "fix.com",
-];
-
-const TIER_3_PROVIDERS = [
-  "partswarehouse",
-  "ereplacementparts",
-  "appliancefactoryparts",
-  "reliable-parts",
-  "coast-appliance-parts",
-  "dey-appliance-parts",
-  "appliance-parts-group",
-];
-
-const SKIP_PROVIDERS = [
-  "marcone",
-  "easyapplianceparts",
+  "repairclinic-family",
 ];
 
 const UNIVERSAL_FALLBACK_PROVIDER_NAMES = [
-  ...TIER_1_PROVIDERS,
-  ...TIER_2_PROVIDERS,
+  ...DISTRIBUTOR_PRIMARY_PROVIDERS,
+  ...DISTRIBUTOR_SECONDARY_PROVIDERS,
 ];
 
 /**
@@ -87,7 +73,7 @@ const ADAPTER_TO_PROVIDER_NAMES: Record<string, string[]> = {
   "lg-family": ["lg-family", "encompass-family"],
   "samsung-family": ["samsung-family", "encompass-family"],
   "bosch-family": ["bosch-family"],
-  "distributor-pass": [...TIER_1_PROVIDERS, ...TIER_2_PROVIDERS],
+  "distributor-pass": [...DISTRIBUTOR_PRIMARY_PROVIDERS, ...DISTRIBUTOR_SECONDARY_PROVIDERS],
 };
 
 export type SourceProviderPlan = {
@@ -276,48 +262,54 @@ export async function fetchAuthoritativeSources(input: {
     return uniqueBy(seededSources, (s) => `${s.provider}:${s.sourceUrl}`);
   }
 
-  // 1. OEM Official Providers (GE, Bosch, LG, Samsung, Frigidaire)
-  const oemProviders = [
-    geOfficialProvider,
-    boschFamilyProvider,
-    lgFamilyProvider,
-    samsungFamilyProvider,
-    frigidaireFamilyProvider,
+  // 1. Distributor Primary (Encompass, Sears, PartsDr)
+  const primaryDistributors = [
+    encompassFamilyProvider,
+    searsPartsDirectProvider,
+    partsDrProvider,
   ];
-  const oemSources = await runProviders(
-    filterProvidersByBrandGate(oemProviders, { brand, model }),
+  const primarySources = await runProviders(
+    filterProvidersByBrandGate(primaryDistributors, { brand, model }),
     providerInput,
   );
-  if (oemSources.length > 0) {
-    return uniqueBy(oemSources, (s) => `${s.provider}:${s.sourceUrl}`);
+  if (primarySources.length > 0) {
+    return uniqueBy(primarySources, (s) => `${s.provider}:${s.sourceUrl}`);
   }
 
-  // 2. Co-primary diagram/catalog sources (Priority Group #1)
-  const coPrimarySources = await runProviders(
-    filterProvidersByBrandGate([
-      searsPartsDirectProvider,
-      fixComProvider,
-      encompassFamilyProvider,
-      appliancePartsProsProvider,
-      partsDrProvider,
-      partSelectProvider,
-    ], { brand, model }),
+  // 2. Distributor Secondary (APP, PartSelect, Fix, RepairClinic)
+  const secondaryDistributors = [
+    appliancePartsProsProvider,
+    partSelectProvider,
+    fixComProvider,
+    repairClinicFamilyProvider,
+  ];
+  const secondarySources = await runProviders(
+    filterProvidersByBrandGate(secondaryDistributors, { brand, model }),
     providerInput,
   );
-  if (coPrimarySources.length > 0) {
-    return uniqueBy(coPrimarySources, (s) => `${s.provider}:${s.sourceUrl}`);
+  if (secondarySources.length > 0) {
+    return uniqueBy(secondarySources, (s) => `${s.provider}:${s.sourceUrl}`);
   }
 
-  // 3. specialized families like RepairClinic (Priority Group #2)
-  const familySources = await runProviders(
-    filterProvidersByBrandGate([repairClinicFamilyProvider], { brand, model }),
-    providerInput,
-  );
-  if (familySources.length > 0) {
-    return uniqueBy(familySources, (s) => `${s.provider}:${s.sourceUrl}`);
+  // 3. OEM Official Providers (Only if explicitly enabled)
+  const OEM_ENABLED = process.env.BOM_ENABLE_OEM_SOURCES === "true";
+  if (OEM_ENABLED) {
+    const oemProviders = [
+      geOfficialProvider,
+      boschFamilyProvider,
+      lgFamilyProvider,
+      samsungFamilyProvider,
+      frigidaireFamilyProvider,
+    ];
+    const oemSources = await runProviders(
+      filterProvidersByBrandGate(oemProviders, { brand, model }),
+      providerInput,
+    );
+    if (oemSources.length > 0) {
+      return uniqueBy(oemSources, (s) => `${s.provider}:${s.sourceUrl}`);
+    }
   }
 
-  // 4. General distributors
   return [];
 }
 
