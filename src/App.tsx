@@ -869,14 +869,14 @@ Focus on:
     };
   }, [filteredParts, aiParts]);
 
-  const isBomComplete = false;
-
-  const completeBomLabel =
-    expectedPartCount !== null && aiParts.length > 0
-      ? `Continue Retrieval (${aiParts.length}/${expectedPartCount})`
+  const isBomComplete = expectedPartCount !== null && aiParts.length >= expectedPartCount;
+  const completeBomLabel = isBomComplete
+    ? `All ${expectedPartCount} Parts Found`
+    : expectedPartCount !== null && aiParts.length > 0
+      ? `Exhaustive Pass ${bomPassCount + 1} (${aiParts.length}/${expectedPartCount})`
       : aiParts.length > 0
-        ? `Continue Retrieval (${aiParts.length} delivered)`
-        : "Start Retrieval";
+        ? `Exhaustive Pass ${bomPassCount + 1}`
+        : 'Complete BOM';
 
   const handleCheckCompatibility = (modelOverride?: string) => {
     const modelToUse = modelOverride || checkModel;

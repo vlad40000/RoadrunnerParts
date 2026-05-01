@@ -540,6 +540,14 @@ export async function extractAllDiagramGroupsForJob(input: {
 
   const envConcurrency = process.env.BOM_EXTRACTOR_CONCURRENCY ? parseInt(process.env.BOM_EXTRACTOR_CONCURRENCY, 10) : 5;
   const concurrency = input.concurrency || envConcurrency;
+
+  const startedAt = Date.now();
+  const softTimeoutMs =
+    Number.parseInt(process.env.BOM_SOFT_TIMEOUT_MS ?? "45000", 10) || 45000;
+
+  function isNearSoftTimeout() {
+    return Date.now() - startedAt >= softTimeoutMs;
+  }
   const allRawRows: any[] = Array.isArray(job.extractedRowsRaw) ? [...job.extractedRowsRaw] : [];
   const allRetrievedSources: any[] = Array.isArray(job.retrievedSources) ? [...job.retrievedSources] : [];
 
@@ -715,12 +723,28 @@ export async function extractAllDiagramGroupsForJob(input: {
       });
 
       await queueBatchPublish({});
+
+      if (isNearSoftTimeout()) {
+        await queueBatchPublish({
+          timedOut: true,
+          timeoutReason: "soft_timeout_flush",
+        });
+
+        throw new Error("soft_timeout_flush");
+      }
     } catch (err) {
       console.error(`[BulkExtract] Failed for group ${group.id}:`, err);
       await failBomJobGroup(input.jobId, group.id, err instanceof Error ? err.message : "Extraction failed");
       
       // Attempt timeout flush on failure
-      if (err instanceof Error && (err.message.includes("timeout") || err.message.includes("deadline"))) {
+      if (
+        err instanceof Error &&
+        (
+          err.message.includes("timeout") ||
+          err.message.includes("deadline") ||
+          err.message.includes("soft_timeout_flush")
+        )
+      ) {
         await queueBatchPublish({
           timedOut: true,
           timeoutReason: "agent_timeout",
