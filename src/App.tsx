@@ -1559,8 +1559,16 @@ Focus on:
                   {SOURCE_TIERS[selectedTier]?.suppliers.map((supplier) => {
                     const busyKey = `${supplier.id}`;
                     const isBusy = sourceActionBusy[busyKey];
-                    const supplierModel = normalizeModelForSupplier(lookupModel, supplier.id);
-                    const siteUrl = buildSupplierSearchUrl(supplier.id, supplierModel);
+                    const supplierModel = normalizeModelForSupplier({
+                      supplier: supplier.id,
+                      model: lookupModel,
+                      brand: manufactureInfo?.brand
+                    });
+                    const siteUrl = buildSupplierSearchUrl({
+                      supplier: supplier.id,
+                      formattedModel: supplierModel,
+                      canonicalModel: lookupModel
+                    });
 
                     return (
                       <div key={supplier.id} className="rounded-xl border border-pro-slate-100 p-3 bg-white hover:border-pro-blue/20 transition-all">
