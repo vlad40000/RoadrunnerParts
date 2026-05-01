@@ -3,7 +3,8 @@ import { validateLiveParts } from "./bom-validator";
 import { normalizeBomRows } from "./bom-normalizer";
 import { runStructuredJson } from "../services/model-runner";
 import { buildFixModelUrl } from "../services/providers/fix-com";
-import { buildCountAndDiagramLocatorPrompt, DIAGRAM_PARTS_EXTRACT, PRICE_PROMPT_RETAIL_ENRICHMENT } from "../prompts/engine";
+import { buildSourceResolverPrompt, DIAGRAM_MANIFEST_PROMPT, CONSISTENCY_REVIEW_PROMPT } from "../prompts/engine";
+import { buildPricingExtractionPrompt, partsExtractionPrompt } from "../prompts/parts";
 import type { BomRow, BomStatus } from "../schemas/bom";
 import { decodeSerialNumber } from "../../identity/decoder";
 import { filterPartsBySerialApplicability } from "../../identity/applicability";
@@ -55,16 +56,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
       console.log(`[BatchOrchestrator] Locating BOM Frame for ${model} via ${candidateUrl}`);
       const locatorResult = await runStructuredJson<any>({
         model: "pro",
-        prompt: buildCountAndDiagramLocatorPrompt({ brand })
-          .replace(/{{MODEL}}/g, model)
-          .replace(/{{MAKE}}/g, brand)
-          .replace(/{{FIX_BRAND_SLUG}}/g, brandSlug)
-          .replace(/{{APPLIANCE_TYPE}}/g, applianceType)
-          .replace(/{{FIX_APPLIANCE_SLUG}}/g, applianceSlug)
-          .replace(/{{CANDIDATE_URL}}/g, candidateUrl)
-          .replace(/{{SERIAL_OR_NULL}}/g, serial || "null")
-          .replace(/{{MANUFACTURE_YEAR_OR_NULL}}/g, serialProfile?.selectedYear?.toString() || "null")
-          .replace(/{{SERIAL_CONFIDENCE}}/g, serialProfile?.confidence || "low"),
+        prompt: buildSourceResolverPrompt({ brand }),
         enableSearch: true,
         temperature: 1.0,
       });
@@ -85,12 +77,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
         try {
           const extractResult = await runStructuredJson<any>({
             model: "fast",
-            prompt: DIAGRAM_PARTS_EXTRACT
-              .replace(/{{MODEL}}/g, model)
-              .replace(/{{DIAGRAM_URL}}/g, diag.diagramUrl || sourceUrl)
-              .replace(/{{DIAGRAM_NAME}}/g, diag.diagramName)
-              .replace(/{{TOTAL_PARTS_AVAILABLE}}/g, String(totalPartsAvailable))
-              .replace(/{{KNOWN_PART_NUMBERS_JSON}}/g, JSON.stringify(knownPartNumbers)),
+            prompt: partsExtractionPrompt,
             enableSearch: false,
             text: `Extracting ${diag.diagramName}`,
             temperature: 1.0,
@@ -127,7 +114,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
 
       // 7. Price enrichment
       if (input.retrievalMode === 'parts_with_prices' && finalParts.length > 0) {
-        finalParts = await enrichPartPrices(finalParts);
+        finalParts = await enrichPartPrices(finalParts, model);
       }
 
       const newState = determineNewState({
@@ -161,7 +148,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
   return { results };
 }
 
-async function enrichPartPrices(parts: BomRow[]): Promise<BomRow[]> {
+async function enrichPartPrices(parts: BomRow[], model: string): Promise<BomRow[]> {
   const enrichedParts = [...parts];
   const chunkSize = 15;
   for (let i = 0; i < enrichedParts.length; i += chunkSize) {
@@ -171,7 +158,7 @@ async function enrichPartPrices(parts: BomRow[]): Promise<BomRow[]> {
     try {
       const enrichment = await runStructuredJson<any>({
         model: "fast",
-        prompt: PRICE_PROMPT_RETAIL_ENRICHMENT,
+        prompt: buildPricingExtractionPrompt({ model }),
         text: `Enriching: ${partNumbers.join(", ")}`,
         temperature: 1.0,
         enableSearch: true,

@@ -2,7 +2,7 @@ import { runAgentLoop, AgentConfig } from "./agent-loop";
 import { CORE_BOM_TOOLS } from "./tool-definitions";
 import { dispatchBomToolCall } from "./bom-agent-dispatcher";
 import { buildSourceResolverPrompt } from "../../prompts/engine";
-import { identityExtractionPrompt } from "../../prompts/identity";
+import { IDENTITY_EXTRACTION_PROMPT } from "../../prompts/identity";
 import { partsExtractionPrompt } from "../../prompts/parts";
 
 export async function orchestrateAgentPipeline(input: {
@@ -15,7 +15,7 @@ export async function orchestrateAgentPipeline(input: {
   // STAGE 1: Identity & Cache Check
   const identityAgent: AgentConfig = {
     stage: "ocr_ingest",
-    systemInstruction: identityExtractionPrompt,
+    systemInstruction: IDENTITY_EXTRACTION_PROMPT,
     tools: CORE_BOM_TOOLS.filter(t => ["ocr_extract_nameplate", "normalize_appliance_identity", "db_get_model_record", "db_get_model_part_count", "validate_cached_bom_completeness"].includes(t.name)),
     mode: "AUTO"
   };

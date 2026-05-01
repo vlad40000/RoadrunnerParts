@@ -1,5 +1,5 @@
 import { runStructuredJson } from '../services/model-runner';
-import { consistencyPrompt } from '../prompts/engine';
+import { CONSISTENCY_REVIEW_PROMPT } from '../prompts/engine';
 
 export async function runConsistencyReviewer({
   identity,
@@ -12,7 +12,7 @@ export async function runConsistencyReviewer({
 }) {
   const result = await runStructuredJson<any>({
     model: 'fast',
-    prompt: consistencyPrompt,
+    prompt: CONSISTENCY_REVIEW_PROMPT,
     text: JSON.stringify({
       appliance: `${identity.brand_normalized} ${variant.resolved_model} (Variant: ${variant.resolved_revision || 'None'})`,
       productType: identity.product_type || 'appliance',

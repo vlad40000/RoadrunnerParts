@@ -1,4 +1,4 @@
-import { identityExtractionPrompt, identityNormalizationPrompt } from '../prompts/identity';
+import { IDENTITY_EXTRACTION_PROMPT } from '../prompts/identity';
 import { runStructuredJson } from '../services/model-runner';
 import { logger } from '@/lib/logger';
 import { 
@@ -8,6 +8,7 @@ import {
   type Stage1Output,
   type Stage2Output
 } from '../schemas/bom';
+import { logTelemetry } from '../services/telemetry';
 
 type IdentityFile = {
   mimeType: string;
@@ -89,12 +90,7 @@ function failedStage1Output(rawText = "", reason = "identity_extraction_schema_v
       brand: null,
       model: null,
       serial: null,
-      type_code: null,
-      product_type: null,
       appliance_type: null,
-      fuel_type: null,
-      voltage_or_power_clues: [],
-      wire_connection: null,
     },
     evidence_used: [],
     manual_review_flags: [reason],
@@ -108,9 +104,7 @@ function failedStage2Output(reason: string): Stage2Output {
     manufacturer_family: null,
     model: null,
     serial: null,
-    type_code: null,
     appliance_type: null,
-    fuel_type: null,
     status: "failed",
     expectedPartCount: undefined,
     manual_review_flags: [reason],
@@ -122,136 +116,102 @@ function failedStage2Output(reason: string): Stage2Output {
 }
 
 /**
- * STAGE 1: Identity Extraction
+ * STAGE 1: Identity Extraction & JS Normalization
  */
-export async function runIdentityExtraction({
+export async function runIdentityExtractor({
   files = [],
   userHints = {},
+  jobId,
 }: {
   files?: IdentityFile[];
   userHints?: Record<string, unknown>;
-}): Promise<Stage1Output> {
+  jobId?: string;
+}): Promise<Stage2Output> {
   const inputText = JSON.stringify({ userHints });
-  const prompt = identityExtractionPrompt.replace('{{raw_text}}', inputText);
-
-  const rawResult = await runStructuredJson<any>({
-    model: "lite",
-    prompt,
-    text: `INPUT:\n${inputText}`,
-    files,
-    temperature: 1.0,
-    responseSchema: {
-      type: "object",
-      properties: {
-        candidate_identity: {
-          type: "object",
-          properties: {
-            brand: { type: "string", nullable: true },
-            model: { type: "string", nullable: true },
-            serial: { type: "string", nullable: true },
-            type_code: { type: "string", nullable: true },
-            product_type: { type: "string", nullable: true },
-            appliance_type: { type: "string", nullable: true },
-            fuel_type: { type: "string", nullable: true },
-          }
-        },
-        confidence: { type: "object", properties: { model: { type: "number" } } },
-        evidence_used: { type: "array", items: { type: "string" } },
-        manual_review_flags: { type: "array", items: { type: "string" } },
+  
+  const startTime = Date.now();
+  
+  let rawResult;
+  try {
+    rawResult = await runStructuredJson<any>({
+      model: "lite",
+      prompt: IDENTITY_EXTRACTION_PROMPT,
+      text: `INPUT:\n${inputText}`,
+      files,
+      temperature: 1.0,
+    });
+  } catch (err) {
+    await logTelemetry({
+      jobId,
+      event: "identity_extraction_attempt",
+      status: "failed",
+      payload: {
+        error: err instanceof Error ? err.message : String(err),
+        duration: Date.now() - startTime,
       }
-    }
-  });
+    });
+    throw err;
+  }
 
   const parsedResult = asRecord(parseMaybeStringifiedJson(rawResult));
   logger.info("Identity Extraction Result:", parsedResult);
 
-  // Robust default for status and raw_text if missing from model output
-  const status = (parsedResult.status || (parsedResult.candidate_identity?.model ? "complete" : "failed")) as "complete" | "success" | "failed";
-  const raw_text = String(parsedResult.raw_text || "");
+  const candidate = parsedResult.candidate_identity || {};
+  const rawModel = String(candidate.model || "").trim();
+  const status = (parsedResult.status || (rawModel ? "complete" : "failed")) as "complete" | "success" | "failed";
 
-  const parsed = stage1OutputSchema.safeParse({ 
-    ...parsedResult, 
-    status,
-    raw_text
+  await logTelemetry({
+    jobId,
+    event: "identity_extraction_result",
+    status: status === "failed" ? "failed" : "success",
+    model: rawModel || null,
+    brand: candidate.brand || null,
+    payload: {
+      duration: Date.now() - startTime,
+      evidence_count: (parsedResult.evidence_used as any[])?.length || 0,
+      manual_review_flags: parsedResult.manual_review_flags || [],
+    }
   });
 
-  if (!parsed.success) {
-    logger.error("Stage 1 Output parsing failed:", parsed.error.flatten());
-    return failedStage1Output(raw_text, "Parse error in stage 1 output");
-  }
-
-  return parsed.data;
+  return stage2OutputSchema.parse({
+    brand: null,
+    resolved_oem_brand: null,
+    manufacturer_family: null,
+    model: rawModel || null,
+    serial: candidate.serial || null,
+    appliance_type: null,
+    status: status === "complete" ? "success" : status,
+    normalization_status: status === "complete" ? "complete" : "failed",
+    evidence: parsedResult.evidence_used || [],
+    blockers: status === "failed" ? ["identity_not_found"] : [],
+    next_action: null,
+  });
 }
 
 /**
- * STAGE 2: Identity Normalization
+ * Legacy compatibility
  */
-export async function runIdentityNormalization(extractionResult: Stage1Output): Promise<Stage2Output> {
-  if (extractionResult.status === "failed") {
-    return failedStage2Output("identity_extraction_failed");
-  }
-
-  const stage1Payload = JSON.stringify(extractionResult, null, 2);
-  
-  const prompt = identityNormalizationPrompt
-    .replace('{{brand_alias_map}}', BRAND_ALIAS_MAP)
-    .replace('{{oem_regex_rules}}', OEM_REGEX_RULES)
-    .replace('{{stage_1_output}}', stage1Payload);
-
-  try {
-    const rawResult = await runStructuredJson<any>({
-      model: "lite",
-      prompt,
-      text: `INPUT:\n${stage1Payload}`,
-      temperature: 1.0,
-      responseSchema: {
-        type: "object",
-        properties: {
-          brand: { type: "string", nullable: true },
-          resolved_oem_brand: { type: "string", nullable: true },
-          manufacturer_family: { type: "string", nullable: true },
-          model: { type: "string", nullable: true },
-          serial: { type: "string", nullable: true },
-          type_code: { type: "string", nullable: true },
-          appliance_type: { type: "string", nullable: true },
-          fuel_type: { type: "string", nullable: true },
-          expectedPartCount: { type: "number", nullable: true },
-          normalization_status: { type: "string" },
-          evidence: { type: "array", items: { type: "string" } },
-          blockers: { type: "array", items: { type: "string" } },
-        }
-      }
-    });
-
-    const parsedResult = parseMaybeStringifiedJson(rawResult);
-
-    const parseAttempt = normalizedIdentitySchema.safeParse(parsedResult);
-    if (!parseAttempt.success) {
-      logger.error("Identity Normalization parsing failed:", parseAttempt.error.flatten());
-      return failedStage2Output("Parse error in normalization output");
-    }
-    
-    logger.info("Identity Normalized:", parseAttempt.data);
-    return stage2OutputSchema.parse({ ...parseAttempt.data, status: "success" });
-  } catch (err) {
-    logger.error("Identity Normalization failed:", err);
-    return failedStage2Output("Exception during normalization");
-  }
-}
-
-/**
- * Legacy compatibility or combined runner
- */
-export async function runIdentityExtractor(input: {
-  files?: IdentityFile[];
-  userHints?: Record<string, unknown>;
-}) {
-  const extraction = await runIdentityExtraction(input);
-  const normalization = await runIdentityNormalization(extraction);
-  
+export async function runIdentityExtraction(input: any): Promise<any> {
+  const result = await runIdentityExtractor(input);
+  // Return an object that satisfies Stage1Output expectations
   return {
-    ...normalization,
-    rawText: extraction.raw_text,
-    productType: normalization.manufacturer_family,
+    ...result,
+    status: result.status === "success" ? "complete" : "failed",
+    raw_text: result.evidence.join("\n"),
+    candidate_identity: {
+      brand: result.brand,
+      model: result.model,
+      serial: result.serial,
+      appliance_type: result.appliance_type,
+    },
+    evidence_used: result.evidence,
   };
+}
+
+export async function runIdentityNormalization(extractionResult: any): Promise<any> {
+  // If it's already normalized (from our new shim), just return it
+  if (extractionResult.normalization_status) {
+    return extractionResult;
+  }
+  return extractionResult;
 }

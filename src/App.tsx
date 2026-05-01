@@ -59,6 +59,11 @@ import { EbaySummary, EbayDraft } from './features/ebay/schemas';
 import { ApplianceDecoder, DecodeResult } from './lib/decoder';
 import { computeCurrentMarketValue, ApplianceCondition, ValuationResult } from './lib/valuation';
 import { ebaySearchUrl, ebaySoldSearchUrl } from './features/bom/services/ebay-links';
+import { 
+  SOURCE_TIERS, 
+  normalizeModelForSupplier, 
+  buildSupplierSearchUrl 
+} from './features/bom/services/source-tier-policy';
 
 const decoder = new ApplianceDecoder();
 const approvedPriceSources = ['encompass.com', 'searspartsdirect.com', 'fix.com'];
@@ -167,6 +172,16 @@ export default function App() {
   const [isEbayLoading, setIsEbayLoading] = useState<Record<string, boolean>>({});
   const [ebayCaptureText, setEbayCaptureText] = useState('');
 
+  // Manual Distributor Control State
+  const [selectedTier, setSelectedTier] = useState(0);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStage, setJobStage] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<string | null>(null);
+  const [results, setResults] = useState<any>(null);
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [isDistributorPanelOpen, setIsDistributorPanelOpen] = useState(true);
+  const [sourceActionBusy, setSourceActionBusy] = useState<Record<string, boolean>>({});
+
   const [verifiedStatus, setVerifiedStatus] = useState<Record<string, { state: 'loading' | 'valid' | 'invalid' | null, source?: string }>>({});
 
   const handleVerifyPart = async (part: Part) => {
@@ -194,6 +209,79 @@ export default function App() {
       setVerifiedStatus(prev => ({ ...prev, [key]: { state: 'invalid' } }));
     }
   };
+
+  const handleSourceAction = async (supplierId: string, task: string, assemblyId?: string) => {
+    if (!lookupModel) return;
+    
+    setSourceActionBusy(prev => ({ ...prev, [supplierId]: true }));
+    try {
+      const response = await fetch('/api/bom/source-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId,
+          model: lookupModel,
+          supplierId,
+          task,
+          assemblyId
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Source action failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (data.jobId) {
+        setJobId(data.jobId);
+        // Initial fetch of job state
+        const statusRes = await fetch(`/api/bom/jobs?id=${data.jobId}`);
+        const jobData = await statusRes.json();
+        if (jobData) {
+          setJobStage(jobData.stage);
+          setJobStatus(jobData.status);
+          setResults(jobData.result || null);
+        }
+      }
+    } catch (err) {
+      console.error("Manual action failed:", err);
+      alert("Manual action failed. Check console for details.");
+    } finally {
+      setSourceActionBusy(prev => ({ ...prev, [supplierId]: false }));
+    }
+  };
+
+  // Poll for background job updates
+  useEffect(() => {
+    if (!jobId || jobStatus === 'completed' || jobStatus === 'failed') return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/bom/jobs?id=${jobId}`);
+        if (!res.ok) return;
+        const jobData = await res.json();
+        
+        setJobStage(jobData.stage);
+        setJobStatus(jobData.status);
+        if (jobData.result) {
+          setResults(jobData.result);
+          // If we have new parts, sync them to aiParts
+          if (Array.isArray(jobData.result.parts) && jobData.result.parts.length > 0) {
+            setAIParts(prev => {
+              const seen = new Set(prev.map(p => p.partNumber));
+              const newParts = jobData.result.parts.filter((p: any) => !seen.has(p.partNumber));
+              if (newParts.length === 0) return prev;
+              return [...prev, ...newParts];
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Polling failed:", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [jobId, jobStatus]);
 
   // Removed eBay modal state per request
 
@@ -1438,6 +1526,119 @@ Focus on:
               </nav>
             )}
           </div>
+
+          {/* Distributor Control Panel */}
+          {lookupModel && (
+            <div className="mx-auto max-w-5xl mb-6">
+              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-pro">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Database size={16} className="text-pro-blue" />
+                    <h4 className="text-xs font-black uppercase tracking-widest text-pro-navy">
+                      Distributor Control Panel
+                    </h4>
+                  </div>
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3].map((tier) => (
+                      <button
+                        key={tier}
+                        onClick={() => setSelectedTier(tier)}
+                        className={`px-3 py-1 text-[10px] font-bold rounded-lg transition-all ${
+                          selectedTier === tier 
+                            ? 'bg-pro-navy text-white' 
+                            : 'bg-pro-slate-50 text-pro-slate-400 hover:bg-pro-slate-100'
+                        }`}
+                      >
+                        Tier {tier}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {SOURCE_TIERS[selectedTier]?.suppliers.map((supplier) => {
+                    const busyKey = `${supplier.id}`;
+                    const isBusy = sourceActionBusy[busyKey];
+                    const supplierModel = normalizeModelForSupplier(lookupModel, supplier.id);
+                    const siteUrl = buildSupplierSearchUrl(supplier.id, supplierModel);
+
+                    return (
+                      <div key={supplier.id} className="rounded-xl border border-pro-slate-100 p-3 bg-white hover:border-pro-blue/20 transition-all">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-[11px] font-black text-pro-navy uppercase truncate pr-2">
+                            {supplier.name}
+                          </span>
+                          <a 
+                            href={siteUrl} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-pro-slate-300 hover:text-pro-blue"
+                            title="Open direct site"
+                          >
+                            <ExternalLink size={12} />
+                          </a>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-1.5">
+                          <button
+                            disabled={isBusy || isAILoading}
+                            onClick={() => handleSourceAction(supplier.id, 'parts_diagrams')}
+                            className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
+                          >
+                            Diagrams
+                          </button>
+                          <button
+                            disabled={isBusy || isAILoading}
+                            onClick={() => handleSourceAction(supplier.id, 'parts_bom')}
+                            className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
+                          >
+                            BOM
+                          </button>
+                          <button
+                            disabled={isBusy || isAILoading}
+                            onClick={() => handleSourceAction(supplier.id, 'pricing')}
+                            className="rounded-lg bg-emerald-50 py-1.5 text-[9px] font-bold text-emerald-600 hover:bg-emerald-100 disabled:opacity-50"
+                          >
+                            Pricing
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {jobId && (
+                  <div className="mt-4 pt-4 border-t border-pro-slate-50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[9px] font-bold text-pro-slate-400 uppercase tracking-widest">
+                        Active Job: <span className="text-pro-navy">{jobId}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black uppercase text-pro-blue">
+                        {jobStage?.replace(/_/g, ' ') || 'running'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                {results?.issues?.length > 0 && (
+                  <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                    <div className="text-[9px] font-black uppercase tracking-widest text-amber-600 mb-2 flex items-center gap-2">
+                      <AlertCircle size={10} />
+                      Manual Review Flags
+                    </div>
+                    <ul className="space-y-1">
+                      {results.issues.map((issue, idx) => (
+                        <li key={idx} className="text-[9px] font-bold text-amber-800 flex items-start gap-1.5">
+                          <span className="mt-0.5">•</span>
+                          {issue}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {filteredParts.length === 0 ? (
             <div className="pro-card p-16 flex flex-col items-center text-center rounded-2xl border-dashed">

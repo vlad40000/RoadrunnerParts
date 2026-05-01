@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PRICE_PROMPT_RETAIL_ENRICHMENT } from "@/features/bom/prompts/engine";
+import { buildPricingExtractionPrompt } from "@/features/bom/prompts/parts";
 import { runStructuredJson } from "@/features/bom/services/model-runner";
 import { z } from "zod";
 
@@ -24,9 +24,9 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await runStructuredJson<any>({
-      model: "pro",
-      prompt: PRICE_PROMPT_RETAIL_ENRICHMENT,
-      text: JSON.stringify({ partNumbers, model }),
+      model: "fast",
+      prompt: buildPricingExtractionPrompt({ model }),
+      text: JSON.stringify({ partNumbers }),
       temperature: 1.0,
     });
 

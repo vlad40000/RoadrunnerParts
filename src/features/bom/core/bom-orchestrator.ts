@@ -121,6 +121,7 @@ export async function buildBomJob(input: {
   const extractionResult = await runIdentityExtraction({
     files: input.identityFiles,
     userHints: input.userHints,
+    jobId: input.jobId,
   });
   
   if (extractionResult.status === "failed") {
@@ -188,7 +189,6 @@ export async function buildBomJob(input: {
     model: normalizedIdentity.model,
     productType: normalizedIdentity.manufacturer_family,
     applianceType: normalizedIdentity.appliance_type,
-    fuelType: (normalizedIdentity.fuel_type as any) || null,
     rawText: extractionResult.raw_text,
     serial: normalizedIdentity.serial || (input.userHints?.serial as string) || null,
     confidence: 0.9,
@@ -294,7 +294,6 @@ export async function buildBomJob(input: {
           sourceText: source.text,
           modelNumber: identity.model || "UNKNOWN",
           applianceType: (identity as any).applianceType,
-          fuelType: (identity as any).fuelType,
         });
         
         await emitNotice("success", "parallel_parts_extraction", `Worker [${source.provider}] successfully extracted ${result.rows.length} rows.`);

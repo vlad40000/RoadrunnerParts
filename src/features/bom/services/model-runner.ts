@@ -45,7 +45,13 @@ export async function runStructuredJson<T>(
   };
 
   if (input.enableSearch) {
-    modelConfig.tools = [{ googleSearch: {} }];
+    modelConfig.tools = modelConfig.tools || [];
+    modelConfig.tools.push({ googleSearch: {} });
+  }
+
+  if (input.enableUrlContext) {
+    modelConfig.tools = modelConfig.tools || [];
+    modelConfig.tools.push({ urlContext: {} });
   }
 
   const model = genAI.getGenerativeModel(modelConfig);
@@ -61,7 +67,6 @@ export async function runStructuredJson<T>(
       input.files.map(async (file) => {
         // Use direct base64 data if provided, otherwise fetch from URI
         let base64Data = file.data;
-
         if (!base64Data) {
           if (!file.uri) {
             throw new Error("File must have either a 'data' (base64) or 'uri' property");
@@ -73,6 +78,9 @@ export async function runStructuredJson<T>(
 
           const buffer = await response.arrayBuffer();
           base64Data = Buffer.from(buffer).toString("base64");
+        } else if (base64Data.startsWith("data:")) {
+          // Normalize: strip data URI prefix
+          base64Data = base64Data.split(",")[1];
         }
 
         return {
@@ -152,6 +160,9 @@ export async function runText(
           const response = await fetch(file.uri);
           const buffer = await response.arrayBuffer();
           base64Data = Buffer.from(buffer).toString("base64");
+        } else if (base64Data.startsWith("data:")) {
+          // Normalize: strip data URI prefix
+          base64Data = base64Data.split(",")[1];
         }
         return {
           inlineData: {

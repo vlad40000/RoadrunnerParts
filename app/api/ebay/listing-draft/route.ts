@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runStructuredJson } from "@/features/bom/services/model-runner";
-import { EBAY_PROMPT_LISTING_DRAFT } from "@/features/bom/prompts/engine";
+import { EBAY_LISTING_DRAFT_PROMPT } from "@/features/bom/prompts/engine";
 import { ebayDraftSchema } from "@/features/ebay/schemas";
 
 export const runtime = "nodejs";
@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
     const { partDetails, marketSummary } = await req.json();
 
     const result = await runStructuredJson<any>({
-      model: "pro",
-      prompt: EBAY_PROMPT_LISTING_DRAFT,
+      model: "fast",
+      prompt: EBAY_LISTING_DRAFT_PROMPT,
       text: JSON.stringify({ partDetails, marketSummary }),
       temperature: 1.0,
     });

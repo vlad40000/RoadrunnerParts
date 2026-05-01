@@ -417,22 +417,31 @@ async function resolvePriceWaterfall(input: {
   brand?: string | null;
   model: string | null | undefined;
   partNumber: string;
+  pricingOrder?: string[];
 }) {
-  // 1. Encompass
-  const encompass = await resolveEncompassPriceForPart(input);
-  if (encompass) return encompass;
+  const order = input.pricingOrder || ["encompass", "sears", "pool", "fix"];
 
-  // 2. Sears
-  const sears = await resolveSearsPriceForPart(input);
-  if (sears) return sears;
+  for (const step of order) {
+    // Normalize step name
+    const key = step.toLowerCase().replace("-family", "");
 
-  // 3. Pool (Whirlpool Parts)
-  const pool = await resolvePoolPriceForPart(input);
-  if (pool) return pool;
-
-  // 4. Fix.com
-  const fix = await resolveFixPriceForPart(input);
-  if (fix) return fix;
+    if (key === "encompass") {
+      const encompass = await resolveEncompassPriceForPart(input);
+      if (encompass) return encompass;
+    }
+    if (key === "sears") {
+      const sears = await resolveSearsPriceForPart(input);
+      if (sears) return sears;
+    }
+    if (key === "pool" || key === "whirlpool") {
+      const pool = await resolvePoolPriceForPart(input);
+      if (pool) return pool;
+    }
+    if (key === "fix") {
+      const fix = await resolveFixPriceForPart(input);
+      if (fix) return fix;
+    }
+  }
 
   return null;
 }
@@ -442,6 +451,7 @@ export async function enrichBomRowsWithRetailPricing(input: {
   model?: string | null;
   rows: BomRow[];
   maxTargetedLookups?: number;
+  pricingOrder?: string[];
 }) {
   if (!input.rows.length) {
     return {
@@ -516,6 +526,7 @@ export async function enrichBomRowsWithRetailPricing(input: {
         brand: input.brand,
         model: input.model,
         partNumber,
+        pricingOrder: input.pricingOrder,
       }),
     }),
   );

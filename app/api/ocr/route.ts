@@ -31,35 +31,9 @@ export async function POST(req: NextRequest) {
     const modelNumber = identity.model || null;
     const serialNumber = identity.serial || null;
 
-    const { resolvePartsSources } = await import('@/lib/partsSourceRegistry');
-    const { primaryRoutes } = resolvePartsSources({ 
-      brand: identity.brand || null, 
-      applianceType: identity.appliance_type || identity.productType || null, 
-      modelNumber: modelNumber 
-    });
-    const candidates = primaryRoutes;
-
-    let decodeResult = null;
-
-    if (serialNumber) {
-      try {
-        const { decodeSerialNumber } = await import('@/features/identity/decoder');
-
-        decodeResult = await decodeSerialNumber(serialNumber, {
-          brand: identity.brand,
-          model: modelNumber,
-        });
-      } catch (error) {
-        console.warn('[OCR API] Serial decode skipped:', error);
-      }
-    }
-
     return NextResponse.json({
-      ...identity,
       modelNumber,
       serialNumber,
-      candidates,
-      decodeResult,
     });
   } catch (error) {
     console.error('[OCR API Error]', error);

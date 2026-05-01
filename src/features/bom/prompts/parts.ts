@@ -9,6 +9,7 @@ function partsExtractionStagePrompt(input?: {
 }) {
   return `
 <task>Extract part rows from diagram section: ${input?.sectionName ?? "[SECTION]"}.</task>
+<rule>Extract up to 40 verified rows per section to satisfy batching requirements.</rule>
 
 <output_contract>
 Return JSON only:

@@ -13,9 +13,7 @@ export const normalizedIdentitySchema = z.object({
   manufacturer_family: z.string().nullable().optional(),
   model: z.string().nullable().optional(),
   serial: z.string().nullable().optional(),
-  type_code: z.string().nullable().optional(),
   appliance_type: z.string().nullable().optional(),
-  fuel_type: z.string().nullable().optional(),
   expectedPartCount: z.number().int().optional(),
   manual_review_flags: z.array(z.string()).default([]),
   normalization_status: z.enum([
@@ -33,12 +31,7 @@ export const candidateIdentitySchema = z.object({
   brand: z.string().nullable().optional(),
   model: z.string().nullable().optional(),
   serial: z.string().nullable().optional(),
-  type_code: z.string().nullable().optional(),
-  product_type: z.string().nullable().optional(),
   appliance_type: z.string().nullable().optional(),
-  fuel_type: z.string().nullable().optional(),
-  voltage_or_power_clues: z.array(z.string()).default([]),
-  wire_connection: z.string().nullable().optional(),
 });
 
 export const stage1OutputSchema = z.object({
@@ -386,9 +379,7 @@ export const identitySchema = z.object({
   serial: z.string().nullable(),
   productType: z.string().nullable(),
   applianceType: z.string().nullable().optional(),
-  fuelType: z.enum(["gas", "electric", "other"]).nullable().optional(),
   manufactureDate: z.string().nullable().optional(),
-  engineeringCode: z.string().nullable().optional(),
   alternates: z.array(z.string()).default([]),
   confidence: z.union([
     z.number(),

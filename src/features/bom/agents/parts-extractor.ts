@@ -104,7 +104,6 @@ export async function runPartsExtractor(input: {
   provider?: string;
   modelNumber: string;
   applianceType?: string | null;
-  fuelType?: string | null;
   cachedParts?: BomRow[];
   missingSections?: string[];
 }): Promise<PartsExtractionResult> {
@@ -150,7 +149,6 @@ export async function runPartsExtractor(input: {
     prompt = buildPricingExtractionPrompt({
       model: input.modelNumber,
       applianceType: input.applianceType,
-      fuelType: input.fuelType,
     });
   }
 

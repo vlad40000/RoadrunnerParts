@@ -66,7 +66,7 @@ JSON_SHAPE:
 `.trim();
 }
 
-export const SOURCE_RESOLVER_PROMPT = buildSourceResolverPrompt();
+// Removed static SOURCE_RESOLVER_PROMPT. Use buildSourceResolverPrompt() instead.
 
 export const URL_CONTEXT_GROUNDING_PROMPT = `
 - Retrieve source evidence from exact candidate URLs provided in the previous stage.
@@ -87,7 +87,6 @@ JSON_SHAPE:
 export const DIAGRAM_MANIFEST_PROMPT = `
 - Extract the trusted total part count and sectioned manifest structure for the exact model.
 - Do not infer missing sections or treat source summaries as verified manifest rows.
-- Limit: extract up to 40 verified rows per section to satisfy batching requirements.
 
 TASK: Extract the trusted total part count and required diagram manifest rows and return them in the specified JSON shape.
 
@@ -104,11 +103,11 @@ JSON_SHAPE:
 `.trim();
 
 export const FINAL_BOM_AUDIT_PROMPT = `
-- Make the final BOM readiness decision using validator outputs only.
-- BOM complete requires 100% manifest coverage AND verified listed retail pricing for all parts.
-- If any required part lacks a verified retail price, set bomComplete to false.
+- Summarize the validator findings for the user.
+- Do not make the final completion decision; reflect the status provided by the validator.
+- If any required part lacks a verified retail price, highlight it as an unpriced row.
 
-TASK: Evaluate the final BOM readiness from parts and pricing validator results and return the status in the specified JSON shape.
+TASK: Summarize the BOM readiness from validator results and return the status in the specified JSON shape.
 
 JSON_SHAPE:
 {
@@ -174,121 +173,26 @@ JSON_SHAPE:
 }
 `.trim();
 
-/**
- * LEGACY / BATCH PROMPTS
- * Restored to maintain compatibility with batch-orchestrator and specific API routes.
- */
-
-export function buildCountAndDiagramLocatorPrompt(input: { brand?: string | null } = {}) {
-  return `
-- Locate the exact parts diagram or BOM page for model: {{MODEL}}.
-- Brand: {{MAKE}} (Slug: {{FIX_BRAND_SLUG}}).
-- Appliance: {{APPLIANCE_TYPE}} (Slug: {{FIX_APPLIANCE_SLUG}}).
-- Search URL: {{CANDIDATE_URL}}.
-- Serial: {{SERIAL_OR_NULL}} (Confidence: {{SERIAL_CONFIDENCE}}, Year: {{MANUFACTURE_YEAR_OR_NULL}}).
-
-TASK: Resolve the canonical parts page and diagram list and return them in the specified JSON shape.
-
-JSON_SHAPE:
-{
-  "found": boolean,
-  "source": "string",
-  "sourceUrl": "string",
-  "totalPartsAvailable": number | null,
-  "diagrams": [
-    { "diagramName": "string", "diagramUrl": "string" }
-  ]
-}
-`.trim();
-}
-
-export const DIAGRAM_PARTS_EXTRACT = `
-- Extract all part rows from diagram: {{DIAGRAM_NAME}}.
-- Model: {{MODEL}}.
-- URL: {{DIAGRAM_URL}}.
-- Expected total for model: {{TOTAL_PARTS_AVAILABLE}}.
-- Known parts already found: {{KNOWN_PART_NUMBERS_JSON}}.
-
-TASK: Extract every part row including diagram position, part number, and description.
-
-JSON_SHAPE:
-{
-  "parts": [
-    {
-      "section": "string",
-      "diagramNumber": "string",
-      "originalPartNumber": "string",
-      "description": "string",
-      "nlaStatus": boolean
-    }
-  ]
-}
+export const CONSISTENCY_REVIEW_PROMPT = `
+<task>Audit the extracted BOM for logical consistency and part number fidelity.</task>
+<output_contract>
+Return JSON only:
+{ "ok": boolean, "confidence": number, "flags": ["string"], "message": "string" }
+</output_contract>
 `.trim();
 
-export const PRICE_PROMPT_RETAIL_ENRICHMENT = `
-- Find verified RETAIL pricing for the requested appliance parts.
-- DO NOT use eBay, Amazon, or marketplace pricing.
-- Use only authorized distributor or OEM retail prices.
-
-TASK: Find exact source-listed retail pricing and return them in the specified JSON shape.
-
-JSON_SHAPE:
-{
-  "enrichments": [
-    {
-      "partNumber": "string",
-      "price": number | null,
-      "priceSource": "string",
-      "availability": "string",
-      "url": "string"
-    }
-  ]
-}
+export const DIAGRAM_PARSER_PROMPT = `
+<task>Extract diagram sections and callouts from the provided data.</task>
+<output_contract>
+Return JSON only:
+{ "sections": [{ "sectionName": "string", "callouts": ["string" | "number"] }] }
+</output_contract>
 `.trim();
 
-export const EBAY_PROMPT_LISTING_DRAFT = `
-- Create an optimized eBay listing draft for an appliance part.
-- Use market signals and part details to maximize conversion.
-- Condition: Used (unless otherwise specified).
-
-TASK: Generate listing title, price, and description and return them in the specified JSON shape.
-
-JSON_SHAPE:
-{
-  "title": "string",
-  "suggestedPrice": number,
-  "shippingService": "string",
-  "description": "string",
-  "tags": ["string"]
-}
-`.trim();
-
-export const diagramPrompt = `
-- Parse the provided diagram image to identify callouts and section structure.
-- Extract section name and all visible reference numbers.
-
-TASK: Extract diagram sections and callouts and return them in the specified JSON shape.
-
-JSON_SHAPE:
-{
-  "sections": [
-    { "sectionName": "string", "callouts": ["string" | "number"] }
-  ]
-}
-`.trim();
-
-export const consistencyPrompt = `
-- Audit the extracted BOM for logical consistency and part number fidelity.
-- Check for duplicate part numbers with different descriptions.
-- Flag any parts that seem incompatible with the product type.
-
-TASK: Audit the BOM for consistency and return the audit result in the specified JSON shape.
-
-JSON_SHAPE:
-{
-  "ok": boolean,
-  "confidence": number,
-  "flags": ["string"],
-  "message": "string"
-}
+export const EBAY_LISTING_DRAFT_PROMPT = `
+<task>Create an optimized eBay listing draft for an appliance part using the provided details and market signals.</task>
+<output_contract>
+Return JSON only:
+{ "title": "string", "suggestedPrice": number, "shippingService": "string", "description": "string", "tags": ["string"] }
+</output_contract>
 `.trim();

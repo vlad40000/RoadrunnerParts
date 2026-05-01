@@ -38,9 +38,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           mode: "full",
         });
 
-        // buildBomJob already calls completeBomJob or saveBomArtifacts internally if provided
-        // but the orchestrator I saw doesn't take onComplete. It returns the result.
-        // Wait, buildBomJob in core/bom-orchestrator.ts returns BuildBomJobOutput.
+        await completeBomJob(jobId, compiled.result);
       } catch (err) {
         console.error(`[Background Supervisor Error]`, err);
         const message = err instanceof Error ? err.message : String(err);
