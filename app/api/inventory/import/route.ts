@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
           raw: row,
         };
       })
-      .filter((m): m is InventoryMachine => m !== null);
+      .filter((m): m is NonNullable<typeof m> => m !== null);
 
     if (rawRows.length > MAX_IMPORT_ROWS) {
       warnings.push(`Imported the first ${MAX_IMPORT_ROWS.toLocaleString()} rows only.`);
