@@ -171,21 +171,6 @@ export const validate_bom_completion: FunctionDeclaration = {
  * 3. Source Resolver Functions
  */
 
-export const resolve_oem_model_sources: FunctionDeclaration = {
-  name: "resolve_oem_model_sources",
-  description: "Resolve official/OEM source URLs for GE, Bosch, Frigidaire, LG, Samsung, and Whirlpool-family models.",
-  parameters: {
-    type: SchemaType.OBJECT,
-    properties: {
-      brandFamily: {
-        ...enumString(["ge-official", "bosch-family", "frigidaire-family", "lg-family", "samsung-family", "whirlpool-family", "unknown"]),
-      },
-      normalizedModel: { type: SchemaType.STRING },
-    },
-    required: ["brandFamily", "normalizedModel"],
-  },
-};
-
 export const resolve_distributor_sources: FunctionDeclaration = {
   name: "resolve_distributor_sources",
   description: "Resolve Tier 1, Tier 2, and Tier 3 distributor model/diagram URLs. Use grounding search only when generated URL IDs are required.",
@@ -512,7 +497,6 @@ export const CORE_BOM_TOOLS = [
   validate_cached_parts_completeness,
   validate_cached_price_completeness,
   validate_bom_completion,
-  resolve_oem_model_sources,
   resolve_distributor_sources,
   fetch_source_page,
   extract_diagram_sections,

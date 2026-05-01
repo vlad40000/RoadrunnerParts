@@ -13,7 +13,7 @@ export interface JobPacket {
 }
 
 export interface RoutingPlan {
-  primaryLane: 'manufacturer_oem' | 'public_all_parts' | 'grouped_diagrams';
+  primaryLane: 'distributor_primary' | 'public_all_parts' | 'grouped_diagrams';
   secondaryLane: 'public_all_parts' | 'grouped_diagrams' | 'none';
   fallbackLanes: string[];
   pricingLane: 'filtered_subset_only' | 'full_bom';

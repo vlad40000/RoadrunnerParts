@@ -36,7 +36,7 @@ export async function orchestrateAgentPipeline(input: {
   const resolverAgent: AgentConfig = {
     stage: "source_resolution",
     systemInstruction: buildSourceResolverPrompt({ brand: input.brand }),
-    tools: CORE_BOM_TOOLS.filter(t => ["resolve_oem_model_sources", "resolve_distributor_sources", "accept_trusted_total_part_count", "db_upsert_model_sources"].includes(t.name)),
+    tools: CORE_BOM_TOOLS.filter(t => ["resolve_distributor_sources", "accept_trusted_total_part_count", "db_upsert_model_sources"].includes(t.name)),
     mode: "ANY"
   };
 

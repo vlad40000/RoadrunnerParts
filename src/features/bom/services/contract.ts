@@ -213,7 +213,6 @@ export function determineRetrievalState(input: {
   failed: boolean;
 }): RetrievalState {
   if (input.failed) return "failed";
-
   if (!input.identityResolved) return "no_result";
 
   const trustedTotalPartCount =
@@ -223,28 +222,17 @@ export function determineRetrievalState(input: {
     return "identity_only";
   }
 
-  // If we found sources but haven't extracted parts yet, that would be "sources_resolved"
-  // but this function seems to focus on the post-extraction gate.
-  // We'll stick to the user's provided logic exactly.
+  const partsComplete = input.actualPartCount >= trustedTotalPartCount;
+  const pricingComplete = partsComplete && input.verifiedPriceCount >= input.requiredPriceCount && input.actualPartCount > 0;
 
-  if (input.actualPartCount < trustedTotalPartCount) {
-    return "parts_partial";
-  }
-
-  if (input.verifiedPriceCount === 0) {
-    return "parts_complete_pricing_missing";
-  }
-
-  if (input.verifiedPriceCount < input.requiredPriceCount) {
-    return "parts_complete_pricing_partial";
-  }
-
-  if (
-    input.actualPartCount >= trustedTotalPartCount &&
-    input.verifiedPriceCount >= input.requiredPriceCount
-  ) {
+  if (partsComplete && pricingComplete) {
     return "bom_complete";
   }
 
-  return "failed";
+  if (partsComplete && !pricingComplete) {
+    if (input.verifiedPriceCount > 0) return "parts_complete_pricing_partial";
+    return "parts_complete_pricing_missing";
+  }
+
+  return "parts_partial";
 }

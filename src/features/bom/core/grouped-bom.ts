@@ -4,6 +4,8 @@ import { normalizeModelNumber } from "@/lib/normalize";
 import { reconcileParts } from "@/lib/parts-reconcile";
 import { classifyBomResult } from "./bom-status";
 import { searsPartsDirectProvider } from "../services/providers/sears-partsdirect";
+import { encompassFamilyProvider } from "../services/providers/encompass-family";
+import { partsDrProvider } from "../services/providers/partsdr";
 import { fixComProvider } from "../services/providers/fix-com";
 import { partSelectProvider } from "../services/providers/partselect";
 import { fetchHtml } from "../services/providers/utils";
@@ -235,7 +237,7 @@ export async function discoverDiagramGroupsForJob(input: {
   });
 
   let providerSources: any[] = [];
-  let usedProvider = "fix.com+searspartsdirect.com";
+  let usedProvider = "encompass+sears+partsdr";
 
   const providerInput = {
     model,
@@ -243,26 +245,29 @@ export async function discoverDiagramGroupsForJob(input: {
     productType: input.identity.productType ?? job.productType ?? null,
   } as any;
 
-  const [fixSources, searsSources] = await Promise.all([
-    fixComProvider.fetchSources(providerInput).catch(() => []),
+  const [encompassSources, searsSources, partsDrSources] = await Promise.all([
+    encompassFamilyProvider.fetchSources(providerInput).catch(() => []),
     searsPartsDirectProvider.fetchSources(providerInput).catch(() => []),
+    partsDrProvider.fetchSources(providerInput).catch(() => []),
   ]);
 
-  providerSources = [...fixSources, ...searsSources];
+  providerSources = [...encompassSources, ...searsSources, ...partsDrSources];
 
-  // Fallback to PartSelect
+  // Fallback to Secondary Distributors
   if (!providerSources.length) {
-    usedProvider = "partselect-diagrams";
-    providerSources = await partSelectProvider.fetchSources({
-      model,
-      brand: input.identity.brand ?? job.brand ?? null,
-      productType: input.identity.productType ?? job.productType ?? null,
-    } as any);
+    usedProvider = "app+partselect+fix+repairclinic";
+    const [appSources, psSources, fixSources, rcSources] = await Promise.all([
+      import("../services/providers/appliancepartspros").then(m => m.appliancePartsProsProvider.fetchSources(providerInput)).catch(() => []),
+      partSelectProvider.fetchSources(providerInput).catch(() => []),
+      fixComProvider.fetchSources(providerInput).catch(() => []),
+      import("../services/providers/repairclinic-family").then(m => m.repairClinicFamilyProvider.fetchSources(providerInput)).catch(() => []),
+    ]);
+    providerSources = [...appSources, ...psSources, ...fixSources, ...rcSources];
   }
 
   if (!providerSources.length) {
     await setBomJobStage(input.jobId, "identity_review");
-    throw new Error(`BOM Discovery Failed: No exact model matches or diagram catalogs found for "${model}" on authoritative sources (Fix.com / Sears / PartSelect).`);
+    throw new Error(`BOM Discovery Failed: No exact model matches or diagram catalogs found for "${model}" on authoritative sources (Encompass / Sears / PartsDr).`);
   }
 
   // Capture coverage target from metadata if available
@@ -383,13 +388,12 @@ export async function extractDiagramGroupForJob(input: {
     const expectedTotal = Number(job.expectedPartsTotal || 0);
     const coveragePct = expectedTotal > 0 ? actualUniqueParts / expectedTotal : 0;
 
-    // Override status based on coverage if target exists
-    let finalStatus = status;
+    // The highest state we can assign here is parts_complete_pricing_missing.
+    // Final bom_complete must be deferred to the pricing validator.
+    let finalStatus = status === "bom_complete" ? "bom_near_complete" : status;
     if (expectedTotal > 0) {
-      if (coveragePct < 0.75) finalStatus = "parts_partial";
-      else if (coveragePct >= 0.75 && coveragePct < 0.90) finalStatus = "parts_partial"; // Still partial
-      else if (coveragePct >= 0.90 && coveragePct < 1.0) finalStatus = "bom_near_complete";
-      else if (coveragePct >= 1.0) finalStatus = "bom_complete";
+      if (coveragePct < 0.90) finalStatus = "parts_partial";
+      else finalStatus = "parts_complete_pricing_missing";
     }
 
     await completeBomJobGroup(input.jobId, input.groupId, {
@@ -589,7 +593,7 @@ export async function extractAllDiagramGroupsForJob(input: {
   const coveragePct = expectedTotal > 0 ? actualUniqueParts / expectedTotal : 0;
   
   // Classify final status
-  const finalStatus = classifyBomResult({
+  let finalStatus = classifyBomResult({
     identityConfidence: getIdentityConfidence(job),
     rows: finalRows as any,
     sectionCount: new Set(finalRows.map(p => p.section)).size,
@@ -597,6 +601,15 @@ export async function extractAllDiagramGroupsForJob(input: {
     minimumUniqueParts: 40,
     minimumSections: 3,
   });
+
+  if (finalStatus === "bom_complete") {
+    finalStatus = "bom_near_complete";
+  }
+
+  if (expectedTotal > 0) {
+    if (coveragePct < 0.90) finalStatus = "parts_partial";
+    else finalStatus = "parts_complete_pricing_missing";
+  }
 
   await saveBomArtifacts(input.jobId, {
     retrievedSources: allRetrievedSources,

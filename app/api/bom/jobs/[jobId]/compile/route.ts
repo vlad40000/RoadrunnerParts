@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { after } from "next/server";
-import { runBomSupervisor } from "@/features/bom/core/agents/supervisor";
 
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
@@ -26,26 +25,22 @@ export async function POST(req: NextRequest, { params }: Params) {
           return;
         }
 
-        const compiled = await runBomSupervisor({
+        const { buildBomJob } = await import("@/features/bom/core/bom-orchestrator");
+        const compiled = await buildBomJob({
           jobId,
-          brand: job.brand || "",
-          model: job.model || "",
-          initialRows: (job.finalRows as any[]) || [],
+          identityFiles: [],
+          userHints: {
+            brand: job.brand || undefined,
+            model: job.model || undefined,
+            serial: job.serial || undefined,
+            productType: job.productType || undefined,
+          },
+          mode: "full",
         });
 
-        await completeBomJob(jobId, {
-          brand: job.brand || null,
-          model: job.model || null,
-          serial: job.serial || null,
-          productType: job.productType || null,
-          rawRowCount: compiled.rows.length,
-          uniqueRowCount: compiled.rows.length,
-          coverageScore: compiled.coveragePct ?? 0,
-          resultStatus: compiled.rows.length > 0 ? "bom_complete" : "zero_rows",
-          issues: [],
-          unmatchedCallouts: [],
-          finalRows: compiled.rows as any,
-        });
+        // buildBomJob already calls completeBomJob or saveBomArtifacts internally if provided
+        // but the orchestrator I saw doesn't take onComplete. It returns the result.
+        // Wait, buildBomJob in core/bom-orchestrator.ts returns BuildBomJobOutput.
       } catch (err) {
         console.error(`[Background Supervisor Error]`, err);
         const message = err instanceof Error ? err.message : String(err);

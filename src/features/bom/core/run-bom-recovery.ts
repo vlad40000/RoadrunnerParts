@@ -279,9 +279,9 @@ export async function runTargetedBomRecovery(input: {
     });
 
     if (familyRows.length > 0) {
-      recoveryIssues.push("OEM family recovery produced additional rows before distributor fallback.");
+      recoveryIssues.push("Distributor primary recovery produced additional rows before secondary fallback.");
     } else {
-      recoveryIssues.push("OEM family recovery was attempted before distributor fallback but produced no accepted rows.");
+      recoveryIssues.push("Distributor primary recovery was attempted before secondary fallback but produced no accepted rows.");
     }
   }
 
@@ -324,9 +324,9 @@ export async function runTargetedBomRecovery(input: {
     });
 
     if (fallbackRows.length > 0) {
-      recoveryIssues.push("Distributor fallback added additional rows after OEM family retry.");
+      recoveryIssues.push("Distributor secondary fallback added additional rows after primary retry.");
     } else {
-      recoveryIssues.push("Distributor fallback ran after OEM family retry but produced no accepted rows.");
+      recoveryIssues.push("Distributor secondary fallback ran after primary retry but produced no accepted rows.");
     }
   }
 

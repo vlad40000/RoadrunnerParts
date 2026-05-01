@@ -104,8 +104,8 @@ export function buildRecoveryPlan(input: {
     model: input.model,
   });
 
-  const isDistributorFirstFamily =
-    providerPlan.routingMode === "distributor-first";
+  const isDistributorOnlyFamily =
+    providerPlan.routingMode === "distributor-only";
 
   const reasons: string[] = [];
 
@@ -141,7 +141,7 @@ export function buildRecoveryPlan(input: {
   const needsFamilyRetry = familyPrimaryWeakProviders.length > 0;
 
   if (needsFamilyRetry) {
-    reasons.push("Primary OEM family sources were fetched but produced zero accepted rows.");
+    reasons.push("Primary distributor family sources were fetched but produced zero accepted rows.");
   }
 
   if (needsSectionRecovery) {

@@ -205,8 +205,7 @@ async function enrichPartPrices(parts: BomRow[]): Promise<BomRow[]> {
 function determineNewState(input: { partsCount: number; expectedTotal: number }): BomStatus {
   if (input.partsCount === 0) return "no_result";
   if (input.expectedTotal > 0) {
-    const ratio = input.partsCount / input.expectedTotal;
-    if (ratio >= 0.95) return "bom_complete";
+    if (input.partsCount >= input.expectedTotal) return "parts_complete_pricing_missing";
     return "parts_partial";
   }
   return "parts_partial";

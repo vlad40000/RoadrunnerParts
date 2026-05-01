@@ -116,13 +116,6 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
     /**
      * 3. Source Resolver Functions
      */
-    case "resolve_oem_model_sources":
-      // OEM sources are completely removed from the pipeline.
-      return { 
-        status: "oem_skipped_by_policy",
-        reason: "OEM official sites are removed from the allowed sourcing paths.",
-        sources: [] 
-      };
 
     case "resolve_distributor_sources": {
       const result = resolvePartsSources({
@@ -136,7 +129,7 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
           ...result.primaryRoutes.map(r => ({ name: r.label, url: r.url, confidence: 1.0, priority: "primary" })),
           ...result.secondaryRoutes.map(r => ({ name: r.label, url: r.url, confidence: 0.9, priority: "secondary" }))
         ],
-        forbidden_domains: result.forbiddenSources
+        forbidden_domains: result.forbiddenDomains
       };
     }
 

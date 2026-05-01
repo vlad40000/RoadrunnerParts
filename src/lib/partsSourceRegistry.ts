@@ -161,6 +161,7 @@ export function resolvePartsSources(input: {
     applianceType,
     primaryRoutes,
     secondaryRoutes,
-    forbiddenSources: gate.forbiddenSources
+    forbiddenSources: gate.forbiddenSources,
+    forbiddenDomains: gate.forbiddenDomains
   };
 }

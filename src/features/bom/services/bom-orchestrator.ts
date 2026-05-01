@@ -1,5 +1,5 @@
 import "server-only";
-import { fetchAuthoritativeSources } from "./source-fetcher";
+import { fetchSources } from "./source-fetcher";
 import { enrichBomRowsWithRetailPricing } from "./retail-pricing";
 import { normalizeGeneratedParts } from "./utils";
 import { upsertModelPartsCache } from "./model-parts-cache";
@@ -29,7 +29,7 @@ export async function orchestrateBomRetrieval(input: {
 
   // STAGE 1: Deterministic Scraper-based Extraction
   console.log(`[BOM Orchestrator] Starting deterministic extraction for ${model}...`);
-  const sources = await fetchAuthoritativeSources({
+  const sources = await fetchSources({
     brand,
     model,
   });

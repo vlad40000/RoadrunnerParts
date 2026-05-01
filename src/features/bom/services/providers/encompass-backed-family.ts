@@ -182,7 +182,7 @@ async function fetchVariationSources(input: {
   return groupRows(rows, input.variationCode, input.formatSectionName).map(
     (group) => ({
       sourceUrl: input.variationUrl,
-      sourceType: "oem" as const,
+      sourceType: "distributor" as const,
       provider: input.providerName,
       sectionName: group.sectionName,
       text: rowsToStructuredText({

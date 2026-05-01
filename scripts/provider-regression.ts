@@ -1,14 +1,12 @@
 import "./setup-env";
 
-import { geOfficialProvider } from "../src/features/bom/services/providers/ge-official";
 import { repairClinicFamilyProvider } from "../src/features/bom/services/providers/repairclinic-family";
-import { frigidaireFamilyProvider } from "../src/features/bom/services/providers/frigidaire-family";
-import { lgFamilyProvider } from "../src/features/bom/services/providers/lg-family";
-import { samsungFamilyProvider } from "../src/features/bom/services/providers/samsung-family";
-import { boschFamilyProvider } from "../src/features/bom/services/providers/bosch-family";
 import { searsPartsDirectProvider } from "../src/features/bom/services/providers/sears-partsdirect";
 import { fixComProvider } from "../src/features/bom/services/providers/fix-com";
 import { partSelectProvider } from "../src/features/bom/services/providers/partselect";
+import { encompassFamilyProvider } from "../src/features/bom/services/providers/encompass-family";
+import { appliancePartsProsProvider } from "../src/features/bom/services/providers/appliancepartspros";
+import { partsDrProvider } from "../src/features/bom/services/providers/partsdr";
 import type {
   RetrievedSource,
   SourceProvider,
@@ -36,15 +34,13 @@ type RegressionResult = {
 };
 
 const PROVIDERS: Record<string, SourceProvider> = {
-  "ge-official": geOfficialProvider,
   "repairclinic-family": repairClinicFamilyProvider,
-  "frigidaire-family": frigidaireFamilyProvider,
-  "lg-family": lgFamilyProvider,
-  "samsung-family": samsungFamilyProvider,
-  "bosch-family": boschFamilyProvider,
   "sears-partsdirect": searsPartsDirectProvider,
   "fix.com": fixComProvider,
   "partselect.com": partSelectProvider,
+  "encompass-family": encompassFamilyProvider,
+  "appliancepartspros": appliancePartsProsProvider,
+  "partsdr": partsDrProvider,
 };
 
 function parseArgs() {

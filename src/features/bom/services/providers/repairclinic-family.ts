@@ -409,7 +409,7 @@ async function fetchCategorySources(input: {
 
   return {
     sourceUrl: input.categoryUrl,
-    sourceType: "oem" as const,
+    sourceType: "distributor" as const,
     provider: input.providerName,
     sectionName: input.sectionName,
     text: rowsToStructuredText({
@@ -468,7 +468,7 @@ async function fetchRepairClinicSources(input: {
         return [
           {
             sourceUrl: modelPageUrl,
-            sourceType: "oem" as const,
+            sourceType: "distributor" as const,
             provider: input.providerName,
             sectionName: inferredSection,
             text: rowsToStructuredText({

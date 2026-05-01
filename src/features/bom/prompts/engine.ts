@@ -138,10 +138,7 @@ Resolve exact model-specific appliance parts or diagram URLs only from brand-com
 ${formatBrandSourceGateForPrompt(input)}
 
 <hard_constraints>
-- Do not search brand-incompatible OEM sites.
-- Do not search Bosch for GE models.
-- Do not search GE for Bosch models.
-- Do not search LG for Samsung models.
+- Do not search OEM official sites.
 - Do not fabricate URLs.
 - Do not fabricate generated IDs.
 - Do not treat search snippets as BOM evidence.
@@ -149,39 +146,24 @@ ${formatBrandSourceGateForPrompt(input)}
 - Do not query, cite, or store forbidden domains from brand_source_gate.
 </hard_constraints>
 
-<distributor_first_policy>
-DISTRIBUTOR-FIRST SOURCE POLICY
-
+<distributor_only_policy>
+# OEM SITE SEARCH POLICY
 The normal BOM retrieval path does not use OEM official sites.
+You must use:
+1. Encompass
+2. Sears PartsDirect
+3. PartsDr
+4. AppliancePartsPros
+5. PartSelect
+6. Fix.com
+7. RepairClinic
 
-Use only:
-1. user-provided source domains, if supplied
-2. configured distributor / parts-source domains
-3. secondary fallback distributor domains if allowed
+Search ONLY these approved distributors.
+Return oem_skipped_by_policy if an OEM source would otherwise be needed.
+</distributor_only_policy>
 
-Do not search OEM official sites unless:
-- the user provided that OEM URL
-- distributor sources failed identity validation
-- model identity is ambiguous
-- serial/version decoding is required
-- a deterministic OEM parts endpoint is explicitly configured for this brand
-
-For normal BOM retrieval, prioritize:
-- Encompass
-- Sears PartsDirect
-- PartsDr
-- AppliancePartsPros
-- PartSelect
-- Fix.com
-- RepairClinic
-
-Return oem_skipped_by_policy when an OEM source would otherwise be considered.
-</distributor_first_policy>
-
-<source_compatibility_rule>
-Before searching an OEM domain, compare the normalized brand family against brand_source_gate.
-If the domain is forbidden or not listed as approved, do not search it.
-If a search result comes from another OEM family, reject it even when the model token looks similar.
+Before searching, ensure the domain is listed as approved in brand_source_gate.
+If the domain is forbidden, do not search it.
 Distributor sources may be used only when they show exact model or exact source-confirmed variant evidence.
 </source_compatibility_rule>
 
@@ -193,8 +175,7 @@ Return only exact model/variant matches.
 Reject nearby model numbers.
 Reject generic category pages.
 Reject pages that do not contain the exact model.
-For GE-family models, never issue site:bosch-home.com, site:lgparts.com, or site:samsungparts.com searches.
-For Bosch-family models, Bosch OEM search is allowed; non-Bosch OEM domains are forbidden.
+For all models, never issue site: searches for OEM official domains (e.g. bosch-home.com, geappliances.com, lgparts.com).
 </search_rules>
 
 <task>
@@ -205,7 +186,7 @@ Resolve exact source URLs for the approved source list only.
 Return JSON only:
 {
   "status": "sources_resolved | partial | no_result",
-  "source_policy": "distributor_first_oem_disabled",
+  "source_policy": "distributor_only",
   "model": "{{model}}",
   "brand": "{{brand}}",
   "manufacturer_family": "{{brand_family}}",

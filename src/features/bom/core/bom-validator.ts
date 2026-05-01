@@ -31,12 +31,9 @@ export function coverageScore(input: {
   minimumUniqueParts?: number;
 }) {
   const minimumUniqueParts = input.minimumUniqueParts ?? 40;
-
   const partScore = Math.min(input.rows.length / minimumUniqueParts, 1);
   const sectionScore = Math.min(input.sectionsFound.length / 4, 1);
-
-  const totalCallouts =
-    input.rows.length + input.unmatchedCallouts.length || 1;
+  const totalCallouts = input.rows.length + input.unmatchedCallouts.length || 1;
   const calloutScore = 1 - input.unmatchedCallouts.length / totalCallouts;
 
   return Number(((partScore * 0.45) + (sectionScore * 0.2) + (calloutScore * 0.35)).toFixed(3));
@@ -68,7 +65,9 @@ export function validateLiveParts(input: {
     "partselect.com",
     "repairclinic.com",
     "reliableparts.com",
-    "dlpartsco.com"
+    "dlpartsco.com",
+    "partsdr.com",
+    "appliancepartspros.com"
   ];
 
   for (const part of input.parts) {
@@ -90,9 +89,8 @@ export function validateLiveParts(input: {
       continue;
     }
 
-    // Fuel Type Gate
     const desc = `${part.description || ""} ${part.section || ""}`.toLowerCase();
-        if (input.fuelType === "electric") {
+    if (input.fuelType === "electric") {
       const gasKeywords = ["gas valve", "burner", "igniter", "flame sensor", "gas tube", "lp conversion"];
       if (gasKeywords.some(k => desc.includes(k))) {
         rejected.push({ part, reason: "Gas component rejected for electric model" });
@@ -108,7 +106,6 @@ export function validateLiveParts(input: {
       }
     }
 
-    // Appliance Type Prefix Check (Simplified)
     if (input.applianceType === "dryer" && desc.includes("dishwasher")) {
       rejected.push({ part, reason: "Dishwasher component rejected for dryer model" });
       continue;
@@ -120,54 +117,24 @@ export function validateLiveParts(input: {
   return { accepted, rejected };
 }
 
-export function calculateCompletionProof(input: {
-  expectedPartCount: number;
-  totalExtracted: number;
-  rows: BomRow[];
-}) {
-  const coverageRatio = input.expectedPartCount > 0 
-    ? Math.min(input.rows.length / input.expectedPartCount, 1)
-    : input.rows.length >= 40 ? 1.0 : input.rows.length / 40;
-
-  const sourceAgreement = input.rows.some(row => (row.sourceUrl ?? "").split(";").length >= 2);
-
-  return {
-    expectedPartCount: input.expectedPartCount,
-    totalExtracted: input.totalExtracted,
-    coverageRatio: Number(coverageRatio.toFixed(3)),
-    sourceAgreement,
-  };
-}
 export function determineRetrievalState(input: {
   identityResolved: boolean;
-  expectedPartCount: number | null;
+  partsComplete: boolean;
+  pricingComplete: boolean;
   actualPartCount: number;
-  requiredPartCount: number;
   verifiedPriceCount: number;
-  unpricedCount: number;
   failed: boolean;
 }): RetrievalState {
   if (input.failed) return "failed";
   if (!input.identityResolved) return "no_result";
   
-  // Rule: if we found parts but zero verified prices
-  if (input.actualPartCount > 0 && input.verifiedPriceCount === 0) {
-    return "parts_complete_pricing_missing";
-  }
-
-  // Rule: if we have parts and some prices, but not all
-  if (input.actualPartCount > 0 && input.verifiedPriceCount < input.actualPartCount) {
-    return "parts_complete_pricing_partial";
-  }
-
-  // Rule: hard completion gate
-  if (
-    input.actualPartCount > 0 && 
-    input.expectedPartCount !== null &&
-    input.actualPartCount >= input.expectedPartCount && 
-    input.verifiedPriceCount >= input.actualPartCount
-  ) {
+  if (input.partsComplete && input.pricingComplete) {
     return "bom_complete";
+  }
+
+  if (input.partsComplete && !input.pricingComplete) {
+    if (input.verifiedPriceCount > 0) return "parts_complete_pricing_partial";
+    return "parts_complete_pricing_missing";
   }
 
   return "parts_partial";
@@ -184,38 +151,41 @@ export function validate_bom_completion(input: {
   identityResolved: boolean;
 }) {
   const actualPartCount = input.rows.length;
-  const trustedTotalPartCount =
-    input.trustedTotalPartCount ?? input.expectedPartCount ?? null;
-  const hasManifest =
-    (input.manifestRowCount ?? 0) > 0 ||
-    (input.requiredManifestRowCount ?? 0) > 0;
+  const trustedTotalPartCount = input.trustedTotalPartCount ?? input.expectedPartCount ?? null;
+  const hasManifest = (input.manifestRowCount ?? 0) > 0 || (input.requiredManifestRowCount ?? 0) > 0;
+  
   const partsCompletion = hasManifest
     ? validateManifestCoverage({
         trustedTotalPartCount,
         manifestRowCount: input.manifestRowCount ?? 0,
         requiredManifestRowCount: input.requiredManifestRowCount ?? 0,
-        mappedRequiredManifestRowCount:
-          input.mappedRequiredManifestRowCount ?? 0,
-        unresolvedRequiredManifestRowCount:
-          input.unresolvedRequiredManifestRowCount ?? 0,
+        mappedRequiredManifestRowCount: input.mappedRequiredManifestRowCount ?? 0,
+        unresolvedRequiredManifestRowCount: input.unresolvedRequiredManifestRowCount ?? 0,
         actualCanonicalPartCount: actualPartCount,
       })
     : validatePartsCompleteness({
         trustedTotalPartCount,
         actualCanonicalPartCount: actualPartCount,
       });
+
   const verifiedPriceCount = input.rows.filter(
     (r) => r.retailPrice?.status === "verified_price" || r.retailPrice?.status === "fallback_verified_price"
   ).length;
+  
   const unpricedCount = actualPartCount - verifiedPriceCount;
+
+  // Pricing is ONLY complete if Parts are Complete and all rows have prices.
+  const pricingComplete =
+    partsCompletion.partsComplete &&
+    actualPartCount > 0 &&
+    verifiedPriceCount >= actualPartCount;
 
   const retrievalState = determineRetrievalState({
     identityResolved: input.identityResolved,
-    expectedPartCount: trustedTotalPartCount,
+    partsComplete: partsCompletion.partsComplete,
+    pricingComplete,
     actualPartCount,
-    requiredPartCount: trustedTotalPartCount ?? actualPartCount,
     verifiedPriceCount,
-    unpricedCount,
     failed: false,
   });
 
@@ -225,12 +195,15 @@ export function validate_bom_completion(input: {
     trustedTotalPartCount,
     actualPartCount,
     actualCanonicalPartCount: actualPartCount,
-    requiredPriceCount: trustedTotalPartCount ?? actualPartCount,
+    requiredPriceCount: actualPartCount,
     verifiedPriceCount,
     unpricedCount,
     bomComplete: retrievalState === "bom_complete",
     partsComplete: partsCompletion.partsComplete,
     partsCompletenessReason: partsCompletion.reason,
-    pricingComplete: verifiedPriceCount >= actualPartCount && actualPartCount > 0,
+    pricingComplete,
+    reason: partsCompletion.partsComplete 
+      ? (pricingComplete ? "BOM complete." : "Pricing incomplete.")
+      : "Structural pricing dependency: pricing cannot be complete if parts are incomplete."
   };
 }

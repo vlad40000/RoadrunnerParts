@@ -28,8 +28,8 @@ export function mergeMasterParts(
       if (!existingPart.sources.includes(sourceName)) {
         existingPart.sources.push(sourceName);
       }
-      // Keep highest confidence or most descriptive name if OEM
-      if (sourceName === 'oem' || row.confidence > existingPart.confidence) {
+      // Keep highest confidence or most descriptive name if distributor
+      if (sourceName === 'distributor' || row.confidence > existingPart.confidence) {
         existingPart.description = row.description;
         existingPart.confidence = Math.max(existingPart.confidence, row.confidence);
       }

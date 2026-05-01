@@ -423,7 +423,7 @@ export const sourceResolutionCandidateSchema = z.object({
 
 export const sourceResolutionResultSchema = z.object({
   status: z.enum(["sources_resolved", "partial", "no_result"]),
-  source_policy: z.string().default("distributor_first_oem_disabled"),
+  source_policy: z.string().default("distributor_only"),
   model: z.string().nullable(),
   brand: z.string().nullable(),
   manufacturer_family: z.string().nullable(),

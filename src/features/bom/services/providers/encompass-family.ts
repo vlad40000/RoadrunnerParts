@@ -266,7 +266,7 @@ async function extractFromEncompassExplodedView(
     const sectionRows = rows.filter(r => r.sectionName === sectionName);
     return {
       sourceUrl: url,
-      sourceType: "oem", // Exploded views are effectively OEM-tier schematics
+      sourceType: "distributor", // Exploded views are effectively distributor-tier schematics
       provider: "encompass-family",
       sectionName: sectionName || "All Model Parts",
       text: [

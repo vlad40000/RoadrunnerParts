@@ -4,6 +4,12 @@ import type { ExactModelUrlResolverInput, ExactModelUrlResolverResult } from "./
 import { searchExistingGroundingLayer, dedupeSearchHits } from "./search-adapter";
 import type { SearchHit } from "./search-types";
 import { cleanText, fetchHtml, htmlToText, normalizeModel } from "../providers/utils";
+import { 
+  buildEncompassUrl, 
+  buildPartsDrUrl, 
+  buildAppliancePartsProsUrl, 
+  buildPartSelectUrl 
+} from "../providers/deterministic-urls";
 
 const DEFAULT_MAX_RESULTS = 12;
 
@@ -196,6 +202,45 @@ export async function resolveExactModelUrl(
   const model = normalizeModel(input.model);
   if (!model) return null;
 
+  // 1. ATTEMPT DETERMINISTIC ROUTING FIRST (Zero Search Latency)
+  let deterministicUrl: string | null = null;
+  const targetDomain = input.domain.toLowerCase();
+  const targetBrand = input.brand || input.resolvedBrand || "";
+
+  if (targetDomain.includes("encompass.com")) {
+    deterministicUrl = buildEncompassUrl({ brand: targetBrand, model });
+  } else if (targetDomain.includes("partsdr.com")) {
+    deterministicUrl = buildPartsDrUrl({ brand: targetBrand, model });
+  } else if (targetDomain.includes("appliancepartspros.com")) {
+    deterministicUrl = buildAppliancePartsProsUrl({ brand: targetBrand, model });
+  } else if (targetDomain.includes("partselect.com")) {
+    deterministicUrl = buildPartSelectUrl({ brand: targetBrand, model });
+  }
+
+  if (deterministicUrl) {
+    console.info(`[SourceResolver] Attempting deterministic fast-path for ${targetDomain}: ${deterministicUrl}`);
+    const validation = await validateCandidatePage({
+      url: deterministicUrl,
+      domain: input.domain,
+      model,
+      score: 1000 // Force high score so soft-validation logic engages on 403 blocks
+    });
+
+    if (validation.isValid) {
+      const result: any = { url: deterministicUrl };
+      if (validation.expectedPartsTotal) {
+        result.expectedPartsTotal = validation.expectedPartsTotal;
+        result.expectedPartsSource = "exact_match_result";
+        result.expectedPartsConfidence = 0.95;
+      }
+      return result;
+    } else {
+      console.warn(`[SourceResolver] Deterministic URL failed validation, falling back to search layer...`);
+    }
+  }
+
+  // 2. FALLBACK TO SEARCH GROUNDING (For Sears, Fix.com, or failed deterministics)
+  console.info(`[SourceResolver] Using Search Grounding layer for ${targetDomain}...`);
   const queries = buildQueries(input);
 
   const hits = dedupeSearchHits(

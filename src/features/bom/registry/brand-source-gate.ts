@@ -17,35 +17,26 @@ export type SourceKey =
   | "partselect.com"
   | "fix.com";
 
-const OEM_SOURCE_KEYS: string[] = [
-  "ge-official",
-  "bosch-family",
-  "frigidaire-family",
-  "lg-family",
-  "samsung-family",
-  "whirlpool-family",
-];
-
-const PRIMARY_SOURCES: SourceKey[] = [
+export const DISTRIBUTOR_PRIMARY_SOURCES: SourceKey[] = [
   "encompass",
   "sears-partsdirect",
   "partsdr",
 ];
 
-const SECONDARY_SOURCES: SourceKey[] = [
+export const DISTRIBUTOR_SECONDARY_SOURCES: SourceKey[] = [
   "appliancepartspros",
   "repairclinic-family",
   "partselect.com",
   "fix.com",
 ];
 
-const UNIVERSAL_DISTRIBUTOR_SOURCES: SourceKey[] = [
-  ...PRIMARY_SOURCES,
-  ...SECONDARY_SOURCES,
+export const UNIVERSAL_DISTRIBUTOR_SOURCES: SourceKey[] = [
+  ...DISTRIBUTOR_PRIMARY_SOURCES,
+  ...DISTRIBUTOR_SECONDARY_SOURCES,
 ];
 
 // OEM Sources are strictly forbidden for BOM retrieval
-const FORBIDDEN_OEM_DOMAINS = [
+export const BLOCKED_SEARCH_DOMAINS = [
   "geapplianceparts.com",
   "geappliances.com",
   "products.geappliances.com",
@@ -63,6 +54,16 @@ const FORBIDDEN_OEM_DOMAINS = [
   "kitchenaid.com",
   "amana.com",
   "jennair.com",
+  "marcone.com",
+  "easyapplianceparts.com"
+];
+
+export const BLOCKED_SOURCES = [
+  "ge-official",
+  "bosch-family",
+  "frigidaire-family",
+  "lg-family",
+  "samsung-family"
 ];
 
 export const SOURCE_DOMAINS: Record<SourceKey, string[]> = {
@@ -77,45 +78,52 @@ export const SOURCE_DOMAINS: Record<SourceKey, string[]> = {
 };
 
 export const SOURCE_POLICY = {
-  defaultMode: "distributor_first",
-  oemEnabledByDefault: false,
-  allowOemWhenUserProvidesUrl: true,
-  allowOemForIdentityRepair: true,
-  allowOemForSerialDecoding: true,
-  allowOemForKnownDeterministicPartsEndpoint: true
-};
+  mode: "distributor_only",
+  oemSourcesEnabled: false,
+  priority: [
+    "seeded-provider",
+    "url-intake",
+    "encompass-family",
+    "sears-partsdirect",
+    "partsdr",
+    "appliancepartspros",
+    "partselect.com",
+    "fix.com",
+    "repairclinic-family",
+  ],
+} as const;
 
 export const BRAND_SOURCE_GATE: Record<
   BrandFamily,
   { primarySources: SourceKey[]; secondarySources: SourceKey[] }
 > = {
   "ge-family": {
-    primarySources: PRIMARY_SOURCES,
-    secondarySources: SECONDARY_SOURCES,
+    primarySources: DISTRIBUTOR_PRIMARY_SOURCES,
+    secondarySources: DISTRIBUTOR_SECONDARY_SOURCES,
   },
   "bosch-family": {
-    primarySources: PRIMARY_SOURCES,
-    secondarySources: SECONDARY_SOURCES,
+    primarySources: DISTRIBUTOR_PRIMARY_SOURCES,
+    secondarySources: DISTRIBUTOR_SECONDARY_SOURCES,
   },
   "frigidaire-family": {
-    primarySources: PRIMARY_SOURCES,
-    secondarySources: SECONDARY_SOURCES,
+    primarySources: DISTRIBUTOR_PRIMARY_SOURCES,
+    secondarySources: DISTRIBUTOR_SECONDARY_SOURCES,
   },
   "lg-family": {
-    primarySources: PRIMARY_SOURCES,
-    secondarySources: SECONDARY_SOURCES,
+    primarySources: DISTRIBUTOR_PRIMARY_SOURCES,
+    secondarySources: DISTRIBUTOR_SECONDARY_SOURCES,
   },
   "samsung-family": {
-    primarySources: PRIMARY_SOURCES,
-    secondarySources: SECONDARY_SOURCES,
+    primarySources: DISTRIBUTOR_PRIMARY_SOURCES,
+    secondarySources: DISTRIBUTOR_SECONDARY_SOURCES,
   },
   "whirlpool-family": {
-    primarySources: PRIMARY_SOURCES,
-    secondarySources: SECONDARY_SOURCES,
+    primarySources: DISTRIBUTOR_PRIMARY_SOURCES,
+    secondarySources: DISTRIBUTOR_SECONDARY_SOURCES,
   },
   unknown: {
-    primarySources: PRIMARY_SOURCES,
-    secondarySources: SECONDARY_SOURCES,
+    primarySources: DISTRIBUTOR_PRIMARY_SOURCES,
+    secondarySources: DISTRIBUTOR_SECONDARY_SOURCES,
   },
 };
 
@@ -177,7 +185,7 @@ function normalizeBrandFamily(value: string | null | undefined): BrandFamily {
     normalized === "samsung-family" ||
     normalized === "whirlpool-family"
   ) {
-    return normalized;
+    return normalized as BrandFamily;
   }
 
   return "unknown";
@@ -201,9 +209,9 @@ export function resolveBrandSourceGate(input: {
     primarySources: gate.primarySources,
     secondarySources: gate.secondarySources,
     approvedSources,
-    forbiddenSources: OEM_SOURCE_KEYS,
+    forbiddenSources: BLOCKED_SOURCES,
     approvedDomains: domainsForSources(approvedSources),
-    forbiddenDomains: FORBIDDEN_OEM_DOMAINS,
+    forbiddenDomains: BLOCKED_SEARCH_DOMAINS,
   };
 }
 
@@ -256,7 +264,6 @@ export function formatBrandSourceGateForPrompt(input: {
     `primary_sources: ${gate.primarySources.join(", ")}`,
     `secondary_sources: ${gate.secondarySources.join(", ")}`,
     `approved_domains: ${gate.approvedDomains.join(", ")}`,
-    `forbidden_sources: ${gate.forbiddenSources.join(", ")}`,
     `forbidden_domains: ${gate.forbiddenDomains.join(", ")}`,
     "</brand_source_gate>",
   ].join("\n");

@@ -8,7 +8,7 @@ import { runSourceLookup } from "../agents/source-lookup";
 import { fetchSources } from "../services/source-fetcher";
 import { normalizeBomRows } from "./bom-normalizer";
 import { enrichBomRowsWithRetailPricing } from "../services/retail-pricing";
-import { computeUnmatchedCallouts, calculateCompletionProof, validate_bom_completion } from "./bom-validator";
+import { computeUnmatchedCallouts, validate_bom_completion } from "./bom-validator";
 import {
   acceptTrustedPartCount,
   normalizeTrustedCountSource,
@@ -391,9 +391,17 @@ export async function buildBomJob(input: {
   state.bomRows = finalPricedRows;
 
   // Final Validation Gate
+  const manifestRowCount = diagramParse?.sections?.flatMap(s => s.callouts ?? []).length ?? 0;
+  const unresolvedRequiredManifestRowCount = unmatchedCallouts.length;
+  const mappedRequiredManifestRowCount = manifestRowCount - unresolvedRequiredManifestRowCount;
+
   const completion = validate_bom_completion({
     rows: finalPricedRows,
     trustedTotalPartCount: state.trustedTotalPartCount,
+    manifestRowCount,
+    requiredManifestRowCount: manifestRowCount,
+    mappedRequiredManifestRowCount,
+    unresolvedRequiredManifestRowCount,
     identityResolved: true,
   });
 

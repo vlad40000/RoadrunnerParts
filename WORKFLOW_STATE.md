@@ -8,7 +8,8 @@
 - **Phase 6: Code Quality & Maintenance (Complete)**: Comprehensive refactoring of `partselect.ts` and `encompass-family.ts`. Resolved all informational IDE linting messages (named interfaces, explicit return types, `Array<T>` notation).
 - **Phase 7: Type Synchronization (Complete)**: Synchronized `ProviderSourceType` and `BomStatus`/`RetrievalState` across the core extraction pipeline.
 - **Phase 10: Identity Pipeline Hardening & Type Stability (Complete)**: Aligned identity extraction with structured JSON contracts using nested `candidate_identity` schemas. Fixed OCR API route for normalized identity fields. Achieved 100% `tsc` pass rate by resolving hoisting and schema mismatches.
-- **Phase 11: Distributor-First Policy & Source Resolution (Complete)**: Implemented "distributor-first" policy for BOM retrieval. OEM sources are now disabled by default and used only for identity repair or serial decoding. Hardened source resolution with strict Zod schemas and tiered distributor routing (Primary/Secondary).
+- **Phase 11: Distributor-Only Policy & Source Resolution (Complete)**: Implemented strict "distributor-only" policy for BOM retrieval. OEM official site searches are now prohibited and removed from the agent tool surface. Hardened source resolution with zero-latency deterministic fast-paths, tiered distributor routing (Encompass/Sears/PartsDr -> APP/PartSelect/Fix/RepairClinic), and soft-validation for 403-blocked domains. Rewired the extraction sequence in `discoverDiagramGroupsForJob` to follow this tiering.
+- **Phase 12: Structural Pricing Dependency (Complete)**: Hardened the BOM completion contract. Pricing completeness now strictly requires parts completeness. Implemented state machine transitions in `bom-validator.ts` and `contract.ts` that prevent `bom_complete` status until both manifest coverage and verified retail pricing are 100% satisfied. Introduced granular `parts_complete_pricing_missing` and `parts_complete_pricing_partial` statuses. Verified with unit tests.
 - **RetrievalState Standardization**: Standardized `RetrievalState` and `BomStatus` schemas to include all system states (23 values), ensuring type-safety across Single and Batch orchestrators. Resolved Gemini tool schema compatibility issues.
 - **Contract Enforcement**: Implemented `determineRetrievalState` in a new `contract.ts` service. Integrated this logic into the agent dispatcher to ensure the "BOM Completion Gate" is governed by deterministic rules rather than AI heuristics.
 - **Diagram-Indexed Manifest Contract**: Parts completeness now uses a trusted exact-model `total_part_count` as the target, builds a full diagram manifest as the expected row set, and maps canonical BOM rows against required manifest rows before completion can be claimed.
@@ -39,8 +40,10 @@
 - **Full Type Stability**: Resolved all remaining TypeScript build errors across `schemas/bom.ts`, `contract.ts`, `run-bom-recovery.ts`, and `partsSourceRegistry.ts`.
 - **RetrievalState Alignment**: Synchronized `determineRetrievalState` logic in `contract.ts` and `bom-validator.ts` with the central `RetrievalState` enum.
 - **Tiered Model Routing**: Validated and stabilized `gemini-3.1-flash-lite-preview` for high-throughput identity normalization and ingestion stages.
-- **Distributor-First Policy**: Implemented `SOURCE_POLICY` to prioritize distributors (Encompass, Sears, PartsDr) over OEM official sites for BOM retrieval. Hardened source resolution with strict Zod schemas and tiered distributor routing (Primary/Secondary).
-- **Source Resolution Hardening**: Implemented `sourceResolutionResultSchema` and `sourceResolutionCandidateSchema` for deterministic extraction of candidate URLs. Updated `engine.ts` prompts to enforce the new source policy and output contracts.
+- **Deterministic URL Resolver Fast-Path**: Implemented a zero-latency deterministic fast-path in `exact-model-url-resolver.ts` for Encompass, PartsDr, AppliancePartsPros, and PartSelect. Integrated soft-validation logic to handle search-indexed URLs that trigger 403 blocks during live validation.
+- **Structural Validator Hardening**: Updated `bom-validator.ts` and `grouped-bom.ts` to enforce the structural dependency between parts extraction and pricing. BOM status is capped at `parts_complete_pricing_missing` until the pricing validator confirms full coverage.
+- **Distributor Source Agent**: Created `distributor-source-agent.ts` to replace legacy OEM-based retrieval, ensuring all extraction flows follow the approved distributor tier list.
+- **Inventory Import Stabilization**: Restored and hardened the `app/api/inventory/import` route after file corruption. Implemented robust `HEADER_ALIASES` synchronized with real-world inventory spreadsheets (e.g., `ModelNumber`, `SerialNumber`, `ApplianceType`, `Availability`). Verified order-independent extraction and raw metadata preservation.
 
 ## System Boundaries & Core Rules
 
@@ -113,7 +116,7 @@
 | :--- | :--- | :--- |
 | **OCR Ingest Agent** | `ocr_extract_nameplate`, `normalize_appliance_identity` | None |
 | **Cache Check Agent** | `db_get_model_record`, `db_get_model_part_count`, `db_get_parts_for_model`, `db_get_price_coverage_for_model`, `validate_bom_completion` | None |
-| **Source Resolver Agent** | `resolve_oem_model_sources`, `resolve_distributor_sources`, `fetch_source_page`, `extract_diagram_sections` | None |
+| **Source Resolver Agent** | `resolve_distributor_sources`, `fetch_source_page`, `extract_diagram_sections` | None |
 | **Parts Extraction Agent** | `extract_parts_from_section`, `synthesize_bom`, `db_upsert_bom_parts` | None |
 | **Retail Price Agent** | `resolve_part_pricing_sources`, `fetch_encompass_listed_price`, `fetch_fallback_listed_price`, `validate_exact_price_evidence`, `select_primary_verified_price`, `db_upsert_verified_price_snapshot` | None |
 | **eBay Market Agent** | *Reads canonical part numbers only* | `ebay_search_active_by_part_number`, `ebay_search_sold_by_part_number`, `filter_ebay_listing_matches`, `calculate_ebay_sell_through`, `calculate_ebay_net_expected`, `db_upsert_market_snapshot` |
