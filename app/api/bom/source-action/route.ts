@@ -1,39 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
-import { after } from "next/server";
 import {
   createBomJob,
   getBomJob,
   saveCompilationArtifacts,
-  setBomJobStage,
   updateBomJobSummary,
   failBomJob,
 } from "@/features/bom/services/job-store";
+import type { ManualSourceActionTask } from "@/features/bom/services/source-tier-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const ALLOWED_TASKS = new Set(["parts_diagrams", "parts_bom", "pricing"]);
+const ALLOWED_TASKS = new Set<ManualSourceActionTask>([
+  "lock_supplier_target",
+  "load_supplier_index",
+  "extract_selected_assemblies",
+  "price_encompass",
+  "price_backup_1",
+  "price_backup_2",
+]);
+
+function toTask(value: unknown): ManualSourceActionTask | null {
+  const task = String(value || "") as ManualSourceActionTask;
+  return ALLOWED_TASKS.has(task) ? task : null;
+}
 
 export async function POST(req: NextRequest) {
+  let jobIdForFailure: string | null = null;
+
   try {
     const body = await req.json();
 
-    const task = String(body.task || "");
-    const model = String(body.canonicalModel || body.model || "").trim().toUpperCase();
-    const supplier = String(body.supplier || "");
-    const tierKey = String(body.tierKey || "");
+    const task = toTask(body.task);
+    const model = String(body.canonicalModel || body.model || "")
+      .trim()
+      .toUpperCase();
+    const supplier = String(body.supplier || "").trim();
+    const tierKey = String(body.tierKey || "").trim();
 
-    if (!ALLOWED_TASKS.has(task)) {
-      return NextResponse.json({ ok: false, error: "Invalid source action task." }, { status: 400 });
+    if (!task) {
+      return NextResponse.json(
+        { ok: false, error: "Invalid source action task." },
+        { status: 400 },
+      );
     }
 
     if (!model) {
-      return NextResponse.json({ ok: false, error: "Model number is required." }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "Model number is required." },
+        { status: 400 },
+      );
     }
 
     if (!supplier) {
-      return NextResponse.json({ ok: false, error: "Supplier is required." }, { status: 400 });
+      return NextResponse.json(
+        { ok: false, error: "Supplier is required." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      (task === "lock_supplier_target" || task === "load_supplier_index") &&
+      !String(body.searchUrl || "").trim()
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "Supplier search URL is required." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      task === "extract_selected_assemblies" &&
+      !Array.isArray(body.selectedAssemblies)
+    ) {
+      return NextResponse.json(
+        { ok: false, error: "selectedAssemblies array is required." },
+        { status: 400 },
+      );
     }
 
     const job =
@@ -42,16 +86,22 @@ export async function POST(req: NextRequest) {
         : await createBomJob();
 
     if (!job) {
-      return NextResponse.json({ ok: false, error: "Could not create or load BOM job." }, { status: 500 });
+      return NextResponse.json(
+        { ok: false, error: "Could not create or load BOM job." },
+        { status: 500 },
+      );
     }
 
+    jobIdForFailure = job.id;
+
     await updateBomJobSummary(job.id, {
-      jobStage: `source_action_${task}`,
+      jobStage: `manual_source_action_${task}`,
       brand: body.brand ?? job.brand,
       model,
       serial: body.serial ?? job.serial,
       productType: body.productType ?? job.productType,
       sourceStrategy: `manual-distributor-control:${tierKey}:${supplier}:${task}`,
+      bomComplete: false,
     });
 
     await saveCompilationArtifacts(job.id, {
@@ -63,43 +113,31 @@ export async function POST(req: NextRequest) {
         canonicalModel: model,
         formattedModel: body.formattedModel,
         searchUrl: body.searchUrl,
-        assemblyTitle: body.assemblyTitle,
-        expectedGroupPartCount: body.expectedGroupPartCount,
-        pricingOrder: body.pricingOrder,
+        selectedAssemblies: body.selectedAssemblies,
+        pricingSource: body.pricingSource,
       },
     });
 
-    after(async () => {
-      try {
-        await setBomJobStage(job.id, `source_action_running_${task}`);
+    const { runSourceActionAgent } = await import(
+      "@/features/bom/agents/source-action-agent"
+    );
 
-        const { runSourceActionAgent } = await import(
-          "@/features/bom/agents/source-action-agent"
-        );
-
-        await runSourceActionAgent({
-          jobId: job.id,
-          task: task as any,
-          tierKey,
-          supplier,
-          canonicalModel: model,
-          formattedModel: body.formattedModel,
-          searchUrl: body.searchUrl,
-          brand: body.brand ?? null,
-          serial: body.serial ?? null,
-          productType: body.productType ?? null,
-          assemblyTitle: body.assemblyTitle ?? null,
-          expectedGroupPartCount:
-            typeof body.expectedGroupPartCount === "number"
-              ? body.expectedGroupPartCount
-              : null,
-          pricingOrder: Array.isArray(body.pricingOrder)
-            ? body.pricingOrder
-            : ["encompass-family", supplier, "partsdr"],
-        });
-      } catch (error) {
-        await failBomJob(job.id, error instanceof Error ? error.message : String(error));
-      }
+    const result = await runSourceActionAgent({
+      jobId: job.id,
+      task,
+      tierKey,
+      supplier,
+      canonicalModel: model,
+      formattedModel: body.formattedModel,
+      searchUrl: body.searchUrl,
+      brand: body.brand ?? null,
+      serial: body.serial ?? null,
+      productType: body.productType ?? null,
+      selectedAssemblies: Array.isArray(body.selectedAssemblies)
+        ? body.selectedAssemblies
+        : undefined,
+      pricingSource:
+        typeof body.pricingSource === "string" ? body.pricingSource : null,
     });
 
     return NextResponse.json(
@@ -109,16 +147,23 @@ export async function POST(req: NextRequest) {
         task,
         tierKey,
         supplier,
-        status: "started",
+        status: "complete",
+        result,
       },
-      { status: 202 },
+      { status: 200 },
     );
   } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+
+    if (jobIdForFailure) {
+      await failBomJob(jobIdForFailure, detail);
+    }
+
     return NextResponse.json(
       {
         ok: false,
         error: "Source action failed.",
-        detail: error instanceof Error ? error.message : String(error),
+        detail,
       },
       { status: 500 },
     );

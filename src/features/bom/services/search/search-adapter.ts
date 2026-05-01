@@ -29,79 +29,72 @@ async function runGroundedSourceSearch(prompt: string) {
         parts: [{ text: prompt }],
       },
     ],
-      config: {
-        tools: [{ googleSearch: {} }],
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            status: { type: Type.STRING },
-            model: { type: Type.STRING },
-            brand_family: { type: Type.STRING },
-            approved_sources_searched: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
+    config: {
+      tools: [{ googleSearch: {} }],
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          status: { type: Type.STRING },
+          model: { type: Type.STRING },
+          requested_domain: { type: Type.STRING },
+          candidates: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                source: { type: Type.STRING },
+                url: { type: Type.STRING },
+                match_type: { type: Type.STRING },
+                confidence: { type: Type.STRING },
+                evidence: { type: Type.STRING },
+              },
             },
-            forbidden_sources_skipped: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
-            },
-            candidates: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  source: { type: Type.STRING },
-                  url: { type: Type.STRING },
-                  match_type: { type: Type.STRING },
-                  confidence: { type: Type.STRING },
-                  evidence: { type: Type.STRING }
-                }
-              }
-            },
-            next_action: { type: Type.STRING }
           },
+          next_action: { type: Type.STRING },
         },
-        temperature: 1.0,
       },
-    });
+      temperature: 0.2,
+    },
+  });
 
-    const candidate = response.candidates?.[0];
-    const groundingChunks =
-      candidate?.groundingMetadata?.groundingChunks?.flatMap((chunk) => {
-        if (!chunk.web?.uri) return [];
-        return [
-          {
-            uri: chunk.web.uri,
-            title: chunk.web.title || new URL(chunk.web.uri).hostname,
-          },
-        ];
-      }) ?? [];
+  const candidate = response.candidates?.[0];
 
-    let candidateUrls: { uri: string; title: string }[] = [];
-    try {
-      const text = candidate?.content?.parts?.[0]?.text;
-      if (text) {
-        const parsed = JSON.parse(text);
-        if (parsed.candidates && Array.isArray(parsed.candidates)) {
-          candidateUrls = parsed.candidates
-            .filter((c: any) => typeof c.url === "string" && c.url.startsWith("http"))
-            .map((c: any) => ({
-              uri: c.url,
-              title: c.source || new URL(c.url).hostname,
-            }));
-        }
+  const groundingChunks =
+    candidate?.groundingMetadata?.groundingChunks?.flatMap((chunk) => {
+      if (!chunk.web?.uri) return [];
+      return [
+        {
+          uri: chunk.web.uri,
+          title: chunk.web.title || new URL(chunk.web.uri).hostname,
+        },
+      ];
+    }) ?? [];
+
+  let candidateUrls: { uri: string; title: string }[] = [];
+  try {
+    const text = candidate?.content?.parts?.[0]?.text;
+    if (text) {
+      const parsed = JSON.parse(text);
+      if (parsed.candidates && Array.isArray(parsed.candidates)) {
+        candidateUrls = parsed.candidates
+          .filter((c: any) => typeof c.url === "string" && c.url.startsWith("http"))
+          .map((c: any) => ({
+            uri: c.url,
+            title: c.source || new URL(c.url).hostname,
+          }));
       }
-    } catch {
-      // ignore parse errors
     }
+  } catch {
+    // ignore parse errors
+  }
 
-    const allSources = [...groundingChunks, ...candidateUrls];
+  const allSources = [...groundingChunks, ...candidateUrls];
 
-    return allSources.filter(
-      (source, index, array) =>
-        array.findIndex((item) => item.uri === source.uri) === index,
-    );
+  return allSources.filter(
+    (source, index, array) =>
+      array.findIndex((item) => item.uri === source.uri) === index,
+  );
 }
 
 function normalizeHit(hit: SearchHit, index: number): SearchHit {
@@ -133,69 +126,36 @@ function queryHasForbiddenSite(query: string, forbiddenDomains: string[]) {
   });
 }
 
-function providerGuidance(domain: string) {
-  const normalized = domain.toLowerCase();
-
-  if (normalized.includes("bosch-home.com")) {
-    return "Bosch-family official source. Query only Bosch/Thermador/Gaggenau E-Nr model pages and reject other OEM brands.";
-  }
-
-  if (
-    normalized.includes("geapplianceparts.com") ||
-    normalized.includes("geappliances.com")
-  ) {
-    return "GE-family official source. Prefer exact GE Appliance Parts assembly or model pages and reject Bosch/LG/Samsung/Frigidaire/Whirlpool OEM pages.";
-  }
-
-  if (normalized.includes("lgparts.com") || normalized.includes("lg.com")) {
-    return "LG official or authorized source. Query only LG-family models and reject other OEM brand pages.";
-  }
-
-  if (normalized.includes("samsungparts") || normalized.includes("samsung.com")) {
-    return "Samsung official or authorized source. Preserve variant suffixes and reject other OEM brand pages.";
-  }
-
-  if (normalized.includes("frigidaire")) {
-    return "Frigidaire/Electrolux-family source. Query exact family model pages and reject unrelated OEM brand pages.";
-  }
-
-  return "Distributor source. Return only exact appliance model parts, diagram, schematic, or assembly pages with model evidence.";
-}
-
 function buildGroundedSearchPrompt(input: {
   domain: string;
   query: string;
   model?: string | null;
   applianceType?: string | null;
-  brand?: string | null;
-  brandFamily?: string | null;
-  resolvedBrand?: string | null;
 }) {
-  const gate = hasBrandGateContext(input)
-    ? resolveBrandSourceGate(input)
-    : null;
+  if (!input.model?.trim()) {
+    throw new Error("Grounded search prompt blocked: model is required.");
+  }
 
-  const gateText = gate
-    ? [
-        `Brand family: ${gate.brandFamily}`,
-        `Approved domains: ${gate.approvedDomains.join(", ")}`,
-        `Forbidden domains: ${gate.forbiddenDomains.join(", ")}`,
-      ].join("\n")
-    : "Brand family: unspecified; use only the requested domain.";
+  if (!input.domain?.trim()) {
+    throw new Error("Grounded search prompt blocked: domain is required.");
+  }
 
   return [
-    "Find exact appliance model source pages for BOM retrieval.",
-    providerGuidance(input.domain),
-    gateText,
-    `Model: ${input.model ?? ""}`,
+    "Manual distributor-control lookup.",
+    "Return exact appliance model source pages from the requested distributor domain only.",
+    `Model: ${input.model.trim()}`,
     `Appliance type: ${input.applianceType ?? ""}`,
-    `Requested domain: ${input.domain}`,
-    `Search query: ${input.query}`,
+    `Requested domain: ${input.domain.trim()}`,
+    `Search query: ${input.query.trim()}`,
     "Rules:",
-    "- Return only source URLs backed by the requested domain.",
-    "- Do not include forbidden OEM domains.",
-    "- Do not broaden an OEM official search to another OEM family.",
-    "- Exact model or exact compatible variant evidence is required.",
+    "- One supplier only.",
+    "- Requested domain only.",
+    "- No OEM broadening.",
+    "- No fallback supplier.",
+    "- No pricing.",
+    "- No BOM extraction.",
+    "- Return candidate diagram/model pages only.",
+    "- Exact model or exact compatible model evidence is required.",
   ].join("\n");
 }
 
@@ -214,11 +174,25 @@ export function dedupeSearchHits(hits: SearchHit[]) {
 }
 
 /**
- * Wired to Gemini's Google Search grounding layer.
- * Important: this implementation now executes ALL provided queries,
- * instead of silently using only the first query.
+ * Strict manual control:
+ * - one invocation
+ * - one query maximum
+ * - three URLs maximum
+ * - throws on blank model/domain
+ *
+ * IMPORTANT:
+ * Manual buttons should usually avoid this function entirely.
+ * Only an explicit "Run One Lookup" action should call grounding.
  */
 export const searchExistingGroundingLayer: SearchAdapter = async (input) => {
+  if (!input.model?.trim()) {
+    throw new Error("Manual grounded search blocked: model is required.");
+  }
+
+  if (!input.domain?.trim()) {
+    throw new Error("Manual grounded search blocked: domain is required.");
+  }
+
   if (
     hasBrandGateContext(input) &&
     (isDomainForbiddenForBrand(input) || !isDomainApprovedForBrand(input))
@@ -230,48 +204,33 @@ export const searchExistingGroundingLayer: SearchAdapter = async (input) => {
     ? resolveBrandSourceGate(input).forbiddenDomains
     : [];
 
-  const queries = input.queries
+  const query = input.queries
     .map((q) => q.trim())
     .filter(Boolean)
-    .filter((query) => !queryHasForbiddenSite(query, forbiddenDomains));
-  if (!queries.length) return [];
+    .filter((candidate) => !queryHasForbiddenSite(candidate, forbiddenDomains))[0];
 
-  const maxResults = input.maxResults ?? 12;
+  if (!query) return [];
 
-  const settled = await Promise.allSettled(
-    queries.slice(0, 5).map(async (query) => {
-      const sources = await runGroundedSourceSearch(
-        buildGroundedSearchPrompt({
-          domain: input.domain,
-          query,
-          model: input.model,
-          applianceType: input.applianceType,
-          brand: input.brand,
-          brandFamily: input.brandFamily,
-          resolvedBrand: input.resolvedBrand,
-        }),
-      );
-
-      return sources.map((s, index) =>
-        normalizeHit(
-          {
-            url: s.uri,
-            title: s.title,
-            snippet: "",
-            rank: index + 1,
-          },
-          index,
-        ),
-      );
+  const sources = await runGroundedSourceSearch(
+    buildGroundedSearchPrompt({
+      domain: input.domain,
+      query,
+      model: input.model,
+      applianceType: input.applianceType,
     }),
   );
 
-  const allHits: SearchHit[] = [];
-  for (const entry of settled) {
-    if (entry.status === "fulfilled") {
-      allHits.push(...entry.value);
-    }
-  }
+  const hits = sources.map((s, index) =>
+    normalizeHit(
+      {
+        url: s.uri,
+        title: s.title,
+        snippet: "",
+        rank: index + 1,
+      },
+      index,
+    ),
+  );
 
-  return dedupeSearchHits(allHits).slice(0, maxResults);
+  return dedupeSearchHits(hits).slice(0, 3);
 };

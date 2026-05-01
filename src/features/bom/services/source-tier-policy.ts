@@ -1,6 +1,7 @@
 export const SOURCE_TIERS = {
   tier0: {
     label: "Tier 0",
+    description: "Manual URL, uploaded diagram, or saved source.",
     suppliers: [
       "url-intake",
       "seeded-provider",
@@ -12,6 +13,7 @@ export const SOURCE_TIERS = {
 
   tier1: {
     label: "Tier 1",
+    description: "Primary controlled supplier sources.",
     suppliers: [
       "encompass-family",
       "sears-partsdirect",
@@ -22,6 +24,7 @@ export const SOURCE_TIERS = {
 
   tier2: {
     label: "Tier 2",
+    description: "Secondary supplier backup.",
     suppliers: [
       "partselect.com",
       "fix.com",
@@ -31,6 +34,7 @@ export const SOURCE_TIERS = {
 
   tier3: {
     label: "Tier 3",
+    description: "Manual backup suppliers. Disable backend actions unless implemented.",
     suppliers: [
       "partswarehouse",
       "ereplacementparts",
@@ -45,10 +49,47 @@ export const SOURCE_TIERS = {
 
 export type SourceTierKey = keyof typeof SOURCE_TIERS;
 
-export type SourceActionTask =
-  | "parts_diagrams"
-  | "parts_bom"
-  | "pricing";
+export type ManualSourceActionTask =
+  | "lock_supplier_target"
+  | "load_supplier_index"
+  | "extract_selected_assemblies"
+  | "price_encompass"
+  | "price_backup_1"
+  | "price_backup_2";
+
+export type SupplierAssemblyStatus =
+  | "pending"
+  | "selected"
+  | "extracting"
+  | "partial"
+  | "complete"
+  | "failed"
+  | "count_unknown";
+
+export type SupplierAssemblyIndexItem = {
+  id: string;
+  title: string;
+  sourceUrl: string;
+  supplierCount: number | null;
+  countEvidence: string | null;
+  selected: boolean;
+  overrideCount: number | null;
+  status: SupplierAssemblyStatus;
+  actualCount: number;
+  error?: string | null;
+};
+
+export type SupplierAssemblyIndex = {
+  supplier: string;
+  canonicalModel: string;
+  formattedModel: string;
+  sourceUrl: string;
+  totalCount: number | null;
+  totalCountEvidence: string | null;
+  totalCountSourceUrl: string | null;
+  loadedAt: string;
+  assemblies: SupplierAssemblyIndexItem[];
+};
 
 export function normalizeCanonicalModel(model: string) {
   return String(model || "").trim().toUpperCase().replace(/\s+/g, "");
@@ -136,6 +177,37 @@ export function buildSupplierSearchUrl(input: {
       return `https://www.appliancefactoryparts.com/search/part/${canonical}/`;
 
     default:
-      return `https://www.google.com/search?q=${encodeURIComponent(`${input.canonicalModel} appliance parts`)}`;
+      return `https://www.google.com/search?q=${encodeURIComponent(
+        `${input.canonicalModel} appliance parts`,
+      )}`;
   }
+}
+
+export function supplierDisplayName(supplier: string) {
+  switch (supplier) {
+    case "encompass-family":
+      return "Encompass";
+    case "sears-partsdirect":
+      return "Sears PartsDirect";
+    case "partsdr":
+      return "PartsDr";
+    case "appliancepartspros":
+      return "AppliancePartsPros";
+    case "partselect.com":
+      return "PartSelect";
+    case "fix.com":
+      return "Fix.com";
+    case "repairclinic-family":
+      return "RepairClinic";
+    case "url-intake":
+      return "Manual URL Intake";
+    case "seeded-provider":
+      return "Saved / Seeded Source";
+    default:
+      return supplier;
+  }
+}
+
+export function supplierIndexKey(supplier: string, canonicalModel: string) {
+  return `${supplier}:${normalizeCanonicalModel(canonicalModel)}`;
 }

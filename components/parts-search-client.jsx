@@ -31,6 +31,7 @@ import {
   normalizeModelForSupplier, 
   buildSupplierSearchUrl 
 } from '@/features/bom/services/source-tier-policy';
+import ManualDistributorControlPanel from '@/components/manual-distributor-control-panel';
 
 const popularModels = ['MVWC565FW0', 'RF28R7351SR', 'WDT730PAHZ'];
 
@@ -229,11 +230,6 @@ export default function PartsSearchClient() {
   const [lastPricingSelection, setLastPricingSelection] = useState([]);
   const [countLookupBusy, setCountLookupBusy] = useState(false);
   const [countLookupMessage, setCountLookupMessage] = useState(null);
-
-  const [activeSourceTier, setActiveSourceTier] = useState(null);
-  const [supplierLaunchRows, setSupplierLaunchRows] = useState([]);
-  const [sourceActionBusy, setSourceActionBusy] = useState(null);
-  const [sourceActionMessage, setSourceActionMessage] = useState(null);
 
   const nameplateInputRef = useRef(null);
   const manualPdfInputRef = useRef(null);
@@ -702,161 +698,7 @@ export default function PartsSearchClient() {
     }
   }
 
-  function getCurrentModelForSourceAction() {
-    return (
-      manualModelNumber.trim() ||
-      identityReview?.model?.trim() ||
-      results?.model?.trim() ||
-      ''
-    );
-  }
 
-  function getCurrentBrandForSourceAction() {
-    return (
-      manualBrand.trim() ||
-      identityReview?.brand ||
-      results?.brand ||
-      ''
-    );
-  }
-
-  function buildSupplierRowsForTier(tierKey) {
-    const model = getCurrentModelForSourceAction();
-    const brand = getCurrentBrandForSourceAction();
-    const tier = SOURCE_TIERS[tierKey];
-
-    if (!model || !tier) return [];
-
-    const canonicalModel = normalizeCanonicalModel(model);
-
-    return tier.suppliers.map((supplier) => {
-      const formattedModel = normalizeModelForSupplier({
-        supplier,
-        model: canonicalModel,
-        brand,
-      });
-
-      return {
-        supplier,
-        tierKey,
-        canonicalModel,
-        formattedModel,
-        searchUrl: buildSupplierSearchUrl({
-          supplier,
-          formattedModel,
-          canonicalModel,
-        }),
-        diagramStatus: 'idle',
-        bomStatus: 'idle',
-        pricingStatus: 'locked',
-        diagramSheets: [],
-      };
-    });
-  }
-
-  function handleOpenSourceTier(tierKey) {
-    const model = getCurrentModelForSourceAction();
-
-    if (!model) {
-      setError('Enter a model number before opening a source tier.');
-      return;
-    }
-
-    setError(null);
-    setActiveSourceTier(tierKey);
-    setSupplierLaunchRows(buildSupplierRowsForTier(tierKey));
-  }
-
-  async function handleSupplierSourceAction(row, task, extra = {}) {
-    const model = getCurrentModelForSourceAction();
-    const brand = getCurrentBrandForSourceAction();
-
-    if (!model) {
-      setError('Enter a model number before running a source action.');
-      return;
-    }
-
-    if (task === 'pricing') {
-      const expected = Number(identityReview?.expectedPartsTotal || results?.expectedPartCount || 0);
-      const actual = Number(results?.parts?.length || 0);
-
-      if (!expected || actual < expected) {
-        setError(`Pricing is locked. Need ${expected || 'expected'} parts; currently found ${actual}.`);
-        return;
-      }
-    }
-
-    setError(null);
-    setSourceActionMessage(null);
-    setSourceActionBusy(`${row.supplier}:${task}`);
-
-    try {
-      let currentJobId = jobId;
-      if (!currentJobId) {
-        currentJobId = await createEmptyJob();
-        setJobId(currentJobId);
-      }
-
-      pollJob(currentJobId);
-
-      const res = await fetch('/api/bom/source-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jobId: currentJobId,
-          task,
-          tierKey: row.tierKey,
-          supplier: row.supplier,
-          canonicalModel: row.canonicalModel,
-          formattedModel: row.formattedModel,
-          searchUrl: row.searchUrl,
-          brand,
-          serial: manualSerial.trim() || identityReview?.serial || results?.serial || undefined,
-          productType:
-            manualProductType.trim() ||
-            identityReview?.productType ||
-            results?.productType ||
-            undefined,
-          ...extra,
-        }),
-      });
-
-      const data = await readApiResponse(res);
-      if (!res.ok) {
-        throw new Error(toDisplayErrorMessage(data?.detail || data?.error || 'Source action failed'));
-      }
-
-      setSourceActionMessage(`${row.supplier} ${task.replace('_', ' ')} launched.`);
-
-      setSupplierLaunchRows((prev) =>
-        prev.map((existing) =>
-          existing.supplier === row.supplier
-            ? {
-                ...existing,
-                [`${task === 'parts_diagrams' ? 'diagram' : task === 'parts_bom' ? 'bom' : 'pricing'}Status`]:
-                  'running',
-              }
-            : existing,
-        ),
-      );
-    } catch (actionError) {
-      const errMsg = actionError instanceof Error ? actionError.message : 'Source action failed';
-      setError(errMsg);
-      setSupplierLaunchRows((prev) =>
-        prev.map((existing) =>
-          existing.supplier === row.supplier
-            ? {
-                ...existing,
-                [`${task === 'parts_diagrams' ? 'diagram' : task === 'parts_bom' ? 'bom' : 'pricing'}Status`]:
-                  'error',
-              }
-            : existing,
-        ),
-      );
-    } finally {
-      setSourceActionBusy(null);
-    }
-  }
 
   const isLoading = loadingMode !== null;
 
@@ -1085,36 +927,8 @@ export default function PartsSearchClient() {
                 ))}
               </div>
 
-              <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="mb-3 text-left">
-                  <div className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">
-                    Distributor Control Panel
-                  </div>
-                  <div className="mt-1 text-[10px] text-slate-600 font-bold leading-relaxed">
-                    Choose the tier, supplier, and exact task. Pricing unlocks only after parts hit the expected total.
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-                  {['tier0', 'tier1', 'tier2', 'tier3'].map((tierKey) => (
-                    <button
-                      key={tierKey}
-                      type="button"
-                      disabled={isLoading || !getCurrentModelForSourceAction()}
-                      onClick={() => handleOpenSourceTier(tierKey)}
-                      className={`rounded-xl px-3 py-3 text-[10px] font-black uppercase tracking-wide shadow-md transition-all disabled:opacity-50 ${
-                        activeSourceTier === tierKey
-                          ? 'bg-blue-700 text-white'
-                          : 'bg-white text-slate-800 border border-slate-200 hover:bg-blue-50'
-                      }`}
-                    >
-                      {SOURCE_TIERS[tierKey].label}
-                    </button>
-                  ))}
-                </div>
-
                 {results?.manualReviewFlags?.length > 0 && (
-                  <div className="mt-3 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2">
+                  <div className="mt-5 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2">
                     <div className="text-[10px] font-black uppercase text-amber-800 tracking-wider">Review Flags</div>
                     <ul className="mt-1 list-inside list-disc space-y-1">
                       {results.manualReviewFlags.map((flag, i) => (
@@ -1135,101 +949,6 @@ export default function PartsSearchClient() {
                   </div>
                 )}
 
-                {sourceActionMessage && (
-                  <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] font-bold text-blue-700">
-                    {sourceActionMessage}
-                  </div>
-                )}
-
-                {supplierLaunchRows.length > 0 && (
-                  <div className="mt-4 space-y-3 text-left">
-                    {supplierLaunchRows.map((row) => {
-                      const busyPrefix = `${row.supplier}:`;
-                      const isSupplierBusy = sourceActionBusy?.startsWith(busyPrefix);
-
-                      return (
-                        <div key={`${row.tierKey}-${row.supplier}`} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                          <div className="mb-3 flex items-start justify-between gap-3">
-                            <div>
-                              <div className="text-xs font-black text-slate-900 uppercase tracking-wider">{row.supplier}</div>
-                              <div className="mt-1 font-mono text-[10px] text-slate-500">
-                                {row.formattedModel}
-                              </div>
-                            </div>
-
-                            <a
-                              href={row.searchUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-blue-600 hover:bg-blue-50 transition-all"
-                            >
-                              Open
-                            </a>
-                          </div>
-
-                          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-                            <button
-                              type="button"
-                              disabled={isSupplierBusy || isLoading}
-                              onClick={() => handleSupplierSourceAction(row, 'parts_diagrams')}
-                              className="rounded-xl bg-slate-900 px-3 py-2 text-[10px] font-bold text-white disabled:bg-slate-300 transition-all hover:bg-slate-800"
-                            >
-                              Parts Diagrams
-                            </button>
-
-                            <button
-                              type="button"
-                              disabled={isSupplierBusy || isLoading}
-                              onClick={() => handleSupplierSourceAction(row, 'parts_bom')}
-                              className="rounded-xl bg-blue-600 px-3 py-2 text-[10px] font-bold text-white disabled:bg-slate-300 transition-all hover:bg-blue-700"
-                            >
-                              Parts BOM
-                            </button>
-
-                            <button
-                              type="button"
-                              disabled={
-                                isSupplierBusy ||
-                                isLoading ||
-                                (results?.parts?.length || 0) <
-                                  (identityReview?.expectedPartsTotal || 1)
-                              }
-                              onClick={() =>
-                                handleSupplierSourceAction(row, 'pricing', {
-                                  pricingOrder: ['encompass-family', row.supplier, 'partsdr'],
-                                })
-                              }
-                              className="rounded-xl bg-emerald-600 px-3 py-2 text-[10px] font-bold text-white disabled:bg-slate-300 transition-all hover:bg-emerald-700"
-                            >
-                              Pricing
-                            </button>
-                          </div>
-
-                          <div className="mt-4 flex items-center gap-4">
-                            <div className="flex flex-1 flex-col gap-1">
-                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Diagrams</span>
-                              <div className={`h-1 w-full rounded-full ${row.diagramStatus === 'running' ? 'bg-blue-500 animate-pulse' : row.diagramStatus === 'complete' ? 'bg-emerald-500' : row.diagramStatus === 'error' ? 'bg-red-500' : 'bg-slate-100'}`}></div>
-                            </div>
-                            <div className="flex flex-1 flex-col gap-1">
-                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">BOM</span>
-                              <div className={`h-1 w-full rounded-full ${row.bomStatus === 'running' ? 'bg-blue-500 animate-pulse' : row.bomStatus === 'complete' ? 'bg-emerald-500' : row.bomStatus === 'error' ? 'bg-red-500' : 'bg-slate-100'}`}></div>
-                            </div>
-                            <div className="flex flex-1 flex-col gap-1">
-                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Pricing</span>
-                              <div className={`h-1 w-full rounded-full ${row.pricingStatus === 'running' ? 'bg-blue-500 animate-pulse' : row.pricingStatus === 'complete' ? 'bg-emerald-500' : row.pricingStatus === 'error' ? 'bg-red-500' : 'bg-slate-100'}`}></div>
-                            </div>
-                          </div>
-
-                          {(row.diagramStatus === 'error' || row.bomStatus === 'error' || row.pricingStatus === 'error') && (
-                            <div className="mt-3 rounded-lg bg-red-50 p-2 text-[10px] text-red-600 font-bold italic border border-red-100">
-                              {results?.errorText || 'Task failed. Check logs or blockers above.'}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
                 {results?.issues?.length > 0 && (
                   <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
                     <div className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-2">
@@ -1245,10 +964,24 @@ export default function PartsSearchClient() {
                     </ul>
                   </div>
                 )}
-              </div>
             </div>
           </div>
         </section>
+
+        <div className="mx-auto max-w-5xl mb-6">
+          <ManualDistributorControlPanel
+            jobId={jobId}
+            setJobId={setJobId}
+            identityReview={identityReview}
+            results={results}
+            manualModelNumber={manualModelNumber}
+            manualBrand={manualBrand}
+            manualSerial={manualSerial}
+            manualProductType={manualProductType}
+            pollJob={pollJob}
+            setError={setError}
+          />
+        </div>
 
         <section className="mx-auto max-w-5xl space-y-6">
           {jobId && (

@@ -131,10 +131,18 @@ const normalizeModelId = (value?: string | null) => (value || '').toUpperCase().
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [bomPassCount, setBomPassCount] = useState(0);
   const [expectedPartCount, setExpectedPartCount] = useState<number | null>(null);
+
+  const selectedSectionLabel = useMemo(() => {
+    if (selectedSections.length === 0) return 'All Components';
+    if (selectedSections.length === 1) return selectedSections[0];
+    return `${selectedSections.length} Categories Selected`;
+  }, [selectedSections]);
+
+  const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
 
 
 
@@ -210,7 +218,16 @@ export default function App() {
     }
   };
 
-  const handleSourceAction = async (supplierId: string, task: string, assemblyId?: string) => {
+  const handleSourceAction = async (
+    supplierId: string, 
+    task: string, 
+    params: { 
+      searchUrl?: string; 
+      selectedAssemblies?: string[]; 
+      pricingSource?: string;
+      tierKey?: string;
+    } = {}
+  ) => {
     if (!lookupModel) return;
     
     setSourceActionBusy(prev => ({ ...prev, [supplierId]: true }));
@@ -220,10 +237,16 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           jobId,
-          model: lookupModel,
-          supplierId,
+          canonicalModel: lookupModel,
+          supplier: supplierId,
           task,
-          assemblyId
+          tierKey: params.tierKey,
+          searchUrl: params.searchUrl,
+          selectedAssemblies: params.selectedAssemblies,
+          pricingSource: params.pricingSource,
+          brand: manufactureInfo?.brandFamily,
+          serial: lookupSerial,
+          productType: undefined
         }),
       });
 
@@ -249,6 +272,18 @@ export default function App() {
     } finally {
       setSourceActionBusy(prev => ({ ...prev, [supplierId]: false }));
     }
+  };
+
+  const toggleAssembly = (assemblyId: string) => {
+    setResults((prev: any) => {
+      if (!prev || !prev.assemblies) return prev;
+      return {
+        ...prev,
+        assemblies: prev.assemblies.map((a: any) => 
+          a.id === assemblyId ? { ...a, selected: !a.selected } : a
+        )
+      };
+    });
   };
 
   // Poll for background job updates
@@ -292,12 +327,10 @@ export default function App() {
   const dynamicSections = useMemo(() => {
     const source = aiParts.length > 0 ? aiParts : partsData;
     const unique = Array.from(new Set(source.map(p => p.section).filter(Boolean)));
-    return unique.sort().slice(0, 10); // Show more categories if available
+    return Array.from(unique).sort();
   }, [aiParts]);
 
-  const selectedSectionLabel = useMemo(() => {
-    return selectedSection || 'All Components';
-  }, [selectedSection]);
+
 
 
 
@@ -416,6 +449,7 @@ export default function App() {
     const currentLookupModelId = normalizeModelId(lookupModel);
     if (currentLookupModelId && currentLookupModelId !== normalizedQuery) {
       setExpectedPartCount(null);
+      setSelectedSections([]); // Clear categories on model change
       expectedCountLookupModelRef.current = null;
       expectedCountRequestRef.current += 1;
     }
@@ -623,7 +657,7 @@ Focus on:
     setManufactureInfo(null);
     setValuation(null);
     setVerifiedStatus({});
-    setSelectedSection(null);
+    setSelectedSections([]);
     setSelectedPart(null);
     setCompatibilityResult(null);
     setCheckModel('');
@@ -932,8 +966,10 @@ Focus on:
         part.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         part.partNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         part.compatibleModels.some(m => m.toLowerCase().includes(searchTerm.toLowerCase()));
+      
       const matchesSection =
-        !selectedSection || part.section === selectedSection;
+        selectedSections.length === 0 || selectedSections.includes(part.section);
+      
       return matchesSearch && matchesSection;
     });
 
@@ -945,7 +981,7 @@ Focus on:
       if (sectionCompare !== 0) return sectionCompare;
       return (a.partNumber || "").localeCompare(b.partNumber || "");
     });
-  }, [searchTerm, selectedSection, aiParts, sortBy]);
+  }, [searchTerm, selectedSections, aiParts, sortBy]);
 
   const stats = useMemo(() => {
     const dataSource = aiParts.length > 0 ? aiParts : partsData;
@@ -955,7 +991,7 @@ Focus on:
       sections: dynamicSections.length,
       isAI: aiParts.length > 0
     };
-  }, [filteredParts, aiParts]);
+  }, [filteredParts, aiParts, dynamicSections]);
 
   const isBomComplete = expectedPartCount !== null && aiParts.length >= expectedPartCount;
   const completeBomLabel = isBomComplete
@@ -1126,27 +1162,87 @@ Focus on:
           <section>
 
             <nav className="flex flex-col gap-3">
-              <button
-                onClick={() => setSelectedSection(null)}
-                className={`w-full text-left px-6 py-3.5 text-lg font-semibold transition-all rounded-lg ${selectedSection === null
-                  ? 'bg-pro-navy text-white shadow-pro'
-                  : 'text-[#31507c] hover:bg-white hover:text-pro-slate-900'
-                  }`}
-              >
-                All Components
-              </button>
-              {dynamicSections.map((section) => (
-                <button
-                  key={section}
-                  onClick={() => setSelectedSection(section)}
-                  className={`w-full text-left px-6 py-3.5 text-lg font-medium transition-all rounded-lg ${selectedSection === section
-                    ? 'bg-pro-navy text-white shadow-pro'
-                    : 'text-[#31507c] hover:bg-white hover:text-pro-slate-900'
-                    }`}
-                >
-                  {section}
-                </button>
-              ))}
+              {results?.assemblies ? (
+                <>
+                  <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-slate-400 px-6 flex items-center justify-between">
+                    <span>Assembly Selector</span>
+                    <button 
+                      onClick={() => setResults(null)} 
+                      className="text-pro-blue hover:underline"
+                    >
+                      Reset to Categories
+                    </button>
+                  </div>
+                  <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {results.assemblies.map((assembly: any) => (
+                      <button
+                        key={assembly.id}
+                        onClick={() => toggleAssembly(assembly.id)}
+                        className={`w-full text-left px-5 py-3 text-sm font-medium transition-all rounded-xl border flex items-center justify-between group ${assembly.selected
+                          ? 'border-pro-blue bg-pro-blue/5 text-pro-blue shadow-sm'
+                          : 'border-pro-slate-100 bg-white text-pro-navy hover:border-pro-blue/30'
+                          }`}
+                      >
+                        <span className="truncate pr-2">{assembly.title}</span>
+                        <div className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${assembly.selected ? 'bg-pro-blue border-pro-blue' : 'border-pro-slate-200 bg-pro-slate-50'}`}>
+                          {assembly.selected && <CheckCircle2 size={10} className="text-white" />}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-4 px-2">
+                    <button
+                      onClick={() => {
+                        const selected = results.assemblies.filter((a: any) => a.selected);
+                        handleSourceAction(results.supplier, 'extract_selected_assemblies', { 
+                          selectedAssemblies: selected, 
+                          tierKey: results.tierKey,
+                          searchUrl: results.sourceUrl // Use sourceUrl as fallback
+                        });
+                      }}
+                      disabled={!results.assemblies.some((a: any) => a.selected) || sourceActionBusy[results.supplier]}
+                      className="w-full flex items-center justify-center gap-2 rounded-2xl bg-pro-blue py-4 text-sm font-black text-white shadow-pro hover:bg-pro-blue/90 disabled:opacity-50 transition-all"
+                    >
+                      <Zap size={16} className="fill-white" />
+                      GO · EXTRACT SELECTED
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setSelectedSections([])}
+                    className={`w-full text-left px-6 py-3.5 text-lg font-semibold transition-all rounded-lg ${selectedSections.length === 0
+                      ? 'bg-pro-navy text-white shadow-pro'
+                      : 'text-[#31507c] hover:bg-white hover:text-pro-slate-900'
+                      }`}
+                  >
+                    All Components
+                  </button>
+                  {dynamicSections.map((section) => {
+                    const isActive = selectedSections.includes(section);
+                    return (
+                      <button
+                        key={section}
+                        onClick={() => {
+                          setSelectedSections(prev => 
+                            prev.includes(section) 
+                              ? prev.filter(s => s !== section)
+                              : [...prev, section]
+                          );
+                        }}
+                        className={`w-full text-left px-6 py-3.5 text-lg font-medium transition-all rounded-lg ${isActive
+                          ? 'bg-pro-navy text-white shadow-pro'
+                          : 'text-[#31507c] hover:bg-white hover:text-pro-slate-900'
+                          }`}
+                      >
+                        {section}
+                      </button>
+                    );
+                  })}
+                </>
+              )}
             </nav>
           </section>
 
@@ -1426,21 +1522,36 @@ Focus on:
 
           {/* View Mode and Sorting Controls */}
           <div className="flex items-center justify-between border-y border-pro-slate-200/60 py-3">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-3 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-pro-navy shadow-sm' : 'text-pro-slate-400 hover:text-pro-slate-600'}`}
-                title="Grid view"
-              >
-                <LayoutGrid size={22} />
-              </button>
-              <button
-                onClick={() => setViewMode('table')}
-                className={`p-3 rounded-lg transition-all ${viewMode === 'table' ? 'bg-white text-pro-navy shadow-sm' : 'text-pro-slate-400 hover:text-pro-slate-600'}`}
-                title="List view"
-              >
-                <TableIcon size={22} />
-              </button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-pro-slate-400">Sort By:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="bg-transparent text-xs font-bold text-pro-navy outline-none cursor-pointer hover:text-pro-blue transition-colors uppercase"
+                >
+                  <option value="id">Default (ID)</option>
+                  <option value="rating">Top Rated</option>
+                  <option value="popularity">Most Popular</option>
+                </select>
+              </div>
+              <div className="h-4 w-px bg-pro-slate-200" />
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-pro-navy shadow-pro-md' : 'text-pro-slate-400 hover:text-pro-slate-600'}`}
+                  title="Grid view"
+                >
+                  <LayoutGrid size={20} />
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`p-2.5 rounded-lg transition-all ${viewMode === 'table' ? 'bg-white text-pro-navy shadow-pro-md' : 'text-pro-slate-400 hover:text-pro-slate-600'}`}
+                  title="List view"
+                >
+                  <TableIcon size={20} />
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center gap-4">
@@ -1487,7 +1598,7 @@ Focus on:
               onClick={() => setIsCategoryMenuOpen((open) => !open)}
               className="flex h-[76px] w-full items-center justify-between rounded-xl border border-pro-blue bg-white px-7 text-2xl font-semibold text-pro-navy shadow-sm"
             >
-              <span>{selectedSectionLabel}</span>
+              <span>{results?.assemblies ? 'Select Assemblies' : selectedSectionLabel}</span>
               <ChevronDown
                 size={24}
                 className={`transition-transform ${isCategoryMenuOpen ? 'rotate-180' : ''}`}
@@ -1496,33 +1607,80 @@ Focus on:
 
             {isCategoryMenuOpen && (
               <nav className="mt-5 rounded-xl bg-white p-4 shadow-pro-md ring-1 ring-pro-slate-100">
-                <button
-                  onClick={() => {
-                    setSelectedSection(null);
-                    setIsCategoryMenuOpen(false);
-                  }}
-                  className={`w-full text-left px-5 py-4 text-xl font-semibold transition-all rounded-lg ${selectedSection === null
-                    ? 'bg-pro-navy text-white shadow-pro'
-                    : 'text-pro-navy hover:bg-pro-slate-100'
-                    }`}
-                >
-                  All Components
-                </button>
-                {dynamicSections.map((section) => (
-                  <button
-                    key={section}
-                    onClick={() => {
-                      setSelectedSection(section);
-                      setIsCategoryMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-5 py-4 text-xl font-medium transition-all rounded-lg ${selectedSection === section
-                      ? 'bg-pro-navy text-white shadow-pro'
-                      : 'text-pro-navy hover:bg-pro-slate-100'
-                      }`}
-                  >
-                    {section}
-                  </button>
-                ))}
+                {results?.assemblies ? (
+                  <>
+                    <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar p-1">
+                      {results.assemblies.map((assembly: any) => (
+                        <button
+                          key={assembly.id}
+                          onClick={() => toggleAssembly(assembly.id)}
+                          className={`w-full text-left px-5 py-4 text-xl font-medium transition-all rounded-xl border flex items-center justify-between ${assembly.selected
+                            ? 'border-pro-blue bg-pro-blue/5 text-pro-blue'
+                            : 'border-pro-slate-100 bg-white text-pro-navy'
+                            }`}
+                        >
+                          <span className="truncate pr-4">{assembly.title}</span>
+                          <div className={`w-6 h-6 rounded border flex items-center justify-center ${assembly.selected ? 'bg-pro-blue border-pro-blue' : 'border-pro-slate-200 bg-pro-slate-50'}`}>
+                            {assembly.selected && <CheckCircle2 size={16} className="text-white" />}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-6">
+                      <button
+                        onClick={() => {
+                          const selected = results.assemblies.filter((a: any) => a.selected);
+                          handleSourceAction(results.supplier, 'extract_selected_assemblies', { 
+                            selectedAssemblies: selected, 
+                            tierKey: results.tierKey,
+                            searchUrl: results.sourceUrl
+                          });
+                          setIsCategoryMenuOpen(false);
+                        }}
+                        disabled={!results.assemblies.some((a: any) => a.selected) || sourceActionBusy[results.supplier]}
+                        className="w-full flex items-center justify-center gap-3 rounded-2xl bg-pro-blue py-5 text-xl font-black text-white shadow-pro hover:bg-pro-blue/90 disabled:opacity-50"
+                      >
+                        <Zap size={24} className="fill-white" />
+                        GO · EXTRACT SELECTED
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setSelectedSections([]);
+                      }}
+                      className={`w-full text-left px-5 py-4 text-xl font-semibold transition-all rounded-lg ${selectedSections.length === 0
+                        ? 'bg-pro-navy text-white shadow-pro'
+                        : 'text-pro-navy hover:bg-pro-slate-100'
+                        }`}
+                    >
+                      All Components
+                    </button>
+                    {dynamicSections.map((section) => {
+                      const isActive = selectedSections.includes(section);
+                      return (
+                        <button
+                          key={section}
+                          onClick={() => {
+                            setSelectedSections(prev => 
+                              prev.includes(section) 
+                                ? prev.filter(s => s !== section)
+                                : [...prev, section]
+                            );
+                          }}
+                          className={`w-full text-left px-5 py-4 text-xl font-medium transition-all rounded-lg ${isActive
+                            ? 'bg-pro-navy text-white shadow-pro'
+                            : 'text-pro-navy hover:bg-pro-slate-100'
+                            }`}
+                        >
+                          {section}
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
               </nav>
             )}
           </div>
@@ -1590,24 +1748,24 @@ Focus on:
                         <div className="grid grid-cols-3 gap-1.5">
                           <button
                             disabled={isBusy || isAILoading}
-                            onClick={() => handleSourceAction(supplier.id, 'parts_diagrams')}
+                            onClick={() => handleSourceAction(supplier.id, 'lock_supplier_target', { searchUrl: siteUrl, tierKey: SOURCE_TIERS[selectedTier].key })}
                             className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
                           >
-                            Diagrams
+                            Lock
                           </button>
                           <button
                             disabled={isBusy || isAILoading}
-                            onClick={() => handleSourceAction(supplier.id, 'parts_bom')}
+                            onClick={() => handleSourceAction(supplier.id, 'load_supplier_index', { searchUrl: siteUrl, tierKey: SOURCE_TIERS[selectedTier].key })}
                             className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
                           >
-                            BOM
+                            Load Index
                           </button>
                           <button
                             disabled={isBusy || isAILoading}
-                            onClick={() => handleSourceAction(supplier.id, 'pricing')}
+                            onClick={() => handleSourceAction(supplier.id, 'price_encompass', { tierKey: SOURCE_TIERS[selectedTier].key })}
                             className="rounded-lg bg-emerald-50 py-1.5 text-[9px] font-bold text-emerald-600 hover:bg-emerald-100 disabled:opacity-50"
                           >
-                            Pricing
+                            Price
                           </button>
                         </div>
                       </div>
@@ -1741,6 +1899,20 @@ Focus on:
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="bg-pro-slate-50 border-b border-pro-slate-200">
+                      <th className="px-4 py-3 text-left w-10">
+                        <input
+                          type="checkbox"
+                          className="rounded border-pro-slate-300 text-pro-blue focus:ring-pro-blue"
+                          checked={filteredParts.length > 0 && selectedRowIds.length === filteredParts.length}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedRowIds(filteredParts.map(p => p.partNumber));
+                            } else {
+                              setSelectedRowIds([]);
+                            }
+                          }}
+                        />
+                      </th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">OEM Identifier</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">Component Description</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest w-32">Market Cost</th>
@@ -1753,8 +1925,22 @@ Focus on:
                       <tr
                         key={`${part.partNumber}-${part.section}-${index}`}
                         onClick={() => setSelectedPart(part)}
-                        className="hover:bg-pro-slate-50 cursor-pointer transition-colors group"
+                        className={`hover:bg-pro-slate-50 cursor-pointer transition-colors group ${selectedRowIds.includes(part.partNumber) ? 'bg-pro-blue/5' : ''}`}
                       >
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            className="rounded border-pro-slate-300 text-pro-blue focus:ring-pro-blue"
+                            checked={selectedRowIds.includes(part.partNumber)}
+                            onChange={() => {
+                              setSelectedRowIds(prev => 
+                                prev.includes(part.partNumber) 
+                                  ? prev.filter(id => id !== part.partNumber)
+                                  : [...prev, part.partNumber]
+                              );
+                            }}
+                          />
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
