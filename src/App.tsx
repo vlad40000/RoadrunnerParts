@@ -1562,7 +1562,7 @@ Focus on:
                     const supplierModel = normalizeModelForSupplier({
                       supplier: supplier.id,
                       model: lookupModel,
-                      brand: manufactureInfo?.brand
+                      brand: manufactureInfo?.brandFamily
                     });
                     const siteUrl = buildSupplierSearchUrl({
                       supplier: supplier.id,
