@@ -1,15 +1,19 @@
-# Workflow State - BOM UI Restoration
+# RoadrunnerParts Workflow State
 
-## Current Status
-- [x] Multi-Select Category Filtering (Array-based)
-- [x] Row-level selection (Checkboxes)
-- [x] Manual Control Integration (Assembly Selector in Sidebar)
-- [x] API Synchronization (handleSourceAction parameters & task names)
-- [x] GO button for assembly extraction
+## High-Level Status
+- [x] Identity Extraction (OCR/Manual)
+- [x] Manual Distributor Control Panel (UI Wiring Fixed)
+- [x] Assembly Multi-Select Logic
+- [x] Granular "GO" Extraction
+- [x] Conditional Pricing Unlock Logic
+- [x] TypeScript Verification (PASSED)
+- [x] Production Build (PASSED)
 
-## Next Steps
-- Verify end-to-end extraction with the source-action-agent.
-- Monitor performance for very large assembly lists.
-- [x] Fixed TS5076 error in `source-action-agent.ts` (mixed `||` and `??` operators).
-- [x] Fixed TS2339 error in `App.tsx` (removed undefined `productType` from `manufactureInfo` payload).
-- [x] Successful compilation via `npm run typecheck` and `npm run build`.
+## Completed Milestones
+1. **System Hardening:** Resolved TS errors in `source-action-agent.ts` and `App.tsx`.
+2. **Manual Control UI:** Refactored `src/App.tsx` to correctly consume `load_supplier_index` and map supplier assemblies to the left rail.
+3. **Polling & State:** Fixed background job polling URLs and state synchronization.
+4. **Pricing Governance:** Implemented "Target Coverage" gated pricing to prevent premature pricing lookups.
+
+## Current Focus
+- Verification of the full operator workflow in a live environment.

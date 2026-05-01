@@ -62,7 +62,8 @@ import { ebaySearchUrl, ebaySoldSearchUrl } from './features/bom/services/ebay-l
 import { 
   SOURCE_TIERS, 
   normalizeModelForSupplier, 
-  buildSupplierSearchUrl 
+  buildSupplierSearchUrl,
+  supplierDisplayName
 } from './features/bom/services/source-tier-policy';
 
 const decoder = new ApplianceDecoder();
@@ -223,7 +224,7 @@ export default function App() {
     task: string, 
     params: { 
       searchUrl?: string; 
-      selectedAssemblies?: string[]; 
+      selectedAssemblies?: any[]; 
       pricingSource?: string;
       tierKey?: string;
     } = {}
@@ -255,15 +256,33 @@ export default function App() {
       }
 
       const data = await response.json();
+      
+      if (task === "load_supplier_index" && data?.result?.supplierIndex) {
+        const supplierIndex = data.result.supplierIndex;
+        setResults((prev: any) => ({
+          ...(prev || {}),
+          supplier: supplierId,
+          tierKey: params.tierKey,
+          sourceUrl: params.searchUrl,
+          supplierIndex,
+          assemblies: supplierIndex.assemblies.map((assembly: any) => ({
+            ...assembly,
+            selected: false,
+          })),
+        }));
+        return;
+      }
+
       if (data.jobId) {
         setJobId(data.jobId);
         // Initial fetch of job state
-        const statusRes = await fetch(`/api/bom/jobs?id=${data.jobId}`);
+        const statusRes = await fetch(`/api/bom/jobs/${data.jobId}`);
         const jobData = await statusRes.json();
-        if (jobData) {
-          setJobStage(jobData.stage);
-          setJobStatus(jobData.status);
-          setResults(jobData.result || null);
+        const job = jobData.job;
+        if (job) {
+          setJobStage(job.stage);
+          setJobStatus(job.status);
+          setResults(job.result || null);
         }
       }
     } catch (err) {
@@ -292,19 +311,21 @@ export default function App() {
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/bom/jobs?id=${jobId}`);
+        const res = await fetch(`/api/bom/jobs/${jobId}`);
         if (!res.ok) return;
         const jobData = await res.json();
+        const job = jobData.job;
+        if (!job) return;
         
-        setJobStage(jobData.stage);
-        setJobStatus(jobData.status);
-        if (jobData.result) {
-          setResults(jobData.result);
+        setJobStage(job.stage);
+        setJobStatus(job.status);
+        if (job.result) {
+          setResults(job.result);
           // If we have new parts, sync them to aiParts
-          if (Array.isArray(jobData.result.parts) && jobData.result.parts.length > 0) {
+          if (Array.isArray(job.result.parts) && job.result.parts.length > 0) {
             setAIParts(prev => {
               const seen = new Set(prev.map(p => p.partNumber));
-              const newParts = jobData.result.parts.filter((p: any) => !seen.has(p.partNumber));
+              const newParts = job.result.parts.filter((p: any) => !seen.has(p.partNumber));
               if (newParts.length === 0) return prev;
               return [...prev, ...newParts];
             });
@@ -994,6 +1015,15 @@ Focus on:
   }, [filteredParts, aiParts, dynamicSections]);
 
   const isBomComplete = expectedPartCount !== null && aiParts.length >= expectedPartCount;
+  
+  const selectedExpected = useMemo(() => {
+    if (!results?.assemblies) return 0;
+    return results.assemblies
+      .filter((a: any) => a.selected)
+      .reduce((sum: number, a: any) => sum + (a.overrideCount ?? a.supplierCount ?? 0), 0);
+  }, [results?.assemblies]);
+
+  const pricingUnlocked = selectedExpected > 0 && aiParts.length >= selectedExpected;
   const completeBomLabel = isBomComplete
     ? `All ${expectedPartCount} Parts Found`
     : expectedPartCount !== null && aiParts.length > 0
@@ -1714,63 +1744,110 @@ Focus on:
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {SOURCE_TIERS[selectedTier]?.suppliers.map((supplier) => {
-                    const busyKey = `${supplier.id}`;
-                    const isBusy = sourceActionBusy[busyKey];
-                    const supplierModel = normalizeModelForSupplier({
-                      supplier: supplier.id,
-                      model: lookupModel,
-                      brand: manufactureInfo?.brandFamily
-                    });
-                    const siteUrl = buildSupplierSearchUrl({
-                      supplier: supplier.id,
-                      formattedModel: supplierModel,
-                      canonicalModel: lookupModel
-                    });
+                  {(() => {
+                    const TIER_KEYS = ["tier0", "tier1", "tier2", "tier3"] as const;
+                    const activeTierKey = TIER_KEYS[selectedTier];
+                    const activeTier = SOURCE_TIERS[activeTierKey];
 
-                    return (
-                      <div key={supplier.id} className="rounded-xl border border-pro-slate-100 p-3 bg-white hover:border-pro-blue/20 transition-all">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-[11px] font-black text-pro-navy uppercase truncate pr-2">
-                            {supplier.name}
-                          </span>
-                          <a 
-                            href={siteUrl} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="text-pro-slate-300 hover:text-pro-blue"
-                            title="Open direct site"
-                          >
-                            <ExternalLink size={12} />
-                          </a>
+                    return activeTier?.suppliers.map((supplierId) => {
+                      const supplierName = supplierDisplayName(supplierId);
+                      const busyKey = `${supplierId}`;
+                      const isBusy = sourceActionBusy[busyKey];
+                      const supplierModel = normalizeModelForSupplier({
+                        supplier: supplierId,
+                        model: lookupModel,
+                        brand: manufactureInfo?.brandFamily
+                      });
+                      const siteUrl = buildSupplierSearchUrl({
+                        supplier: supplierId,
+                        formattedModel: supplierModel,
+                        canonicalModel: lookupModel
+                      });
+
+                      return (
+                        <div key={supplierId} className="rounded-xl border border-pro-slate-100 p-3 bg-white hover:border-pro-blue/20 transition-all">
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-[11px] font-black text-pro-navy uppercase truncate pr-2">
+                              {supplierName}
+                            </span>
+                            <a 
+                              href={siteUrl} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              className="text-pro-slate-300 hover:text-pro-blue"
+                              title="Open direct site"
+                            >
+                              <ExternalLink size={12} />
+                            </a>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-1.5">
+                            <button
+                              disabled={isBusy || isAILoading}
+                              onClick={() => handleSourceAction(supplierId, 'lock_supplier_target', { searchUrl: siteUrl, tierKey: activeTierKey })}
+                              className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
+                            >
+                              Lock
+                            </button>
+                            <button
+                              disabled={isBusy || isAILoading}
+                              onClick={() => handleSourceAction(supplierId, 'load_supplier_index', { searchUrl: siteUrl, tierKey: activeTierKey })}
+                              className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
+                            >
+                              Load Index
+                            </button>
+                          </div>
                         </div>
-                        
-                        <div className="grid grid-cols-3 gap-1.5">
-                          <button
-                            disabled={isBusy || isAILoading}
-                            onClick={() => handleSourceAction(supplier.id, 'lock_supplier_target', { searchUrl: siteUrl, tierKey: SOURCE_TIERS[selectedTier].key })}
-                            className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
-                          >
-                            Lock
-                          </button>
-                          <button
-                            disabled={isBusy || isAILoading}
-                            onClick={() => handleSourceAction(supplier.id, 'load_supplier_index', { searchUrl: siteUrl, tierKey: SOURCE_TIERS[selectedTier].key })}
-                            className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
-                          >
-                            Load Index
-                          </button>
-                          <button
-                            disabled={isBusy || isAILoading}
-                            onClick={() => handleSourceAction(supplier.id, 'price_encompass', { tierKey: SOURCE_TIERS[selectedTier].key })}
-                            className="rounded-lg bg-emerald-50 py-1.5 text-[9px] font-bold text-emerald-600 hover:bg-emerald-100 disabled:opacity-50"
-                          >
-                            Price
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
+                </div>
+
+                {/* Pricing Unlock Section */}
+                <div className="mt-4 pt-4 border-t border-pro-slate-100">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-pro-slate-400">Target Coverage</span>
+                      <span className="text-xs font-bold text-pro-navy">
+                        {aiParts.length} / {selectedExpected || 0} parts found
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        disabled={!pricingUnlocked || sourceActionBusy['encompass-family']}
+                        onClick={() => handleSourceAction('encompass-family', 'price_encompass', { tierKey: 'tier1' })}
+                        className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                          pricingUnlocked 
+                            ? 'bg-emerald-600 text-white shadow-pro hover:bg-emerald-700' 
+                            : 'bg-pro-slate-100 text-pro-slate-400 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        Run Encompass Pricing
+                      </button>
+                      <button
+                        disabled={!pricingUnlocked || sourceActionBusy['partsdr']}
+                        onClick={() => handleSourceAction('partsdr', 'price_backup_1', { tierKey: 'tier1' })}
+                        className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                          pricingUnlocked 
+                            ? 'bg-emerald-600 text-white shadow-pro hover:bg-emerald-700' 
+                            : 'bg-pro-slate-100 text-pro-slate-400 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        Run Backup 1 Pricing
+                      </button>
+                      <button
+                        disabled={!pricingUnlocked || sourceActionBusy['appliancepartspros']}
+                        onClick={() => handleSourceAction('appliancepartspros', 'price_backup_2', { tierKey: 'tier1' })}
+                        className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                          pricingUnlocked 
+                            ? 'bg-emerald-600 text-white shadow-pro hover:bg-emerald-700' 
+                            : 'bg-pro-slate-100 text-pro-slate-400 cursor-not-allowed opacity-60'
+                        }`}
+                      >
+                        Run Backup 2 Pricing
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {jobId && (
