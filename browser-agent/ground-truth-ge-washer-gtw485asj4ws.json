@@ -1,0 +1,66 @@
+{
+  "model": "GTW485ASJ4WS",
+  "brand": "GE",
+  "type": "Top-Load Washer",
+  "portal_routing_rules": {
+    "authoritative_domains": [
+      "geapplianceparts.com",
+      "encompass.com",
+      "searspartsdirect.com"
+    ],
+    "excluded_domains": [
+      "bosch-home.com",
+      "lgparts.com",
+      "samsungparts.com",
+      "hisense.encompass.com"
+    ],
+    "subdomain_logic": "GE models must be searched on primary encompass.com or ge.encompass.com. Never search Hisense, LG, or Samsung subdomains for GTW prefixes."
+  },
+  "verified_oem_parts": [
+    {
+      "partNumber": "WH01X24180",
+      "description": "Drive Belt",
+      "confidence": "high"
+    },
+    {
+      "partNumber": "WH16X26911",
+      "description": "Suspension Rod & Spring Assembly",
+      "confidence": "high"
+    },
+    {
+      "partNumber": "WH23X28418",
+      "description": "Drain Pump & Motor Assembly",
+      "confidence": "high"
+    },
+    {
+      "partNumber": "WH13X26535",
+      "description": "Water Inlet Valve",
+      "confidence": "high"
+    },
+    {
+      "partNumber": "WH05X24435",
+      "description": "Mode Shifter",
+      "confidence": "high"
+    },
+    {
+      "partNumber": "WH08X37938",
+      "description": "Lid Lock Service Kit",
+      "confidence": "high"
+    },
+    {
+      "partNumber": "WH08X32657",
+      "description": "Lid Lock Assembly",
+      "confidence": "high"
+    },
+    {
+      "partNumber": "WH01X24114",
+      "description": "Lid Lock Assembly (Alternate)",
+      "confidence": "high"
+    }
+  ],
+  "search_queries": [
+    "site:geapplianceparts.com \"GTW485ASJ4WS\"",
+    "site:encompass.com \"GTW485ASJ4WS\"",
+    "site:searspartsdirect.com \"GTW485ASJ4WS\""
+  ]
+}
