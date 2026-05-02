@@ -87,11 +87,14 @@ export async function resolveEncompassExplodedViewUrl(input: {
     normalizedModel,
     selected: {
       ...rows[0],
+      url: rows[0].url.startsWith("http") ? rows[0].url : `https://encompass.com${rows[0].url.startsWith("/") ? "" : "/"}${rows[0].url}`,
       family: ENCOMPASS_FAMILIES[rows[0].encompass_route || ""] || "Unknown tree",
     },
     candidates: rows.map(r => ({
       ...r,
+      url: r.url.startsWith("http") ? r.url : `https://encompass.com${r.url.startsWith("/") ? "" : "/"}${r.url}`,
       family: ENCOMPASS_FAMILIES[r.encompass_route || ""] || "Unknown tree",
     })),
+
   };
 }
