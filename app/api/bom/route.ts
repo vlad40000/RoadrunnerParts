@@ -289,7 +289,7 @@ If a part does not fit any section, use the closest match — never omit a part 
       console.log('[BOM API] AI call completed in ms:', elapsedMs(aiCallStartedAt));
     } catch (aiError) {
       const aiMessage = aiError instanceof Error ? aiError.message : String(aiError);
-      const looksLike timeout = /aborted|timeout/i.test(aiMessage);
+      const looksLikeTimeout = /aborted|timeout/i.test(aiMessage);
       if (looksLikeTimeout) {
         console.warn('[BOM API] AI call deadline exceeded at ms:', elapsedMs(aiCallStartedAt));
         return NextResponse.json(

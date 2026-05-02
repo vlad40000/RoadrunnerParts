@@ -24,15 +24,6 @@ function extractPrice(text) {
   return parseFloat(match[1].replace(/,/g, ''));
 }
 
-const PART_RE = /\b(?:WE|WH|WR|WD|WB|WZ|31-|39-|[A-Z]{1,3}\d{4,10})[A-Z0-9\-]*\b/gi;
-const PRICE_RE = /\$\s*([0-9]{1,4}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/;
-
-function extractPrice(text) {
-  if (!text) return null;
-  const match = text.match(PRICE_RE);
-  if (!match) return null;
-  return parseFloat(match[1].replace(/,/g, ''));
-}
 
 /**
  * Encompass Visual Supervisor
