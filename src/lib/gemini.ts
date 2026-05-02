@@ -523,17 +523,17 @@ export async function extractNameplateFromImage(imageData, mimeType) {
     required: ['modelNumber', 'serialNumber', 'brand', 'productType', 'confidence'],
   };
 
-  const prompt = `Extract appliance identity from the attached nameplate image.
+  const prompt = `System Role: Act as an expert OCR and appliance data extraction system.
+Task: Extract the appliance identity from the provided nameplate image.
 
-Look for labels such as MODEL NO., MODEL NUMBER, MODEL, M/N, MOD, MODELO, SERIAL NO., SERIAL NUMBER, SERIAL, S/N, SER, and SERIE.
-
-Rules:
-1. Preserve punctuation exactly in model and serial values, including slashes, hyphens, and dots.
-2. Be careful with similar characters like 0/O, 1/I, and 8/B.
-3. Keep important suffixes such as Samsung /A2 or /XAA.
-4. Keep Kenmore-style dots such as 110.12345678.
-
-Return structured JSON and use null when a field is not confidently present.`;
+Step-by-Step Instructions:
+1. Scan the image to identify the overall brand name and product type (e.g., Washing Machine, Refrigerator).
+2. Locate the model and serial numbers by searching for specific labels, such as: MODEL NO., MODEL NUMBER, MODEL, M/N, MOD, MODELO, SERIAL NO., SERIAL NUMBER, SERIAL, S/N, SER, and SERIE.
+3. Extract the exact string values based on these critical rules:
+   - Preserve punctuation exactly, including all slashes, hyphens, and dots.
+   - Keep Kenmore-style dots (e.g., 110.12345678) and important suffixes (e.g., Samsung /A2 or /XAA).
+   - Pay extremely close attention to similar characters to avoid mix-ups (0 vs. O, 1 vs. I, 8 vs. B).
+4. Format the output strictly as a JSON object mirroring the provided schema. Use null when a field is not confidently present in the image.`;
 
   const { data } = await generateStructuredJson({
     model: 'gemini-3-flash-preview',

@@ -19,6 +19,9 @@ import {
   ShoppingBag,
   Receipt,
   Search,
+  FileSpreadsheet,
+  FileJson,
+  Printer,
 } from "lucide-react";
 import { EncompassSupervisorPanel } from "./encompass-supervisor-panel";
 import { SupplierAgentMatrix } from "./supplier-agent-matrix";
@@ -664,6 +667,59 @@ export function BomWorkflowControlPanel({
                     <h3 className="text-xs font-black uppercase tracking-[0.1em] text-neutral-900">Discovered Bill of Materials</h3>
                     <p className="text-[10px] font-bold text-neutral-400">{finalRows.length} parts found across all agents</p>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (finalRows.length === 0) return;
+                      const blob = new Blob([JSON.stringify(finalRows, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", `BOM_${normalizedModel}.json`);
+                      link.click();
+                    }}
+                    disabled={finalRows.length === 0}
+                    className="flex h-8 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-neutral-600 transition-all hover:bg-neutral-50 disabled:opacity-50"
+                  >
+                    <FileJson size={14} />
+                    JSON
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (finalRows.length === 0) return;
+                      const headers = ["partNumber", "description", "source"];
+                      const csvContent = [
+                        headers.join(","),
+                        ...finalRows.map(row => {
+                          const pn = getBomRowPartNumber(row as any);
+                          const desc = (row.description || row.partName || "Unknown").toString().replace(/,/g, " ");
+                          const source = (row.source || row.provider || "Aggregated").toString().replace(/,/g, " ");
+                          return [pn, desc, source].join(",");
+                        })
+                      ].join("\n");
+                      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement("a");
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", `BOM_${normalizedModel}.csv`);
+                      link.click();
+                    }}
+                    disabled={finalRows.length === 0}
+                    className="flex h-8 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-neutral-600 transition-all hover:bg-neutral-50 disabled:opacity-50"
+                  >
+                    <FileSpreadsheet size={14} />
+                    CSV
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    disabled={finalRows.length === 0}
+                    className="flex h-8 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-neutral-600 transition-all hover:bg-neutral-50 disabled:opacity-50"
+                  >
+                    <Printer size={14} />
+                    PRINT
+                  </button>
                 </div>
               </div>
               

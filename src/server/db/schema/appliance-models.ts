@@ -27,6 +27,7 @@ export const applianceModels = pgTable("appliance_model", {
   partsComplete: boolean("parts_complete").notNull().default(false),
   pricingComplete: boolean("pricing_complete").notNull().default(false),
 
+  diagramParse: jsonb("diagram_parse"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 }, (table) => {

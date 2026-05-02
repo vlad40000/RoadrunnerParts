@@ -3,8 +3,10 @@ import crypto from "crypto";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/src/server/db";
 import { bomJobs } from "@/src/server/db/schema/bom-jobs";
+import { applianceModels } from "@/src/server/db/schema/appliance-models";
 import { normalizeBomStatus } from "../core/bom-status";
 import { uploadSourceEvidence } from "./blob-store";
+import { normalizeCanonicalModel } from "./source-tier-policy";
 
 export type UploadedBomFile = {
   url: string;
@@ -17,7 +19,6 @@ export type UploadedBomFile = {
 
 export async function createBomJob() {
   const id = crypto.randomUUID();
-
   await db
     .insert(bomJobs)
     .values({
@@ -391,12 +392,27 @@ export async function saveBomVisualTruth(
   if (!job) throw new Error("BOM job not found");
 
   const diagramParse = (job.diagramParse as Record<string, unknown>) || {};
+  const finalDiagramParse = {
+    ...diagramParse,
+    visualTruth,
+  };
+  
   await saveBomArtifacts(jobId, {
-    diagramParse: {
-      ...diagramParse,
-      visualTruth,
-    },
+    diagramParse: finalDiagramParse,
   });
+
+  // ✅ DISCOVERY FEEDBACK: Update the master appliance_model with the discovered sections
+  if (job.model) {
+    const normalized = normalizeCanonicalModel(job.model);
+    await db
+      .update(applianceModels)
+      .set({
+        diagramParse: finalDiagramParse,
+        updatedAt: new Date(),
+      })
+      .where(eq(applianceModels.normalizedModel, normalized))
+      .catch(err => console.error(`[JobStore] Failed to update master model ${normalized}:`, err));
+  }
 }
 
 export async function getBomVisualTruth(jobId: string) {

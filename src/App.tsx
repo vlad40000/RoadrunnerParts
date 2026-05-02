@@ -113,25 +113,128 @@ const cropImage = async (base64: string, mimeType: string, factor = 0.8): Promis
 const normalizeModelId = (value?: string | null) => (value || '').toUpperCase().trim();
 
 export default function App() {
+'use client';
+
+/**
+ * RoadrunnerParts
+ * A premium BOM intelligence dashboard for appliance parts lookup and diagnostics.
+ */
+
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Search,
+  ChevronRight,
+  X,
+  Package,
+  Shield,
+  ClipboardList,
+
+  CheckCircle2,
+  XCircle,
+  Star,
+  User,
+  LogOut,
+  MessageSquare,
+  AlertCircle,
+  Camera,
+  Loader2,
+  Scan,
+  LayoutGrid,
+  List as TableIcon,
+  Download,
+  Printer,
+  BrainCircuit,
+  Settings,
+  Zap,
+  ChevronDown,
+  MapPin,
+  Video,
+  FileJson,
+  FileSpreadsheet,
+  Mic,
+  MicOff,
+  Send,
+  Sparkles,
+  Image as ImageIcon
+} from 'lucide-react';
+import { partsData, Part } from './partsData';
+
+import { ApplianceDecoder, DecodeResult } from './lib/decoder';
+import { computeCurrentMarketValue, ApplianceCondition, ValuationResult } from './lib/valuation';
+
+const decoder = new ApplianceDecoder();
+const approvedPriceSources = ['encompass.com', 'searspartsdirect.com', 'fix.com'];
+
+const normalizePriceSource = (value?: string | null) => {
+  const source = (value || '').trim().toLowerCase();
+  const matched = approvedPriceSources.find((approved) => source.includes(approved)) || '';
+  if (value && !matched && value.includes('immigration')) {
+    console.warn('DEBUG: Blocked suspicious price source:', value);
+  }
+  return matched;
+};
+
+const hasApprovedPrice = (part: Part) => {
+  const normalizedSource = normalizePriceSource(part.priceSource);
+  const isApproved = typeof part.price === 'number' && part.price > 0 && Boolean(normalizedSource);
+  return isApproved;
+};
+
+/**
+ * Image processing helpers for the OCR rescue pipeline.
+ */
+const rotateImage = async (base64: string, mimeType: string, degrees: number): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(base64); return; }
+      if (degrees === 90 || degrees === 270) {
+        canvas.width = img.height;
+        canvas.height = img.width;
+      } else {
+        canvas.width = img.width;
+        canvas.height = img.height;
+      }
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate((degrees * Math.PI) / 180);
+      ctx.drawImage(img, -img.width / 2, -img.height / 2);
+      resolve(canvas.toDataURL(mimeType).split(',')[1]);
+    };
+    img.src = `data:${mimeType};base64,${base64}`;
+  });
+};
+
+const cropImage = async (base64: string, mimeType: string, factor = 0.8): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(base64); return; }
+      const w = img.width * factor;
+      const h = img.height * factor;
+      canvas.width = w;
+      canvas.height = h;
+      ctx.drawImage(img, (img.width - w) / 2, (img.height - h) / 2, w, h, 0, 0, w, h);
+      resolve(canvas.toDataURL(mimeType).split(',')[1]);
+    };
+    img.src = `data:${mimeType};base64,${base64}`;
+  });
+};
+
+const normalizeModelId = (value?: string | null) => (value || '').toUpperCase().trim();
+
+export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [bomPassCount, setBomPassCount] = useState(0);
   const [expectedPartCount, setExpectedPartCount] = useState<number | null>(null);
 
-
-
-
-
-  // Compatibility state
-  const [checkModel, setCheckModel] = useState('');
-  const [compatibilityResult, setCompatibilityResult] = useState<{
-    isCompatible: boolean;
-    suggestions: Part[];
-  } | null>(null);
-
-
-
+  // Search & Results State
   const [isScanning, setIsScanning] = useState(false);
   const [isAILoading, setIsAILoading] = useState(false);
   const [aiParts, setAIParts] = useState<Part[]>([]);
@@ -141,13 +244,24 @@ export default function App() {
   const [manufactureInfo, setManufactureInfo] = useState<DecodeResult | null>(null);
   const [applianceCondition, setApplianceCondition] = useState<ApplianceCondition>('good');
   const [valuation, setValuation] = useState<ValuationResult | null>(null);
+  const [modelMetadata, setModelMetadata] = useState<any>(null);
   const [scanType, setScanType] = useState<'search' | 'compatibility' | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [sortBy, setSortBy] = useState<'id' | 'rating' | 'popularity'>('id');
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(true);
 
+  // Compatibility State
+  const [checkModel, setCheckModel] = useState('');
+  const [compatibilityResult, setCompatibilityResult] = useState<{
+    isCompatible: boolean;
+    suggestions: Part[];
+  } | null>(null);
+
   const dynamicSections = useMemo(() => {
+    if (modelMetadata?.diagramParse?.visualTruth?.assemblyNames) {
+      return modelMetadata.diagramParse.visualTruth.assemblyNames.slice(0, 8);
+    }
     const source = aiParts.length > 0 ? aiParts : partsData;
     const unique = Array.from(new Set(source.map(p => p.section).filter(Boolean)));
     const preferredOrder = [
@@ -158,7 +272,6 @@ export default function App() {
       'Optional / Installation Parts',
       'Top and Cabinet Parts',
     ];
-
     return unique
       .sort((a, b) => {
         const ai = preferredOrder.indexOf(a);
@@ -168,8 +281,8 @@ export default function App() {
         }
         return a.localeCompare(b);
       })
-      .slice(0, 6);
-  }, [aiParts]);
+      .slice(0, 8);
+  }, [aiParts, modelMetadata]);
 
   const selectedSectionLabel = useMemo(() => {
     if (selectedSections.length === 0) return 'All Components';
@@ -198,6 +311,34 @@ export default function App() {
   const [isDiagLoading, setIsDiagLoading] = useState(false);
   const [showDiagPanel, setShowDiagPanel] = useState(false);
   const [isMainDiagOpen, setIsMainDiagOpen] = useState(false);
+
+  const handleDeepDiagnostic = async () => {
+    if (!diagQuery) return;
+    setIsDiagLoading(true);
+    setDiagResult(null);
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'diagnose',
+          query: diagQuery,
+          model: lookupModel || 'Not Specified'
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Diagnostic engine failed');
+      }
+      const result = await response.json();
+      setDiagResult(result || "No diagnostic results found.");
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : "Diagnostic engine failed. Please try again.");
+    } finally {
+      setIsDiagLoading(false);
+    }
+  };
 
   // Video state
   const [isVideoLoading, setIsVideoLoading] = useState(false);
@@ -253,6 +394,32 @@ export default function App() {
       setIsDiagLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!lookupModel) {
+      setModelMetadata(null);
+      return;
+    }
+
+    const fetchMetadata = async () => {
+      try {
+        const res = await fetch(`/api/bom/model-details?model=${encodeURIComponent(lookupModel)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setModelMetadata(data);
+          
+          // Also set expected count if available
+          if (data.trustedTotalPartCount) {
+            setExpectedPartCount(data.trustedTotalPartCount);
+          }
+        }
+      } catch (err) {
+        console.error('[App] Failed to fetch model metadata:', err);
+      }
+    };
+
+    fetchMetadata();
+  }, [lookupModel]);
 
   const buildBomPrompt = (query: string, isExhaustive: boolean, passNumber: number, currentKnownPartNumbers: string[]) => {
     let passInstruction = "";
@@ -365,83 +532,12 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     const query = modelToSearch || searchTerm;
     if (!query || query.length < 3) return;
 
-    const normalizedQuery = normalizeModelId(query);
-    const currentSerial = serialToSearch || lookupSerial;
-    const manufactureDate = manufactureInfo?.manufactureYear
-      ? `${manufactureInfo.manufactureYear}-${manufactureInfo.timeValue?.value || "01"}`
-      : null;
-
-    const currentLookupModelId = normalizeModelId(lookupModel);
-    if (currentLookupModelId && currentLookupModelId !== normalizedQuery) {
-      setExpectedPartCount(null);
-      expectedCountLookupModelRef.current = null;
-      expectedCountRequestRef.current += 1;
-    }
-
-    const existingParts = [...aiParts];
-    const existingPartNumbers = existingParts
-      .map((p) => (p.partNumber || "").toUpperCase().trim())
-      .filter(Boolean);
-
-    const passNumber = existingParts.length > 0 ? bomPassCount + 1 : 1;
-    const requestPayload = {
-      model: query,
-      normalizedQuery,
-      serial: currentSerial || null,
-      manufactureDate,
-      passNumber,
-      knownPartNumbers: existingPartNumbers,
-      isExhaustive,
-      expectedPartCount,
-      existingParts,
-    };
-
-    const shouldFetchExpectedCount =
-      isExhaustive &&
-      expectedPartCount === null &&
-      expectedCountLookupModelRef.current !== normalizedQuery;
-
-    if (shouldFetchExpectedCount) {
-      expectedCountLookupModelRef.current = normalizedQuery;
-      const requestId = ++expectedCountRequestRef.current;
-
-      fetch('/api/bom/expected-count', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: normalizedQuery,
-          serial: currentSerial || null,
-        }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`Expected count lookup failed (${res.status}): ${errorText}`);
-          }
-
-          return res.json();
-        })
-        .then((result) => {
-          if (requestId !== expectedCountRequestRef.current) return;
-          if (expectedCountLookupModelRef.current !== normalizedQuery) return;
-
-          const total = Number(result?.expectedPartsTotal || 0);
-          setExpectedPartCount(total > 0 ? total : null);
-        })
-        .catch((error) => {
-          console.warn('Expected part count lookup failed:', error);
-          if (requestId === expectedCountRequestRef.current) {
-            expectedCountLookupModelRef.current = null;
-          }
-        });
-    }
-
-    setPendingBomPrompt('');
-    setPendingBomRequest(requestPayload);
-    setIsPromptReviewOpen(true);
+    // REDIRECT TO THE AWESOME DASHBOARD (Modern Engine)
+    const url = `/bom-workflow?model=${encodeURIComponent(query)}${serialToSearch || lookupSerial ? `&serial=${encodeURIComponent(serialToSearch || lookupSerial)}` : ""}`;
+    window.location.href = url;
   };
 
-  const runApprovedBomPrompt = async (requestPayload: NonNullable<typeof pendingBomRequest>, promptText: string) => {
+  const runApprovedBomPrompt = async (requestPayload: any, promptText: string) => {
     setIsAILoading(true);
     try {
       const response = await fetch('/api/bom', {
@@ -980,6 +1076,13 @@ Sort the final JSON alphabetically by part_name before outputting.`;
           <section>
 
             <nav className="flex flex-col gap-3">
+              <a
+                href="/bom-workflow"
+                className="w-full flex items-center gap-3 px-6 py-4 text-sm font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all rounded-lg border border-emerald-200 mb-4 shadow-sm"
+              >
+                <Zap size={18} className="fill-emerald-600" />
+                COMMAND CONSOLE
+              </a>
               <button
                 onClick={() => setSelectedSections([])}
                 className={`w-full text-left px-6 py-3.5 text-lg font-semibold transition-all rounded-lg ${selectedSections.length === 0
