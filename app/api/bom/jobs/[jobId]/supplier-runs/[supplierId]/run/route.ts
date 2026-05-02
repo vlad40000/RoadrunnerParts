@@ -8,18 +8,36 @@ import {
   saveBomSupplierRunResult,
   updateBomJobSummary,
 } from "@/features/bom/services/job-store";
+import {
+  normalizeSupplierId,
+  type ManualSourceActionTask,
+} from "@/features/bom/services/source-tier-policy";
 
 type Params = { params: Promise<{ jobId: string; supplierId: string }> };
 
+function positiveNumber(value: unknown) {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value.trim())
+        : NaN;
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 export async function POST(_req: NextRequest, { params }: Params) {
-  const { jobId, supplierId } = await params;
+  const { jobId, supplierId: rawSupplierId } = await params;
+  const supplierId = normalizeSupplierId(rawSupplierId);
   const job = await getBomJob(jobId);
   if (!job) return NextResponse.json({ ok: false, error: "Job not found" }, { status: 404 });
   if (!String(job.model || "").trim()) {
     return NextResponse.json({ ok: false, error: "Persisted model is required before supplier runs." }, { status: 400 });
   }
 
-  const supplierRun = await getBomSupplierRun(jobId, supplierId);
+  const supplierRun =
+    (await getBomSupplierRun(jobId, supplierId)) ||
+    (supplierId !== rawSupplierId ? await getBomSupplierRun(jobId, rawSupplierId) : null);
   const input = (supplierRun?.input as Record<string, unknown> | undefined) || null;
   if (!input) {
     return NextResponse.json({ ok: false, error: "Persisted supplier run input is required before run." }, { status: 400 });
@@ -43,16 +61,30 @@ export async function POST(_req: NextRequest, { params }: Params) {
       );
     }
   }
+  const supplier = normalizeSupplierId(String(input.supplier || supplierId));
+  const task = String(input.task || "run_supplier_agent") as ManualSourceActionTask;
+  const expectedTotalSource = String(input.expectedTotalSource || "");
+  const inputExpectedTotal = positiveNumber(input.expectedTotalUsed ?? input.expectedTotal);
+  const expectedTotal =
+    input.includeExpectedCount !== false
+      ? positiveNumber(visualTruth?.expectedTotal) ??
+        (expectedTotalSource === "operator" || expectedTotalSource === "visual_truth"
+          ? inputExpectedTotal
+          : null)
+      : null;
 
   const runningInput = {
     ...input,
+    task,
+    supplierId,
+    supplier,
     status: "running",
     startedAt: new Date().toISOString(),
   };
   await saveBomSupplierRunInput(jobId, supplierId, runningInput);
   await updateBomJobSummary(jobId, {
     jobStage: `supplier_run_${supplierId}_running`,
-    sourceStrategy: `manual-distributor-control:${String(input.tierKey || "tier0")}:${String(input.supplier || supplierId)}:${String(input.task || "load_supplier_index")}`,
+    sourceStrategy: `manual-distributor-control:${String(input.tierKey || "tier0")}:${supplier}:${task}`,
     bomComplete: false,
   });
 
@@ -61,9 +93,9 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
     const result = await runSourceActionAgent({
       jobId,
-      task: String(input.task || "load_supplier_index") as any,
+      task,
       tierKey: String(input.tierKey || "tier0"),
-      supplier: String(input.supplier || supplierId),
+      supplier,
       canonicalModel: String(job.model || ""),
       formattedModel: String(input.normalizedModel || job.model || ""),
       searchUrl: String(input.searchUrl || input.sourceUrl || ""),
@@ -79,11 +111,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
                   : visualTruth?.screenshotBase64 || ""),
             ),
             canonUrl: String(visualTruth?.canonUrl || ""),
-            expectedTotal:
-              input.includeExpectedCount !== false &&
-              typeof visualTruth?.expectedTotal === "number"
-                ? visualTruth.expectedTotal
-                : null,
+            expectedTotal,
             assemblyNames: Array.isArray(visualTruth?.assemblyNames)
               ? visualTruth.assemblyNames
               : [],

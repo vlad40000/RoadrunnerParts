@@ -2,6 +2,10 @@ import 'server-only';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+import { db } from '../server/db';
+import { nameplateExtractions, applianceModels } from '../server/db/schema/appliance-models';
+import { eq, or } from 'drizzle-orm';
+
 const apiKey = process.env.GEMINI_API_KEY;
 
 const DEFAULT_GEMINI_MODEL = 'gemini-3-flash-preview';
@@ -42,6 +46,14 @@ function safeJsonParse(text, fallback) {
     console.error('JSON parse error', error, text);
     return fallback;
   }
+}
+
+/**
+ * Normalizes a model number for consistent database and cache lookup.
+ */
+function normalizeModelKey(model: string): string {
+  if (!model) return '';
+  return model.toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
 function toPart(item) {
@@ -175,7 +187,10 @@ export async function generateText({
     const result = await generativeModel.generateContent({
       contents: normalizeContents(contents),
       generationConfig: generationConfigFinal,
-      tools: tools || [],
+    tools: [
+      ...(tools || []),
+      { codeExecution: {} }
+    ],
     });
 
     const response = await result.response;
@@ -234,10 +249,10 @@ export async function generateStructuredJson({
 }
 
 
-function parseRootDomain(value) {
+function parseRootDomain(url: any) {
   try {
-    const url = String(value || '').trim().toLowerCase();
-    const cleanUrl = url.startsWith('http') ? url : `https://${url}`;
+    const s = String(url || '').trim().toLowerCase();
+    const cleanUrl = s.startsWith('http') ? s : `https://${s}`;
     const hostname = new URL(cleanUrl).hostname.replace(/^www\./, '');
     return hostname || 'unknown';
   } catch {
@@ -460,6 +475,29 @@ export async function extractIdentityFromManualPdf(pdfData, fileName = 'manual.p
     },
   });
 
+  // Discovery: File the model number correctly
+  if (data.modelNumber) {
+    const rawModel = data.modelNumber.trim();
+    const normalized = normalizeModelKey(rawModel);
+    
+    // 1. Log extraction telemetry (Contextual/Instance data)
+    await db.insert(nameplateExtractions).values({
+      modelNumber: rawModel,
+      brand: data.brand,
+      productType: data.productType,
+      rawResult: data,
+      sourceType: 'pdf'
+    }).catch(err => console.error('[Discovery] PDF extraction log failed:', err));
+
+    // 2. "Model Numbers with Model Numbers" - Seed master blueprint
+    await db.insert(applianceModels).values({
+      normalizedModel: normalized,
+      brand: data.brand,
+      applianceType: data.productType,
+    }).onConflictDoNothing()
+      .catch(err => console.error('[Discovery] Model seeding failed:', err));
+  }
+
   return data;
 }
 
@@ -513,13 +551,36 @@ Return structured JSON and use null when a field is not confidently present.`;
     fallback: { modelNumber: null, serialNumber: null, brand: null, productType: null, confidence: {} },
   });
 
+  // Discovery: File the model number correctly
+  if (data.modelNumber) {
+    const rawModel = data.modelNumber.trim();
+    const normalized = normalizeModelKey(rawModel);
+
+    // 1. Log extraction telemetry (Serial Numbers are Serial Numbers)
+    await db.insert(nameplateExtractions).values({
+      modelNumber: rawModel,
+      serialNumber: data.serialNumber,
+      brand: data.brand,
+      productType: data.productType,
+      engineeringCode: data.engineeringCode,
+      rawResult: data,
+      sourceType: 'image'
+    }).catch(err => console.error('[Discovery] Nameplate extraction log failed:', err));
+
+    // 2. "Model Numbers with Model Numbers" - Seed master blueprint
+    await db.insert(applianceModels).values({
+      normalizedModel: normalized,
+      brand: data.brand,
+      applianceType: data.productType,
+    }).onConflictDoNothing()
+      .catch(err => console.error('[Discovery] Model seeding failed:', err));
+  }
+
   return data;
 }
 
 /**
  * Stage 1 Universal Recovery: AI Schematic Miner
- * Specifically targets Sears/Encompass/PartSelect diagrams via Google Search grounding.
- * Bypasses 403 blocks by leveraging Google's crawler index.
  */
 export async function extractSchematicBOM(modelNumber, brand) {
   const responseSchema = {
@@ -588,10 +649,6 @@ export async function extractSchematicBOM(modelNumber, brand) {
   };
 }
 
-/**
- * Extract structured parts from a raw HTML blob.
- * Useful for recovery when structured scrapers fail.
- */
 export async function extractPartsFromHtmlPage(html, { model, section }) {
   const responseSchema = {
     type: 'object',
@@ -642,10 +699,6 @@ export async function extractPartsFromHtmlPage(html, { model, section }) {
   return data.parts || [];
 }
 
-
-/**
- * Generate a Bill of Materials (BOM) pass for a specific appliance model.
- */
 export async function generateBOM({
   query,
   serial,

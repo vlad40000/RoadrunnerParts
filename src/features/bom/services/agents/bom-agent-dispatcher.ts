@@ -264,7 +264,7 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
         sources: [
           { source: "sears-partsdirect", priority: 1, role: "primary" },
           { source: "fix.com", priority: 2, role: "fallback" },
-          { source: "repairclinic", priority: 3, role: "fallback" },
+          { source: "repairclinic-family", priority: 3, role: "fallback" },
           { source: "appliancepartspros", priority: 4, role: "fallback" }
         ]
       };

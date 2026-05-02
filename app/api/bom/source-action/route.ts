@@ -6,7 +6,10 @@ import {
   updateBomJobSummary,
   failBomJob,
 } from "@/features/bom/services/job-store";
-import type { ManualSourceActionTask } from "@/features/bom/services/source-tier-policy";
+import {
+  normalizeSupplierId,
+  type ManualSourceActionTask,
+} from "@/features/bom/services/source-tier-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +18,7 @@ export const maxDuration = 300;
 const ALLOWED_TASKS = new Set<ManualSourceActionTask>([
   "lock_supplier_target",
   "load_supplier_index",
+  "run_supplier_agent",
   "extract_selected_assemblies",
   "price_encompass",
   "price_backup_1",
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest) {
     const model = String(body.canonicalModel || body.model || "")
       .trim()
       .toUpperCase();
-    const supplier = String(body.supplier || "").trim();
+    const supplier = normalizeSupplierId(String(body.supplier || "").trim());
     const tierKey = String(body.tierKey || "").trim();
 
     if (!task) {
@@ -62,7 +66,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (
-      (task === "lock_supplier_target" || task === "load_supplier_index") &&
+      (task === "lock_supplier_target" ||
+        task === "load_supplier_index" ||
+        task === "run_supplier_agent") &&
       supplier !== "encompass-family" &&
       !String(body.searchUrl || "").trim()
     ) {

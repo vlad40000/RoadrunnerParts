@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '../../../src/features/bom/services/model-parts-cache';
 import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
+import { db } from '../../../src/server/db';
+import { modelSources } from '../../../src/server/db/schema/model-sources';
 
 export const runtime = 'nodejs';
 export const maxDuration = 120; // Extended to support Google Search + Thinking
@@ -234,7 +236,7 @@ CURRENT PASS NUMBER: ${passNumber}
 
 ${passInstruction}
 
-KNOWN PART NUMBERS ALREADY FOUND (DO NOT REPEAT THESE):
+KNONW PART NUMBERS ALREADY FOUND (DO NOT REPEAT THESE):
 ${knownPartNumbers.length > 0 ? knownPartNumbers.join(', ') : 'NONE'}
 
 INSTRUCTIONS:
@@ -287,7 +289,7 @@ If a part does not fit any section, use the closest match — never omit a part 
       console.log('[BOM API] AI call completed in ms:', elapsedMs(aiCallStartedAt));
     } catch (aiError) {
       const aiMessage = aiError instanceof Error ? aiError.message : String(aiError);
-      const looksLikeTimeout = /aborted|timeout/i.test(aiMessage);
+      const looksLike timeout = /aborted|timeout/i.test(aiMessage);
       if (looksLikeTimeout) {
         console.warn('[BOM API] AI call deadline exceeded at ms:', elapsedMs(aiCallStartedAt));
         return NextResponse.json(
@@ -304,6 +306,15 @@ If a part does not fit any section, use the closest match — never omit a part 
 
     const parseStartedAt = Date.now();
     const jsonCandidate = extractJsonCandidate(rawText);
+
+    // DB-FIRST: Log the raw AI output before parsing
+    await db.insert(modelSources).values({
+      normalizedModel: normalizeModelKey(model),
+      source: 'gemini-3-flash-preview',
+      sourceUrl: 'ai-generation',
+      raw: { prompt, output: rawText },
+      status: 'completed'
+    }).catch(err => console.error('[BOM API] AI Raw logging failed:', err));
 
     try {
       const parsed = JSON.parse(jsonCandidate);

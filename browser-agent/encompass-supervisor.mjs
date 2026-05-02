@@ -10,6 +10,30 @@ function cleanText(value) {
   return String(value || '').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
+const PART_RE = /\b(?:WE|WH|WR|WD|WB|WZ|31-|39-|[A-Z]{1,3}\d{4,10})[A-Z0-9\-]*\b/gi;
+const PRICE_RE = /\$\s*([0-9]{1,4}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/;
+
+function extractPrice(text) {
+  if (!text) return null;
+  const match = String(text).match(PRICE_RE);
+  if (!match) {
+    // Try raw number
+    const numMatch = String(text).match(/([0-9]{1,4}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/);
+    return numMatch ? parseFloat(numMatch[1].replace(/,/g, '')) : null;
+  }
+  return parseFloat(match[1].replace(/,/g, ''));
+}
+
+const PART_RE = /\b(?:WE|WH|WR|WD|WB|WZ|31-|39-|[A-Z]{1,3}\d{4,10})[A-Z0-9\-]*\b/gi;
+const PRICE_RE = /\$\s*([0-9]{1,4}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/;
+
+function extractPrice(text) {
+  if (!text) return null;
+  const match = text.match(PRICE_RE);
+  if (!match) return null;
+  return parseFloat(match[1].replace(/,/g, ''));
+}
+
 /**
  * Encompass Visual Supervisor
  * Captures the "Visual Truth" artifact from Encompass exploded-view pages.
@@ -63,7 +87,7 @@ export async function runEncompassSupervisor(options = {}) {
     const screenshotBase64 = screenshotBuffer.toString('base64');
 
     // Extract Metadata
-    const content = await page.content();
+    const html = await page.content();
     const text = await page.evaluate(() => document.body.innerText);
     
     const expectedTotalMatch = text.match(/(\d+)\s+Part Count/i) || text.match(/Found\s+(\d+)\s+parts/i);
@@ -77,6 +101,70 @@ export async function runEncompassSupervisor(options = {}) {
         .filter((v, i, a) => a.indexOf(v) === i); // Unique
     });
 
+    // Extract Manifest (Ported from Python)
+    const manifest = {};
+    
+    // 1. Try NEXT_DATA
+    const nextData = await page.evaluate(() => {
+      const script = document.getElementById('__NEXT_DATA__');
+      return script ? JSON.parse(script.textContent) : null;
+    });
+
+    if (nextData) {
+      const walk = (obj) => {
+        if (!obj || typeof obj !== 'object') return;
+        if (obj.partNumber || obj.mfrPartNumber || obj.partNo) {
+          const pn = cleanText(obj.partNumber || obj.mfrPartNumber || obj.partNo).toUpperCase();
+          if (pn && !manifest[pn]) {
+            manifest[pn] = {
+              partNumber: pn,
+              price: extractPrice(String(obj.price || obj.salePrice || '')),
+              title: cleanText(obj.name || obj.description || obj.title),
+              availability: cleanText(obj.availability || obj.stockStatus),
+            };
+          }
+        }
+        Object.values(obj).forEach(walk);
+      };
+      walk(nextData);
+    }
+
+    // 2. Regex fallback for visible parts
+    const visibleManifest = await page.evaluate((partReStr) => {
+      const re = new RegExp(partReStr, 'gi');
+      const results = [];
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+      let node;
+      while (node = walker.nextNode()) {
+        const matches = node.textContent.match(re);
+        if (matches) {
+          for (const match of matches) {
+            // Find nearest price and title
+            let parent = node.parentElement;
+            let blockText = '';
+            for (let i = 0; i < 5 && parent; i++) {
+              blockText = parent.innerText;
+              if (blockText.includes('$') || blockText.toLowerCase().includes('no longer made')) break;
+              parent = parent.parentElement;
+            }
+            results.push({ pn: match.toUpperCase(), block: blockText });
+          }
+        }
+      }
+      return results;
+    }, PART_RE.source);
+
+    for (const item of visibleManifest) {
+      if (!manifest[item.pn]) {
+        manifest[item.pn] = {
+          partNumber: item.pn,
+          price: extractPrice(item.block),
+          title: null, // Hard to infer reliably without LLM, but we have price
+          availability: item.block.toLowerCase().includes('no longer made') ? 'Discontinued' : null,
+        };
+      }
+    }
+
     const result = {
       model: model || safeModel,
       canonUrl: page.url(),
@@ -84,6 +172,7 @@ export async function runEncompassSupervisor(options = {}) {
       screenshotBase64: `data:image/png;base64,${screenshotBase64}`,
       expectedTotal,
       assemblyNames,
+      manifest: Object.values(manifest),
       timestamp: new Date().toISOString(),
     };
 

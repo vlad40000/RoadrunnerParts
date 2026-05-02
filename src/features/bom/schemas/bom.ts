@@ -28,7 +28,17 @@ export type RetrievalState = BomStatus;
  */
 export const agentMetadataSchema = z.object({
   agent_id: z.string(),
-  supplier_id: z.enum(["fix", "repairclinic", "appliancepartspros", "sears", "encompass"]),
+  supplier_id: z.enum([
+    "fix",
+    "fix.com",
+    "repairclinic",
+    "repairclinic-family",
+    "appliancepartspros",
+    "sears",
+    "sears-partsdirect",
+    "encompass",
+    "encompass-family",
+  ]),
   source_url: z.string(),
   encompass_overview_used: z.boolean(),
   expected_total_used: z.boolean(),

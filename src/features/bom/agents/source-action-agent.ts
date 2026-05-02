@@ -9,6 +9,7 @@ import {
 import { runPartsExtractor } from "@/features/bom/agents/parts-extractor";
 import { enrichBomRowsWithRetailPricing } from "@/features/bom/services/retail-pricing";
 import {
+  normalizeSupplierId,
   supplierIndexKey,
   type ManualSourceActionTask,
   type SupplierAssemblyIndex,
@@ -67,6 +68,17 @@ type SourceActionInput = {
 
 function assertNonEmpty(value: string | null | undefined, message: string) {
   if (!String(value || "").trim()) throw new Error(message);
+}
+
+function positiveCount(value: unknown) {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value.trim())
+        : NaN;
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 function getExistingDiagramParse(job: Awaited<ReturnType<typeof getBomJob>>) {
@@ -133,7 +145,7 @@ function buildSupplierAgentResponse(input: {
   errors: string[];
 }): SupplierAgentResponse {
   const encompassUsed = !!input.visualTruth;
-  const expectedTotal = input.visualTruth?.expectedTotal || null;
+  const expectedTotal = positiveCount(input.visualTruth?.expectedTotal);
   const assemblyNames = input.visualTruth?.assemblyNames || [];
 
   const uniqueParts = new Set(input.rows.map(r => r.part_number)).size;
@@ -192,9 +204,10 @@ export async function runSourceActionAgent(input: SourceActionInput) {
   assertNonEmpty(input.canonicalModel, "Canonical model is required.");
   assertNonEmpty(input.supplier, "Supplier is required.");
 
+  const supplier = normalizeSupplierId(input.supplier);
   const formattedModel = input.formattedModel || input.canonicalModel;
   const searchUrl = input.searchUrl || "";
-  const isEncompass = input.supplier === "encompass-family";
+  const isEncompass = supplier === "encompass-family";
 
   async function resolveSupplierUrl() {
     if (!isEncompass) {
@@ -327,7 +340,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
 
     const supplierTarget = {
       mode: "manual_distributor_control",
-      supplier: input.supplier,
+      supplier,
       tierKey: input.tierKey,
       canonicalModel: input.canonicalModel,
       formattedModel,
@@ -351,7 +364,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       serial: input.serial ?? job.serial,
       productType: input.productType ?? job.productType,
       truthSource: resolvedSearchUrl,
-      sourceStrategy: `manual-distributor-control:${input.tierKey}:${input.supplier}:lock_supplier_target`,
+      sourceStrategy: `manual-distributor-control:${input.tierKey}:${supplier}:lock_supplier_target`,
       bomComplete: false,
     });
 
@@ -369,7 +382,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
     const fetched = await fetchExactSupplierUrl(resolvedSearchUrl);
 
     const supplierIndex = buildSupplierIndexFromHtml({
-      supplier: input.supplier,
+      supplier,
       canonicalModel: input.canonicalModel,
       formattedModel,
       sourceUrl: resolvedSearchUrl,
@@ -409,24 +422,145 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       retrievalState: "summary_only",
       expectedPartsTotal: expectedTotal,
       expectedPartsSource: expectedTotal
-        ? `${input.supplier}:supplier_count_indicator`
+        ? `${supplier}:supplier_count_indicator`
         : null,
       trustedTotalPartCount: supplierIndex.totalCount,
       trustedTotalCountSource: supplierIndex.totalCount
-        ? `${input.supplier}:supplier_count_indicator`
+        ? `${supplier}:supplier_count_indicator`
         : null,
       trustedTotalCountSourceUrl: supplierIndex.totalCount
         ? supplierIndex.totalCountSourceUrl
         : null,
       trustedTotalCountCheckedAt: supplierIndex.totalCount ? new Date() : null,
       truthSource: fetched.finalUrl,
-      sourceStrategy: `manual-distributor-control:${input.tierKey}:${input.supplier}:load_supplier_index`,
+      sourceStrategy: `manual-distributor-control:${input.tierKey}:${supplier}:load_supplier_index`,
       bomComplete: false,
     });
 
     return {
       status: "supplier_index_loaded",
       supplierIndex,
+    };
+  }
+
+  if (input.task === "run_supplier_agent") {
+    const resolvedSearchUrl = await resolveSupplierUrl();
+    await setBomJobStage(input.jobId, "supplier_agent_running");
+
+    const fetched = await fetchExactSupplierUrl(resolvedSearchUrl);
+    const sourceText = fetched.text || htmlToReadableText(fetched.html);
+    const rowsRaw = await runPartsExtractor({
+      sourceText,
+      sourceUrl: fetched.finalUrl,
+      sourceType: "distributor",
+      assemblyName: "Supplier Agent Source",
+      visualTruth: input.visualTruth,
+    });
+
+    const extractedRows = rowsRaw.map((row: any) => ({
+      ...row,
+      part_number:
+        row.part_number ||
+        row.currentServicePartNumber ||
+        row.originalPartNumber ||
+        "UNKNOWN",
+      callout_number: String(row.callout_number || row.diagramNumber || ""),
+      mapping_status: row.mapping_status || "mapped",
+      section: row.section || "Supplier Agent Source",
+      sourceUrl: row.sourceUrl || fetched.finalUrl,
+      sourceType: row.sourceType || "distributor",
+      supplier,
+    }));
+
+    const existingRows = Array.isArray(job.finalRows)
+      ? (job.finalRows as Array<Record<string, unknown>>)
+      : [];
+    const mergedRows = mergeRowsByPartNumber(existingRows, extractedRows);
+    const expectedTotal = positiveCount(input.visualTruth?.expectedTotal);
+    const actualCanonicalPartCount = mergedRows.length;
+    const partsComplete =
+      expectedTotal !== null && actualCanonicalPartCount >= expectedTotal;
+    const issues = [...((job.issues as string[]) || [])];
+
+    if (expectedTotal && actualCanonicalPartCount < expectedTotal) {
+      issues.push(
+        `${supplier} extracted ${actualCanonicalPartCount}/${expectedTotal} expected rows.`,
+      );
+    }
+
+    await saveBomArtifacts(input.jobId, {
+      retrievedSources: [
+        ...(Array.isArray(job.retrievedSources) ? job.retrievedSources : []),
+        {
+          sourceUrl: fetched.finalUrl,
+          sourceType: "supplier_agent",
+          sectionName: supplier,
+          text: sourceText.slice(0, 25_000),
+        },
+      ],
+      extractedRowsRaw: mergedRows,
+      finalRows: mergedRows,
+      issues,
+    });
+
+    await updateBomJobSummary(input.jobId, {
+      jobStage: "supplier_agent_complete",
+      retrievalState:
+        actualCanonicalPartCount > 0
+          ? partsComplete
+            ? "parts_complete_pricing_missing"
+            : "parts_partial"
+          : "sources_resolved",
+      actualPartCount: actualCanonicalPartCount,
+      actualCanonicalPartCount,
+      actualUniqueParts: actualCanonicalPartCount,
+      rawRowCount: mergedRows.length,
+      uniqueRowCount: mergedRows.length,
+      coveragePct:
+        expectedTotal !== null ? Math.min(1, actualCanonicalPartCount / expectedTotal) : null,
+      expectedPartsTotal: expectedTotal ?? job.expectedPartsTotal,
+      expectedPartsSource: expectedTotal
+        ? `${supplier}:visual_truth_expected_total`
+        : job.expectedPartsSource,
+      expectedPartCount: expectedTotal ?? job.expectedPartCount,
+      trustedTotalPartCount: expectedTotal ?? job.trustedTotalPartCount,
+      trustedTotalCountSource: expectedTotal
+        ? `${supplier}:visual_truth_expected_total`
+        : job.trustedTotalCountSource,
+      trustedTotalCountSourceUrl: expectedTotal
+        ? input.visualTruth?.canonUrl || fetched.finalUrl
+        : job.trustedTotalCountSourceUrl,
+      trustedTotalCountCheckedAt: expectedTotal ? new Date() : job.trustedTotalCountCheckedAt,
+      partsComplete,
+      pricingComplete: false,
+      bomComplete: false,
+      truthSource: fetched.finalUrl,
+      sourceStrategy: `manual-distributor-control:${input.tierKey}:${supplier}:run_supplier_agent`,
+    });
+
+    const response = buildSupplierAgentResponse({
+      agentId: `${supplier}_agent`,
+      supplierId: supplier as any,
+      sourceUrl: fetched.finalUrl,
+      visualTruth: input.visualTruth,
+      modelIdentity: {
+        normalized_model: input.canonicalModel,
+        brand: input.brand || job.brand,
+        product_type: input.productType || job.productType,
+      },
+      rows: mergedRows as BomRow[],
+      errors: issues,
+    });
+
+    return {
+      status: "supplier_agent_complete",
+      response,
+      extractedThisRun: extractedRows.length,
+      totalRows: mergedRows.length,
+      expectedTotal,
+      partsComplete,
+      supplier,
+      sourceUrl: fetched.finalUrl,
     };
   }
 
@@ -471,7 +605,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
           assemblyTitle: assembly.title,
           sourceUrl: row.sourceUrl || fetched.finalUrl,
           sourceType: row.sourceType || "supplier_assembly",
-          supplier: input.supplier,
+          supplier,
         }));
 
         extractedRows.push(...rows);
@@ -485,7 +619,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
 
         if (expected > 0 && rows.length < expected) {
           issues.push(
-            `${input.supplier} ${assembly.title} extracted ${rows.length}/${expected} expected rows.`,
+            `${supplier} ${assembly.title} extracted ${rows.length}/${expected} expected rows.`,
           );
         }
 
@@ -497,7 +631,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
 
-        issues.push(`${input.supplier} ${assembly.title} extraction failed: ${message}`);
+        issues.push(`${supplier} ${assembly.title} extraction failed: ${message}`);
 
         updatedAssemblyStatus.set(assembly.id || assembly.title, {
           status: "failed",
@@ -514,7 +648,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
     const mergedRows = mergeRowsByPartNumber(existingRows, extractedRows);
 
     const diagramParse = getExistingDiagramParse(job);
-    const key = supplierIndexKey(input.supplier, input.canonicalModel);
+    const key = supplierIndexKey(supplier, input.canonicalModel);
     const existingIndex = (diagramParse.supplierIndexes || {})[key] as
       | SupplierAssemblyIndex
       | undefined;
@@ -568,7 +702,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       retrievalState: partsComplete ? "parts_partial" : "parts_partial",
       expectedPartsTotal: selectedExpected || job.expectedPartsTotal,
       expectedPartsSource: selectedExpected
-        ? `${input.supplier}:selected_supplier_assemblies`
+        ? `${supplier}:selected_supplier_assemblies`
         : job.expectedPartsSource,
       expectedPartCount: selectedExpected || job.expectedPartCount,
       actualPartCount: actualCanonicalPartCount,
@@ -582,12 +716,12 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       pricingComplete: false,
       bomComplete: false,
       truthSource: selectedAssemblies[0]?.sourceUrl ?? job.truthSource,
-      sourceStrategy: `manual-distributor-control:${input.tierKey}:${input.supplier}:extract_selected_assemblies`,
+      sourceStrategy: `manual-distributor-control:${input.tierKey}:${supplier}:extract_selected_assemblies`,
     });
 
     const response = buildSupplierAgentResponse({
-      agentId: `${input.supplier}_agent`,
-      supplierId: input.supplier as any,
+      agentId: `${supplier}_agent`,
+      supplierId: supplier as any,
       sourceUrl: selectedAssemblies[0]?.sourceUrl || "",
       visualTruth: input.visualTruth,
       modelIdentity: {
@@ -686,7 +820,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       partsComplete: job.partsComplete ?? completion.partsComplete,
       pricingComplete,
       bomComplete: false,
-      sourceStrategy: `manual-distributor-control:${input.tierKey}:${input.supplier}:${input.task}:${pricingSource}`,
+      sourceStrategy: `manual-distributor-control:${input.tierKey}:${supplier}:${input.task}:${pricingSource}`,
     });
 
     return {

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { EncompassSupervisorPanel } from "@/src/features/bom/components/encompass-supervisor-panel";
 import { SupplierAgentMatrix } from "@/src/features/bom/components/supplier-agent-matrix";
-import { ArrowRight, Settings, ShieldCheck } from "lucide-react";
+import { ArrowRight, Settings, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 export default function BomIngestPage() {
   const [model, setModel] = useState("");
@@ -46,6 +47,16 @@ export default function BomIngestPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Link
+            href={`/bom-workflow?${new URLSearchParams({
+              ...(model ? { model } : {}),
+              ...(jobId ? { jobId } : {}),
+            }).toString()}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
+          >
+            <SlidersHorizontal size={16} />
+            Workflow
+          </Link>
           <button className="p-2 rounded-lg border border-neutral-200 hover:bg-neutral-50 text-neutral-600 transition-colors">
             <Settings size={20} />
           </button>

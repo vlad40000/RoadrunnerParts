@@ -5,10 +5,11 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Professional Color Palette */
+  /* Professional Color Palette (User Preferred) */
   --color-pro-navy: #0F172A;
   --color-pro-blue: #3B82F6;
   --color-pro-emerald: #10B981;
+  --color-pro-amber: #F59E0B;
   --color-pro-slate-50: #F8FAFC;
   --color-pro-slate-100: #F1F5F9;
   --color-pro-slate-200: #E2E8F0;
@@ -64,6 +65,11 @@
   .pro-section-title {
     @apply text-[11px] font-bold uppercase tracking-[0.1em] text-pro-slate-400 mb-4;
   }
+
+  /* Minimial Forensic Tweak for Conflict Visualization */
+  .conflict-pulse {
+    @apply border-pro-amber bg-pro-amber/5 animate-pulse;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -75,3 +81,5 @@
 .custom-scrollbar::-webkit-scrollbar-thumb {
   @apply bg-pro-slate-200 rounded-full hover:bg-pro-slate-300;
 }
+
+

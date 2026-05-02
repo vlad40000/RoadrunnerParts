@@ -199,7 +199,7 @@ export function BomJobsTable({ jobs }: { jobs: BomJobRow[] }) {
           {jobs.length === 0 ? (
             <tr>
               <td
-                colSpan={10}
+                colSpan={12}
                 className="px-3 py-8 text-center text-sm text-neutral-500"
               >
                 No BOM jobs yet.
@@ -286,6 +286,13 @@ function JobActions({
           Export CSV
         </span>
       )}
+
+      <a
+        href={`/bom-workflow?jobId=${encodeURIComponent(jobId)}`}
+        className="rounded-md border border-neutral-900 bg-neutral-900 px-3 py-1.5 text-center text-white hover:bg-black"
+      >
+        Control Steps
+      </a>
     </div>
   );
 }

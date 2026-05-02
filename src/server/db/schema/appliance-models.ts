@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, boolean, uuid, check } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, boolean, uuid, check, jsonb } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const applianceModels = pgTable("appliance_model", {
@@ -46,4 +46,16 @@ export const applianceModels = pgTable("appliance_model", {
       )`
     ),
   };
+});
+
+export const nameplateExtractions = pgTable("nameplate_extractions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  modelNumber: text("model_number"),
+  serialNumber: text("serial_number"),
+  brand: text("brand"),
+  productType: text("product_type"),
+  engineeringCode: text("engineering_code"),
+  rawResult: jsonb("raw_result").notNull(),
+  sourceType: text("source_type").notNull(), // 'image' or 'pdf'
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });

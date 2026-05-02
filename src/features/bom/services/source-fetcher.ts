@@ -10,7 +10,8 @@ import { repairClinicFamilyProvider } from "./providers/repairclinic-family";
 import { searsPartsDirectProvider } from "./providers/sears-partsdirect";
 import { fixComDiagramsProvider } from "./providers/fix-com";
 import { appliancePartsProsProvider } from "./providers/appliancepartspros";
-import { normalizeModel, runWithConcurrency, uniqueBy, withDeadline } from "./providers/utils";
+import { normalizeCanonicalModel as normalizeModel } from "../services/source-tier-policy";
+import { runWithConcurrency, uniqueBy, withDeadline } from "./providers/utils";
 import { encompassFamilyProvider } from "./providers/encompass-family";
 
 const ALL_PROVIDERS: SourceProvider[] = [

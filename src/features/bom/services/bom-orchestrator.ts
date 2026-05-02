@@ -1,8 +1,12 @@
 import "server-only";
 import { fetchAuthoritativeSources } from "./source-fetcher";
 import { enrichBomRowsWithRetailPricing } from "./retail-pricing";
-import { normalizeGeneratedParts } from "../../../../app/api/bom/route"; // We might need to move this helper to a shared location later
-import { findCompleteCachedBom, upsertModelPartsCache } from "./model-parts-cache";
+import { normalizeGeneratedParts } from "../../../../app/api/bom/route";
+import { findCompleteCachedBom, upsertModelPartsCache, CURRENT_VALIDATION_VERSION } from "./model-parts-cache";
+import { db } from "../../../server/db";
+import { providerPartSeedRows } from "../../../server/db/schema/provider-seeds";
+import { normalizeModel } from "./providers/utils";
+import { generateAiBom } from "./bom-ai-service";
 
 export type BomOrchestratorResult = {
   parts: any[];
@@ -18,7 +22,7 @@ export type BomOrchestratorResult = {
  * 0. Cache Check (Neon Model Parts Cache)
  * 1. Scraper-based extraction (Source Fetcher)
  * 2. Pricing Waterfall (Retail Pricing)
- * 3. AI Fallback (only if deterministic path fails)
+ * 3. AI Fallback (Centralized AI Service with mandatory logging)
  */
 export async function orchestrateBomRetrieval(input: {
   brand: string | null;
@@ -55,6 +59,23 @@ export async function orchestrateBomRetrieval(input: {
     
     for (const source of sources) {
       const parsed = parseStructuredSourceText(source.text);
+      
+      // DB-FIRST: Save raw rows to the seed table
+      if (parsed.length > 0) {
+        console.log(`[BOM Orchestrator] Logging ${parsed.length} raw rows from ${source.provider} to DB...`);
+        await db.insert(providerPartSeedRows).values(
+          parsed.map(p => ({
+            model: normalizeModel(model) || model,
+            provider: source.provider,
+            diagramNumber: p.id,
+            description: p.description,
+            originalPartNumber: p.partNumber,
+            currentServicePartNumber: p.partNumber,
+            sourceStatus: 'ingested'
+          }))
+        ).onConflictDoNothing();
+      }
+
       allParts.push(...parsed);
     }
     
@@ -70,10 +91,19 @@ export async function orchestrateBomRetrieval(input: {
       const normalized = normalizeGeneratedParts(pricedRows);
       
       if (normalized.length > 0) {
-        // SUCCESS: Deterministic path worked!
-        // Mark as exhaustive if we have a decent number of parts or match expected count
         const isExhaustive = input.expectedPartCount ? normalized.length >= input.expectedPartCount : normalized.length > 15;
         
+        console.log(`[BOM Orchestrator] PERSISTING ${normalized.length} parts to cache for ${model}...`);
+        await upsertModelPartsCache({
+          model,
+          parts: normalized,
+          isExhaustive,
+          brand: brand || undefined,
+          retrievalState: isExhaustive ? 'bom_complete' : 'parts_complete_pricing_partial',
+          validationVersion: CURRENT_VALIDATION_VERSION,
+          truthSource: sources[0]?.url || 'deterministic_scraper'
+        });
+
         return {
           parts: normalized,
           sourceType: "deterministic",
@@ -83,8 +113,41 @@ export async function orchestrateBomRetrieval(input: {
     }
   }
 
-  // STAGE 2: AI Fallback (Current logic from route.ts, but isolated)
-  console.log(`[BOM Orchestrator] Deterministic path failed for ${model}. Signaling AI fallback...`);
+  // STAGE 2: AI Fallback
+  console.log(`[BOM Orchestrator] Deterministic path failed for ${model}. Calling AI fallback...`);
+  
+  const aiResult = await generateAiBom({
+    model,
+    brand,
+    serial: input.serial,
+    expectedPartCount: input.expectedPartCount,
+    isExhaustive: false 
+  });
+
+  if (aiResult.parts && aiResult.parts.length > 0) {
+    const normalized = normalizeGeneratedParts(aiResult.parts);
+    
+    console.log(`[BOM Orchestrator] AI successfully recovered ${normalized.length} parts for ${model}. PERSISTING to cache...`);
+    
+    await upsertModelPartsCache({
+      model,
+      parts: normalized,
+      msrp: aiResult.modelMSRP,
+      isExhaustive: false,
+      brand: brand || undefined,
+      retrievalState: 'parts_complete_pricing_partial',
+      validationVersion: CURRENT_VALIDATION_VERSION,
+      truthSource: 'ai_fallback_gemini'
+    });
+
+    return {
+      parts: normalized,
+      modelMSRP: aiResult.modelMSRP,
+      sourceType: "ai",
+      isExhaustive: false,
+    };
+  }
+
   return {
     parts: [],
     sourceType: "ai",

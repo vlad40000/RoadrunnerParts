@@ -2,7 +2,7 @@ import { RetrievalState } from "../schemas/bom";
 
 export type TrustedCountSource =
   | "sears-partsdirect"
-  | "repairclinic"
+  | "repairclinic-family"
   | "appliancepartspros"
   | "fix.com";
 
@@ -33,9 +33,10 @@ export function normalizeTrustedCountSource(
   }
   if (
     normalized === "repairclinic" ||
+    normalized === "repairclinic-family" ||
     normalized === "repairclinic.com"
   ) {
-    return "repairclinic";
+    return "repairclinic-family";
   }
   if (
     normalized === "appliancepartspros" ||
@@ -115,7 +116,7 @@ export function validatePartsCompleteness(input: {
 export const RETAIL_PRICING_SOURCE_PRIORITY = [
   "fix.com",
   "sears-partsdirect",
-  "repairclinic",
+  "repairclinic-family",
   "appliancepartspros",
 ] as const;
 

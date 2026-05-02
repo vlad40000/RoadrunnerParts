@@ -1,40 +1,24 @@
-# WORKFLOW_STATE - BOM Ingestion (Visual Truth Architecture)
-[Rationale: Why this workflow wins](docs/STRATEGY.md)
+# RoadrunnerParts - Workflow State
 
-- **Status**: COMMITTED & PUSHED to `partsapp.git` main.
-- **Supervisor**: Encompass (Visual Truth / Visual Supervisor) [ENABLED]
-- **Supplier Agents**: Row extractors (Fix.com, Sears) [GROUNDED IN TRUTH]
-- **UI**: BOM Ingest Control Panel [ACTIVE]
+## Current Focus
+Hardening DB-First Persistence Architecture for BOM Ingestion.
 
-## Final Workflow (12 Steps)
-1. **OCR/Manual Entry**: [COMPLETE] - Model entry in UI.
-2. **Resolve Encompass URL**: [COMPLETE] - Handled by supervisor script.
-3. **Fetch Model Option**: [COMPLETE] - Integrated into supervisor logic.
-4. **Build Exploded-View URL**: [COMPLETE] - Canonical pattern established.
-5. **Capture Visual Truth**: [COMPLETE] - Playwright screenshot capture active.
-6. **Extract Canonical Manifest**: [COMPLETE] - Totals and names extracted from Encompass.
-7. **Show Screenshot**: [COMPLETE] - Displayed in Control Panel Viewport.
-8. **Populate Supplier Rows**: [COMPLETE] - URL resolution for Fix/Sears.
-9. **Supplier Agent Matrix**: [COMPLETE] - UI Matrix for Fix, RC, APP, Sears.
-10. **Agent Context Handover**: [COMPLETE] - `visualTruth` context passed to agents.
-11. **Schema-Valid Return**: [COMPLETE] - Agents return `SupplierAgentResponse` JSON.
-12. **Reconciliation Merge**: [COMPLETE] - Merging logic prioritized by Encompass manifest.
+## Recently Completed
+- **Hardened Persistence**: Implemented mandatory DB sinks for BOM orchestration and AI fallback paths.
+- **Model Discovery**: Automated seeding of `appliance_model` table from Nameplate OCR and PDF extractions.
+- **Telemetry Hooks**: Integrated `nameplate_extractions` logging directly into `src/lib/gemini.ts`.
+- **Schema Consolidation**: Merged nameplate table definitions into `appliance-models.ts`.
 
-- [x] Documented Locked Architecture.
-- [x] Implemented `encompass-supervisor.mjs` for steps 2-6.
-- [x] Created `EncompassSupervisorPanel` UI component.
-- [x] Created `/bom-ingest` Control Panel page.
-- [x] Updated `agent.mjs` and supplier agents to support `visualTruth` context.
-- [x] Registered `encompass_visual_supervisor` tool in agent dispatcher.
-- [x] Purged ALL legacy extraction logic and unauthorized suppliers (PartSelect, LG, Samsung, Bosch, etc.).
+## Data Flow Status (DB-First Enforced)
+1. **Nameplate/PDF Upload** -> `nameplate_extractions` (Event Log) + `appliance_model` (Seed Entry)
+2. **BOM Retrieval (Deterministic)** -> `provider_part_seed_rows` (Raw Data) + `model_parts_cache` (Normalized)
+3. **BOM Retrieval (AI Fallback)** -> `model_sources` (Raw LLM Output) + `model_parts_cache` (Normalized)
 
-## Next Steps
-- Verify the end-to-end reconciliation of Fix.com rows against the Encompass manifest.
+## Pending Work
+- **Schema Cleanup**: Drop `appliance_parts_cache` legacy table after verifying data migration to `model_parts_cache`.
+- **Supplier Row Audit**: Verify that all supplier variants (Sears, Encompass, etc.) are correctly populating `provider_part_seed_rows`.
+- **E2E Test**: Perform a full "Blind Model" ingestion (Upload Image -> Generate BOM) and verify every stage has a corresponding DB row.
 
-## Project Audit & Cache Integrity (2026-05-02)
-- [x] Audited database for cache hit failures.
-- [x] Fixed normalization mismatch between `model_parts_cache` and `encompass_model_urls`.
-- [x] Integrated `encompassFamilyProvider` into authoritative source loop.
-- [x] Implemented early `model_parts_cache` lookup in `bom-orchestrator.ts` after identity extraction.
-- [x] Cleanup empty route skeletons.
-- [ ] Consolidate `lib/` vs `src/lib/` duplication.
+## Architecture Notes
+- Strictly using `sql` tagged template literals and Drizzle ORM for all DB interactions.
+- Avoid in-process volatile state; every "Discovery" must hit the DB before returning to UI.

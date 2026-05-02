@@ -269,7 +269,7 @@ export const accept_trusted_total_part_count: FunctionDeclaration = {
     type: SchemaType.OBJECT,
     properties: {
       source: {
-        ...enumString(["sears-partsdirect", "repairclinic", "appliancepartspros", "fix.com"]),
+        ...enumString(["sears-partsdirect", "repairclinic-family", "appliancepartspros", "fix.com"]),
       },
       normalizedModel: { type: SchemaType.STRING },
       sourceModel: { type: SchemaType.STRING },

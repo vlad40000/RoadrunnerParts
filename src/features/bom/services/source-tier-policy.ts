@@ -1,57 +1,26 @@
-export const SOURCE_TIERS = {
-  tier0: {
-    label: "Tier 0",
-    description: "Manual URL, uploaded diagram, or saved source.",
-    suppliers: [
-      "url-intake",
-      "seeded-provider",
-      "encompass-family",
-      "partsdr",
-      "appliancepartspros",
-    ],
-  },
-
-  tier1: {
-    label: "Tier 1",
-    description: "Primary controlled supplier sources.",
-    suppliers: [
-      "encompass-family",
-      "sears-partsdirect",
-      "partsdr",
-      "appliancepartspros",
-    ],
-  },
-
-  tier2: {
-    label: "Tier 2",
-    description: "Secondary supplier backup.",
-    suppliers: [
-      "partselect.com",
-      "fix.com",
-      "repairclinic-family",
-    ],
-  },
-
-  tier3: {
-    label: "Tier 3",
-    description: "Manual backup suppliers. Disable backend actions unless implemented.",
-    suppliers: [
-      "partswarehouse",
-      "ereplacementparts",
-      "appliancefactoryparts",
-      "appliance-parts-group",
-      "dey-appliance-parts",
-      "reliable-parts",
-      "coast-appliance-parts",
-    ],
-  },
-} as const;
-
-export type SourceTierKey = keyof typeof SOURCE_TIERS;
+export const ALL_SUPPLIERS = [
+  "encompass-family",
+  "sears-partsdirect",
+  "partsdr",
+  "appliancepartspros",
+  "partselect.com",
+  "fix.com",
+  "repairclinic-family",
+  "url-intake",
+  "seeded-provider",
+  "partswarehouse",
+  "ereplacementparts",
+  "appliancefactoryparts",
+  "appliance-parts-group",
+  "dey-appliance-parts",
+  "reliable-parts",
+  "coast-appliance-parts",
+] as const;
 
 export type ManualSourceActionTask =
   | "lock_supplier_target"
   | "load_supplier_index"
+  | "run_supplier_agent"
   | "extract_selected_assemblies"
   | "price_encompass"
   | "price_backup_1"
@@ -92,7 +61,7 @@ export type SupplierAssemblyIndex = {
 };
 
 export function normalizeCanonicalModel(model: string) {
-  return String(model || "").trim().toUpperCase().replace(/\s+/g, "");
+  return String(model || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
 export function normalizeModelForSupplier(input: {
@@ -127,7 +96,6 @@ export function normalizeModelForSupplier(input: {
     supplier === "partsdr" ||
     supplier === "appliancepartspros" ||
     supplier === "fix.com" ||
-    supplier === "repairclinic" ||
     supplier === "repairclinic-family" ||
     supplier === "partswarehouse" ||
     supplier === "ereplacementparts" ||
@@ -152,7 +120,6 @@ export function buildSupplierSearchUrl(input: {
     case "encompass-family":
       return `https://encompass.com/model/${formatted}`;
 
-    case "sears":
     case "sears-partsdirect":
       return `https://www.searspartsdirect.com/search?q=${canonical}`;
 
@@ -168,7 +135,6 @@ export function buildSupplierSearchUrl(input: {
     case "fix.com":
       return `https://www.fix.com/search/?SearchTerm=${canonical}`;
 
-    case "repairclinic":
     case "repairclinic-family":
       return `https://www.repairclinic.com/Search?query=${canonical}`;
 
@@ -192,7 +158,6 @@ export function supplierDisplayName(supplier: string) {
   switch (normalizeSupplierId(supplier)) {
     case "encompass-family":
       return "Encompass";
-    case "sears":
     case "sears-partsdirect":
       return "Sears PartsDirect";
     case "partsdr":
@@ -203,7 +168,6 @@ export function supplierDisplayName(supplier: string) {
       return "PartSelect";
     case "fix.com":
       return "Fix.com";
-    case "repairclinic":
     case "repairclinic-family":
       return "RepairClinic";
     case "url-intake":
@@ -223,15 +187,24 @@ export function normalizeSupplierId(supplier: string) {
   switch (String(supplier || "").trim().toLowerCase()) {
     case "sears":
     case "sears-partsdirect":
-      return "sears";
+    case "searspartsdirect.com":
+      return "sears-partsdirect";
     case "repairclinic":
     case "repairclinic-family":
-      return "repairclinic";
+    case "repairclinic.com":
+      return "repairclinic-family";
     case "fix":
     case "fix.com":
-      return "fix";
+      return "fix.com";
     case "appliancepartspros":
+    case "appliancepartspros.com":
       return "appliancepartspros";
+    case "encompass":
+    case "encompass-family":
+      return "encompass-family";
+    case "partselect":
+    case "partselect.com":
+      return "partselect.com";
     default:
       return String(supplier || "").trim().toLowerCase();
   }

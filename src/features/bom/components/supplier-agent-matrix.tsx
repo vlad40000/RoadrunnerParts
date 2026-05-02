@@ -9,10 +9,25 @@ import {
   ExternalLink, 
   Loader2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Search,
+  Zap,
+  Settings2,
+  ChevronDown,
+  ChevronUp,
+  FlaskConical,
+  Terminal,
+  Cpu
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { normalizeCanonicalModel } from "@/src/features/bom/services/source-tier-policy";
+
+interface AgentTuning {
+  temperature: number;
+  thinkingLevel: "low" | "medium" | "high";
+  useSearch: boolean;
+  usePython: boolean;
+}
 
 interface AgentState {
   id: string;
@@ -21,6 +36,8 @@ interface AgentState {
   sendDiagram: boolean;
   sendExpectedCount: boolean;
   status: "idle" | "running" | "success" | "error";
+  tuning: AgentTuning;
+  showTuning: boolean;
   error?: string;
 }
 
@@ -30,22 +47,53 @@ interface SupplierAgentMatrixProps {
   truth: any;
 }
 
+const DEFAULT_TUNING: AgentTuning = {
+  temperature: 1.0,
+  thinkingLevel: "medium",
+  useSearch: true,
+  usePython: true,
+};
+
 const INITIAL_AGENTS: AgentState[] = [
   {
-    id: "fix",
+    id: "encompass-family",
+    name: "Encompass Agent",
+    url: "",
+    sendDiagram: true,
+    sendExpectedCount: true,
+    status: "idle",
+    showTuning: false,
+    tuning: { ...DEFAULT_TUNING },
+  },
+  {
+    id: "sears-partsdirect",
+    name: "Sears PartsDirect Agent",
+    url: "",
+    sendDiagram: true,
+    sendExpectedCount: true,
+    status: "idle",
+    showTuning: false,
+    tuning: { ...DEFAULT_TUNING },
+  },
+  {
+    id: "fix.com",
     name: "Fix.com Agent",
     url: "",
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
+    showTuning: false,
+    tuning: { ...DEFAULT_TUNING },
   },
   {
-    id: "repairclinic",
+    id: "repairclinic-family",
     name: "RepairClinic Agent",
     url: "",
     sendDiagram: true,
     sendExpectedCount: false,
     status: "idle",
+    showTuning: false,
+    tuning: { ...DEFAULT_TUNING },
   },
   {
     id: "appliancepartspros",
@@ -54,14 +102,18 @@ const INITIAL_AGENTS: AgentState[] = [
     sendDiagram: false,
     sendExpectedCount: true,
     status: "idle",
+    showTuning: false,
+    tuning: { ...DEFAULT_TUNING },
   },
   {
-    id: "sears",
-    name: "Sears PartsDirect Agent",
+    id: "ai-recovery",
+    name: "AI Recovery Agent",
     url: "",
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
+    showTuning: false,
+    tuning: { ...DEFAULT_TUNING, temperature: 1.2, thinkingLevel: "high" },
   },
 ];
 
@@ -73,14 +125,18 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
   const buildSupplierUrl = (supplierId: string) => {
     const encoded = encodeURIComponent(normalizedModel);
     switch (supplierId) {
-      case "fix":
+      case "encompass-family":
+        return `https://encompass.com/model/${encoded}`;
+      case "fix.com":
         return `https://www.fix.com/search/?SearchTerm=${encoded}`;
-      case "repairclinic":
+      case "repairclinic-family":
         return `https://www.repairclinic.com/Shop-For-Parts?SearchText=${encoded}`;
       case "appliancepartspros":
         return `https://www.appliancepartspros.com/search.aspx?model=${encoded}`;
-      case "sears":
+      case "sears-partsdirect":
         return `https://www.searspartsdirect.com/search?q=${encoded}`;
+      case "ai-recovery":
+        return `https://www.google.com/search?q=${encoded}+appliance+parts+diagram`;
       default:
         return "";
     }
@@ -89,6 +145,18 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
   const toggleAgentContext = (id: string, field: "sendDiagram" | "sendExpectedCount") => {
     setAgents(prev => prev.map(agent => 
       agent.id === id ? { ...agent, [field]: !agent[field] } : agent
+    ));
+  };
+
+  const toggleTuning = (id: string) => {
+    setAgents(prev => prev.map(agent => 
+      agent.id === id ? { ...agent, showTuning: !agent.showTuning } : agent
+    ));
+  };
+
+  const updateTuning = (id: string, patch: Partial<AgentTuning>) => {
+    setAgents(prev => prev.map(agent => 
+      agent.id === id ? { ...agent, tuning: { ...agent.tuning, ...patch } } : agent
     ));
   };
 
@@ -101,7 +169,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
   useEffect(() => {
     setAgents(prev => prev.map(agent => ({
       ...agent,
-      url: buildSupplierUrl(agent.id),
+      url: agent.url || buildSupplierUrl(agent.id),
     })));
   }, [normalizedModel]);
 
@@ -111,10 +179,15 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
     try {
       const sourceUrl = agent.url || buildSupplierUrl(agent.id);
       const supplierId = agent.id;
+      const expectedTotal =
+        typeof truth?.expectedTotal === "number" && truth.expectedTotal > 0
+          ? truth.expectedTotal
+          : null;
+
       if (!jobId) throw new Error("Missing persisted jobId.");
-      if (!truth?.canonUrl) throw new Error("Missing persisted Visual Truth canonUrl.");
+      
       const payload = {
-        task: "load_supplier_index",
+        task: "run_supplier_agent",
         jobId,
         sourceUrl,
         includeDiagram: agent.sendDiagram,
@@ -123,19 +196,22 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
         diagramImageUrl: agent.sendDiagram
           ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null)
           : null,
-        expectedTotal: agent.sendExpectedCount ? (truth?.expectedTotal || 125) : null,
+        expectedTotal: agent.sendExpectedCount ? expectedTotal : null,
+        expectedTotalSource: expectedTotal ? "visual_truth" : null,
         assemblyNames: agent.sendDiagram ? truth?.assemblyNames : [],
         normalizedModel,
         supplierId,
         canonicalModel: normalizedModel,
-        supplier: supplierId === "sears" ? "sears-partsdirect" : supplierId,
+        supplier: supplierId,
         searchUrl: sourceUrl,
+        // PASS TUNING TO BACKEND
+        tuning: agent.tuning,
         visualTruth: {
           screenshotBase64: agent.sendDiagram ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null) : null,
           storedImageUrl: agent.sendDiagram ? truth?.storedImageUrl || null : null,
           base64: agent.sendDiagram ? truth?.base64 || null : null,
           canonUrl: agent.sendDiagram ? truth?.canonUrl || null : null,
-          expectedTotal: agent.sendExpectedCount ? (truth?.expectedTotal || 125) : null,
+          expectedTotal: agent.sendExpectedCount ? expectedTotal : null,
           assemblyNames: agent.sendDiagram ? truth?.assemblyNames : []
         }
       };
@@ -163,139 +239,179 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-widest flex items-center gap-2">
-          <Globe size={14} className="text-blue-500" /> Supplier Agent Matrix
+        <h3 className="text-xs font-black text-neutral-500 uppercase tracking-[0.2em] flex items-center gap-2">
+          <Globe size={14} className="text-blue-600" /> Supplier Agent Matrix
         </h3>
-        <div className="text-[10px] font-bold text-neutral-400 uppercase bg-neutral-100 px-2 py-0.5 rounded">
+        <div className="text-[10px] font-black text-neutral-400 uppercase bg-neutral-100 px-3 py-1 rounded-full">
           Model: {model || "NONE"}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {agents.map((agent) => (
           <motion.div
             key={agent.id}
             layout
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`group relative rounded-2xl border transition-all duration-300 overflow-hidden ${
-              agent.status === "running" ? "border-blue-200 bg-blue-50/30" :
-              agent.status === "success" ? "border-emerald-200 bg-emerald-50/30" :
-              agent.status === "error" ? "border-red-200 bg-red-50/30" :
-              "border-neutral-200 bg-white hover:border-neutral-300 hover:shadow-md"
+            className={`group relative rounded-3xl border transition-all duration-300 ${
+              agent.status === "running" ? "border-blue-300 bg-blue-50/20 ring-4 ring-blue-50/50 shadow-xl" :
+              agent.status === "success" ? "border-emerald-200 bg-emerald-50/20" :
+              agent.status === "error" ? "border-red-200 bg-red-50/20" :
+              "border-neutral-200 bg-white hover:border-neutral-400 hover:shadow-2xl"
             }`}
           >
-            {/* Status Bar */}
-            {agent.status !== "idle" && (
-              <div className={`h-1 w-full absolute top-0 left-0 ${
-                agent.status === "running" ? "bg-blue-500 animate-pulse" :
-                agent.status === "success" ? "bg-emerald-500" :
-                "bg-red-500"
-              }`} />
-            )}
+            {/* Status Indicator */}
+            <div className={`absolute top-4 right-4 w-2 h-2 rounded-full ${
+              agent.status === "running" ? "bg-blue-500 animate-ping" :
+              agent.status === "success" ? "bg-emerald-500" :
+              agent.status === "error" ? "bg-red-500" :
+              "bg-neutral-200"
+            }`} />
 
-            <div className="p-4 space-y-4">
+            <div className="p-5 space-y-5">
               {/* Header */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-sm ${
                     agent.status === "success" ? "bg-emerald-100 text-emerald-600" :
                     agent.status === "error" ? "bg-red-100 text-red-600" :
-                    "bg-neutral-100 text-neutral-500 group-hover:bg-blue-100 group-hover:text-blue-600"
+                    "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white"
                   }`}>
-                    {agent.status === "running" ? <Loader2 size={16} className="animate-spin" /> :
-                     agent.status === "success" ? <CheckCircle2 size={16} /> :
-                     agent.status === "error" ? <AlertCircle size={16} /> :
-                     <Globe size={16} />}
+                    {agent.status === "running" ? <Loader2 size={24} className="animate-spin" /> :
+                     agent.id === "ai-recovery" ? <Zap size={24} /> :
+                     <Search size={24} />}
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-neutral-800">{agent.name}</h4>
-                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-tight">
-                      {agent.status.toUpperCase()}
-                    </p>
+                    <h4 className="text-base font-black text-neutral-900 tracking-tight leading-none mb-1">{agent.name}</h4>
+                    <button 
+                      onClick={() => toggleTuning(agent.id)}
+                      className="flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800 transition-colors"
+                    >
+                      <Settings2 size={10} />
+                      {agent.showTuning ? "Hide Tuning" : "Tune Agent"}
+                      {agent.showTuning ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                    </button>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <a 
-                    href={agent.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="p-1.5 rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-all"
-                    title="Open URL"
-                  >
-                    <ExternalLink size={14} />
-                  </a>
                 </div>
               </div>
 
+              {/* Tuning Panel */}
+              <AnimatePresence>
+                {agent.showTuning && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-neutral-50 border border-neutral-100 mb-2">
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
+                          <FlaskConical size={10} /> Temp: {agent.tuning.temperature.toFixed(1)}
+                        </label>
+                        <input 
+                          type="range" min="0" max="2" step="0.1" 
+                          value={agent.tuning.temperature}
+                          onChange={(e) => updateTuning(agent.id, { temperature: parseFloat(e.target.value) })}
+                          className="w-full accent-blue-600"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
+                          <Cpu size={10} /> Thinking: {agent.tuning.thinkingLevel}
+                        </label>
+                        <select 
+                          value={agent.tuning.thinkingLevel}
+                          onChange={(e) => updateTuning(agent.id, { thinkingLevel: e.target.value as any })}
+                          className="w-full text-[10px] font-bold p-1 rounded border bg-white"
+                        >
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center justify-between col-span-2 pt-2 border-t border-neutral-200">
+                         <button 
+                          onClick={() => updateTuning(agent.id, { useSearch: !agent.tuning.useSearch })}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border transition-all ${
+                            agent.tuning.useSearch ? "bg-blue-100 border-blue-200 text-blue-700" : "bg-white border-neutral-200 text-neutral-400"
+                          }`}
+                         >
+                           <Globe size={10} /> Search {agent.tuning.useSearch ? "ON" : "OFF"}
+                         </button>
+                         <button 
+                          onClick={() => updateTuning(agent.id, { usePython: !agent.tuning.usePython })}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border transition-all ${
+                            agent.tuning.usePython ? "bg-emerald-100 border-emerald-200 text-emerald-700" : "bg-white border-neutral-200 text-neutral-400"
+                          }`}
+                         >
+                           <Terminal size={10} /> Python {agent.tuning.usePython ? "ON" : "OFF"}
+                         </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               {/* URL Input */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">
-                    Input URL
+              <div className="space-y-2">
+                <div className="flex items-center justify-between px-1">
+                  <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">
+                    Target Identity
                   </label>
-                  {editingId !== agent.id ? (
-                    <button 
-                      onClick={() => setEditingId(agent.id)}
-                      className="text-[10px] font-bold text-blue-600 hover:underline uppercase"
-                    >
-                      [Edit]
-                    </button>
-                  ) : (
-                    <button 
-                      onClick={() => setEditingId(null)}
-                      className="text-[10px] font-bold text-emerald-600 hover:underline uppercase"
-                    >
-                      [Save]
-                    </button>
-                  )}
+                  <button 
+                    onClick={() => setEditingId(editingId === agent.id ? null : agent.id)}
+                    className="text-[10px] font-black text-blue-600 hover:underline uppercase"
+                  >
+                    {editingId === agent.id ? "[Lock]" : "[Override]"}
+                  </button>
                 </div>
-                <div className="relative group/url">
-                  <input
-                    type="text"
-                    value={agent.url}
-                    readOnly={editingId !== agent.id}
-                    onChange={(e) => updateAgentUrl(agent.id, e.target.value)}
-                    className={`w-full text-[11px] font-mono px-3 py-2 rounded-lg border transition-all ${
-                      editingId === agent.id 
-                        ? "bg-white border-blue-300 ring-2 ring-blue-50 text-neutral-900" 
-                        : "bg-neutral-50 border-neutral-100 text-neutral-500 cursor-default"
-                    }`}
-                  />
-                </div>
+                <input
+                  type="text"
+                  value={agent.url}
+                  readOnly={editingId !== agent.id}
+                  onChange={(e) => updateAgentUrl(agent.id, e.target.value)}
+                  className={`w-full text-xs font-mono px-4 py-3 rounded-2xl border transition-all ${
+                    editingId === agent.id 
+                      ? "bg-white border-blue-400 ring-4 ring-blue-50 text-neutral-950" 
+                      : "bg-neutral-50 border-neutral-100 text-neutral-600"
+                  }`}
+                />
               </div>
 
               {/* Context Selection */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-2 gap-4">
                 <button
                   onClick={() => toggleAgentContext(agent.id, "sendDiagram")}
-                  className={`flex items-center gap-2 p-2 rounded-lg border transition-all text-left ${
+                  className={`flex flex-col gap-2 p-4 rounded-2xl border transition-all ${
                     agent.sendDiagram 
-                      ? "border-blue-100 bg-blue-50/50 text-blue-700 shadow-sm" 
+                      ? "border-blue-200 bg-blue-50/50 text-blue-900 shadow-sm" 
                       : "border-neutral-100 bg-neutral-50/30 text-neutral-400"
                   }`}
                 >
-                  {agent.sendDiagram ? <CheckSquare size={14} /> : <Square size={14} />}
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase leading-none">Diagram</span>
-                    <span className="text-[8px] font-medium opacity-70">Send Encompass Truth</span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[11px] font-black uppercase tracking-widest">Diagram</span>
+                    {agent.sendDiagram ? <CheckSquare size={16} /> : <Square size={16} />}
                   </div>
+                  <span className="text-[9px] font-bold opacity-60">Send Visual Truth</span>
                 </button>
 
                 <button
                   onClick={() => toggleAgentContext(agent.id, "sendExpectedCount")}
-                  className={`flex items-center gap-2 p-2 rounded-lg border transition-all text-left ${
+                  className={`flex flex-col gap-2 p-4 rounded-2xl border transition-all ${
                     agent.sendExpectedCount 
-                      ? "border-emerald-100 bg-emerald-50/50 text-emerald-700 shadow-sm" 
+                      ? "border-emerald-200 bg-emerald-50/50 text-emerald-900 shadow-sm" 
                       : "border-neutral-100 bg-neutral-50/30 text-neutral-400"
                   }`}
                 >
-                  {agent.sendExpectedCount ? <CheckSquare size={14} /> : <Square size={14} />}
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase leading-none">Count</span>
-                    <span className="text-[8px] font-medium opacity-70">Expected: {truth?.expectedTotal || 125}</span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-[11px] font-black uppercase tracking-widest">Evidence</span>
+                    {agent.sendExpectedCount ? <CheckSquare size={16} /> : <Square size={16} />}
                   </div>
+                  <span className="text-[9px] font-bold opacity-60">
+                    Goal: {typeof truth?.expectedTotal === "number" ? truth.expectedTotal : "???"}
+                  </span>
                 </button>
               </div>
 
@@ -303,33 +419,17 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               <button
                 onClick={() => runAgent(agent)}
                 disabled={agent.status === "running" || !model}
-                className={`w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm ${
+                className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg ${
                   agent.status === "running" ? "bg-neutral-100 text-neutral-400 cursor-not-allowed" :
                   agent.status === "success" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
                   agent.status === "error" ? "bg-red-600 text-white hover:bg-red-700" :
-                  "bg-neutral-900 text-white hover:bg-black hover:shadow-md transform active:scale-[0.98]"
+                  "bg-neutral-950 text-white hover:bg-black hover:-translate-y-1 active:translate-y-0"
                 }`}
               >
-                {agent.status === "running" ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-                Run {agent.name.split(" ")[0]} Agent
+                {agent.status === "running" ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} fill="currentColor" />}
+                Execute Mission
               </button>
             </div>
-            
-            {/* Error Message */}
-            <AnimatePresence>
-              {agent.error && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="bg-red-50 border-t border-red-100 px-4 py-2"
-                >
-                  <p className="text-[9px] font-bold text-red-600 uppercase flex items-center gap-1">
-                    <AlertCircle size={10} /> {agent.error}
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         ))}
       </div>
