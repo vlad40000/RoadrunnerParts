@@ -496,9 +496,6 @@ export async function extractNameplateFromImage(imageData, mimeType) {
   LOOK FOR THESE PATTERNS:
   - MODEL NUMBER: "MODEL NO.", "MODEL NUMBER", "MODEL", "M/N", "MOD", "MODELO"
   - SERIAL NUMBER: "SERIAL NO.", "SERIAL NUMBER", "SERIAL", "S/N", "SER", "SERIE"
-  - BRAND: (e.g., Samsung, LG, Whirlpool, GE, Maytag, Kenmore)
-  - PRODUCT TYPE: (e.g., Dishwasher, Dryer, Washer, Refrigerator)
-  - ENGINEERING/REVISION: Any secondary suffix or revision codes.
 
   CRITICAL INSTRUCTIONS:
   1. BE EXTREMELY PRECISE with alphanumeric characters (e.g., '0' vs 'O', '1' vs 'I', '8' vs 'B').
