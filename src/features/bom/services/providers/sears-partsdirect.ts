@@ -11,6 +11,14 @@ import {
   uniqueBy,
   runWithConcurrency,
 } from "./utils";
+import {
+  extractSearsCatalogPayload,
+  parseSearsCatalogModel,
+  parseSearsModelSearchPayload,
+  parseSearsCatalogDiagrams,
+  parseSearsCatalogParts,
+  type SearsCatalogPart,
+} from "./sears-catalog-adapter";
 
 const FIX_BRAND_SLUGS: Record<string, string> = {
   GE: "general-electric",
@@ -74,72 +82,48 @@ export async function resolveSearsModelPartCount(input: {
   
   try {
     const html = await fetchHtml(searchUrl);
+    const payload = extractSearsCatalogPayload(html);
+
+    if (payload) {
+      if (payload.models?.items) {
+        const models = parseSearsModelSearchPayload(payload);
+        const exact = models.find(m => normalizeModel(m.modelNumber) === model);
+        if (exact?.partCount) {
+          console.log(`[Sears Adapter] Found authoritative part count for ${model} via Listing Payload: ${exact.partCount}`);
+          return exact.partCount;
+        }
+      }
+      
+      const catalogModel = parseSearsCatalogModel(payload);
+      if (catalogModel?.partCount) {
+        console.log(`[Sears Adapter] Found authoritative part count for ${model} via Detail Payload: ${catalogModel.partCount}`);
+        return catalogModel.partCount;
+      }
+    }
+
     const $ = load(html);
     
-    // Sears search result cards for models often have a part count like "86 parts"
-    // We look for a container that mentions the model and an "EXACT MATCH"
     let count: number | null = null;
-    
-    // Strategy 1: Look for the specific count element identified by the user (.models__count)
-    // This is often found near the "Exact Match" ribbon
     const modelsCountText = $(".models__count, .parts-count, .count, .model-parts-count").first().text().trim();
     if (modelsCountText) {
       const match = modelsCountText.match(/(\d+)\s*parts/i);
       if (match) {
         count = parseInt(match[1], 10);
-        console.log(`[Sears Scraper] Found count via .models__count: ${count}`);
       }
     }
 
-    // Strategy 2: Find the exact match card and extract parts count from it
     if (count === null) {
       $(".model-card, .search-result-card, .product-card, .search-result-item, .search-result-item-container").each((_, el) => {
         const $card = $(el);
         const cardText = $card.text().trim();
-        
-        // Target cards that have the model number
         if (cardText.toUpperCase().includes(model.toUpperCase())) {
-          // Look for common patterns: "86 parts", "(86 parts)", "Count: 86"
-          // We look in sub-elements first for precision
-          const countCandidate = $card.find(".parts-count, .count, .model-parts-count, .models__count, span:contains('parts'), div:contains('parts')").text();
-          const match = (countCandidate + " " + cardText).match(/(\d+)\s*(?:parts|items|components)/i);
-          
+          const match = cardText.match(/(\d+)\s*(?:parts|items|components)/i);
           if (match) {
             count = parseInt(match[1], 10);
-            if (cardText.toUpperCase().includes("EXACT MATCH") || $card.find("#exact-match-ribbon").length > 0) {
-              return false; // Found exact match count, stop searching
-            }
+            if (cardText.toUpperCase().includes("EXACT MATCH")) return false;
           }
         }
       });
-    }
-
-    if (count === null) {
-      // Strategy 2: Look for any text on the page matching the pattern "XXX parts" near the model number
-      const bodyText = $("body").text();
-      const modelIndex = bodyText.toUpperCase().indexOf(model.toUpperCase());
-      if (modelIndex !== -1) {
-        // Look in a window around the model match
-        const window = bodyText.slice(Math.max(0, modelIndex - 100), modelIndex + 300);
-        const match = window.match(/(\d+)\s*parts/i);
-        if (match) {
-          count = parseInt(match[1], 10);
-        }
-      }
-    }
-
-    if (count === null) {
-      // Strategy 3: Global body search for "(\d+) parts"
-      const match = $("body").text().match(/(\d+)\s*parts/i);
-      if (match) {
-        count = parseInt(match[1], 10);
-      }
-    }
-
-    if (count !== null) {
-      console.log(`[Sears Scraper] Found authoritative part count for ${model}: ${count}`);
-    } else {
-      console.warn(`[Sears Scraper] No part count found for ${model} on search page.`);
     }
 
     return count;
@@ -489,11 +473,52 @@ function collectPaginationUrls(html: string, currentUrl: string) {
   return uniqueBy(urls, (url) => url).slice(0, 7);
 }
 
-async function fetchAndParseSearsPage(url: string) {
+async function fetchAndParseSearsPage(url: string, modelNumber: string) {
   const html = await fetchHtml(url);
+  const payload = extractSearsCatalogPayload(html);
+
+  if (payload) {
+    console.log(`[Sears Adapter] Found authoritative CATALOG_API_RESPONSE for ${modelNumber}`);
+    
+    if (payload.modelDetails) {
+      const diagrams = parseSearsCatalogDiagrams(payload);
+      const catalogParts = parseSearsCatalogParts(payload);
+      const catalogModel = parseSearsCatalogModel(payload);
+
+      const rows: (SearsParsedRow & { price?: number | null })[] = catalogParts.map(p => ({
+        sectionName: "All Model Parts",
+        diagramNumber: p.diagramNumber,
+        description: p.description,
+        originalPartNumber: p.originalPartNumber,
+        currentServicePartNumber: p.currentServicePartNumber,
+        nlaStatus: p.availability?.toLowerCase().includes("no longer available") || false,
+        replacementNote: p.replacementNote || null,
+        price: p.price,
+      }));
+
+      return { 
+        html, 
+        lines: [], 
+        rows,
+        diagrams,
+        catalogModel,
+        type: 'detail' as const
+      };
+    }
+
+    if (payload.models?.items) {
+      const models = parseSearsModelSearchPayload(payload);
+      return { 
+        html, 
+        lines: [], 
+        rows: [], 
+        searchModels: models,
+        type: 'listing' as const
+      };
+    }
+  }
+
   const rowsFromDom = parseRowsFromHtml(html);
-  
-  // Combine with line-based parsing as fallback/supplement
   const lines = htmlToLines(html);
   const rowsFromLines = parseRowsFromLines(lines);
   
@@ -502,7 +527,7 @@ async function fetchAndParseSearsPage(url: string) {
     (row) => `${row.sectionName}|${row.diagramNumber}|${row.currentServicePartNumber || row.originalPartNumber}|${row.description}`
   );
 
-  return { html, lines, rows: merged };
+  return { html, lines, rows: merged, type: 'legacy' as const };
 }
 
 export const searsPartsDirectProvider: SourceProvider = {
@@ -526,16 +551,15 @@ export const searsPartsDirectProvider: SourceProvider = {
     if (!resolution?.url) return [];
     const url = resolution.url;
 
-    // Note: Sears is no longer used for authoritative part counts.
-    // Fix.com is the primary truth source for coverage verification.
-    const expectedPartsTotal = null;
-
-    const mergedRows: SearsParsedRow[] = [];
+    const mergedRows: (SearsParsedRow & { price?: number | null })[] = [];
     const visited = new Set<string>();
 
-    const first = await fetchAndParseSearsPage(url);
+    const first = await fetchAndParseSearsPage(url, model);
     mergedRows.push(...first.rows);
     visited.add(url);
+
+    // If authoritative payload gave us the part count, use it
+    const expectedPartsTotal = (first as any).catalogModel?.partCount || null;
 
     const extraPages =
       first.lines.some((line) => isPaginationMarker(line))
@@ -549,7 +573,7 @@ export const searsPartsDirectProvider: SourceProvider = {
       async (nextUrl) => {
         visited.add(nextUrl);
         try {
-          return await fetchAndParseSearsPage(nextUrl);
+          return await fetchAndParseSearsPage(nextUrl, model);
         } catch (err) {
           console.error(`[Sears] Failed to fetch page ${nextUrl}:`, err);
           return null;
@@ -600,7 +624,7 @@ export const searsPartsDirectProvider: SourceProvider = {
       }),
       meta: {
         rowCount: group.rows.length,
-        parser: "sears-model-page-v2",
+        parser: first.type === 'detail' ? "sears-catalog-json-v1" : "sears-model-page-v2",
         expectedPartsTotal,
         expectedPartsSource: "searspartsdirect.com",
         ...resolution,

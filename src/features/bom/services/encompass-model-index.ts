@@ -2,7 +2,15 @@ import "server-only";
 
 import { db } from "@/server/db";
 import { encompassModelUrls } from "@/server/db/schema/encompass-model-urls";
-import { and, asc, eq, like } from "drizzle-orm";
+import { and, asc, eq, like, or } from "drizzle-orm";
+
+export const ENCOMPASS_FAMILIES: Record<string, string> = {
+  HOT: "GE / HotPoint tree",
+  WHI: "Whirlpool tree",
+  MAY: "Maytag tree",
+  FRI: "Electrolux / Frigidaire tree",
+  ZEN: "LG tree",
+};
 
 export type EncompassModelIndexRow = {
   brand?: string | null;
@@ -77,7 +85,13 @@ export async function resolveEncompassExplodedViewUrl(input: {
   return {
     status: rows.length === 1 ? ("exact_match" as const) : ("multiple_matches" as const),
     normalizedModel,
-    selected: rows[0],
-    candidates: rows,
+    selected: {
+      ...rows[0],
+      family: ENCOMPASS_FAMILIES[rows[0].encompass_route || ""] || "Unknown tree",
+    },
+    candidates: rows.map(r => ({
+      ...r,
+      family: ENCOMPASS_FAMILIES[r.encompass_route || ""] || "Unknown tree",
+    })),
   };
 }

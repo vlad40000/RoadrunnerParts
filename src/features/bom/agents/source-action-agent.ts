@@ -22,6 +22,12 @@ import {
   mergeRowsByPartNumber,
   selectedExpectedCount,
 } from "@/features/bom/services/manual-source-utils";
+import {
+  extractSearsCatalogPayload,
+  parseSearsCatalogModel,
+  parseSearsCatalogDiagrams,
+  parseSearsCatalogParts,
+} from "@/features/bom/services/providers/sears-catalog-adapter";
 import { validate_bom_completion } from "@/features/bom/core/bom-validator";
 
 type SelectedAssemblyInput = {
@@ -97,6 +103,14 @@ function countPricedRows(rows: Array<Record<string, any>>) {
   ).length;
 }
 
+function checkPricedRows(rows: Array<Record<string, any>>) {
+  return rows.filter(
+    (row) =>
+      (row.price !== null && row.price !== undefined && row.price > 0) ||
+      (row.retailPrice !== null && row.retailPrice !== undefined && row.retailPrice > 0),
+  ).length;
+}
+
 export async function runSourceActionAgent(input: SourceActionInput) {
   const job = await getBomJob(input.jobId);
   if (!job) throw new Error("BOM job not found");
@@ -124,6 +138,110 @@ export async function runSourceActionAgent(input: SourceActionInput) {
     }
 
     return resolution.selected.url;
+  }
+
+  // --- SEARS SPECIALIZED TASKS ---
+  if (input.task === ("sears_resolve" as any)) {
+    const resolvedSearchUrl = await resolveSupplierUrl();
+    await setBomJobStage(input.jobId, "sears_resolving");
+
+    const fetched = await fetchExactSupplierUrl(resolvedSearchUrl);
+    const payload = extractSearsCatalogPayload(fetched.html);
+    if (!payload) throw new Error("No Sears CATALOG_API_RESPONSE found. Use Load Index fallback.");
+
+    const catalogModel = parseSearsCatalogModel(payload);
+    if (!catalogModel) throw new Error("Failed to parse Sears model resolution payload.");
+
+    await updateBomJobSummary(input.jobId, {
+      jobStage: "sears_resolved",
+      brand: catalogModel.brand || input.brand,
+      model: catalogModel.modelNumber || input.canonicalModel,
+      expectedPartsTotal: catalogModel.partCount || null,
+      truthSource: fetched.finalUrl,
+    });
+
+    return { status: "sears_resolved", catalogModel };
+  }
+
+  if (input.task === ("sears_diagrams" as any)) {
+    const resolvedSearchUrl = await resolveSupplierUrl();
+    await setBomJobStage(input.jobId, "sears_diagrams_loading");
+
+    const fetched = await fetchExactSupplierUrl(resolvedSearchUrl);
+    const payload = extractSearsCatalogPayload(fetched.html);
+    if (!payload) throw new Error("No Sears CATALOG_API_RESPONSE found.");
+
+    const diagrams = parseSearsCatalogDiagrams(payload);
+    const supplierIndex: SupplierAssemblyIndex = {
+      supplier: "sears-partsdirect",
+      canonicalModel: input.canonicalModel,
+      formattedModel: input.formattedModel || input.canonicalModel,
+      sourceUrl: resolvedSearchUrl,
+      totalCount: payload.model?.partCount || null,
+      totalCountEvidence: "CATALOG_API_RESPONSE",
+      totalCountSourceUrl: fetched.finalUrl,
+      loadedAt: new Date().toISOString(),
+      assemblies: diagrams.map(d => ({
+        id: d.id,
+        title: d.title,
+        sourceUrl: d.sourceUrl || resolvedSearchUrl,
+        supplierCount: null,
+        countEvidence: null,
+        selected: false,
+        overrideCount: null,
+        status: "pending",
+        actualCount: 0
+      }))
+    };
+
+    const diagramParse = getExistingDiagramParse(job);
+    const nextDiagramParse = updateSupplierIndexInDiagramParse({ diagramParse, supplierIndex });
+
+    await saveBomArtifacts(input.jobId, { diagramParse: nextDiagramParse });
+    await updateBomJobSummary(input.jobId, { jobStage: "sears_diagrams_loaded" });
+
+    return { status: "sears_diagrams_loaded", supplierIndex };
+  }
+
+  if (input.task === ("sears_parts" as any)) {
+    const resolvedSearchUrl = await resolveSupplierUrl();
+    await setBomJobStage(input.jobId, "sears_parts_extracting");
+
+    const fetched = await fetchExactSupplierUrl(resolvedSearchUrl);
+    const payload = extractSearsCatalogPayload(fetched.html);
+    if (!payload) throw new Error("No Sears CATALOG_API_RESPONSE found.");
+
+    const catalogParts = parseSearsCatalogParts(payload);
+    const extractedRows = catalogParts.map(p => ({
+      section: "All Model Parts",
+      diagramNumber: p.diagramNumber,
+      description: p.description,
+      originalPartNumber: p.originalPartNumber,
+      currentServicePartNumber: p.currentServicePartNumber,
+      price: p.price,
+      retailPrice: p.price,
+      retailPriceVerified: p.price !== null,
+      priceSource: "searspartsdirect.com",
+      sourceUrl: fetched.finalUrl,
+      sourceType: "distributor",
+      supplier: "sears-partsdirect",
+    }));
+
+    const existingRows = Array.isArray(job.finalRows) ? (job.finalRows as any[]) : [];
+    const mergedRows = mergeRowsByPartNumber(existingRows, extractedRows);
+
+    const pricedCount = checkPricedRows(mergedRows);
+    const pricingComplete = pricedCount > 0 && pricedCount >= mergedRows.length;
+
+    await saveBomArtifacts(input.jobId, { finalRows: mergedRows });
+    await updateBomJobSummary(input.jobId, {
+      jobStage: "sears_parts_extracted",
+      actualPartCount: mergedRows.length,
+      verifiedPriceCount: pricedCount,
+      pricingComplete
+    });
+
+    return { status: "sears_parts_extracted", rowCount: mergedRows.length, pricedCount };
   }
 
   if (input.task === "lock_supplier_target") {
