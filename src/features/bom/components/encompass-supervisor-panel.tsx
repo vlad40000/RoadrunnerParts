@@ -4,11 +4,12 @@ import { useState } from "react";
 import { Camera, RefreshCw, List, ExternalLink, Edit2, Check } from "lucide-react";
 
 interface EncompassSupervisorProps {
+  jobId?: string | null;
   model: string;
   onTruthCaptured?: (data: any) => void;
 }
 
-export function EncompassSupervisorPanel({ model, onTruthCaptured }: EncompassSupervisorProps) {
+export function EncompassSupervisorPanel({ jobId, model, onTruthCaptured }: EncompassSupervisorProps) {
   const [loading, setLoading] = useState(false);
   const [truth, setTruth] = useState<any>(null);
   const [editingTotal, setEditingTotal] = useState(false);
@@ -20,15 +21,26 @@ export function EncompassSupervisorPanel({ model, onTruthCaptured }: EncompassSu
       const res = await fetch("/api/agents/encompass/assembly-overview-capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ canonUrl: model, immediate: false }),
+        body: JSON.stringify({ model, immediate: false }),
       });
 
       if (!res.ok) throw new Error("Capture failed");
       
       const data = await res.json();
-      setTruth(data);
+      const normalizedTruth = {
+        ...data,
+        canonUrl: data.canonUrl || data.context?.canonUrl || null,
+      };
+      setTruth(normalizedTruth);
       setManualTotal(data.expectedTotal || "");
-      if (onTruthCaptured) onTruthCaptured(data);
+      if (jobId) {
+        await fetch(`/api/bom/jobs/${jobId}/visual-truth`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(normalizedTruth),
+        });
+      }
+      if (onTruthCaptured) onTruthCaptured(normalizedTruth);
     } catch (err) {
       console.error(err);
       alert("Supervisor capture failed. Ensure the model is valid.");

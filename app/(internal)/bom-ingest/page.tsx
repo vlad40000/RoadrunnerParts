@@ -1,13 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EncompassSupervisorPanel } from "@/src/features/bom/components/encompass-supervisor-panel";
 import { SupplierAgentMatrix } from "@/src/features/bom/components/supplier-agent-matrix";
 import { ArrowRight, Settings, ShieldCheck } from "lucide-react";
 
 export default function BomIngestPage() {
   const [model, setModel] = useState("");
+  const [jobId, setJobId] = useState<string | null>(null);
   const [truth, setTruth] = useState<any>(null);
+
+  useEffect(() => {
+    const normalized = model.trim().toUpperCase();
+    if (!normalized) {
+      setJobId(null);
+      setTruth(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const res = await fetch("/api/bom/jobs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: normalized }),
+      });
+      const data = await res.json();
+      if (data?.job?.id) {
+        setJobId(data.job.id);
+        const truthRes = await fetch(`/api/bom/jobs/${data.job.id}/visual-truth`);
+        const truthData = await truthRes.json();
+        setTruth(truthData.visualTruth || null);
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [model]);
 
   return (
     <main className="p-8 max-w-5xl mx-auto space-y-8">
@@ -63,7 +90,7 @@ export default function BomIngestPage() {
             </div>
           </div>
 
-          <SupplierAgentMatrix model={model} truth={truth} />
+          <SupplierAgentMatrix jobId={jobId} model={model} truth={truth} />
         </div>
 
         {/* Right Column: Supervisor Panel */}
@@ -73,6 +100,7 @@ export default function BomIngestPage() {
               Establish Visual Truth
             </label>
             <EncompassSupervisorPanel 
+              jobId={jobId}
               model={model} 
               onTruthCaptured={(data) => setTruth(data)}
             />

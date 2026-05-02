@@ -25,6 +25,7 @@ interface AgentState {
 }
 
 interface SupplierAgentMatrixProps {
+  jobId?: string | null;
   model: string;
   truth: any;
 }
@@ -64,7 +65,7 @@ const INITIAL_AGENTS: AgentState[] = [
   },
 ];
 
-export function SupplierAgentMatrix({ model, truth }: SupplierAgentMatrixProps) {
+export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrixProps) {
   const [agents, setAgents] = useState<AgentState[]>(INITIAL_AGENTS);
   const [editingId, setEditingId] = useState<string | null>(null);
   const normalizedModel = normalizeCanonicalModel(model);
@@ -110,8 +111,11 @@ export function SupplierAgentMatrix({ model, truth }: SupplierAgentMatrixProps) 
     try {
       const sourceUrl = agent.url || buildSupplierUrl(agent.id);
       const supplierId = agent.id;
+      if (!jobId) throw new Error("Missing persisted jobId.");
+      if (!truth?.canonUrl) throw new Error("Missing persisted Visual Truth canonUrl.");
       const payload = {
         task: "load_supplier_index",
+        jobId,
         sourceUrl,
         canonUrl: truth?.canonUrl || null,
         diagramImageUrl: agent.sendDiagram
@@ -134,7 +138,13 @@ export function SupplierAgentMatrix({ model, truth }: SupplierAgentMatrixProps) 
         }
       };
 
-      const res = await fetch("/api/bom/source-action", {
+      await fetch(`/api/bom/jobs/${jobId}/supplier-runs/${supplierId}/input`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const res = await fetch(`/api/bom/jobs/${jobId}/supplier-runs/${supplierId}/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

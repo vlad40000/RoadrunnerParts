@@ -28,6 +28,55 @@ export async function createBomJob() {
   return getBomJob(id);
 }
 
+export async function createOrReuseBomJob(input: {
+  model?: string | null;
+  brand?: string | null;
+  serial?: string | null;
+  productType?: string | null;
+}) {
+  const model = String(input.model || "").trim().toUpperCase();
+
+  if (!model) {
+    return createBomJob();
+  }
+
+  const existing = await db
+    .select()
+    .from(bomJobs)
+    .where(eq(bomJobs.model, model))
+    .limit(1);
+
+  if (existing[0]) {
+    await db
+      .update(bomJobs)
+      .set({
+        brand: input.brand ?? existing[0].brand,
+        serial: input.serial ?? existing[0].serial,
+        productType: input.productType ?? existing[0].productType,
+        updatedAt: new Date(),
+      })
+      .where(eq(bomJobs.id, existing[0].id));
+
+    return getBomJob(existing[0].id);
+  }
+
+  const job = await createBomJob();
+  if (!job) return null;
+
+  await db
+    .update(bomJobs)
+    .set({
+      model,
+      brand: input.brand ?? null,
+      serial: input.serial ?? null,
+      productType: input.productType ?? null,
+      updatedAt: new Date(),
+    })
+    .where(eq(bomJobs.id, job.id));
+
+  return getBomJob(job.id);
+}
+
 export async function getBomJob(jobId: string) {
   const [job] = await db
     .select()
@@ -332,5 +381,71 @@ export async function saveCompilationArtifacts(
       updatedAt: new Date(),
     })
     .where(eq(bomJobs.id, jobId));
+}
+
+export async function saveBomVisualTruth(
+  jobId: string,
+  visualTruth: Record<string, unknown>,
+) {
+  const job = await getBomJob(jobId);
+  if (!job) throw new Error("BOM job not found");
+
+  const diagramParse = (job.diagramParse as Record<string, unknown>) || {};
+  await saveBomArtifacts(jobId, {
+    diagramParse: {
+      ...diagramParse,
+      visualTruth,
+    },
+  });
+}
+
+export async function saveBomSupplierRunInput(
+  jobId: string,
+  supplierId: string,
+  input: Record<string, unknown>,
+) {
+  const job = await getBomJob(jobId);
+  if (!job) throw new Error("BOM job not found");
+
+  const diagramParse = (job.diagramParse as Record<string, unknown>) || {};
+  const supplierRuns = (diagramParse.supplierRuns as Record<string, unknown>) || {};
+
+  await saveBomArtifacts(jobId, {
+    diagramParse: {
+      ...diagramParse,
+      supplierRuns: {
+        ...supplierRuns,
+        [supplierId]: {
+          ...(supplierRuns[supplierId] as Record<string, unknown> | undefined),
+          input,
+        },
+      },
+    },
+  });
+}
+
+export async function saveBomSupplierRunResult(
+  jobId: string,
+  supplierId: string,
+  result: Record<string, unknown>,
+) {
+  const job = await getBomJob(jobId);
+  if (!job) throw new Error("BOM job not found");
+
+  const diagramParse = (job.diagramParse as Record<string, unknown>) || {};
+  const supplierRuns = (diagramParse.supplierRuns as Record<string, unknown>) || {};
+
+  await saveBomArtifacts(jobId, {
+    diagramParse: {
+      ...diagramParse,
+      supplierRuns: {
+        ...supplierRuns,
+        [supplierId]: {
+          ...(supplierRuns[supplierId] as Record<string, unknown> | undefined),
+          result,
+        },
+      },
+    },
+  });
 }
 

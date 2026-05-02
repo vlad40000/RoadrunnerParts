@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import { NextResponse } from "next/server";
 import { uploadFile } from "@/lib/blob";
+import { resolveEncompassExplodedViewUrl } from "@/src/features/bom/services/encompass-model-index";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,13 +15,20 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as {
+      model?: string;
       canonUrl?: string;
       immediate?: boolean;
     };
-    const { canonUrl, immediate = false } = body;
+    const { model, canonUrl, immediate = false } = body;
 
-    if (!canonUrl) {
-      return NextResponse.json({ error: "Missing canonUrl" }, { status: 400 });
+    const resolvedUrl = canonUrl?.trim()
+      ? canonUrl
+      : model?.trim()
+        ? (await resolveEncompassExplodedViewUrl({ model })).selected?.url
+        : null;
+
+    if (!resolvedUrl) {
+      return NextResponse.json({ error: "Missing canonUrl or model" }, { status: 400 });
     }
 
     // Launch browser with specific viewport for high-fidelity capture
@@ -33,7 +41,7 @@ export async function POST(request: Request) {
       });
 
       // Navigate to Encompass canonical URL
-      await page.goto(canonUrl, {
+      await page.goto(resolvedUrl, {
         waitUntil: "networkidle",
         timeout: 45000,
       });
@@ -53,7 +61,7 @@ export async function POST(request: Request) {
       // Rule: Use base64 only for immediate one-off calls because it makes payloads heavy.
       if (!immediate) {
         // Sanitize filename or use a hash to avoid collisions
-        const safeId = Buffer.from(canonUrl)
+        const safeId = Buffer.from(resolvedUrl)
           .toString("base64")
           .substring(0, 10)
           .replace(/[^a-zA-Z0-9]/g, "");
@@ -71,9 +79,10 @@ export async function POST(request: Request) {
         storedImageUrl,
         base64: immediate ? base64 : undefined,
         context: {
-          canonUrl,
+          canonUrl: resolvedUrl,
           capturedAt: new Date().toISOString(),
         },
+        canonUrl: resolvedUrl,
       });
     } finally {
       await browser.close();

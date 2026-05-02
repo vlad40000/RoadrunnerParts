@@ -1,23 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createBomJob } from "@/features/bom/services/job-store";
+import { createOrReuseBomJob, getBomJob } from "@/features/bom/services/job-store";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   try {
-    const job = await createBomJob();
-    return NextResponse.json({
-      ok: true,
-      jobId: job?.id,
+    const body = await req.json().catch(() => ({}));
+    const job = await createOrReuseBomJob({
+      model: body.model,
+      brand: body.brand,
+      serial: body.serial,
+      productType: body.productType,
     });
+
+    return NextResponse.json({ ok: true, job });
   } catch (error) {
-    console.error(`[JobsApi] Failed to create job:`, error);
     return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Job creation failed",
-      },
+      { ok: false, error: error instanceof Error ? error.message : "Job creation failed" },
       { status: 500 },
     );
   }
+}
+
+export async function GET(req: NextRequest) {
+  const jobId = req.nextUrl.searchParams.get("jobId");
+  if (!jobId) {
+    return NextResponse.json({ ok: false, error: "Missing jobId" }, { status: 400 });
+  }
+  const job = await getBomJob(jobId);
+  if (!job) return NextResponse.json({ ok: false, error: "Job not found" }, { status: 404 });
+  return NextResponse.json({ ok: true, job });
 }
