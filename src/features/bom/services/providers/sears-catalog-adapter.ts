@@ -2,6 +2,16 @@ import "server-only";
 
 export type SearsPayloadKind = "model_resolver" | "model_detail" | "unknown";
 
+export interface SearsCatalogPart {
+  diagramNumber: string;
+  description: string;
+  originalPartNumber: string;
+  currentServicePartNumber: string;
+  availability: string;
+  replacementNote: string | null;
+  price: number | null;
+}
+
 export function classifySearsPayload(payload: any): SearsPayloadKind {
   if (!payload || typeof payload !== "object") return "unknown";
   
@@ -29,36 +39,105 @@ export function classifySearsPayload(payload: any): SearsPayloadKind {
   return "unknown";
 }
 
-export interface SearsResolverCandidate {
-  modelId: string;
-  modelNumber: string;
-  brand: string;
-  category: string;
-  partCount: number;
-  url: string;
+export function extractSearsCatalogPayload(html: string): any {
+  if (!html) return null;
+  const match = html.match(/window\.CATALOG_API_RESPONSE\s*=\s*({.*?});/s) ||
+                html.match(/window\.__APOLLO_STATE__\s*=\s*({.*?});/s);
+  if (!match) return null;
+  try {
+    return JSON.parse(match[1]);
+  } catch (err) {
+    console.error("[Sears Adapter] Failed to parse CATALOG_API_RESPONSE JSON:", err);
+    return null;
+  }
 }
 
-export function extractSearsResolverCandidates(payload: any): SearsResolverCandidate[] {
-  const candidates: SearsResolverCandidate[] = [];
+export function parseSearsCatalogModel(payload: any) {
+  if (!payload) return null;
+  const modelObj = Object.values(payload).find((v: any) => v?.__typename === "Model" && v?.number);
+  if (!modelObj) return null;
   
-  // Navigate the complex Sears Apollo payload to find the models list
-  // Usually under ROOT_QUERY.models(...) or a specific search node
-  Object.entries(payload).forEach(([key, value]: [string, any]) => {
-    if (value?.__typename === "Model") {
-      // Direct model objects found in the payload
-      candidates.push({
-        modelId: value.id || key,
-        modelNumber: value.number || value.modelNumber || "Unknown",
-        brand: value.brand?.name || "Unknown",
-        category: value.category?.name || "Unknown",
-        partCount: value.partCount || 0,
-        url: `https://www.searspartsdirect.com/model/${value.id}`
+  return {
+    id: modelObj.id,
+    modelNumber: modelObj.number || modelObj.modelNumber,
+    brand: modelObj.brand?.name || "Unknown",
+    category: modelObj.category?.name || "Unknown",
+    partCount: modelObj.partCount || 0,
+    hasParts: modelObj.hasParts || false
+  };
+}
+
+export function parseSearsModelSearchPayload(payload: any) {
+  if (!payload) return [];
+  const results: any[] = [];
+  
+  Object.values(payload).forEach((v: any) => {
+    if (v?.__typename === "Model" && v?.number) {
+      results.push({
+        id: v.id,
+        modelNumber: v.number,
+        brand: v.brand?.name || "Unknown",
+        category: v.category?.name || "Unknown",
+        partCount: v.partCount || 0,
+        url: `https://www.searspartsdirect.com/model/${v.id}`
       });
     }
   });
 
-  // Dedupe and filter out non-essential nodes
-  return candidates.filter((c, index, self) => 
-    self.findIndex(t => t.modelId === c.modelId) === index && c.modelId
-  );
+  return results.filter((m, i, self) => self.findIndex(t => t.id === m.id) === i);
+}
+
+export function parseSearsCatalogDiagrams(payload: any) {
+  if (!payload) return [];
+  const diagrams: any[] = [];
+
+  Object.values(payload).forEach((v: any) => {
+    if (v?.__typename === "Diagram") {
+      diagrams.push({
+        id: v.id,
+        name: v.name,
+        imageUrl: v.imageUrl,
+        partCount: v.partCount || 0
+      });
+    }
+  });
+
+  return diagrams;
+}
+
+export function parseSearsCatalogParts(payload: any): SearsCatalogPart[] {
+  if (!payload) return [];
+  const parts: SearsCatalogPart[] = [];
+
+  Object.values(payload).forEach((v: any) => {
+    if (v?.__typename === "Part") {
+      parts.push({
+        diagramNumber: v.keyNumber || v.diagramNumber || "0",
+        description: v.description || v.name || "Appliance Part",
+        originalPartNumber: v.partNumber || v.number,
+        currentServicePartNumber: v.substitutionPartNumber || v.partNumber || v.number,
+        availability: v.availability || (v.inStock ? "In Stock" : "Check Availability"),
+        replacementNote: v.replacementNote || null,
+        price: v.price ? parseFloat(v.price) : null
+      });
+    }
+  });
+
+  return parts;
+}
+
+export function extractSearsResolverCandidates(payload: any) {
+  return parseSearsModelSearchPayload(payload);
+}
+
+export function parseSearsModelDetailPayload(payload: any) {
+  const model = parseSearsCatalogModel(payload);
+  const diagrams = parseSearsCatalogDiagrams(payload);
+  const parts = parseSearsCatalogParts(payload);
+  
+  return {
+    model,
+    diagrams,
+    parts
+  };
 }
