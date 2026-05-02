@@ -1,20 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   Globe, 
   CheckSquare, 
   Square, 
   Play, 
-  Edit3, 
   ExternalLink, 
   Loader2,
   CheckCircle2,
-  AlertCircle,
-  FileText,
-  Hash
+  AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { normalizeCanonicalModel } from "@/src/features/bom/services/source-tier-policy";
 
 interface AgentState {
   id: string;
@@ -35,23 +33,23 @@ const INITIAL_AGENTS: AgentState[] = [
   {
     id: "fix",
     name: "Fix.com Agent",
-    url: "https://www.fix.com/models/washer/whirlpool/wtw7500gc2/",
+    url: "",
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
   },
   {
-    id: "rc",
+    id: "repairclinic",
     name: "RepairClinic Agent",
-    url: "https://www.repairclinic.com/Shop-For-Parts?SearchText=WTW7500GC2",
+    url: "",
     sendDiagram: true,
     sendExpectedCount: false,
     status: "idle",
   },
   {
-    id: "app",
+    id: "appliancepartspros",
     name: "AppliancePartsPros Agent",
-    url: "https://www.appliancepartspros.com/search.aspx?model=WTW7500GC2",
+    url: "",
     sendDiagram: false,
     sendExpectedCount: true,
     status: "idle",
@@ -59,7 +57,7 @@ const INITIAL_AGENTS: AgentState[] = [
   {
     id: "sears",
     name: "Sears PartsDirect Agent",
-    url: "https://www.searspartsdirect.com/search?q=WTW7500GC2",
+    url: "",
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
@@ -69,6 +67,23 @@ const INITIAL_AGENTS: AgentState[] = [
 export function SupplierAgentMatrix({ model, truth }: SupplierAgentMatrixProps) {
   const [agents, setAgents] = useState<AgentState[]>(INITIAL_AGENTS);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const normalizedModel = normalizeCanonicalModel(model);
+
+  const buildSupplierUrl = (supplierId: string) => {
+    const encoded = encodeURIComponent(normalizedModel);
+    switch (supplierId) {
+      case "fix":
+        return `https://www.fix.com/search/?SearchTerm=${encoded}`;
+      case "repairclinic":
+        return `https://www.repairclinic.com/Shop-For-Parts?SearchText=${encoded}`;
+      case "appliancepartspros":
+        return `https://www.appliancepartspros.com/search.aspx?model=${encoded}`;
+      case "sears":
+        return `https://www.searspartsdirect.com/search?q=${encoded}`;
+      default:
+        return "";
+    }
+  };
 
   const toggleAgentContext = (id: string, field: "sendDiagram" | "sendExpectedCount") => {
     setAgents(prev => prev.map(agent => 
@@ -82,18 +97,38 @@ export function SupplierAgentMatrix({ model, truth }: SupplierAgentMatrixProps) 
     ));
   };
 
+  useEffect(() => {
+    setAgents(prev => prev.map(agent => ({
+      ...agent,
+      url: buildSupplierUrl(agent.id),
+    })));
+  }, [normalizedModel]);
+
   const runAgent = async (agent: AgentState) => {
     setAgents(prev => prev.map(a => a.id === agent.id ? { ...a, status: "running", error: undefined } : a));
     
     try {
+      const sourceUrl = agent.url || buildSupplierUrl(agent.id);
+      const supplierId = agent.id;
       const payload = {
         task: "load_supplier_index",
-        canonicalModel: model || "WTW7500GC2",
-        supplier: agent.id === 'sears' ? 'sears-partsdirect' : agent.id,
-        searchUrl: agent.url,
+        sourceUrl,
+        canonUrl: truth?.canonUrl || null,
+        diagramImageUrl: agent.sendDiagram
+          ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null)
+          : null,
+        expectedTotal: agent.sendExpectedCount ? (truth?.expectedTotal || 125) : null,
+        assemblyNames: agent.sendDiagram ? truth?.assemblyNames : [],
+        normalizedModel,
+        supplierId,
+        canonicalModel: normalizedModel,
+        supplier: supplierId === "sears" ? "sears-partsdirect" : supplierId,
+        searchUrl: sourceUrl,
         visualTruth: {
-          screenshotBase64: agent.sendDiagram ? truth?.screenshotBase64 : null,
-          canonUrl: agent.sendDiagram ? truth?.canonUrl : null,
+          screenshotBase64: agent.sendDiagram ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null) : null,
+          storedImageUrl: agent.sendDiagram ? truth?.storedImageUrl || null : null,
+          base64: agent.sendDiagram ? truth?.base64 || null : null,
+          canonUrl: agent.sendDiagram ? truth?.canonUrl || null : null,
           expectedTotal: agent.sendExpectedCount ? (truth?.expectedTotal || 125) : null,
           assemblyNames: agent.sendDiagram ? truth?.assemblyNames : []
         }

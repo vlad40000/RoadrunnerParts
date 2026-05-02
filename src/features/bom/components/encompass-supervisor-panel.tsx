@@ -17,10 +17,10 @@ export function EncompassSupervisorPanel({ model, onTruthCaptured }: EncompassSu
   async function handleCapture() {
     try {
       setLoading(true);
-      const res = await fetch("/api/bom/supervisor", {
+      const res = await fetch("/api/agents/encompass/assembly-overview-capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model }),
+        body: JSON.stringify({ canonUrl: model, immediate: false }),
       });
 
       if (!res.ok) throw new Error("Capture failed");
@@ -139,9 +139,12 @@ export function EncompassSupervisorPanel({ model, onTruthCaptured }: EncompassSu
             Visual Truth Viewport
           </label>
           <div className="aspect-video rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50 flex items-center justify-center overflow-hidden relative group">
-            {truth?.screenshotBase64 ? (
+            {truth?.storedImageUrl || truth?.base64 || truth?.screenshotBase64 ? (
               <img 
-                src={truth.screenshotBase64} 
+                src={
+                  truth?.storedImageUrl ||
+                  (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth.screenshotBase64)
+                }
                 alt="Encompass Assembly Overview" 
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />

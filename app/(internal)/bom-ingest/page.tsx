@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { EncompassSupervisorPanel } from "@/src/features/bom/components/encompass-supervisor-panel";
 import { SupplierAgentMatrix } from "@/src/features/bom/components/supplier-agent-matrix";
-import { ArrowRight, Settings, ShieldCheck, Database } from "lucide-react";
+import { ArrowRight, Settings, ShieldCheck } from "lucide-react";
 
 export default function BomIngestPage() {
   const [model, setModel] = useState("");
@@ -81,17 +81,11 @@ export default function BomIngestPage() {
           {truth && (
             <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-50 border border-emerald-100">
                <div className="flex items-center gap-3">
-                 <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white">
-                   <Database size={16} />
-                 </div>
                  <div>
                    <div className="text-sm font-bold text-emerald-900">Visual Truth Locked</div>
                    <div className="text-xs text-emerald-700">{truth.assemblyNames.length} assemblies ready for reconciliation.</div>
                  </div>
                </div>
-               <button className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 transition-colors shadow-sm">
-                 Run Supplier Agents
-               </button>
             </div>
           )}
         </div>

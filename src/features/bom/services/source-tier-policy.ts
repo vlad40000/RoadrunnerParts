@@ -100,6 +100,7 @@ export function normalizeModelForSupplier(input: {
   model: string;
   brand?: string | null;
 }) {
+  const supplier = normalizeSupplierId(input.supplier);
   const canonical = normalizeCanonicalModel(input.model);
   const brand = String(input.brand || "").toLowerCase();
 
@@ -116,20 +117,21 @@ export function normalizeModelForSupplier(input: {
     brand.includes("hotpoint") ||
     brand.includes("haier");
 
-  if (input.supplier === "encompass-family") {
+  if (supplier === "encompass-family") {
     if (isWhirlpoolFamily) return `WHI${canonical}`;
     if (isGeFamily) return `HOT${canonical}`;
     return canonical;
   }
 
   if (
-    input.supplier === "partsdr" ||
-    input.supplier === "appliancepartspros" ||
-    input.supplier === "fix.com" ||
-    input.supplier === "repairclinic-family" ||
-    input.supplier === "partswarehouse" ||
-    input.supplier === "ereplacementparts" ||
-    input.supplier === "appliancefactoryparts"
+    supplier === "partsdr" ||
+    supplier === "appliancepartspros" ||
+    supplier === "fix.com" ||
+    supplier === "repairclinic" ||
+    supplier === "repairclinic-family" ||
+    supplier === "partswarehouse" ||
+    supplier === "ereplacementparts" ||
+    supplier === "appliancefactoryparts"
   ) {
     return canonical.toLowerCase();
   }
@@ -142,13 +144,15 @@ export function buildSupplierSearchUrl(input: {
   formattedModel: string;
   canonicalModel: string;
 }) {
+  const supplier = normalizeSupplierId(input.supplier);
   const formatted = encodeURIComponent(input.formattedModel);
   const canonical = encodeURIComponent(input.canonicalModel);
 
-  switch (input.supplier) {
+  switch (supplier) {
     case "encompass-family":
       return `https://encompass.com/model/${formatted}`;
 
+    case "sears":
     case "sears-partsdirect":
       return `https://www.searspartsdirect.com/search?q=${canonical}`;
 
@@ -164,6 +168,7 @@ export function buildSupplierSearchUrl(input: {
     case "fix.com":
       return `https://www.fix.com/search/?SearchTerm=${canonical}`;
 
+    case "repairclinic":
     case "repairclinic-family":
       return `https://www.repairclinic.com/Search?query=${canonical}`;
 
@@ -184,9 +189,10 @@ export function buildSupplierSearchUrl(input: {
 }
 
 export function supplierDisplayName(supplier: string) {
-  switch (supplier) {
+  switch (normalizeSupplierId(supplier)) {
     case "encompass-family":
       return "Encompass";
+    case "sears":
     case "sears-partsdirect":
       return "Sears PartsDirect";
     case "partsdr":
@@ -197,6 +203,7 @@ export function supplierDisplayName(supplier: string) {
       return "PartSelect";
     case "fix.com":
       return "Fix.com";
+    case "repairclinic":
     case "repairclinic-family":
       return "RepairClinic";
     case "url-intake":
@@ -209,5 +216,23 @@ export function supplierDisplayName(supplier: string) {
 }
 
 export function supplierIndexKey(supplier: string, canonicalModel: string) {
-  return `${supplier}:${normalizeCanonicalModel(canonicalModel)}`;
+  return `${normalizeSupplierId(supplier)}:${normalizeCanonicalModel(canonicalModel)}`;
+}
+
+export function normalizeSupplierId(supplier: string) {
+  switch (String(supplier || "").trim().toLowerCase()) {
+    case "sears":
+    case "sears-partsdirect":
+      return "sears";
+    case "repairclinic":
+    case "repairclinic-family":
+      return "repairclinic";
+    case "fix":
+    case "fix.com":
+      return "fix";
+    case "appliancepartspros":
+      return "appliancepartspros";
+    default:
+      return String(supplier || "").trim().toLowerCase();
+  }
 }
