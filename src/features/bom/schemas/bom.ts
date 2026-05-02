@@ -74,3 +74,17 @@ export type BomRow = z.infer<typeof bomRowSchema>;
 export type Identity = z.infer<typeof identitySchema>;
 export type DiagramParse = z.infer<typeof diagramParseSchema>;
 export type BomResult = z.infer<typeof bomResultSchema>;
+
+export const stage0OutputSchema = z.object({
+  seed_lookup_result: z
+    .object({
+      found: z.boolean(),
+      sourceUrl: z.string().nullable(),
+      sourceType: z.string().nullable(),
+      rawText: z.string().nullable(),
+      confidence: z.number().min(0).max(1),
+    })
+    .nullable(),
+});
+
+export type Stage0Output = z.infer<typeof stage0OutputSchema>;
