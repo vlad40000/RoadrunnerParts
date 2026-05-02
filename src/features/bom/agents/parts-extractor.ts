@@ -45,6 +45,7 @@ function parseStructuredRows(sourceText: string, sourceUrl: string): BomRow[] {
       diagramNumber: /^\d+$/.test(rawDiagramNumber)
         ? Number(rawDiagramNumber)
         : rawDiagramNumber,
+      quantity: Number(kv.quantity) || 1,
       originalPartNumber: kv.original_part_number || null,
       currentServicePartNumber: kv.current_service_part_number || null,
       description: kv.description || "",

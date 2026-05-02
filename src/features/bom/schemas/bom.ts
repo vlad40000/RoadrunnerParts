@@ -18,6 +18,7 @@ export const bomRowSchema = z.object({
   originalPartNumber: z.string().nullable(),
   currentServicePartNumber: z.string().nullable(),
   description: z.string().min(1),
+  quantity: z.number().int().positive().default(1),
   nlaStatus: z.boolean(),
   sourceUrl: z.string().min(1),
   sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback"]),

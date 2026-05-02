@@ -114,58 +114,6 @@ function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
   const $ = load(html);
   const rows: EncompassParsedRow[] = [];
 
-  $("table").each((_, table) => {
-    const headerCells = $(table)
-      .find("tr")
-      .first()
-      .find("th,td")
-      .map((__, cell) => cleanText($(cell).text()).toLowerCase())
-      .get();
-
-    const headerText = headerCells.join(" | ");
-    const looksLikePartsTable =
-      (headerText.includes("category") || headerText.includes("section")) &&
-      headerText.includes("part number") &&
-      headerText.includes("description");
-
-    if (!looksLikePartsTable) return;
-
-    $(table)
-      .find("tr")
-      .slice(1)
-      .each((__, tr) => {
-        const cells = $(tr)
-          .find("td")
-          .map((___, td) => cleanText($(td).text()))
-          .get();
-
-        if (cells.length < 3) return;
-
-        const sectionName = cells[0] || "Miscellaneous";
-        const partNumber = (cells[1] || "").toUpperCase();
-        const description = cells[2] || "";
-        const tail = cells.slice(3).join(" ");
-
-        if (!partNumber || !description) return;
-        // Basic part number validation (at least 4 chars, alphanumeric)
-        if (!/^[A-Z0-9-]{4,}$/.test(partNumber)) return;
-
-        rows.push({
-          sectionName,
-          partNumber,
-          description,
-          nlaStatus: /\bNo\b/i.test(tail) && !/\bIn Stock\b/i.test(tail),
-        });
-      });
-  });
-
-  return uniqueBy(rows, (row) => `${row.sectionName}|${row.partNumber}`);
-}
-
-function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
-  const $ = load(html);
-  const rows: EncompassParsedRow[] = [];
-
   // Identify the model being viewed to ensure rows are relevant
   const modelMatch = html.match(/Parts for Model ([A-Z0-9-]+)/i);
   const currentModel = modelMatch ? modelMatch[1].toUpperCase() : null;

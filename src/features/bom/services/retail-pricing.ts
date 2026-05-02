@@ -194,13 +194,15 @@ async function resolveEncompassPriceForPart(input: {
 }
 
 
-async function resolvePriceWaterfall(input: {
+export async function resolvePriceWaterfall(input: {
   model: string | null | undefined;
   partNumber: string;
 }) {
   // Now exclusively using Encompass as the single verified retail provider
   return await resolveEncompassPriceForPart(input);
 }
+
+export const verifyPartNumber = resolvePriceWaterfall;
 
 export async function enrichBomRowsWithRetailPricing(input: {
   brand?: string | null;
