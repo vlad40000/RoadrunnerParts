@@ -148,6 +148,22 @@ export async function updateBomJobSummary(
     coveragePct?: number | null;
     expectedPartsTotal?: number | null;
     expectedPartsSource?: string | null;
+    expectedPartCount?: number | null;
+    actualPartCount?: number | null;
+    actualCanonicalPartCount?: number | null;
+    verifiedPriceCount?: number | null;
+    requiredPriceCount?: number | null;
+    unpricedCount?: number | null;
+    partsComplete?: boolean | null;
+    pricingComplete?: boolean | null;
+    retrievalState?: string | null;
+    truthSource?: string | null;
+    sourceStrategy?: string | null;
+    bomComplete?: boolean | string | null;
+    trustedTotalPartCount?: number | null;
+    trustedTotalCountSource?: string | null;
+    trustedTotalCountSourceUrl?: string | null;
+    trustedTotalCountCheckedAt?: Date | string | null;
     errorText?: string | null;
   },
 ) {
@@ -170,6 +186,24 @@ export async function updateBomJobSummary(
       coveragePct: partial.coveragePct ?? job.coveragePct,
       expectedPartsTotal: partial.expectedPartsTotal ?? job.expectedPartsTotal,
       expectedPartsSource: partial.expectedPartsSource ?? job.expectedPartsSource,
+      expectedPartCount: partial.expectedPartCount ?? job.expectedPartCount,
+      actualPartCount: partial.actualPartCount ?? job.actualPartCount,
+      actualCanonicalPartCount: partial.actualCanonicalPartCount ?? job.actualCanonicalPartCount,
+      verifiedPriceCount: partial.verifiedPriceCount ?? job.verifiedPriceCount,
+      requiredPriceCount: partial.requiredPriceCount ?? job.requiredPriceCount,
+      unpricedCount: partial.unpricedCount ?? job.unpricedCount,
+      partsComplete: partial.partsComplete ?? job.partsComplete,
+      pricingComplete: partial.pricingComplete ?? job.pricingComplete,
+      retrievalState: partial.retrievalState ?? job.retrievalState,
+      truthSource: partial.truthSource ?? job.truthSource,
+      sourceStrategy: partial.sourceStrategy ?? job.sourceStrategy,
+      bomComplete: partial.bomComplete !== undefined ? String(partial.bomComplete) : job.bomComplete,
+      trustedTotalPartCount: partial.trustedTotalPartCount ?? job.trustedTotalPartCount,
+      trustedTotalCountSource: partial.trustedTotalCountSource ?? job.trustedTotalCountSource,
+      trustedTotalCountSourceUrl: partial.trustedTotalCountSourceUrl ?? job.trustedTotalCountSourceUrl,
+      trustedTotalCountCheckedAt: partial.trustedTotalCountCheckedAt 
+        ? new Date(partial.trustedTotalCountCheckedAt) 
+        : job.trustedTotalCountCheckedAt,
       errorText: partial.errorText ?? job.errorText,
       updatedAt: new Date(),
     })

@@ -22,11 +22,33 @@ export const bomJobs = pgTable("bom_jobs", {
   coverageScore: real("coverage_score").notNull().default(0),
   rawRowCount: integer("raw_row_count").notNull().default(0),
   uniqueRowCount: integer("unique_row_count").notNull().default(0),
+  
+  sourceStrategy: text("source_strategy"),
+  bomComplete: text("bom_complete").default("false"), // 'true' or 'false'
 
   expectedPartsTotal: integer("expected_parts_total"),
   expectedPartsSource: text("expected_parts_source"),
+  expectedPartCount: integer("expected_part_count"), // Alias for backward compatibility
+  
+  actualPartCount: integer("actual_part_count"),
+  actualCanonicalPartCount: integer("actual_canonical_part_count"),
   actualUniqueParts: integer("actual_unique_parts"),
+  
+  verifiedPriceCount: integer("verified_price_count"),
+  requiredPriceCount: integer("required_price_count"),
+  unpricedCount: integer("unpriced_count"),
+  
+  partsComplete: boolean("parts_complete"),
+  pricingComplete: boolean("pricing_complete"),
+  
   coveragePct: real("coverage_pct"),
+  retrievalState: text("retrieval_state"),
+  truthSource: text("truth_source"),
+  
+  trustedTotalPartCount: integer("trusted_total_part_count"),
+  trustedTotalCountSource: text("trusted_total_count_source"),
+  trustedTotalCountSourceUrl: text("trusted_total_count_source_url"),
+  trustedTotalCountCheckedAt: timestamp("trusted_total_count_checked_at"),
 
   uploadedFiles: jsonb("uploaded_files")
     .$type<
