@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    console.log(`[SourceAction] Request:`, { task: body.task, model: body.canonicalModel, supplier: body.supplier });
 
     const task = toTask(body.task);
     const model = String(body.canonicalModel || body.model || "")
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
 
     if (
       (task === "lock_supplier_target" || task === "load_supplier_index") &&
+      supplier !== "encompass-family" &&
       !String(body.searchUrl || "").trim()
     ) {
       return NextResponse.json(
@@ -154,9 +156,10 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
+    console.error(`[SourceAction] Failed:`, detail);
 
     if (jobIdForFailure) {
-      await failBomJob(jobIdForFailure, detail);
+      await failBomJob(jobIdForFailure, detail).catch(e => console.error(`[SourceAction] Failed to record job failure:`, e));
     }
 
     return NextResponse.json(

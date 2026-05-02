@@ -8,7 +8,7 @@ import {
 } from "./encompass-backed-family";
 import { cleanText, normalizeModel, uniqueBy, normalizeBrand, absoluteUrl, fetchHtml } from "./utils";
 import { buildEncompassUrl, parseEncompassExplodedViewUrl } from "./deterministic-urls";
-import { resolveExactModelUrl } from "../search/exact-model-url-resolver";
+import { resolveEncompassExplodedViewUrl } from "../encompass-model-index";
 import { type ProviderInput, type RetrievedSource } from "./types";
 
 interface EncompassParseRowsInput {
@@ -156,48 +156,19 @@ async function fetchEncompassSources(input: ProviderInput): Promise<RetrievedSou
   
   if (!model || !brand) return [];
 
-  const modelUrl = buildEncompassUrl({ brand, model });
+  const resolved = await resolveEncompassExplodedViewUrl({
+    model,
+    routeHint: brand.toLowerCase().includes("hot") || brand.toLowerCase().includes("ge") ? "HOT" : "WHI",
+  });
+
+  const modelUrl = resolved.status === "not_found" ? buildEncompassUrl({ brand, model }) : resolved.selected.url;
   let html: string | null = null;
   let resolvedUrl = modelUrl;
 
-  if (modelUrl) {
-    try {
-      html = await fetchHtml(modelUrl);
-      if (!html.toUpperCase().includes(model)) {
-        html = null;
-      }
-    } catch {
-      html = null;
-    }
-  }
-
-  // If model page failed or didn't resolve, try targeted search for Exploded View
-  if (!html) {
-    // extract prefix if possible
-    let mfgCode = "WHI"; 
-    const b = brand.toLowerCase();
-    if (b.includes("ge") || b.includes("hotpoint") || b.includes("haier") || b.includes("monogram")) mfgCode = "HOT";
-    else if (b.includes("whirlpool") || b.includes("maytag") || b.includes("kitchenaid") || b.includes("amana") || b.includes("jennair")) mfgCode = "WHI";
-    else mfgCode = ""; // Fallback to broad search for LG/Samsung
-
-    const searchResolution = await resolveExactModelUrl({
-      model,
-      domain: "encompass.com",
-      brand,
-      preferredQueries: [
-        `site:encompass.com/model/${mfgCode} "${model}"`,
-        `site:encompass.com "${mfgCode}${model}"`
-      ]
-    });
-
-    if (searchResolution?.url) {
-      resolvedUrl = searchResolution.url;
-      try {
-        html = await fetchHtml(resolvedUrl);
-      } catch {
-        return [];
-      }
-    }
+  try {
+    html = await fetchHtml(resolvedUrl);
+  } catch {
+    return [];
   }
 
   if (!html || !resolvedUrl) return [];

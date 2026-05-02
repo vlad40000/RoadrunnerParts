@@ -14,6 +14,7 @@ import {
   type SupplierAssemblyIndex,
   type SupplierAssemblyIndexItem,
 } from "@/features/bom/services/source-tier-policy";
+import { resolveEncompassExplodedViewUrl } from "@/features/bom/services/encompass-model-index";
 import {
   buildSupplierIndexFromHtml,
   fetchExactSupplierUrl,
@@ -105,9 +106,28 @@ export async function runSourceActionAgent(input: SourceActionInput) {
 
   const formattedModel = input.formattedModel || input.canonicalModel;
   const searchUrl = input.searchUrl || "";
+  const isEncompass = input.supplier === "encompass-family";
+
+  async function resolveSupplierUrl() {
+    if (!isEncompass) {
+      if (!searchUrl) throw new Error("Supplier search URL is required.");
+      return searchUrl;
+    }
+
+    const resolution = await resolveEncompassExplodedViewUrl({
+      model: input.canonicalModel,
+      routeHint: input.brand?.toUpperCase().includes("HOT") ? "HOT" : "WHI",
+    });
+
+    if (!resolution.selected?.url) {
+      throw new Error("No Encompass indexed URL found. Try another supplier or manual URL.");
+    }
+
+    return resolution.selected.url;
+  }
 
   if (input.task === "lock_supplier_target") {
-    assertNonEmpty(searchUrl, "Supplier search URL is required.");
+    const resolvedSearchUrl = await resolveSupplierUrl();
 
     await setBomJobStage(input.jobId, "supplier_target_locked");
 
@@ -119,7 +139,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       tierKey: input.tierKey,
       canonicalModel: input.canonicalModel,
       formattedModel,
-      searchUrl,
+      searchUrl: resolvedSearchUrl,
       lockedAt: new Date().toISOString(),
       nextAction: "load_supplier_index",
     };
@@ -138,7 +158,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       model: input.canonicalModel,
       serial: input.serial ?? job.serial,
       productType: input.productType ?? job.productType,
-      truthSource: searchUrl,
+      truthSource: resolvedSearchUrl,
       sourceStrategy: `manual-distributor-control:${input.tierKey}:${input.supplier}:lock_supplier_target`,
       bomComplete: false,
     });
@@ -150,17 +170,17 @@ export async function runSourceActionAgent(input: SourceActionInput) {
   }
 
   if (input.task === "load_supplier_index") {
-    assertNonEmpty(searchUrl, "Supplier search URL is required.");
+    const resolvedSearchUrl = await resolveSupplierUrl();
 
     await setBomJobStage(input.jobId, "supplier_index_loading");
 
-    const fetched = await fetchExactSupplierUrl(searchUrl);
+    const fetched = await fetchExactSupplierUrl(resolvedSearchUrl);
 
     const supplierIndex = buildSupplierIndexFromHtml({
       supplier: input.supplier,
       canonicalModel: input.canonicalModel,
       formattedModel,
-      sourceUrl: searchUrl,
+      sourceUrl: resolvedSearchUrl,
       finalUrl: fetched.finalUrl,
       html: fetched.html,
       text: fetched.text,

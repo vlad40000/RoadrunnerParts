@@ -4,8 +4,8 @@ import type { ExactModelUrlResolverInput, ExactModelUrlResolverResult } from "./
 import { searchExistingGroundingLayer, dedupeSearchHits } from "./search-adapter";
 import type { SearchHit } from "./search-types";
 import { cleanText, fetchHtml, htmlToText, normalizeModel } from "../providers/utils";
+import { resolveEncompassExplodedViewUrl } from "../encompass-model-index";
 import { 
-  buildEncompassUrl, 
   buildPartsDrUrl, 
   buildAppliancePartsProsUrl, 
   buildPartSelectUrl 
@@ -208,7 +208,16 @@ export async function resolveExactModelUrl(
   const targetBrand = input.brand || input.resolvedBrand || "";
 
   if (targetDomain.includes("encompass.com")) {
-    deterministicUrl = buildEncompassUrl({ brand: targetBrand, model });
+    const resolved = await resolveEncompassExplodedViewUrl({
+      model,
+      routeHint: String(targetBrand || "").toLowerCase().includes("hot") || String(targetBrand || "").toLowerCase().includes("ge")
+        ? "HOT"
+        : "WHI",
+    });
+    if (resolved.status !== "not_found") {
+      return { url: resolved.selected.url };
+    }
+    return null;
   } else if (targetDomain.includes("partsdr.com")) {
     deterministicUrl = buildPartsDrUrl({ brand: targetBrand, model });
   } else if (targetDomain.includes("appliancepartspros.com")) {

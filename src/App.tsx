@@ -62,7 +62,6 @@ import { ebaySearchUrl, ebaySoldSearchUrl } from './features/bom/services/ebay-l
 import { 
   SOURCE_TIERS, 
   normalizeModelForSupplier, 
-  buildSupplierSearchUrl,
   supplierDisplayName
 } from './features/bom/services/source-tier-policy';
 
@@ -252,7 +251,9 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error(`Source action failed: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        const detail = errorData.detail || errorData.error || response.statusText;
+        throw new Error(`API failed: ${detail}`);
       }
 
       const data = await response.json();
@@ -270,6 +271,7 @@ export default function App() {
             selected: false,
           })),
         }));
+        if (data.jobId) setJobId(data.jobId);
         return;
       }
 
@@ -280,14 +282,29 @@ export default function App() {
         const jobData = await statusRes.json();
         const job = jobData.job;
         if (job) {
-          setJobStage(job.stage);
-          setJobStatus(job.status);
-          setResults(job.result || null);
+          setJobStage(job.jobStage);
+          setJobStatus(job.resultStatus);
+          
+          // Only update results if it's not already set or if we have new diagram data
+          if (job.diagramParse) {
+            const dp = job.diagramParse as any;
+            if (dp.activeSupplierIndex) {
+              setResults((prev: any) => ({
+                ...(prev || {}),
+                supplier: dp.supplierTarget?.supplier || prev?.supplier,
+                tierKey: dp.supplierTarget?.tierKey || prev?.tierKey,
+                sourceUrl: dp.supplierTarget?.searchUrl || prev?.sourceUrl,
+                supplierIndex: dp.activeSupplierIndex,
+                assemblies: dp.activeSupplierIndex.assemblies
+              }));
+            }
+          }
         }
       }
     } catch (err) {
       console.error("Manual action failed:", err);
-      alert("Manual action failed. Check console for details.");
+      const message = err instanceof Error ? err.message : "Manual action failed. Check console for details.";
+      alert(message);
     } finally {
       setSourceActionBusy(prev => ({ ...prev, [supplierId]: false }));
     }
@@ -317,19 +334,36 @@ export default function App() {
         const job = jobData.job;
         if (!job) return;
         
-        setJobStage(job.stage);
-        setJobStatus(job.status);
-        if (job.result) {
-          setResults(job.result);
-          // If we have new parts, sync them to aiParts
-          if (Array.isArray(job.result.parts) && job.result.parts.length > 0) {
-            setAIParts(prev => {
-              const seen = new Set(prev.map(p => p.partNumber));
-              const newParts = job.result.parts.filter((p: any) => !seen.has(p.partNumber));
-              if (newParts.length === 0) return prev;
-              return [...prev, ...newParts];
+        setJobStage(job.jobStage);
+        setJobStatus(job.resultStatus);
+
+        // Sync assemblies and extraction results from diagramParse
+        if (job.diagramParse) {
+          const dp = job.diagramParse as any;
+          if (dp.activeSupplierIndex) {
+            setResults((prev: any) => {
+              // Keep local selection if we're still in the loading/extracting phase
+              // to prevent UI flicker/reset while checking results
+              return {
+                ...(prev || {}),
+                supplier: dp.supplierTarget?.supplier || prev?.supplier,
+                tierKey: dp.supplierTarget?.tierKey || prev?.tierKey,
+                sourceUrl: dp.supplierTarget?.searchUrl || prev?.sourceUrl,
+                supplierIndex: dp.activeSupplierIndex,
+                assemblies: dp.activeSupplierIndex.assemblies
+              };
             });
           }
+        }
+
+        // If we have final rows, sync them to aiParts
+        if (Array.isArray(job.finalRows) && job.finalRows.length > 0) {
+          setAIParts(prev => {
+            const seen = new Set(prev.map(p => p.partNumber));
+            const newParts = job.finalRows.filter((p: any) => p.partNumber && !seen.has(p.partNumber));
+            if (newParts.length === 0) return prev;
+            return [...prev, ...newParts];
+          });
         }
       } catch (err) {
         console.error("Polling failed:", err);
@@ -1758,11 +1792,12 @@ Focus on:
                         model: lookupModel,
                         brand: manufactureInfo?.brandFamily
                       });
-                      const siteUrl = buildSupplierSearchUrl({
-                        supplier: supplierId,
-                        formattedModel: supplierModel,
-                        canonicalModel: lookupModel
-                      });
+                      const siteUrl =
+                        supplierId === "encompass-family"
+                          ? ""
+                          : `https://www.google.com/search?q=${encodeURIComponent(
+                              `${supplierModel} appliance parts`,
+                            )}`;
 
                       return (
                         <div key={supplierId} className="rounded-xl border border-pro-slate-100 p-3 bg-white hover:border-pro-blue/20 transition-all">
@@ -1771,7 +1806,7 @@ Focus on:
                               {supplierName}
                             </span>
                             <a 
-                              href={siteUrl} 
+                              href={siteUrl || "#"} 
                               target="_blank" 
                               rel="noreferrer" 
                               className="text-pro-slate-300 hover:text-pro-blue"
@@ -1784,14 +1819,24 @@ Focus on:
                           <div className="grid grid-cols-2 gap-1.5">
                             <button
                               disabled={isBusy || isAILoading}
-                              onClick={() => handleSourceAction(supplierId, 'lock_supplier_target', { searchUrl: siteUrl, tierKey: activeTierKey })}
+                              onClick={() =>
+                                handleSourceAction(supplierId, 'lock_supplier_target', {
+                                  searchUrl: siteUrl || undefined,
+                                  tierKey: activeTierKey
+                                })
+                              }
                               className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
                             >
                               Lock
                             </button>
                             <button
                               disabled={isBusy || isAILoading}
-                              onClick={() => handleSourceAction(supplierId, 'load_supplier_index', { searchUrl: siteUrl, tierKey: activeTierKey })}
+                              onClick={() =>
+                                handleSourceAction(supplierId, 'load_supplier_index', {
+                                  searchUrl: siteUrl || undefined,
+                                  tierKey: activeTierKey
+                                })
+                              }
                               className="rounded-lg bg-pro-slate-50 py-1.5 text-[9px] font-bold text-pro-navy hover:bg-pro-blue/10 disabled:opacity-50"
                             >
                               Load Index
