@@ -21,7 +21,7 @@ export const bomRowSchema = z.object({
   quantity: z.number().int().positive().default(1),
   nlaStatus: z.boolean(),
   sourceUrl: z.string().min(1),
-  sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback"]),
+  sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "supplier_assembly", "variant"]),
   replacementNote: z.string().nullable().optional(),
   serialApplicability: z.array(z.string()).optional(),
   serialNote: z.string().nullable().optional(),

@@ -381,15 +381,13 @@ export async function runSourceActionAgent(input: SourceActionInput) {
         const fetched = await fetchExactSupplierUrl(assembly.sourceUrl);
         const sourceText = fetched.text || htmlToReadableText(fetched.html);
 
-        const result = await runPartsExtractor({
+        const rowsRaw = await runPartsExtractor({
           sourceText,
           sourceUrl: fetched.finalUrl,
-          sourceType: "supplier_assembly" as any,
-          provider: input.supplier,
-          modelNumber: input.canonicalModel,
+          sourceType: "supplier_assembly",
         });
 
-        const rows = result.rows.map((row: any) => ({
+        const rows = rowsRaw.map((row: any) => ({
           ...row,
           section: row.section || assembly.title,
           assemblyTitle: assembly.title,
