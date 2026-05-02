@@ -8,7 +8,7 @@ import { samsungFamilyProvider } from "../src/features/bom/services/providers/sa
 import { boschFamilyProvider } from "../src/features/bom/services/providers/bosch-family";
 import { hisenseFamilyProvider } from "../src/features/bom/services/providers/hisense-family";
 import { searsPartsDirectProvider } from "../src/features/bom/services/providers/sears-partsdirect";
-import { fixComDiagramsProvider } from "../src/features/bom/services/providers/fix-com-diagrams";
+import { fixComDiagramsProvider } from "../src/features/bom/services/providers/fix-com";
 import type {
   RetrievedSource,
   SourceProvider,

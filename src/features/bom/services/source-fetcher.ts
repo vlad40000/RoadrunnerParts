@@ -13,6 +13,10 @@ import { lgFamilyProvider } from "./providers/lg-family";
 import { samsungFamilyProvider } from "./providers/samsung-family";
 import { boschFamilyProvider } from "./providers/bosch-family";
 import { encompassUniversalProvider } from "./providers/encompass-universal";
+import { hisenseFamilyProvider } from "./providers/hisense-family";
+import { searsPartsDirectProvider } from "./providers/sears-partsdirect";
+import { fixComDiagramsProvider } from "./providers/fix-com";
+import { partSelectProvider as partSelectFallbackProvider } from "./providers/partselect";
 import { normalizeModel, runWithConcurrency, uniqueBy, withDeadline } from "./providers/utils";
 
 const ALL_PROVIDERS: SourceProvider[] = [
@@ -22,6 +26,10 @@ const ALL_PROVIDERS: SourceProvider[] = [
   lgFamilyProvider,
   samsungFamilyProvider,
   boschFamilyProvider,
+  hisenseFamilyProvider,
+  searsPartsDirectProvider,
+  fixComDiagramsProvider,
+  partSelectFallbackProvider,
   encompassUniversalProvider,
 ];
 

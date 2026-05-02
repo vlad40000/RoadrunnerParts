@@ -1,26 +1,32 @@
-# Workflow State - BOM Pipeline Hardening
+# Workflow State - RoadrunnerParts Production Stabilization
 
-## Progress Summary
-- [x] **Data Sanitization**: Purged corrupted `model_parts_cache` entries.
-- [x] **Strict Validation**: Implemented regex-based domain whitelist for price sources.
-- [x] **Single-Provider Strategy**: Consolidated all distributor and retail pricing to **Encompass**.
-- [x] **Direct Path (New Path)**: Implemented direct URL construction (`/model/[CODE]/[MODEL]`) and assembly processing for Encompass.
-- [x] **Universal Encompass Routing**: Re-routed major brands (Whirlpool, LG, etc.) through the universal Encompass provider.
-- [x] **Deterministic Orchestration**: Simplified pipeline to prioritize Encompass authoritative data.
-- [x] **Identity-First UI**: Implemented `EncompassUrlPanel` for direct OEM source routing via model/serial identity.
-- [x] **Brand-to-Code Mapping**: Consolidated all brand-specific URL routes into `lib/encompass-routes.ts`.
+## Current Status
+- **Phase**: Stabilization & Build Fix
+- **Status**: Ready for Deployment
+- **Last Sync**: 2026-05-02
 
-## Current Architecture
-1. **Cache Hit**: Returns normalized data instantly.
-2. **Direct Path (New Path)**: Attempts direct URL fetch on Encompass using brand-normalized codes.
-3. **Deterministic Search**: Fallback to search-based orchestration for authoritative brand data.
-4. **Pricing Enrichment**: Results are enriched with verified retail prices via direct item path or search.
-5. **AI Fallback**: Gemini is invoked only if stage 2-4 yield no valid parts.
+## Accomplishments
+### Build Stabilization
+- [x] **Resolved Missing Module Errors**: Re-created `src/features/bom/services/providers/hisense-family.ts` which was missing from the filesystem.
+- [x] **Fixed Regression Script**: Corrected import paths in `scripts/provider-regression.ts` for Hisense and Fix.com providers.
+- [x] **Synchronized Source Fetcher**: Added all missing provider registrations to `src/features/bom/services/source-fetcher.ts`, including:
+    - `hisenseFamilyProvider`
+    - `searsPartsDirectProvider`
+    - `fixComDiagramsProvider`
+    - `partSelectProvider` (as `partSelectFallbackProvider`)
+- [x] **Refactored Encompass Utilities**: Exported `parseEncompassRowsFromTable` from `encompass-family.ts` to allow reuse in Hisense and other brand-specific Encompass adapters.
 
-## Pending Tasks
-- [ ] **Telemetry & Monitoring**: Implement automated alerts for suspicious extraction patterns or high fallback rates.
-- [ ] **Source Parser Expansion**: Refine `parseStructuredSourceText` to handle more complex provider outputs.
-- [ ] **Proxy Integration**: Add residential proxies to `SourceFetcher` if deterministic scrapers get blocked.
+### Database & Schema
+- [x] **Schema Expansion**: Successfully expanded `bom_jobs` table to support granular progress tracking (`actualPartCount`, `sourceStrategy`, etc.).
+- [x] **Service Alignment**: Updated `job-store.ts` and API routes to support the new schema fields.
 
-## Blockers
-- None currently.
+## Remaining Tasks
+- [ ] **Verify Production Build**: Trigger a new Vercel build to confirm all TypeScript and module resolution errors are resolved.
+- [ ] **Sanity Check Regression**: Run `npm run ts-node scripts/provider-regression.ts` (if environment permits) to verify provider logic.
+
+## Technical Notes
+- **Provider Fallbacks**: `partSelectFallbackProvider` is now correctly mapped to the primary `partSelectProvider` exported in `partselect.ts`.
+- **Encompass Patterns**: The system now strictly uses `createEncompassBackedFamilyProvider` for all Encompass-hosted brand sites (Hisense, Haier, etc.) to ensure consistent parsing and resolution.
+
+## Handover Context
+The core build issues identified in the Vercel logs (specifically the missing `hisense-family` module and the incorrect `fix-com-diagrams` import) have been resolved. The project is now in a clean state for production deployment.

@@ -85,7 +85,7 @@ function encompassLandingHasPartsList(text: string): boolean {
   );
 }
 
-function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
+export function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
   const $ = load(html);
   const rows: EncompassParsedRow[] = [];
 
