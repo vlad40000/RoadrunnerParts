@@ -137,6 +137,7 @@ export async function POST(req: Request) {
       manufactureDate,
       passNumber,
       passInstruction,
+      promptOverride,
       knownPartNumbers = [],
       isExhaustive = false,
       expectedPartCount = null,
@@ -218,7 +219,7 @@ export async function POST(req: Request) {
       tools: [{ googleSearch: {} }],
     } as any);
 
-    const prompt = `You are an expert appliance parts researcher. Generate a Bill of Materials (BOM) for appliance model: ${model}.
+    const prompt = promptOverride || `You are an expert appliance parts researcher. Generate a Bill of Materials (BOM) for appliance model: ${model}.
 ${serial ? `Serial Number: ${serial}` : ''}
 ${manufactureDate ? `Approximate Manufacture Date: ${manufactureDate}` : ''}
 ${expectedPartCount ? `EXPECTED TOTAL PART COUNT (OEM BOM): ${expectedPartCount}` : ''}

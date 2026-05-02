@@ -166,9 +166,9 @@ export async function fetchFixModelPage(input: {
     domain: "fix.com",
     brand: input.brand,
     preferredQueries: [
+      `site:fix.com "${model}" parts`,
       `site:fix.com/models "${model}" "Viewing" "of"`,
       `site:fix.com/models "${model}" "Part Number"`,
-      `site:fix.com/models "${model}" "Diagrams"`,
       `site:fix.com "${model}"`,
     ],
   });

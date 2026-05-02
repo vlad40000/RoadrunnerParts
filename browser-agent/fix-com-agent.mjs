@@ -60,6 +60,14 @@ function normalizeModel(value) {
   return cleanText(value).toUpperCase().replace(/\s+/g, '');
 }
 
+function sortPartsByName(parts) {
+  return [...parts].sort((a, b) =>
+    cleanText(a.rawPartName || a.partName || a.description).localeCompare(
+      cleanText(b.rawPartName || b.partName || b.description),
+    ),
+  );
+}
+
 function slugify(value) {
   return cleanText(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -409,13 +417,29 @@ VISUAL SUPERVISOR (Encompass):
 - Canonical Assemblies: ${visualTruth.assemblyNames?.join(', ') || 'unknown'}
 ` : '';
 
+  const targetLabel = `${brand || 'Unknown'} ${productType || 'Appliance'} ${modelName} Parts List`;
   const prompt = `
-ROLE: Expert Appliance Engineer. Generate 100% complete BOM for ${productType} from HTML. No hallucinations.
-CONTEXT: Brand: ${brand}, Model: ${modelName}, Section: ${sectionName}.
+You are a high-efficiency data extraction agent. Your goal is to parse the provided URL and return a deterministic JSON Bill of Materials (BOM).
+Evaluation Criteria:
+Accuracy: Part numbers must exactly match the manufacturer OEM.
+Completeness: Do not stop until all parts on the page are indexed.
+Format: Output must be valid JSON without conversational filler.
+Handling Complexity: If a part is listed as "No longer available," mark the price as null but keep the part record.
+User Prompt:
+Target: ${targetLabel} as an example it will populate differently
+Extract the following schema for every part found:
+{
+"part_name": "string",
+"oem_number": "string",
+"price": "number/null",
+"status": "string"
+}
+Use Python to simulate a crawl of the page structure and print the final JSON to the console.
+Sort the final JSON alphabetically by part_name before outputting.
+
+Page Context:
+Context: Brand: ${brand}, Model: ${modelName}, Section: ${sectionName}.
 ${visualSupervisorContext}
-STEP-BACK: Identify 4-6 core functional systems (e.g. Cooling, Airflow).
-CoT: 1. List systems. 2. Operational reasoning. 3. Component list (inc. hardware/fasteners).
-JSON SCHEMA: { "systems": [{ "system_name": "", "reasoning": "", "parts_list": [{ "part_name": "", "oem_part_number": "", "estimated_quantity": 1, "critical_notes": "" }] }] }
 HTML:
 ${cleanHtml}
 `.trim();
@@ -428,29 +452,46 @@ ${cleanHtml}
     
     const data = JSON.parse(match);
     const rows = [];
-    
-    (data.systems || []).forEach(system => {
-      (system.parts_list || []).forEach(item => {
-        rows.push({
-          source: 'fix.com',
-          sectionName: system.system_name || sectionName,
-          sectionUrl,
-          rawPartNumber: item.oem_part_number || item.partNumber,
-          rawPartName: item.part_name || item.description || item.name,
-          rawCategory: system.system_name || sectionName,
-          diagramRef: null,
-          quantity: item.estimated_quantity || item.quantity || null,
-          evidenceUrl: sectionUrl,
-          rawPayload: {
-            extraction: 'gemini-systematic-prompt',
-            critical_notes: item.critical_notes || null,
-            original_row: item
-          },
-        });
-      });
-    });
 
-    return rows;
+    const flatParts = Array.isArray(data.parts) ? data.parts : [];
+    const nestedParts = Array.isArray(data.systems)
+      ? data.systems.flatMap((system) =>
+          Array.isArray(system.parts_list)
+            ? system.parts_list.map((item) => ({
+                ...item,
+                _section_name: system.system_name || sectionName,
+              }))
+            : [],
+        )
+      : [];
+
+    const sourceParts = flatParts.length > 0 ? flatParts : nestedParts;
+
+    for (const item of sourceParts) {
+      const rawPartName = cleanText(item.part_name || item.description || item.name);
+      const rawPartNumber = cleanText(item.oem_number || item.oem_part_number || item.partNumber || item.part_number);
+      if (!rawPartName || !rawPartNumber) continue;
+
+      rows.push({
+        source: 'fix.com',
+        sectionName: item._section_name || sectionName,
+        sectionUrl,
+        rawPartNumber,
+        rawPartName,
+        rawCategory: item._section_name || sectionName,
+        diagramRef: null,
+        quantity: item.quantity || item.estimated_quantity || null,
+        evidenceUrl: sectionUrl,
+        price: item.price ?? null,
+        status: item.status || null,
+        rawPayload: {
+          extraction: 'gemini-flat-json',
+          original_row: item,
+        },
+      });
+    }
+
+    return sortPartsByName(rows);
   } catch (err) {
     console.error(`[Gemini] Systematic extraction failed for ${sectionName}:`, err.message);
     return [];

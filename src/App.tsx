@@ -202,6 +202,19 @@ export default function App() {
   // Video state
   const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [videoResult, setVideoResult] = useState<string | null>(null);
+  const [isPromptReviewOpen, setIsPromptReviewOpen] = useState(false);
+  const [pendingBomPrompt, setPendingBomPrompt] = useState('');
+  const [pendingBomRequest, setPendingBomRequest] = useState<{
+    model: string;
+    normalizedQuery: string;
+    serial: string | null;
+    manufactureDate: string | null;
+    passNumber: number;
+    knownPartNumbers: string[];
+    isExhaustive: boolean;
+    expectedPartCount: number | null;
+    existingParts: Part[];
+  } | null>(null);
 
   // Image Source Chooser state
   const [isSourceMenuOpen, setIsSourceMenuOpen] = useState(false);
@@ -241,30 +254,7 @@ export default function App() {
     }
   };
 
-  const handleAILookup = async (modelToSearch?: string, serialToSearch?: string, isExhaustive = false) => {
-    const query = modelToSearch || searchTerm;
-    if (!query || query.length < 3) return;
-
-    const normalizedQuery = normalizeModelId(query);
-    const currentSerial = serialToSearch || lookupSerial;
-    const manufactureDate = manufactureInfo?.manufactureYear
-      ? `${manufactureInfo.manufactureYear}-${manufactureInfo.timeValue?.value || "01"}`
-      : null;
-
-    const currentLookupModelId = normalizeModelId(lookupModel);
-    if (currentLookupModelId && currentLookupModelId !== normalizedQuery) {
-      setExpectedPartCount(null);
-      expectedCountLookupModelRef.current = null;
-      expectedCountRequestRef.current += 1;
-    }
-
-    const existingParts = [...aiParts];
-    const existingPartNumbers = existingParts
-      .map((p) => (p.partNumber || "").toUpperCase().trim())
-      .filter(Boolean);
-
-    const passNumber = existingParts.length > 0 ? bomPassCount + 1 : 1;
-
+  const buildBomPrompt = (query: string, isExhaustive: boolean, passNumber: number, currentKnownPartNumbers: string[]) => {
     let passInstruction = "";
     let promptTitle = "";
 
@@ -276,7 +266,7 @@ Target approximately 40 valid OEM parts with broad coverage across major categor
 Focus on speed and reliability for the most common serviceable parts.`;
     } else {
       promptTitle = `Generate an ABSOLUTELY EXHAUSTIVE, MASTER-LEVEL Bill of Materials (BOM) for appliance model: ${query}.`;
-      
+
       if (passNumber === 1) {
         passInstruction = `
 COMPLETE BOM PASS (EXHAUSTIVE):
@@ -321,6 +311,92 @@ Focus on:
       }
     }
 
+    const targetLabel = `${lookupModel ? lookupModel : query} Parts List`;
+
+    return `${promptTitle}
+${lookupSerial ? `Serial Number: ${lookupSerial}` : ""}
+${manufactureInfo?.manufactureYear ? `Approximate Manufacture Date: ${manufactureInfo.manufactureYear}-${manufactureInfo.timeValue?.value || "01"}` : ""}
+
+CURRENT PASS NUMBER: ${passNumber}
+
+${passInstruction}
+
+KNOWN PART NUMBERS ALREADY FOUND:
+${currentKnownPartNumbers.length > 0 ? currentKnownPartNumbers.join(", ") : "NONE"}
+
+First, identify the Brand and Category.
+I require the deepest possible OEM service BOM.
+Use REAL OEM part numbers for the identified manufacturer.
+Categorize strictly into the provided assembly sections.
+
+CRITICAL:
+- Search for missing parts that are NOT already in the known list.
+- Prefer exact OEM part numbers.
+- Focus on completeness.
+- Return only valid serviceable or diagram-listed parts.
+- Avoid duplicates of known part numbers.
+
+ALSO:
+Use GOOGLE SEARCH to verify the EXACT CURRENT RETAIL PRICE for each part.
+For EVERY price provided, specify the source website.
+Use this required pricing fallback chain:
+1. Search SearsPartsDirect.com first.
+2. If SearsPartsDirect has no usable price, search Fix.com.
+Do not return 0, $0.00, free, blank, placeholder, or estimated prices.
+Every returned part MUST include a real positive price and priceSource from searspartsdirect.com, or fix.com.
+Set priceSource to exactly "searspartsdirect.com", or "fix.com".
+Do not use any other retailer, marketplace, blog, unrelated URL, or manufacturer landing page as a price source.
+Continue the fallback chain until a real positive approved-source price is found for every returned part.
+
+User Prompt:
+Target: ${targetLabel} as an example it will populate differently
+Extract the following schema for every part found:
+{
+"part_name": "string",
+"oem_number": "string",
+"price": "number/null",
+"status": "string"
+}
+Use Python to simulate a crawl of the page structure and print the final JSON to the console.
+Sort the final JSON alphabetically by part_name before outputting.`;
+  };
+
+  const handleAILookup = async (modelToSearch?: string, serialToSearch?: string, isExhaustive = false) => {
+    const query = modelToSearch || searchTerm;
+    if (!query || query.length < 3) return;
+
+    const normalizedQuery = normalizeModelId(query);
+    const currentSerial = serialToSearch || lookupSerial;
+    const manufactureDate = manufactureInfo?.manufactureYear
+      ? `${manufactureInfo.manufactureYear}-${manufactureInfo.timeValue?.value || "01"}`
+      : null;
+
+    const currentLookupModelId = normalizeModelId(lookupModel);
+    if (currentLookupModelId && currentLookupModelId !== normalizedQuery) {
+      setExpectedPartCount(null);
+      expectedCountLookupModelRef.current = null;
+      expectedCountRequestRef.current += 1;
+    }
+
+    const existingParts = [...aiParts];
+    const existingPartNumbers = existingParts
+      .map((p) => (p.partNumber || "").toUpperCase().trim())
+      .filter(Boolean);
+
+    const passNumber = existingParts.length > 0 ? bomPassCount + 1 : 1;
+    const currentPrompt = buildBomPrompt(query, isExhaustive, passNumber, existingPartNumbers);
+    const requestPayload = {
+      model: query,
+      normalizedQuery,
+      serial: currentSerial || null,
+      manufactureDate,
+      passNumber,
+      knownPartNumbers: existingPartNumbers,
+      isExhaustive,
+      expectedPartCount,
+      existingParts,
+    };
+
     const shouldFetchExpectedCount =
       isExhaustive &&
       expectedPartCount === null &&
@@ -361,21 +437,20 @@ Focus on:
         });
     }
 
-    setIsAILoading(true);
+    setPendingBomPrompt(currentPrompt);
+    setPendingBomRequest(requestPayload);
+    setIsPromptReviewOpen(true);
+  };
 
+  const runApprovedBomPrompt = async (requestPayload: NonNullable<typeof pendingBomRequest>, promptText: string) => {
+    setIsAILoading(true);
     try {
       const response = await fetch('/api/bom', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: query,
-          serial: currentSerial || null,
-          manufactureDate,
-          passNumber,
-          passInstruction,
-          knownPartNumbers: existingPartNumbers,
-          isExhaustive,
-          expectedPartCount,
+          ...requestPayload,
+          promptOverride: promptText,
         }),
       });
 
@@ -392,9 +467,9 @@ Focus on:
         partNumber: (p.partNumber || "").toUpperCase().trim(),
       }));
 
-      const mergedParts = [...existingParts];
+      const mergedParts = [...requestPayload.existingParts];
       const seen = new Set(
-        existingParts
+        requestPayload.existingParts
           .map((p) => (p.partNumber || "").toUpperCase().trim())
           .filter(Boolean),
       );
@@ -421,7 +496,7 @@ Focus on:
         }));
 
       setAIParts(finalParts);
-      setBomPassCount(passNumber);
+      setBomPassCount(requestPayload.passNumber);
 
       if (parsed.modelMSRP) {
         setModelMSRP(parsed.modelMSRP);
@@ -432,21 +507,29 @@ Focus on:
           manufactureInfo?.timeValue?.unit === "month"
             ? manufactureInfo.timeValue.value
             : null,
-          query,
+          requestPayload.model,
           manufactureInfo?.brandFamily || "Universal",
           applianceCondition,
         );
         setValuation(currentValue);
       }
 
-      setLookupModel(normalizedQuery);
+      setLookupModel(requestPayload.normalizedQuery);
       setViewMode("table");
+      setIsPromptReviewOpen(false);
+      setPendingBomPrompt('');
+      setPendingBomRequest(null);
     } catch (error) {
       console.error("AI Lookup failed:", error);
       alert(error instanceof Error ? error.message : 'AI lookup failed. Please try again.');
     } finally {
       setIsAILoading(false);
     }
+  };
+
+  const handleApprovePrompt = async () => {
+    if (!pendingBomRequest) return;
+    await runApprovedBomPrompt(pendingBomRequest, pendingBomPrompt);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1392,6 +1475,76 @@ Focus on:
           )}
         </section>
       </main>
+
+      <AnimatePresence>
+        {isPromptReviewOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] flex items-center justify-center bg-pro-navy/70 p-4 backdrop-blur-md"
+            onClick={() => {
+              setIsPromptReviewOpen(false);
+              setPendingBomRequest(null);
+            }}
+          >
+            <motion.div
+              initial={{ y: 18, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 18, opacity: 0 }}
+              className="pro-card w-full max-w-4xl overflow-hidden rounded-2xl bg-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-pro-slate-100 px-6 py-4">
+                <div>
+                  <h2 className="text-lg font-bold text-pro-slate-900">Review Prompt</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-pro-slate-400">
+                    Edit before the BOM request is sent
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPromptReviewOpen(false);
+                    setPendingBomRequest(null);
+                  }}
+                  className="p-2 text-pro-slate-400 transition-colors hover:text-pro-slate-900"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="space-y-4 px-6 py-5">
+                <textarea
+                  value={pendingBomPrompt}
+                  onChange={(e) => setPendingBomPrompt(e.target.value)}
+                  className="min-h-[320px] w-full rounded-xl border border-pro-slate-200 bg-pro-slate-50 p-4 font-mono text-[12px] leading-6 text-pro-slate-800 outline-none focus:border-pro-blue"
+                />
+                <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsPromptReviewOpen(false);
+                      setPendingBomRequest(null);
+                    }}
+                    className="pro-button pro-button-secondary px-5"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApprovePrompt}
+                    disabled={!pendingBomRequest || isAILoading}
+                    className="pro-button pro-button-primary px-5"
+                  >
+                    {isAILoading ? 'Sending...' : 'Approve & Send'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Global Diagnostic Modal */}
       {/* Professional Global Diagnostic Modal */}
