@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { runStructuredJson } from "../services/model-runner";
 import { logger } from "@/lib/logger";
-import { fetchSources } from "../services/source-fetcher";
+
 
 const msrpResultSchema = z.object({
   amount: z.number().nullable(),
