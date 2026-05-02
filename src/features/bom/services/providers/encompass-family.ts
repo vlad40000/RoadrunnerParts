@@ -156,9 +156,28 @@ async function fetchEncompassSources(input: ProviderInput): Promise<RetrievedSou
   
   if (!model || !brand) return [];
 
+  const BRAND_TO_ENCOMPASS_ROUTE: Record<string, string> = {
+    GE: "HOT",
+    HOTPOINT: "HOT",
+    HAIER: "HOT",
+    WHIRLPOOL: "WHI",
+    MAYTAG: "WHI",
+    KITCHENAID: "WHI",
+    AMANA: "WHI",
+    SAMSUNG: "SMG",
+    LG: "LGE",
+    BOSCH: "BCH",
+    FRIGIDAIRE: "FRI",
+    ELECTROLUX: "FRI",
+  };
+
+  const routeHint = BRAND_TO_ENCOMPASS_ROUTE[brand.toUpperCase()] || 
+    (brand.toLowerCase().includes("hot") || brand.toLowerCase().includes("ge") ? "HOT" : 
+     brand.toLowerCase().includes("whi") || brand.toLowerCase().includes("may") ? "WHI" : undefined);
+
   const resolved = await resolveEncompassExplodedViewUrl({
     model,
-    routeHint: brand.toLowerCase().includes("hot") || brand.toLowerCase().includes("ge") ? "HOT" : "WHI",
+    routeHint,
   });
 
   const modelUrl = resolved.status === "not_found" ? buildEncompassUrl({ brand, model }) : resolved.selected.url;

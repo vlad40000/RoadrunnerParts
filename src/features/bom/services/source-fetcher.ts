@@ -6,53 +6,29 @@ import {
 } from "@/lib/providers/manufacturer/family-config";
 
 import type { RetrievedSource, SourceProvider } from "./providers/types";
-import { geOfficialProvider } from "./providers/ge-official";
 import { repairClinicFamilyProvider } from "./providers/repairclinic-family";
-import { frigidaireFamilyProvider } from "./providers/frigidaire-family";
-import { lgFamilyProvider } from "./providers/lg-family";
-import { samsungFamilyProvider } from "./providers/samsung-family";
-import { boschFamilyProvider } from "./providers/bosch-family";
-import { encompassUniversalProvider } from "./providers/encompass-universal";
-import { hisenseFamilyProvider } from "./providers/hisense-family";
 import { searsPartsDirectProvider } from "./providers/sears-partsdirect";
 import { fixComDiagramsProvider } from "./providers/fix-com";
-import { partSelectProvider as partSelectFallbackProvider } from "./providers/partselect";
+import { appliancePartsProsProvider } from "./providers/appliancepartspros";
 import { normalizeModel, runWithConcurrency, uniqueBy, withDeadline } from "./providers/utils";
+import { encompassFamilyProvider } from "./providers/encompass-family";
 
 const ALL_PROVIDERS: SourceProvider[] = [
-  geOfficialProvider,
   repairClinicFamilyProvider,
-  frigidaireFamilyProvider,
-  lgFamilyProvider,
-  samsungFamilyProvider,
-  boschFamilyProvider,
-  hisenseFamilyProvider,
   searsPartsDirectProvider,
   fixComDiagramsProvider,
-  partSelectFallbackProvider,
-  encompassUniversalProvider,
+  appliancePartsProsProvider,
+  encompassFamilyProvider,
 ];
 
 const PROVIDER_BY_NAME = new Map<string, SourceProvider>(
   ALL_PROVIDERS.map((provider) => [provider.name, provider]),
 );
 
-const UNIVERSAL_FALLBACK_PROVIDER_NAMES = [
-  "encompass-universal",
-] as const;
-
 const FAMILY_FALLBACK_PROVIDER_NAMES: Record<string, string[]> = {
-  "encompass-universal": ["encompass-universal"],
 };
 
 const ADAPTER_TO_PROVIDER_NAMES: Record<string, string[]> = {
-  "ge-official": ["ge-official"],
-  "whirlpool-family": ["encompass-universal"],
-  "frigidaire-family": ["frigidaire-family"],
-  "lg-family": ["lg-family"],
-  "samsung-family": ["samsung-family"],
-  "bosch-family": ["bosch-family"],
-  "encompass-universal": ["encompass-universal"],
 };
 
 export type SourceProviderPlan = {
@@ -166,7 +142,6 @@ export function resolveSourceProviderPlan(input: {
     ...(family?.key
       ? FAMILY_FALLBACK_PROVIDER_NAMES[family.key] ?? []
       : []),
-    ...UNIVERSAL_FALLBACK_PROVIDER_NAMES,
   ]);
 
   return {
@@ -215,16 +190,11 @@ export async function fetchAuthoritativeSources(input: {
   const model = input.model || "";
 
   const providers: SourceProvider[] = [
-    geOfficialProvider,
     repairClinicFamilyProvider,
-    frigidaireFamilyProvider,
-    lgFamilyProvider,
-    samsungFamilyProvider,
-    boschFamilyProvider,
-    hisenseFamilyProvider,
     searsPartsDirectProvider,
     fixComDiagramsProvider,
-    partSelectFallbackProvider,
+    appliancePartsProsProvider,
+    encompassFamilyProvider,
   ].filter((p) => p.supports({ brand, model }));
 
   const deadlineMs = parseInt(process.env.BOM_PROVIDER_DEADLINE_MS || "12000", 10);

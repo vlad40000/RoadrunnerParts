@@ -28,17 +28,25 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
      * 0. Visual Truth / Supervisor Functions
      */
     case "encompass_visual_supervisor": {
-      // Trigger the Playwright supervisor
-      // In a real environment, this might be a background job or an API call
-      // For the dispatcher, we'll return a simulated success or a placeholder
-      return { 
-        status: "visual_truth_captured", 
-        model: args.model,
-        canonUrl: `https://encompass.com/search?searchTerm=${args.model}`,
-        screenshotPath: "/artifacts/visual-truth-sample.png",
-        expectedTotal: 125,
-        assemblyNames: ["01 - DOOR PARTS", "06 - PUMP PARTS"]
-      };
+      const model = args.model;
+      const targetUrl = args.url || `https://encompass.com/search?searchTerm=${model}`;
+      
+      console.log(`[Dispatcher] Establishing Visual Truth for ${model} via Encompass...`);
+      
+      // We call our internal API route to handle the Playwright execution
+      // This ensures we stay within the Node.js runtime environment required by Playwright
+      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/bom/supervisor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, url: targetUrl })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Visual Supervisor failed: ${error.details || error.error || response.statusText}`);
+      }
+
+      return await response.json();
     }
 
     /**
@@ -254,31 +262,13 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
       return {
         partNumber: args.partNumber,
         sources: [
-          { source: "encompass", priority: 1, role: "primary" },
-          { source: "sears-partsdirect", priority: 2, role: "fallback" },
-          { source: "partsdr", priority: 3, role: "fallback" },
-          { source: "appliancepartspros", priority: 4, role: "fallback" },
-          { source: "repairclinic-family", priority: 5, role: "fallback" },
-          { source: "partselect.com", priority: 6, role: "fallback" },
-          { source: "fix.com", priority: 7, role: "fallback" },
-          { source: "partswarehouse", priority: 8, role: "fallback" },
-          { source: "ereplacementparts", priority: 9, role: "fallback" }
+          { source: "sears-partsdirect", priority: 1, role: "primary" },
+          { source: "fix.com", priority: 2, role: "fallback" },
+          { source: "repairclinic", priority: 3, role: "fallback" },
+          { source: "appliancepartspros", priority: 4, role: "fallback" }
         ]
       };
 
-    case "fetch_encompass_listed_price":
-      // Implementation: Real Encompass scraping for price
-      return {
-        status: "verified_price",
-        source: "encompass",
-        listedPrice: 24.99,
-        currency: "USD",
-        productUrl: `https://encompass.com/item/...`,
-        checkedAt: new Date().toISOString(),
-        matchType: "exact_part_number",
-        requestedPartNumber: args.partNumber,
-        matchedPartNumber: args.partNumber
-      };
 
     case "fetch_fallback_listed_price":
       return {

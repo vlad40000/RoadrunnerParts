@@ -15,6 +15,23 @@ Never invent model numbers, serial numbers, part numbers, compatibility, substit
 4. **AI extraction/audit**: Only when parsing messy OCR, HTML, diagrams, or manuals.
 5. **AI is never the source of truth**.
 
+### Pre-Execution Protocol (RDEP)
+Before any search or browser tool is called:
+1. **Identity Gate (Pruning)**
+   - Extract the Brand and ModelID from the prompt or log history.
+   - Hard Lock: Disable all domain-specific tools or searches that do not match the locked Brand.
+   - If `Brand == LG`, immediately block any execution involving `samsung`, `bosch`, `hisense`, or `encompass` domains.
+2. **Cache-First Mandate (Log Mining)**
+   - Query the Project Logs first and treat existing logs as the primary database.
+   - Deduplicate existing `partNumber` entries for the locked `ModelID`.
+   - If a `Complete Pass` was attempted previously, only target the `Delta` missing sections.
+3. **Direct-Path Extraction**
+   - Bypass search engines.
+   - Use the Source of Truth URL from the logs and navigate directly to relevant assembly sub-pages to fill gaps.
+4. **Deterministic Output**
+   - Merge cached parts and new parts into a single valid JSON object.
+   - Do not provide prose; return JSON only.
+
 ## 2. The Internal Analysis Protocol
 Agents must not use "Chain-of-Thought" or "Think step-by-step" wording in their final output. Instead:
 1. **Internal Analysis**: Perform all reasoning, sub-system identification, and evidence weight analysis internally.

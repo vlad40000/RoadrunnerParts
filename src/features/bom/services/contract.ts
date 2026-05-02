@@ -1,11 +1,9 @@
 import { RetrievalState } from "../schemas/bom";
 
 export type TrustedCountSource =
-  | "encompass"
   | "sears-partsdirect"
-  | "partsdr"
+  | "repairclinic"
   | "appliancepartspros"
-  | "partselect.com"
   | "fix.com";
 
 export type TrustedPartCountAcceptance =
@@ -26,9 +24,6 @@ export function normalizeTrustedCountSource(
 ): TrustedCountSource | null {
   const normalized = String(source || "").trim().toLowerCase();
 
-  if (normalized === "encompass" || normalized === "encompass-family") {
-    return "encompass";
-  }
   if (
     normalized === "sears-partsdirect" ||
     normalized === "searspartsdirect.com" ||
@@ -36,17 +31,17 @@ export function normalizeTrustedCountSource(
   ) {
     return "sears-partsdirect";
   }
-  if (normalized === "partsdr" || normalized === "partsdr.com") {
-    return "partsdr";
+  if (
+    normalized === "repairclinic" ||
+    normalized === "repairclinic.com"
+  ) {
+    return "repairclinic";
   }
   if (
     normalized === "appliancepartspros" ||
     normalized === "appliancepartspros.com"
   ) {
     return "appliancepartspros";
-  }
-  if (normalized === "partselect" || normalized === "partselect.com") {
-    return "partselect.com";
   }
   if (normalized === "fix" || normalized === "fix.com") {
     return "fix.com";
@@ -118,12 +113,10 @@ export function validatePartsCompleteness(input: {
 }
 
 export const RETAIL_PRICING_SOURCE_PRIORITY = [
-  "encompass",
-  "partsdr",
-  "appliancepartspros",
-  "partselect.com",
   "fix.com",
   "sears-partsdirect",
+  "repairclinic",
+  "appliancepartspros",
 ] as const;
 
 export function validateManifestCoverage(input: {

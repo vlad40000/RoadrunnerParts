@@ -2,19 +2,20 @@ import "server-only";
 import { fetchAuthoritativeSources } from "./source-fetcher";
 import { enrichBomRowsWithRetailPricing } from "./retail-pricing";
 import { normalizeGeneratedParts } from "../../../../app/api/bom/route"; // We might need to move this helper to a shared location later
-import { upsertModelPartsCache } from "./model-parts-cache";
+import { findCompleteCachedBom, upsertModelPartsCache } from "./model-parts-cache";
 
 export type BomOrchestratorResult = {
   parts: any[];
   modelMSRP?: number;
   fromCache?: boolean;
   isExhaustive?: boolean;
-  sourceType: "deterministic" | "ai";
+  sourceType: "deterministic" | "ai" | "cache";
 };
 
 /**
  * Orchestrates the Bill of Materials (BOM) retrieval process.
  * Follows a deterministic-first approach:
+ * 0. Cache Check (Neon Model Parts Cache)
  * 1. Scraper-based extraction (Source Fetcher)
  * 2. Pricing Waterfall (Retail Pricing)
  * 3. AI Fallback (only if deterministic path fails)
@@ -26,6 +27,19 @@ export async function orchestrateBomRetrieval(input: {
   expectedPartCount?: number | null;
 }): Promise<BomOrchestratorResult> {
   const { model, brand } = input;
+
+  // STAGE 0: Cache Check
+  console.log(`[BOM Orchestrator] Checking cache for ${model}...`);
+  const cached = await findCompleteCachedBom(model);
+  if (cached) {
+    console.log(`[BOM Orchestrator] Cache HIT for ${model}. Returning ${cached.parts?.length} parts.`);
+    return {
+      parts: cached.parts as any[],
+      sourceType: "cache",
+      fromCache: true,
+      isExhaustive: cached.isExhaustive === 'true',
+    };
+  }
 
   // STAGE 1: Deterministic Scraper-based Extraction
   console.log(`[BOM Orchestrator] Starting deterministic extraction for ${model}...`);

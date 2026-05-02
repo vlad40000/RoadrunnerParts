@@ -2,6 +2,9 @@ import { chromium } from "playwright";
 import { NextResponse } from "next/server";
 import { uploadFile } from "@/lib/blob";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 /**
  * POST /api/agents/encompass/assembly-overview-capture
  * 
@@ -10,7 +13,11 @@ import { uploadFile } from "@/lib/blob";
  */
 export async function POST(request: Request) {
   try {
-    const { canonUrl, immediate = false } = await request.json();
+    const body = (await request.json()) as {
+      canonUrl?: string;
+      immediate?: boolean;
+    };
+    const { canonUrl, immediate = false } = body;
 
     if (!canonUrl) {
       return NextResponse.json({ error: "Missing canonUrl" }, { status: 400 });
@@ -22,13 +29,13 @@ export async function POST(request: Request) {
     try {
       const page = await browser.newPage({
         viewport: { width: 1600, height: 1400 },
-        deviceScaleFactor: 1
+        deviceScaleFactor: 1,
       });
 
       // Navigate to Encompass canonical URL
       await page.goto(canonUrl, {
         waitUntil: "networkidle",
-        timeout: 45000
+        timeout: 45000,
       });
 
       // Brief wait for any client-side hydration or lazy-loaded assets
@@ -36,7 +43,7 @@ export async function POST(request: Request) {
 
       const buffer = await page.screenshot({
         fullPage: true,
-        animations: "disabled"
+        animations: "disabled",
       });
 
       let storedImageUrl = null;
@@ -46,10 +53,13 @@ export async function POST(request: Request) {
       // Rule: Use base64 only for immediate one-off calls because it makes payloads heavy.
       if (!immediate) {
         // Sanitize filename or use a hash to avoid collisions
-        const safeId = Buffer.from(canonUrl).toString("base64").substring(0, 10).replace(/[^a-zA-Z0-9]/g, '');
+        const safeId = Buffer.from(canonUrl)
+          .toString("base64")
+          .substring(0, 10)
+          .replace(/[^a-zA-Z0-9]/g, "");
         const filename = `encompass/captures/${safeId}_${Date.now()}.png`;
-        
-        const blob = await uploadFile(filename, buffer, { access: 'public' });
+
+        const blob = await uploadFile(filename, buffer, { access: "public" });
         storedImageUrl = blob.url;
       } else {
         base64 = buffer.toString("base64");
@@ -62,17 +72,17 @@ export async function POST(request: Request) {
         base64: immediate ? base64 : undefined,
         context: {
           canonUrl,
-          capturedAt: new Date().toISOString()
-        }
+          capturedAt: new Date().toISOString(),
+        },
       });
     } finally {
       await browser.close();
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Encompass Capture Error]", error);
-    return NextResponse.json({ 
-      error: "Failed to capture assembly overview", 
-      details: error.message 
+    return NextResponse.json({
+      error: "Failed to capture assembly overview",
+      details: error instanceof Error ? error.message : String(error),
     }, { status: 500 });
   }
 }

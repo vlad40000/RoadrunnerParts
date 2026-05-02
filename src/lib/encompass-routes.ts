@@ -1,6 +1,6 @@
 /**
  * Encompass brand routing and model resolution logic.
- * Enables "Identity-First" UI by constructing direct URLs from model prefixes.
+ * Provides deterministic direct URLs for the UI and OCR follow-up flows.
  */
 
 export type EncompassBrandRoute = {
@@ -73,68 +73,49 @@ export const ENCOMPASS_BRAND_ROUTES: EncompassBrandRoute[] = [
   },
   {
     brand: "Midea",
-    code: "MID",
+    code: "mid",
     regularPrefix: "MID",
     explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/MID/Midea",
   },
 ];
 
 const MODEL_PREFIX_TO_BRAND: Record<string, string> = {
-  // Maytag
   MED: "Maytag",
   MGD: "Maytag",
   MVW: "Maytag",
   MHW: "Maytag",
   MDB: "Maytag",
-
-  // Whirlpool
   WTW: "Whirlpool",
   WED: "Whirlpool",
   WGD: "Whirlpool",
   WFW: "Whirlpool",
   WRS: "Whirlpool",
   WRF: "Whirlpool",
-
-  // LG
   LFX: "LG",
   LRF: "LG",
   WM: "LG",
   DLE: "LG",
   DLG: "LG",
-
-  // Samsung
   WF: "Samsung",
   WA: "Samsung",
   DV: "Samsung",
   RF: "Samsung",
-
-  // Haier
   QG: "Haier",
   HB: "Haier",
   HR: "Haier",
-
-  // Kenmore (by prefix)
   "110": "Kenmore",
   "790": "Kenmore",
   "665": "Kenmore",
   "106": "Kenmore",
-
-  // Sharp
   "R-": "Sharp",
   KB: "Sharp",
-
-  // Midea
   MD: "Midea",
   MR: "Midea",
-
-  // Bosch
   SHE: "Bosch",
   SHX: "Bosch",
   SHP: "Bosch",
   SHV: "Bosch",
   B36: "Bosch",
-
-  // Frigidaire/Electrolux
   FF: "Frigidaire",
   FG: "Frigidaire",
   FP: "Frigidaire",
@@ -142,8 +123,8 @@ const MODEL_PREFIX_TO_BRAND: Record<string, string> = {
   EW: "Electrolux",
 };
 
-export function normalizeModelNumber(model: string): string {
-  return (model || "").trim().toUpperCase().replace(/\s+/g, "");
+export function normalizeModelNumber(model: string) {
+  return String(model || "").trim().toUpperCase().replace(/\s+/g, "");
 }
 
 export function resolveBrandFromModel(model: string): EncompassBrandRoute | null {
@@ -151,20 +132,14 @@ export function resolveBrandFromModel(model: string): EncompassBrandRoute | null
   if (!normalized) return null;
 
   const sortedPrefixes = Object.keys(MODEL_PREFIX_TO_BRAND).sort(
-    (a, b) => b.length - a.length
+    (a, b) => b.length - a.length,
   );
-
-  const matchedPrefix = sortedPrefixes.find((prefix) =>
-    normalized.startsWith(prefix)
-  );
-
+  const matchedPrefix = sortedPrefixes.find((prefix) => normalized.startsWith(prefix));
   if (!matchedPrefix) return null;
 
   const brandName = MODEL_PREFIX_TO_BRAND[matchedPrefix];
 
-  return (
-    ENCOMPASS_BRAND_ROUTES.find((route) => route.brand === brandName) ?? null
-  );
+  return ENCOMPASS_BRAND_ROUTES.find((route) => route.brand === brandName) ?? null;
 }
 
 export function buildEncompassUrls(model: string) {

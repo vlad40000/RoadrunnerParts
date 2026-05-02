@@ -18,10 +18,9 @@ const MODEL_MAP = {
 
 const ALL_SOURCES = [
   { id: 'sears', label: 'https://www.searspartsdirect.com/' },
-  { id: 'partselect', label: 'https://partselect.com/' },
   { id: 'repairclinic', label: 'https://repairclinic.com/' },
-  { id: 'reliableparts', label: 'https://www.reliableparts.com/' },
-  { id: 'dlpartsco', label: 'https://dlpartsco.com/' },
+  { id: 'appliancepartspros', label: 'https://www.appliancepartspros.com/' },
+  { id: 'fix', label: 'https://www.fix.com/' },
 ];
 
 function resolveModelName(modelOrRole) {
@@ -320,12 +319,8 @@ export async function fetchPartsList(
   const distributorFallbacks = providerPlan.distributorFallbacks || [
     'searspartsdirect.com', 
     'repairclinic.com', 
-    'encompass.com', 
-    'partselect.com',
     'appliancepartspros.com',
-    'fix.com',
-    'reliableparts.com',
-    'partstown.com'
+    'fix.com'
   ];
   const allowedDomains = providerPlan.allowedDomains || [...manufacturerDomains, ...distributorFallbacks];
   const truthOrder = providerPlan.truthOrder || allowedDomains;
@@ -570,9 +565,9 @@ export async function extractSchematicBOM(modelNumber, brand) {
     
     TARGET DOMAINS (Prioritize these):
     - searspartsdirect.com
-    - encompass.com
-    - partselect.com
+    - repairclinic.com
     - appliancepartspros.com
+    - fix.com
   `;
 
   const { data, sources } = await generateStructuredJson({
@@ -745,12 +740,11 @@ ALSO:
 Use GOOGLE SEARCH to verify the EXACT CURRENT RETAIL PRICE for each part.
 For EVERY price provided, specify the source website.
 Use this required pricing fallback chain:
-1. Search Encompass.com first.
-2. If Encompass has no usable price, search SearsPartsDirect.com.
-3. If SearsPartsDirect has no usable price, search Fix.com.
+1. Search SearsPartsDirect.com first.
+2. If SearsPartsDirect has no usable price, search Fix.com.
 Do not return 0, $0.00, free, blank, placeholder, or estimated prices.
-Every returned part MUST include a real positive price and priceSource from Encompass, SearsPartsDirect, or Fix.com.
-Set priceSource to exactly "encompass.com", "searspartsdirect.com", or "fix.com".
+Every returned part MUST include a real positive price and priceSource from searspartsdirect.com, or fix.com.
+Set priceSource to exactly "searspartsdirect.com", or "fix.com".
 Do not use any other retailer, marketplace, blog, unrelated URL, or manufacturer landing page as a price source.
 Continue the fallback chain until a real positive approved-source price is found for every returned part.
     

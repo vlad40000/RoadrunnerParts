@@ -41,13 +41,17 @@ export function buildSourceResolverPrompt(input: {
 } = {}) {
   const sourceGate = formatBrandSourceGateForPrompt(input);
   return `
+- Phase 1: establish a hard lock on the manufacturer and model before any external lookup.
+- Phase 2: check the project cache / prior pass logs first; reuse any already-captured part IDs before requesting a browser.
+- Phase 3: if extraction is needed, use only the source-of-truth URLs already identified for this model.
+- If brand is LG, immediately block any execution involving samsung, bosch, hisense, or encompass domains.
 - Use ONLY brand-approved distributor sources listed in the source gate.
 - Block all OEM official domains; do not issue site: searches for manufacturer sites.
 - Return no_result if the source is incompatible or no exact model/variant match is found.
 
 ${sourceGate}
 
-TASK: Resolve exact model-specific appliance parts or diagram URLs from approved distributor sources and return them in the specified JSON shape.
+TASK: Resolve exact model-specific appliance parts or diagram URLs from approved distributor sources, honoring the project cache delta-pass rule, and return them in the specified JSON shape.
 
 JSON_SHAPE:
 {

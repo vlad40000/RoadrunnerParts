@@ -57,7 +57,7 @@ function pathLooksLikeModelPage(url: string, domain: string) {
       return path.includes("/model/");
     }
 
-    if (domain.includes("partselect.com") || domain.includes("fix.com")) {
+    if (domain.includes("fix.com")) {
       return path.includes("/models/");
     }
 
@@ -157,7 +157,7 @@ async function validateCandidatePage(input: {
       }
     }
 
-    if (input.domain.includes("partselect.com") || input.domain.includes("fix.com")) {
+    if (input.domain.includes("fix.com")) {
       if (!text.includes("MODEL") && !text.includes("PARTS")) {
         return { isValid: false };
       }

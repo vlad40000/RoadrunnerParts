@@ -20,21 +20,21 @@
 11. **Schema-Valid Return**: [COMPLETE] - Agents return `SupplierAgentResponse` JSON.
 12. **Reconciliation Merge**: [COMPLETE] - Merging logic prioritized by Encompass manifest.
 
-## Current Progress
 - [x] Documented Locked Architecture.
 - [x] Implemented `encompass-supervisor.mjs` for steps 2-6.
 - [x] Created `EncompassSupervisorPanel` UI component.
 - [x] Created `/bom-ingest` Control Panel page.
 - [x] Updated `agent.mjs` and supplier agents to support `visualTruth` context.
 - [x] Registered `encompass_visual_supervisor` tool in agent dispatcher.
+- [x] Purged ALL legacy extraction logic and unauthorized suppliers (PartSelect, LG, Samsung, Bosch, etc.).
 
 ## Next Steps
 - Verify the end-to-end reconciliation of Fix.com rows against the Encompass manifest.
 
-## Project Audit (2026-05-02)
-- [x] Audited for broken/empty files and folders.
-- [x] Identified empty API route skeletons in `app/api/bom/jobs/`.
-- [x] Confirmed `typecheck_output.txt` is stale (fresh build passes).
-- [x] Noted architectural redundancy between `lib/` and `src/lib/`.
-- [ ] Cleanup empty route skeletons.
+## Project Audit & Cache Integrity (2026-05-02)
+- [x] Audited database for cache hit failures.
+- [x] Fixed normalization mismatch between `model_parts_cache` and `encompass_model_urls`.
+- [x] Integrated `encompassFamilyProvider` into authoritative source loop.
+- [x] Implemented early `model_parts_cache` lookup in `bom-orchestrator.ts` after identity extraction.
+- [x] Cleanup empty route skeletons.
 - [ ] Consolidate `lib/` vs `src/lib/` duplication.

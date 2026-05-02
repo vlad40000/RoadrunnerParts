@@ -269,7 +269,7 @@ export const accept_trusted_total_part_count: FunctionDeclaration = {
     type: SchemaType.OBJECT,
     properties: {
       source: {
-        ...enumString(["encompass", "sears-partsdirect", "partsdr", "appliancepartspros", "partselect.com", "fix.com"]),
+        ...enumString(["sears-partsdirect", "repairclinic", "appliancepartspros", "fix.com"]),
       },
       normalizedModel: { type: SchemaType.STRING },
       sourceModel: { type: SchemaType.STRING },
@@ -412,7 +412,7 @@ export const validate_parts_completeness_against_manifest: FunctionDeclaration =
 
 export const resolve_part_pricing_sources: FunctionDeclaration = {
   name: "resolve_part_pricing_sources",
-  description: "Given a canonical OEM part number, return prioritized retail pricing sources. Encompass must be first unless blocked or unavailable.",
+  description: "Given a canonical OEM part number, return prioritized retail pricing sources. searspartsdirect.com or fix.com should be used.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
@@ -422,17 +422,6 @@ export const resolve_part_pricing_sources: FunctionDeclaration = {
   },
 };
 
-export const fetch_encompass_listed_price: FunctionDeclaration = {
-  name: "fetch_encompass_listed_price",
-  description: "Fetch the currently listed public Encompass price for an exact OEM part number. Do not estimate. If no exact visible price exists, return no_price.",
-  parameters: {
-    type: SchemaType.OBJECT,
-    properties: {
-      partNumber: { type: SchemaType.STRING },
-    },
-    required: ["partNumber"],
-  },
-};
 
 export const fetch_fallback_listed_price: FunctionDeclaration = {
   name: "fetch_fallback_listed_price",
@@ -462,7 +451,7 @@ export const validate_exact_price_evidence: FunctionDeclaration = {
 
 export const select_primary_verified_price: FunctionDeclaration = {
   name: "select_primary_verified_price",
-  description: "Select the primary verified listed retail price from validated evidence. Encompass wins when valid. Do not average or estimate.",
+  description: "Select the primary verified listed retail price from validated evidence. Do not average or estimate.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
@@ -529,7 +518,6 @@ export const CORE_BOM_TOOLS = [
   validate_manifest_coverage,
   validate_parts_completeness_against_manifest,
   resolve_part_pricing_sources,
-  fetch_encompass_listed_price,
   fetch_fallback_listed_price,
   validate_exact_price_evidence,
   select_primary_verified_price,

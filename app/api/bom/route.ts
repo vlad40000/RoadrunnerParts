@@ -10,9 +10,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const BOM_ROUTE_DEADLINE_MS = 110000;
 export const APPROVED_PRICE_SOURCES = [
-  'encompass.com',
-  'searspartsdirect.com',
   'fix.com',
+  'repairclinic.com',
+  'appliancepartspros.com',
+  'searspartsdirect.com',
 ] as const;
 
 const SECTION_ENUM = [
@@ -230,8 +231,7 @@ KNOWN PART NUMBERS ALREADY FOUND (DO NOT REPEAT THESE):
 ${knownPartNumbers.length > 0 ? knownPartNumbers.join(', ') : 'NONE'}
 
 INSTRUCTIONS:
-- Use GOOGLE SEARCH to find the actual OEM parts list for this exact model on encompass.com.
-- Encompass is the primary source for both parts lists and pricing.
+- Use GOOGLE SEARCH to find the actual OEM parts list for this exact model on searspartsdirect.com, fix.com, repairclinic.com, or appliancepartspros.com.
 - Use REAL manufacturer OEM part numbers only.
 - Do NOT include any part number already in the known list above.
 - Return only valid, serviceable, or diagram-listed parts that also have a verified positive market price from the required pricing fallback chain.
@@ -239,10 +239,10 @@ INSTRUCTIONS:
 - BATCHING LOGIC: If an EXPECTED TOTAL PART COUNT is provided, continue targeting ~40 parts per pass until the remaining count is less than 40, then deliver only that remainder.
 - If the real OEM BOM has fewer than 40 serviceable parts total, return all of them and stop immediately — do NOT invent or pad parts.
 - Only return parts that genuinely exist in OEM service documentation or real parts retailer sites for this exact model.
-- Pricing is mandatory for every returned part: search Encompass.com.
+- Pricing is mandatory for every returned part: search searspartsdirect.com, or fix.com.
 - Do not return 0, $0.00, free, blank, placeholder, or estimated prices.
 - Every returned part MUST include a real positive "price" and "priceSource".
-- Set "priceSource" to exactly "encompass.com".
+- Set "priceSource" to exactly "searspartsdirect.com", or "fix.com".
 - Do not use any other retailer, marketplace, blog, unrelated URL, or manufacturer landing page as a price source.
 
 OUTPUT FORMAT — return ONLY a valid JSON object, no markdown, no explanation:
@@ -305,7 +305,7 @@ If a part does not fit any section, use the closest match — never omit a part 
         return NextResponse.json(
           {
             error: 'No BOM rows had approved positive prices.',
-            detail: 'Only Encompass, SearsPartsDirect, and Fix.com prices are allowed.',
+            detail: 'Only Fix.com, RepairClinic, AppliancePartsPros, and SearsPartsDirect prices are allowed.',
           },
           { status: 502 },
         );

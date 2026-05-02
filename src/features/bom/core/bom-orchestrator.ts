@@ -14,6 +14,7 @@ import { normalizeBomRows } from "./bom-normalizer";
 import { computeUnmatchedCallouts, coverageScore } from "./bom-validator";
 import { classifyBomResult } from "./bom-status";
 import { runWithConcurrency } from "../services/providers/utils";
+import { findCompleteCachedBom } from "../services/model-parts-cache";
 
 const logger = console;
 
@@ -54,6 +55,41 @@ export async function buildBomJob(input: {
   await input.onStage?.("resolving_identity_context");
 
   const identityContext = await buildBomIdentityContext(identity);
+  
+  // EARLY CACHE CHECK: If we have a full model and we're in full mode, check the cache
+  if (mode === "full" && identity.model) {
+    const cached = await findCompleteCachedBom(identity.model);
+    if (cached) {
+      logger.log(`[Orchestrator] Cache HIT for ${identity.model}. Skipping online extraction.`);
+      const synthesizedRows = cached.parts as BomRow[];
+      const sectionsFound = [...new Set(synthesizedRows.map((r) => r.section))];
+      
+      const result: BomResult = {
+        brand: cached.brand || identity.brand,
+        model: cached.normalizedModel,
+        serial: identity.serial,
+        productType: cached.applianceType || identity.productType,
+        sectionsFound,
+        rawRowCount: synthesizedRows.length,
+        uniqueRowCount: synthesizedRows.length,
+        unmatchedCallouts: [],
+        status: "bom_complete",
+        rows: synthesizedRows,
+        issues: ["Restored from persistent model cache."],
+        coverageScore: cached.coveragePct ?? 1,
+      };
+
+      return {
+        result,
+        identity,
+        identityContext,
+        diagramParse: { sections: [] },
+        retrievedSources: [],
+        extractedRowsRaw: synthesizedRows,
+        finalRows: synthesizedRows,
+      };
+    }
+  }
 
   if (mode === "identity" || !identity.model || identity.confidence < 0.9) {
     const status = (mode === "identity") ? "identity_only" : "identity_only";

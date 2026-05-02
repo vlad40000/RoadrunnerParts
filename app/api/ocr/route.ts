@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     // Attempt decoding if serial is present
     let decodeResult = null;
     if (data.serialNumber) {
-      const { ApplianceDecoder } = await import('@/src/lib/decoder');
+      const { ApplianceDecoder } = await import('@/lib/decoder');
       const decoder = new ApplianceDecoder();
       decodeResult = decoder.decode(data.serialNumber, data.modelNumber || '');
     }

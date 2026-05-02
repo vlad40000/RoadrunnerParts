@@ -107,12 +107,9 @@ export const PARTS_SOURCE_REGISTRY: Record<string, BrandSourceConfig> = {
 };
 
 const SOURCE_TEMPLATES: Record<string, (model: string) => string> = {
-  encompass: (m) => `https://encompass.com/model/${m}`,
   "sears-partsdirect": (m) => `https://www.searspartsdirect.com/model/${m}`,
-  partsdr: (m) => `https://partsdr.com/search?q=${m}`,
   appliancepartspros: (m) => `https://www.appliancepartspros.com/search.aspx?q=${m}`,
   "repairclinic-family": (m) => `https://www.repairclinic.com/Shop-For-Parts?SearchText=${m}`,
-  "partselect.com": (m) => `https://www.partselect.com/Models/${m}/`,
   "fix.com": (m) => `https://www.fix.com/models/${m}/`,
 };
 

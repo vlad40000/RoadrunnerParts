@@ -23,9 +23,8 @@ export type EncompassModelIndexRow = {
 
 export function normalizeModelKey(value: string) {
   return String(value || "")
-    .trim()
     .toUpperCase()
-    .replace(/\s+/g, "");
+    .replace(/[^A-Z0-9]/g, "");
 }
 
 export function findEncompassModelUrl(rows: EncompassModelIndexRow[], model: string) {

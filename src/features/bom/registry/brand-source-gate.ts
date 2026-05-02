@@ -8,25 +8,19 @@ export type BrandFamily =
   | "unknown";
 
 export type SourceKey =
-  | "encompass-family"
   | "sears-partsdirect"
-  | "partsdr"
   | "appliancepartspros"
   | "repairclinic-family"
-  | "partselect.com"
   | "fix.com";
 
 export const DISTRIBUTOR_PRIMARY_SOURCES: SourceKey[] = [
-  "encompass-family",
   "sears-partsdirect",
-  "partsdr",
+  "fix.com",
 ];
 
 export const DISTRIBUTOR_SECONDARY_SOURCES: SourceKey[] = [
   "appliancepartspros",
   "repairclinic-family",
-  "partselect.com",
-  "fix.com",
 ];
 
 export const UNIVERSAL_DISTRIBUTOR_SOURCES: SourceKey[] = [
@@ -66,12 +60,9 @@ export const BLOCKED_SOURCES = [
 ];
 
 export const SOURCE_DOMAINS: Record<SourceKey, string[]> = {
-  "encompass-family": ["encompass.com"],
   "sears-partsdirect": ["searspartsdirect.com"],
-  partsdr: ["partsdr.com"],
   appliancepartspros: ["appliancepartspros.com"],
   "repairclinic-family": ["repairclinic.com"],
-  "partselect.com": ["partselect.com"],
   "fix.com": ["fix.com"],
 };
 
@@ -81,12 +72,9 @@ export const SOURCE_POLICY = {
   priority: [
     "seeded-provider",
     "url-intake",
-    "encompass-family",
     "sears-partsdirect",
-    "partsdr",
-    "appliancepartspros",
-    "partselect.com",
     "fix.com",
+    "appliancepartspros",
     "repairclinic-family",
   ],
 } as const;
@@ -133,6 +121,7 @@ export type BrandSourceGate = {
   forbiddenSources: string[];
   approvedDomains: string[];
   forbiddenDomains: string[];
+  hardBlockedDomains: string[];
 };
 
 function normalize(value: string | null | undefined) {
@@ -201,6 +190,19 @@ export function resolveBrandSourceGate(input: {
   const gate = BRAND_SOURCE_GATE[brandFamily];
 
   const approvedSources = [...gate.primarySources, ...gate.secondarySources];
+  const hardBlockedDomains =
+    brandFamily === "lg-family"
+      ? [
+          "samsung.com",
+          "samsungparts.com",
+          "samsungpartsusa.com",
+          "bosch-home.com",
+          "hisense.com",
+          "hisense.encompass.com",
+          "encompass.com",
+          "partstore.encompass.com",
+        ]
+      : [];
 
   return {
     brandFamily,
@@ -210,6 +212,7 @@ export function resolveBrandSourceGate(input: {
     forbiddenSources: BLOCKED_SOURCES,
     approvedDomains: domainsForSources(approvedSources),
     forbiddenDomains: BLOCKED_SEARCH_DOMAINS,
+    hardBlockedDomains,
   };
 }
 
@@ -259,6 +262,7 @@ export function formatBrandSourceGateForPrompt(input: {
   return [
     "<brand_source_gate>",
     `brand_family: ${gate.brandFamily}`,
+    `hard_blocked_domains: ${gate.hardBlockedDomains.join(", ") || "NONE"}`,
     `primary_sources: ${gate.primarySources.join(", ")}`,
     `secondary_sources: ${gate.secondarySources.join(", ")}`,
     `approved_domains: ${gate.approvedDomains.join(", ")}`,
