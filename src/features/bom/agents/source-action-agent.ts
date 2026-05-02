@@ -29,6 +29,12 @@ import {
   parseSearsCatalogParts,
 } from "@/features/bom/services/providers/sears-catalog-adapter";
 import { validate_bom_completion } from "@/features/bom/core/bom-validator";
+import { 
+  bomRowSchema, 
+  supplierAgentResponseSchema,
+  type BomRow,
+  type SupplierAgentResponse
+} from "../schemas/bom";
 
 type SelectedAssemblyInput = {
   id?: string;
@@ -51,6 +57,12 @@ type SourceActionInput = {
   productType?: string | null;
   selectedAssemblies?: SelectedAssemblyInput[];
   pricingSource?: string | null;
+  visualTruth?: {
+    screenshotBase64?: string | null;
+    canonUrl?: string | null;
+    expectedTotal?: number | null;
+    assemblyNames?: string[];
+  } | null;
 };
 
 function assertNonEmpty(value: string | null | undefined, message: string) {
@@ -109,6 +121,68 @@ function checkPricedRows(rows: Array<Record<string, any>>) {
       (row.price !== null && row.price !== undefined && row.price > 0) ||
       (row.retailPrice !== null && row.retailPrice !== undefined && row.retailPrice > 0),
   ).length;
+}
+
+function buildSupplierAgentResponse(input: {
+  agentId: string;
+  supplierId: any;
+  sourceUrl: string;
+  visualTruth: any;
+  modelIdentity: any;
+  rows: BomRow[];
+  errors: string[];
+}): SupplierAgentResponse {
+  const encompassUsed = !!input.visualTruth;
+  const expectedTotal = input.visualTruth?.expectedTotal || null;
+  const assemblyNames = input.visualTruth?.assemblyNames || [];
+
+  const uniqueParts = new Set(input.rows.map(r => r.part_number)).size;
+
+  // Simple reconciliation logic
+  const matchesEncompass = encompassUsed ? (uniqueParts >= (expectedTotal || 0) ? "yes" : "partial") : "not_checked";
+  const coverageRatio = expectedTotal ? uniqueParts / expectedTotal : null;
+
+  return {
+    agent_metadata: {
+      agent_id: input.agentId,
+      supplier_id: input.supplierId,
+      source_url: input.sourceUrl,
+      encompass_overview_used: encompassUsed,
+      expected_total_used: !!expectedTotal,
+      timestamp: new Date().toISOString(),
+      status: input.errors.length > 0 ? (input.rows.length > 0 ? "partial" : "failed") : "success",
+    },
+    model_identity: {
+      normalized_model: input.modelIdentity.normalized_model,
+      brand: input.modelIdentity.brand,
+      product_type: input.modelIdentity.product_type,
+    },
+    bom_data: {
+      total_rows_found: input.rows.length,
+      unique_part_numbers_found: uniqueParts,
+      expected_total: expectedTotal,
+      assemblies: [
+        {
+          assembly_name: assemblyNames[0] || "Unified Assembly",
+          supplier_section_name: "Source Page",
+          parts: input.rows.map(r => ({
+            ...r,
+            mapped_encompass_assembly: r.mapped_encompass_assembly || assemblyNames[0] || null
+          })),
+        }
+      ],
+    },
+    reconciliation: {
+      matches_encompass_diagram: matchesEncompass as any,
+      coverage_ratio: coverageRatio,
+      missing_from_source: [], 
+      extra_parts_found: [],
+      potential_mismatches: input.rows
+        .filter(r => r.mapping_status === "potential_mismatch")
+        .map(r => ({ part_number: r.part_number, reason: "Mapping status flag" })),
+    },
+    errors: input.errors,
+  };
 }
 
 export async function runSourceActionAgent(input: SourceActionInput) {
@@ -385,10 +459,14 @@ export async function runSourceActionAgent(input: SourceActionInput) {
           sourceText,
           sourceUrl: fetched.finalUrl,
           sourceType: "supplier_assembly",
+          visualTruth: input.visualTruth,
         });
 
         const rows = rowsRaw.map((row: any) => ({
           ...row,
+          part_number: row.currentServicePartNumber || row.originalPartNumber || "UNKNOWN",
+          callout_number: String(row.diagramNumber || ""),
+          mapping_status: (row as any).mapping_status || "mapped",
           section: row.section || assembly.title,
           assemblyTitle: assembly.title,
           sourceUrl: row.sourceUrl || fetched.finalUrl,
@@ -507,8 +585,23 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       sourceStrategy: `manual-distributor-control:${input.tierKey}:${input.supplier}:extract_selected_assemblies`,
     });
 
+    const response = buildSupplierAgentResponse({
+      agentId: `${input.supplier}_agent`,
+      supplierId: input.supplier as any,
+      sourceUrl: selectedAssemblies[0]?.sourceUrl || "",
+      visualTruth: input.visualTruth,
+      modelIdentity: {
+        normalized_model: input.canonicalModel,
+        brand: input.brand || job.brand,
+        product_type: input.productType || job.productType,
+      },
+      rows: mergedRows as BomRow[],
+      errors: issues,
+    });
+
     return {
       status: "selected_assemblies_extracted",
+      response,
       extractedThisRun: extractedRows.length,
       totalRows: mergedRows.length,
       expectedSelectedCount: selectedExpected,

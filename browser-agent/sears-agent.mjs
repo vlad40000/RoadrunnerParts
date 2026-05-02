@@ -23,7 +23,7 @@ function normalizeModel(value) {
 }
 
 async function extractPartsWithGemini(page, context) {
-  const { sectionName, sectionUrl, brand, modelName, productType } = context;
+  const { sectionName, sectionUrl, brand, modelName, productType, visualTruth } = context;
   if (!process.env.GEMINI_API_KEY) return [];
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -41,9 +41,17 @@ async function extractPartsWithGemini(page, context) {
     .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
     .substring(0, 40000);
 
+  const visualSupervisorContext = visualTruth ? `
+VISUAL SUPERVISOR (Encompass):
+- Canon URL: ${visualTruth.canonUrl}
+- Expected Total Parts: ${visualTruth.expectedTotal || 'unknown'}
+- Canonical Assemblies: ${visualTruth.assemblyNames?.join(', ') || 'unknown'}
+` : '';
+
   const prompt = `
 ROLE: Expert Appliance Engineer. Generate 100% complete BOM for ${productType} from HTML. No hallucinations.
 CONTEXT: Brand: ${brand}, Model: ${modelName}, Section: ${sectionName}.
+${visualSupervisorContext}
 STEP-BACK: Identify 4-6 core functional systems.
 CoT: 1. List systems. 2. Operational reasoning. 3. Component list (inc. hardware/fasteners).
 JSON SCHEMA: { "systems": [{ "system_name": "", "reasoning": "", "parts_list": [{ "part_name": "", "oem_part_number": "", "estimated_quantity": 1, "critical_notes": "" }] }] }
@@ -114,7 +122,7 @@ async function persistRawRows(model, parts) {
 }
 
 export async function runSearsAgent(options) {
-  const { modelUrl, model, brand, productType, write, useGemini, headless } = options;
+  const { modelUrl, model, brand, productType, write, useGemini, headless, visualTruth } = options;
   const modelName = normalizeModel(model);
   
   console.log(`[SearsAgent] Starting extraction for ${modelName}...`);
@@ -154,7 +162,8 @@ export async function runSearsAgent(options) {
         sectionUrl: diagram.url,
         brand,
         modelName,
-        productType
+        productType,
+        visualTruth
       });
       allParts.push(...geminiRows);
     }

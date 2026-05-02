@@ -1,22 +1,22 @@
 /**
  * ROADRUNNER PARTS FINAL PIPELINE REFERENCE
  * These are NOT prompts. All model calls must use isolated, contract-bound task prompts.
- * Computer Use is excluded from this workflow.
+ * Encompass acts as the Visual Supervisor for all stages.
  */
 
 export const BOM_PIPELINE_STAGES = {
-  STAGE_0: "Runtime Contract Prompt",
-  STAGE_1: "Orchestrator Prompt",
-  STAGE_2: "Nameplate Ingest Prompt",
-  STAGE_3: "Identity Normalize Prompt",
-  STAGE_4: "DB Cache / Completeness Prompt",
-  STAGE_5: "Source Resolver Prompt",
-  STAGE_6: "URL Context / Grounding Prompt",
-  STAGE_7: "Diagram Manifest Prompt",
-  STAGE_8: "Parts Extraction Prompt",
-  STAGE_9: "Manifest Mapping / BOM Synthesis Prompt",
-  STAGE_10: "Retail Pricing Prompt",
-  STAGE_11: "Fallback Pricing Prompt",
-  STAGE_12: "Final BOM Audit Prompt",
-  STAGE_13: "Final UI Summary Prompt",
+  STAGE_1: "OCR/Manual Entry",
+  STAGE_2: "Resolve Encompass URL",
+  STAGE_3: "Fetch Model Option",
+  STAGE_4: "Build Exploded-View URL",
+  STAGE_5: "Capture Visual Truth (Encompass Overview)",
+  STAGE_6: "Extract Canonical Manifest (Totals/Names)",
+  STAGE_7: "Show Screenshot Context",
+  STAGE_8: "Populate Supplier Rows",
+  STAGE_9: "Independent Agent Execution",
+  STAGE_10: "Agent Context Handover",
+  STAGE_11: "Schema-Valid Extraction",
+  STAGE_12: "Reconciliation Merge against Visual Truth",
 } as const;
+
+export type BomPipelineStage = keyof typeof BOM_PIPELINE_STAGES;

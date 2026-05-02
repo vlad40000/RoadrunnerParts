@@ -64,7 +64,6 @@ export const partsDrProvider: SourceProvider = {
       const resolution = await resolveExactModelUrl({
         model,
         domain: "partsdr.com",
-        brand,
         preferredQueries: [
           `site:partsdr.com "${model}" "${brand}"`,
           `site:partsdr.com/appliance-models "${model}"`,

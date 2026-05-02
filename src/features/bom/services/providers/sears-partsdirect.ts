@@ -145,7 +145,6 @@ async function resolveSearsModelUrl(input: {
   return resolveExactModelUrl({
     model,
     domain: "searspartsdirect.com",
-    brand: input.brand,
     preferredQueries: [
       `site:searspartsdirect.com "${model}" "By Schematic"`,
       `site:searspartsdirect.com "${model}" "SELECT DIAGRAM"`,

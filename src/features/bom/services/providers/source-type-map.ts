@@ -1,4 +1,5 @@
 import "server-only";
+import { type ProviderSourceType } from "./types";
 
 export const SOURCE_POLICY = {
   mode: "distributor_only",
@@ -126,8 +127,8 @@ export const GROUNDING_TIERS = {
   ]
 };
 
-export function getSourceTypeForProvider(provider: string) {
-  return SEEDED_SOURCE_TYPE_BY_PROVIDER[provider] || "distributor";
+export function getSourceTypeForProvider(provider: string): ProviderSourceType {
+  return (SEEDED_SOURCE_TYPE_BY_PROVIDER[provider] || "distributor") as ProviderSourceType;
 }
 
 export function getProviderClassification(provider: string): ProviderClassification | "unknown" {

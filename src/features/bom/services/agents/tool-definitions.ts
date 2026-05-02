@@ -14,6 +14,23 @@ const openObjectSchema = {
 } as any;
 
 /**
+ * 0. Visual Truth / Supervisor Functions
+ */
+
+export const encompass_visual_supervisor: FunctionDeclaration = {
+  name: "encompass_visual_supervisor",
+  description: "Establish Visual Truth for a model by capturing Encompass exploded-view screenshot, canonical assembly names, and expected part count.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      model: { type: SchemaType.STRING },
+      url: { type: SchemaType.STRING },
+    },
+    required: ["model"],
+  },
+};
+
+/**
  * 1. OCR / Identity Functions
  */
 
@@ -487,6 +504,7 @@ export const calculate_machine_priority: FunctionDeclaration = {
 };
 
 export const CORE_BOM_TOOLS = [
+  encompass_visual_supervisor,
   ocr_extract_nameplate,
   normalize_appliance_identity,
   decode_machine_serial_date,

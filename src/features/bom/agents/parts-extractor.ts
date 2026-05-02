@@ -65,6 +65,7 @@ export async function runPartsExtractor(input: {
   sourceUrl: string;
   sourceType: ProviderSourceType;
   assemblyName?: string;
+  visualTruth?: any;
 }): Promise<BomRow[]> {
   const deterministic = parseStructuredRows(input.sourceText, input.sourceUrl);
 
@@ -77,7 +78,11 @@ export async function runPartsExtractor(input: {
   }
 
   const raw = await runStructuredJson<{ rows: BomRow[] }>({
-    prompt: buildPartsPrompt(input.assemblyName),
+    prompt: buildPartsPrompt({ 
+      assemblyContext: input.assemblyName,
+      sourceUrl: input.sourceUrl,
+      visualTruth: input.visualTruth
+    }),
     text: JSON.stringify({
       sourceUrl: input.sourceUrl,
       sourceType: input.sourceType,

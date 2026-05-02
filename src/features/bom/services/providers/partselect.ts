@@ -119,7 +119,6 @@ export const partSelectProvider: SourceProvider = {
     const resolution = await resolveExactModelUrl({
       model,
       domain: "partselect.com",
-      brand: fetchInput.brand,
       preferredQueries: [
         `site:partselect.com "${model}" "Diagrams"`,
         `site:partselect.com "${model}" "Parts List"`,

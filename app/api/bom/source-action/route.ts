@@ -140,6 +140,7 @@ export async function POST(req: NextRequest) {
         : undefined,
       pricingSource:
         typeof body.pricingSource === "string" ? body.pricingSource : null,
+      visualTruth: body.visualTruth,
     });
 
     return NextResponse.json(

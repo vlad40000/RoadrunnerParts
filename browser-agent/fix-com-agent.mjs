@@ -384,7 +384,7 @@ async function extractRenderedParts(page, sectionName, sectionUrl) {
 }
 
 async function extractPartsWithGemini(page, context) {
-  const { sectionName, sectionUrl, brand, modelName, productType } = context;
+  const { sectionName, sectionUrl, brand, modelName, productType, visualTruth } = context;
   if (!process.env.GEMINI_API_KEY) return [];
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -402,9 +402,17 @@ async function extractPartsWithGemini(page, context) {
     .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
     .substring(0, 40000);
 
+  const visualSupervisorContext = visualTruth ? `
+VISUAL SUPERVISOR (Encompass):
+- Canon URL: ${visualTruth.canonUrl}
+- Expected Total Parts: ${visualTruth.expectedTotal || 'unknown'}
+- Canonical Assemblies: ${visualTruth.assemblyNames?.join(', ') || 'unknown'}
+` : '';
+
   const prompt = `
 ROLE: Expert Appliance Engineer. Generate 100% complete BOM for ${productType} from HTML. No hallucinations.
 CONTEXT: Brand: ${brand}, Model: ${modelName}, Section: ${sectionName}.
+${visualSupervisorContext}
 STEP-BACK: Identify 4-6 core functional systems (e.g. Cooling, Airflow).
 CoT: 1. List systems. 2. Operational reasoning. 3. Component list (inc. hardware/fasteners).
 JSON SCHEMA: { "systems": [{ "system_name": "", "reasoning": "", "parts_list": [{ "part_name": "", "oem_part_number": "", "estimated_quantity": 1, "critical_notes": "" }] }] }
@@ -557,6 +565,7 @@ function normalizeRunOptions(modelUrlOrOptions, maybeModelName) {
     useGemini: Boolean(modelUrlOrOptions.useGemini),
     useReviewer: Boolean(modelUrlOrOptions.useReviewer),
     headless: modelUrlOrOptions.headless !== false,
+    visualTruth: modelUrlOrOptions.visualTruth || null,
   };
 }
 
@@ -642,7 +651,8 @@ export async function runFixComAgent(modelUrlOrOptions, maybeModelName) {
           sectionUrl: diagram.url,
           brand: options.brand,
           modelName: model,
-          productType: options.productType
+          productType: options.productType,
+          visualTruth: options.visualTruth
         });
         allParts.push(...fallbackRows);
       }

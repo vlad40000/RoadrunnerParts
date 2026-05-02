@@ -1,5 +1,6 @@
 import { runFixComAgent } from './fix-com-agent.mjs';
 import { runSearsAgent } from './sears-agent.mjs';
+import { runEncompassSupervisor } from './encompass-supervisor.mjs';
 
 function parseArgs(argv) {
   const args = {
@@ -8,6 +9,7 @@ function parseArgs(argv) {
     gemini: false,
     review: false,
     headful: false,
+    supervisor: false,
   };
 
   const positional = [];
@@ -22,7 +24,7 @@ function parseArgs(argv) {
     const key = token.slice(2);
     const next = argv[i + 1];
 
-    if (['write', 'gemini', 'review', 'headful'].includes(key)) {
+    if (['write', 'gemini', 'review', 'headful', 'supervisor'].includes(key)) {
       args[key] = true;
       continue;
     }
@@ -51,6 +53,7 @@ Usage:
   node agent.mjs --provider fix --url https://www.fix.com/models/dryer/ge/GTDX180ED3WW/ --model GTDX180ED3WW
 
 Options:
+  --supervisor Run Encompass Visual Supervisor first to establish truth.
   --write     Write extracted raw rows to Neon model_parts_raw.
   --gemini    Enable Gemini fallback parsing when deterministic extraction finds no rows.
   --review    Enable Gemini CoVe reviewer after source-backed extraction.
@@ -66,6 +69,15 @@ async function start() {
     process.exit(1);
   }
 
+  let visualTruth = null;
+  if (args.supervisor) {
+    console.log(`[Agent] Establishing Visual Truth via Encompass...`);
+    visualTruth = await runEncompassSupervisor({
+      model: args.model,
+      headless: !args.headful,
+    });
+  }
+
   if (!['fix', 'sears'].includes(args.provider)) {
     throw new Error(`Unsupported provider "${args.provider}". Supported: fix, sears.`);
   }
@@ -79,6 +91,7 @@ async function start() {
     useGemini: Boolean(args.gemini),
     useReviewer: Boolean(args.review),
     headless: !args.headful,
+    visualTruth, // Pass visual truth context to supplier agents
   };
 
   const result = args.provider === 'fix' 
@@ -89,6 +102,11 @@ async function start() {
     status: result.cove.status,
     model: result.model,
     provider: result.provider,
+    visualTruth: visualTruth ? {
+      canonUrl: visualTruth.canonUrl,
+      expectedTotal: visualTruth.expectedTotal,
+      assemblyCount: visualTruth.assemblyNames.length,
+    } : null,
     expectedPartsTotal: result.expectedPartsTotal,
     extractedCount: result.cove.extractedCount,
     targetCount: result.cove.targetCount,

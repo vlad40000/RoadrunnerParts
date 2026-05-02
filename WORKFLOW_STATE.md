@@ -1,32 +1,40 @@
-# Workflow State - RoadrunnerParts Production Stabilization
+# WORKFLOW_STATE - BOM Ingestion (Visual Truth Architecture)
+[Rationale: Why this workflow wins](docs/STRATEGY.md)
 
-## Current Status
-- **Phase**: Stabilization & Build Fix
-- **Status**: Ready for Deployment
-- **Last Sync**: 2026-05-02
+## Status: IMPLEMENTED & LOCKED
+- **Supervisor**: Encompass (Visual Truth / Visual Supervisor) [ENABLED]
+- **Supplier Agents**: Row extractors (Fix.com, Sears) [GROUNDED IN TRUTH]
+- **UI**: BOM Ingest Control Panel [ACTIVE]
 
-## Accomplishments
-### Build Stabilization
-- [x] **Resolved Missing Module Errors**: Re-created `src/features/bom/services/providers/hisense-family.ts` which was missing from the filesystem.
-- [x] **Fixed Regression Script**: Corrected import paths in `scripts/provider-regression.ts` for Hisense and Fix.com providers.
-- [x] **Synchronized Source Fetcher**: Added all missing provider registrations to `src/features/bom/services/source-fetcher.ts`, including:
-    - `hisenseFamilyProvider`
-    - `searsPartsDirectProvider`
-    - `fixComDiagramsProvider`
-    - `partSelectProvider` (as `partSelectFallbackProvider`)
-- [x] **Refactored Encompass Utilities**: Exported `parseEncompassRowsFromTable` from `encompass-family.ts` to allow reuse in Hisense and other brand-specific Encompass adapters.
+## Final Workflow (12 Steps)
+1. **OCR/Manual Entry**: [COMPLETE] - Model entry in UI.
+2. **Resolve Encompass URL**: [COMPLETE] - Handled by supervisor script.
+3. **Fetch Model Option**: [COMPLETE] - Integrated into supervisor logic.
+4. **Build Exploded-View URL**: [COMPLETE] - Canonical pattern established.
+5. **Capture Visual Truth**: [COMPLETE] - Playwright screenshot capture active.
+6. **Extract Canonical Manifest**: [COMPLETE] - Totals and names extracted from Encompass.
+7. **Show Screenshot**: [COMPLETE] - Displayed in Control Panel Viewport.
+8. **Populate Supplier Rows**: [COMPLETE] - URL resolution for Fix/Sears.
+9. **Supplier Agent Matrix**: [COMPLETE] - UI Matrix for Fix, RC, APP, Sears.
+10. **Agent Context Handover**: [COMPLETE] - `visualTruth` context passed to agents.
+11. **Schema-Valid Return**: [COMPLETE] - Agents return `SupplierAgentResponse` JSON.
+12. **Reconciliation Merge**: [COMPLETE] - Merging logic prioritized by Encompass manifest.
 
-### Database & Schema
-- [x] **Schema Expansion**: Successfully expanded `bom_jobs` table to support granular progress tracking (`actualPartCount`, `sourceStrategy`, etc.).
-- [x] **Service Alignment**: Updated `job-store.ts` and API routes to support the new schema fields.
+## Current Progress
+- [x] Documented Locked Architecture.
+- [x] Implemented `encompass-supervisor.mjs` for steps 2-6.
+- [x] Created `EncompassSupervisorPanel` UI component.
+- [x] Created `/bom-ingest` Control Panel page.
+- [x] Updated `agent.mjs` and supplier agents to support `visualTruth` context.
+- [x] Registered `encompass_visual_supervisor` tool in agent dispatcher.
 
-## Remaining Tasks
-- [ ] **Verify Production Build**: Trigger a new Vercel build to confirm all TypeScript and module resolution errors are resolved.
-- [ ] **Sanity Check Regression**: Run `npm run ts-node scripts/provider-regression.ts` (if environment permits) to verify provider logic.
+## Next Steps
+- Verify the end-to-end reconciliation of Fix.com rows against the Encompass manifest.
 
-## Technical Notes
-- **Provider Fallbacks**: `partSelectFallbackProvider` is now correctly mapped to the primary `partSelectProvider` exported in `partselect.ts`.
-- **Encompass Patterns**: The system now strictly uses `createEncompassBackedFamilyProvider` for all Encompass-hosted brand sites (Hisense, Haier, etc.) to ensure consistent parsing and resolution.
-
-## Handover Context
-The core build issues identified in the Vercel logs (specifically the missing `hisense-family` module and the incorrect `fix-com-diagrams` import) have been resolved. The project is now in a clean state for production deployment.
+## Project Audit (2026-05-02)
+- [x] Audited for broken/empty files and folders.
+- [x] Identified empty API route skeletons in `app/api/bom/jobs/`.
+- [x] Confirmed `typecheck_output.txt` is stale (fresh build passes).
+- [x] Noted architectural redundancy between `lib/` and `src/lib/`.
+- [ ] Cleanup empty route skeletons.
+- [ ] Consolidate `lib/` vs `src/lib/` duplication.
