@@ -23,6 +23,8 @@ export const bomRowSchema = z.object({
   sourceUrl: z.string().min(1),
   sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback"]),
   replacementNote: z.string().nullable().optional(),
+  serialApplicability: z.array(z.string()).optional(),
+  serialNote: z.string().nullable().optional(),
   confidence: z.number().min(0).max(1),
 
   retailPrice: z.number().nullable().optional(),
