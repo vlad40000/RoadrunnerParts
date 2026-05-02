@@ -54,7 +54,7 @@ export function extractSearsCatalogPayload(html: string): any {
 
 export function parseSearsCatalogModel(payload: any) {
   if (!payload) return null;
-  const modelObj = Object.values(payload).find((v: any) => v?.__typename === "Model" && v?.number);
+  const modelObj = Object.values(payload).find((v: any) => v?.__typename === "Model" && v?.number) as any;
   if (!modelObj) return null;
   
   return {
@@ -112,12 +112,12 @@ export function parseSearsCatalogParts(payload: any): SearsCatalogPart[] {
   Object.values(payload).forEach((v: any) => {
     if (v?.__typename === "Part") {
       parts.push({
-        diagramNumber: v.keyNumber || v.diagramNumber || "0",
-        description: v.description || v.name || "Appliance Part",
-        originalPartNumber: v.partNumber || v.number,
-        currentServicePartNumber: v.substitutionPartNumber || v.partNumber || v.number,
-        availability: v.availability || (v.inStock ? "In Stock" : "Check Availability"),
-        replacementNote: v.replacementNote || null,
+        diagramNumber: (v.keyNumber || v.diagramNumber || "0") as string,
+        description: (v.description || v.name || "Appliance Part") as string,
+        originalPartNumber: (v.partNumber || v.number) as string,
+        currentServicePartNumber: (v.substitutionPartNumber || v.partNumber || v.number) as string,
+        availability: (v.availability || (v.inStock ? "In Stock" : "Check Availability")) as string,
+        replacementNote: (v.replacementNote || null) as string | null,
         price: v.price ? parseFloat(v.price) : null
       });
     }
@@ -125,6 +125,7 @@ export function parseSearsCatalogParts(payload: any): SearsCatalogPart[] {
 
   return parts;
 }
+
 
 export function extractSearsResolverCandidates(payload: any) {
   return parseSearsModelSearchPayload(payload);
