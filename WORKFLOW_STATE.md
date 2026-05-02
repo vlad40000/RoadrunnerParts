@@ -1,7 +1,7 @@
 # WORKFLOW_STATE - BOM Ingestion (Visual Truth Architecture)
 [Rationale: Why this workflow wins](docs/STRATEGY.md)
 
-## Status: IMPLEMENTED & LOCKED
+- **Status**: COMMITTED & PUSHED to `partsapp.git` main.
 - **Supervisor**: Encompass (Visual Truth / Visual Supervisor) [ENABLED]
 - **Supplier Agents**: Row extractors (Fix.com, Sears) [GROUNDED IN TRUTH]
 - **UI**: BOM Ingest Control Panel [ACTIVE]
