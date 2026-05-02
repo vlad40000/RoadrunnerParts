@@ -8,7 +8,7 @@ Hardening DB-First Persistence Architecture for BOM Ingestion.
 - **Model Discovery**: Automated seeding of `appliance_model` table from Nameplate OCR and PDF extractions.
 - **Telemetry Hooks**: Integrated `nameplate_extractions` logging directly into `src/lib/gemini.ts`.
 - **Schema Consolidation**: Merged nameplate table definitions into `appliance-models.ts`.
-- **Build Stability**: Resolved Turbopack syntax errors (route.ts), redeclaration conflicts (encompass-supervisor.mjs), and TypeScript type-safety regressions (control panel rendering and orchestrator property access).
+- **Build Stability**: Resolved Turbopack syntax errors (route.ts), redeclaration conflicts (encompass-supervisor.mjs), and TypeScript type-safety regressions (control panel rendering and orchestrator property access). Fixed major code duplication and nested import errors in `App.tsx` that were blocking Vercel deployments.
 
 ## Data Flow Status (DB-First Enforced)
 1. **Nameplate/PDF Upload** -> `nameplate_extractions` (Event Log) + `appliance_model` (Seed Entry)
