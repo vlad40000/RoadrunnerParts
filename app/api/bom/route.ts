@@ -208,7 +208,7 @@ export async function POST(req: Request) {
     }
 
     if (hasPromptOverride) {
-      console.log(`[BOM Route] Prompt override supplied for ${normalizeModelKey(model)} â€” bypassing cache and deterministic routing`);
+      console.log(`[BOM Route] Prompt override supplied for ${normalizeModelKey(model)} — bypassing cache and deterministic routing`);
     }
 
     const generativeModel = genAI.getGenerativeModel({

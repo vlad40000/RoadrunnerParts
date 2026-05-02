@@ -101,7 +101,7 @@ export async function orchestrateBomRetrieval(input: {
           brand: brand || undefined,
           retrievalState: isExhaustive ? 'bom_complete' : 'parts_complete_pricing_partial',
           validationVersion: CURRENT_VALIDATION_VERSION,
-          truthSource: sources[0]?.url || 'deterministic_scraper'
+          truthSource: sources[0]?.sourceUrl || 'deterministic_scraper'
         });
 
         return {

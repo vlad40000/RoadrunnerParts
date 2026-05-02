@@ -284,7 +284,7 @@ export function BomWorkflowControlPanel({
   }).length;
   const supplierInputCount = supplierRunValues.filter((run) => run.input).length;
   const pricedCount = job?.verifiedPriceCount ?? finalRows.filter((row) => Number(row.price ?? row.retailPrice) > 0).length;
-  const expectedTotal = job?.trustedTotalPartCount ?? job?.expectedPartsTotal ?? liveTruth?.expectedTotal ?? "";
+  const expectedTotal = (job?.trustedTotalPartCount ?? job?.expectedPartsTotal ?? liveTruth?.expectedTotal ?? "") as string | number;
   const truthUrl = valueText(liveTruth?.canonUrl || job?.truthSource || job?.trustedTotalCountSourceUrl);
   const screenshotUrl = valueText(liveTruth?.storedImageUrl || liveTruth?.screenshotBase64);
 
@@ -488,7 +488,7 @@ export function BomWorkflowControlPanel({
                 </div>
                 {expectedTotal && (
                   <div className="bg-emerald-600/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                    Target: {expectedTotal} Parts
+                    Target: {String(expectedTotal)} Parts
                   </div>
                 )}
               </div>
