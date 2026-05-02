@@ -831,7 +831,7 @@ export async function transcribeAudio({ audioData, mimeType }) {
       },
     ],
     config: {
-      temperature: 0.2,
+      temperature: 1.0,
     },
   });
 
@@ -855,7 +855,7 @@ export async function diagnoseIssue({ query, model }) {
     model: 'gemini-3-flash-preview',
     contents: prompt,
     config: {
-      temperature: 0.7,
+      temperature: 1.0,
     },
   });
 
@@ -887,7 +887,7 @@ export async function analyzeVideo({ videoData, mimeType, model }) {
       },
     ],
     config: {
-      temperature: 0.4,
+      temperature: 1.0,
     },
   });
 
@@ -924,7 +924,7 @@ export async function chatField({ message, context, history }) {
       { role: 'user', parts: [{ text: prompt }] }
     ],
     config: {
-      temperature: 0.7,
+      temperature: 1.0,
     },
   });
 

@@ -12,6 +12,7 @@ export type ModelRunInput = {
   text?: string;
   enableSearch?: boolean;
   systemInstruction?: string;
+  temperature?: number;
 };
 
 export async function runStructuredJson<T>(
@@ -31,7 +32,7 @@ export async function runStructuredJson<T>(
     model: modelId,
     generationConfig: {
       responseMimeType: "application/json",
-      temperature: 1,
+      temperature: input.temperature ?? 1,
     },
     systemInstruction: input.systemInstruction,
   };
@@ -91,4 +92,40 @@ export async function runStructuredJson<T>(
     console.error("Gemini JSON Parse Error. Raw response:", responseText);
     throw new Error("Model returned invalid JSON");
   }
+}
+
+export async function runText(input: ModelRunInput): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing GEMINI_API_KEY");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const modelId =
+    input.model === "pro" ? "gemini-3-pro" : "gemini-3-flash-preview";
+
+  const modelConfig: any = {
+    model: modelId,
+    generationConfig: {
+      temperature: input.temperature ?? 1,
+    },
+    systemInstruction: input.systemInstruction,
+  };
+
+  if (input.enableSearch) {
+    modelConfig.tools = [{ googleSearch: {} }];
+  }
+
+  const model = genAI.getGenerativeModel(modelConfig);
+  const parts: any[] = [{ text: input.prompt }];
+
+  if (input.text) {
+    parts.push({ text: input.text });
+  }
+
+  const result = await model.generateContent({
+    contents: [{ role: "user", parts }],
+  });
+
+  return result.response.text();
 }
