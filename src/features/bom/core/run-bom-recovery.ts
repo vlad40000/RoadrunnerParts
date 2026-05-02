@@ -47,12 +47,14 @@ function uniqueSources<T extends { provider?: string; sourceUrl?: string; sectio
   return out;
 }
 
+import { type ProviderSourceType } from "../services/providers/types";
+
 async function extractRowsFromSources(input: {
   sources: Array<{
     sourceText?: string;
     text?: string;
     sourceUrl: string;
-    sourceType: "oem" | "distributor" | "manual" | "diagram" | "fallback";
+    sourceType: ProviderSourceType;
   }>;
   targetSections: string[];
 }) {

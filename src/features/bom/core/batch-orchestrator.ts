@@ -99,7 +99,7 @@ export async function runBatchBomRetrieval(input: BomBatchRequest) {
         parts: accumulatedParts,
       });
 
-      let finalParts = normalizeBomRows(accepted, { productType: cached?.applianceType });
+      let finalParts = normalizeBomRows(accepted);
 
       // 6a. Serial Applicability Filtering
       if (serial || serialProfile) {

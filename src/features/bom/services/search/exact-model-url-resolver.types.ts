@@ -2,6 +2,7 @@ import "server-only";
 
 export type ExactModelUrlResolverInput = {
   model: string;
+  brand?: string | null;
   domain: string;
   preferredQueries: string[];
 };

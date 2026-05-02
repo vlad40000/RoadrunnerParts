@@ -55,6 +55,26 @@ export const BOM_STATUS_META: Record<
     description: "The extraction failed before a usable result was produced.",
     tone: "red",
   },
+  no_result: {
+    label: "no result",
+    description: "No model or sources were found for the request.",
+    tone: "red",
+  },
+  parts_complete_pricing_missing: {
+    label: "parts complete, pricing missing",
+    description: "All expected parts are present, but retail pricing is still being gathered.",
+    tone: "amber",
+  },
+  parts_complete_pricing_partial: {
+    label: "parts complete, pricing partial",
+    description: "All expected parts are present, but some retail pricing is still missing.",
+    tone: "amber",
+  },
+  sources_resolved: {
+    label: "sources resolved",
+    description: "Model sources have been identified and are ready for extraction.",
+    tone: "neutral",
+  },
 };
 
 const CANONICAL_STATUSES = new Set<BomStatus>(

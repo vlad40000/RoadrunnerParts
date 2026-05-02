@@ -1,4 +1,4 @@
-export const identityPrompt = `
+export const IDENTITY_EXTRACTION_PROMPT = `
 You extract appliance identity from images and prepared manual text.
 
 Return JSON only.

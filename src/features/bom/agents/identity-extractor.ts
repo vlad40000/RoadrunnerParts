@@ -1,5 +1,5 @@
 import { identitySchema, type Identity } from "../schemas/bom";
-import { identityPrompt } from "../prompts/identity";
+import { IDENTITY_EXTRACTION_PROMPT } from "../prompts/identity";
 import { runStructuredJson } from "../services/model-runner";
 
 export async function runIdentityExtractor(input: {
@@ -30,9 +30,9 @@ export async function runIdentityExtractor(input: {
   }
 
   const raw = await runStructuredJson<Identity>({
-    prompt: identityPrompt,
+    systemInstruction: IDENTITY_EXTRACTION_PROMPT,
     files: passthroughFiles,
-    text: textBlocks.join("\n\n---\n\n"),
+    prompt: textBlocks.join("\n\n---\n\n"),
   });
 
   return identitySchema.parse(raw);

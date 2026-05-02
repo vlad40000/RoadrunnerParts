@@ -209,6 +209,7 @@ export async function enrichBomRowsWithRetailPricing(input: {
   model?: string | null;
   rows: BomRow[];
   maxTargetedLookups?: number;
+  pricingOrder?: string[];
 }) {
   if (!input.rows.length) {
     return {

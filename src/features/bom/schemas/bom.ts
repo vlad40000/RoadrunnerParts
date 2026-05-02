@@ -10,7 +10,13 @@ export const bomStatusSchema = z.enum([
   "needs_fallback",
   "bom_near_complete",
   "failed",
+  "no_result",
+  "parts_complete_pricing_missing",
+  "parts_complete_pricing_partial",
+  "sources_resolved",
 ]);
+
+export const retrievalStateSchema = bomStatusSchema;
 
 export const bomRowSchema = z.object({
   section: z.string().min(1),
@@ -21,7 +27,16 @@ export const bomRowSchema = z.object({
   quantity: z.number().int().positive().default(1),
   nlaStatus: z.boolean(),
   sourceUrl: z.string().min(1),
-  sourceType: z.enum(["oem", "distributor", "manual", "diagram", "fallback", "supplier_assembly", "variant"]),
+  sourceType: z.enum([
+    "oem",
+    "distributor",
+    "manual",
+    "diagram",
+    "fallback",
+    "supplier_assembly",
+    "variant",
+    "distributor-merged-with-partselect",
+  ]),
   replacementNote: z.string().nullable().optional(),
   serialApplicability: z.array(z.string()).optional(),
   serialNote: z.string().nullable().optional(),
@@ -70,8 +85,10 @@ export const bomResultSchema = z.object({
 });
 
 export type BomStatus = z.infer<typeof bomStatusSchema>;
+export type RetrievalState = BomStatus;
 export type BomRow = z.infer<typeof bomRowSchema>;
 export type Identity = z.infer<typeof identitySchema>;
+export type NormalizedIdentity = Identity;
 export type DiagramParse = z.infer<typeof diagramParseSchema>;
 export type BomResult = z.infer<typeof bomResultSchema>;
 

@@ -5,7 +5,10 @@ export type ProviderSourceType =
   | "distributor"
   | "manual"
   | "diagram"
-  | "fallback";
+  | "fallback"
+  | "distributor-merged-with-partselect"
+  | "supplier_assembly"
+  | "variant";
 
 export type RetrievedSource = {
   sourceUrl: string;
@@ -19,6 +22,7 @@ export type RetrievedSource = {
 export type ProviderInput = {
   brand: string | null;
   model: string | null;
+  applianceType?: string | null;
 };
 
 export type SourceProvider = {

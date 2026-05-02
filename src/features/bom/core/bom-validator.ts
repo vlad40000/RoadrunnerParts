@@ -169,7 +169,7 @@ export function validate_bom_completion(input: {
       });
 
   const verifiedPriceCount = input.rows.filter(
-    (r) => r.retailPrice?.status === "verified_price" || r.retailPrice?.status === "fallback_verified_price"
+    (r) => r.retailPriceVerified === true
   ).length;
   
   const unpricedCount = actualPartCount - verifiedPriceCount;

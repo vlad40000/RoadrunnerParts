@@ -204,7 +204,7 @@ async function fetchVariationSources(input: {
 
 export function createEncompassBackedFamilyProvider(
   config: CreateEncompassBackedFamilyProviderConfig,
-): SourceProvider {
+): SourceProvider & CreateEncompassBackedFamilyProviderConfig {
   const acceptedBrands = new Set(
     config.brandNames.map((brand) => normalizeBrand(brand)),
   );
@@ -216,6 +216,7 @@ export function createEncompassBackedFamilyProvider(
     config.formatSectionName ?? defaultFormatSectionName;
 
   return {
+    ...config,
     name: config.name,
     priority: config.priority ?? 20,
 

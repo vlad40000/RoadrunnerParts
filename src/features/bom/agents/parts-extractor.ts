@@ -58,10 +58,12 @@ function parseStructuredRows(sourceText: string, sourceUrl: string): BomRow[] {
   });
 }
 
+import { type ProviderSourceType } from "../services/providers/types";
+
 export async function runPartsExtractor(input: {
   sourceText: string;
   sourceUrl: string;
-  sourceType: "oem" | "distributor" | "manual" | "diagram" | "fallback" | "supplier_assembly" | "variant";
+  sourceType: ProviderSourceType;
   assemblyName?: string;
 }): Promise<BomRow[]> {
   const deterministic = parseStructuredRows(input.sourceText, input.sourceUrl);

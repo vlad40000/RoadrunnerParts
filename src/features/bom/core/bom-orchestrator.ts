@@ -17,6 +17,8 @@ import { runWithConcurrency } from "../services/providers/utils";
 
 const logger = console;
 
+import { type ProviderSourceType } from "../services/providers/types";
+
 export type BuildBomJobOutput = {
   result: BomResult;
   identity: Identity | null;
@@ -24,7 +26,7 @@ export type BuildBomJobOutput = {
   diagramParse: DiagramParse;
   retrievedSources: Array<{
     sourceUrl: string;
-    sourceType: "oem" | "distributor" | "manual" | "diagram" | "fallback";
+    sourceType: ProviderSourceType;
     sectionName?: string;
     text: string;
   }>;
