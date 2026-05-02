@@ -117,6 +117,8 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
         task: "load_supplier_index",
         jobId,
         sourceUrl,
+        includeDiagram: agent.sendDiagram,
+        includeExpectedCount: agent.sendExpectedCount,
         canonUrl: truth?.canonUrl || null,
         diagramImageUrl: agent.sendDiagram
           ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null)
@@ -147,7 +149,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
       const res = await fetch(`/api/bom/jobs/${jobId}/supplier-runs/${supplierId}/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({}),
       });
 
       if (!res.ok) throw new Error("Agent execution failed");

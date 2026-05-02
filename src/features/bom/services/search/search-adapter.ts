@@ -41,9 +41,8 @@ export const searchExistingGroundingLayer: SearchAdapter = async (input) => {
       const result = await generateText({
         model: "gemini-3-flash-preview",
         role: "analyzer",
-          contents: input.domain
-            ? `Find the best official appliance parts source on ${input.domain} for this search: ${query}`
-            : `Find the best official appliance parts source for this search: ${query}`,
+        // Send the raw query into grounded search instead of wrapping it in an extra prompt.
+        contents: query,
         config: {
           tools: [{ googleSearch: {} }],
           temperature: 1,

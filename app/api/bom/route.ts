@@ -142,6 +142,8 @@ export async function POST(req: Request) {
       isExhaustive = false,
       expectedPartCount = null,
     } = await req.json();
+    const hasPromptOverride =
+      typeof promptOverride === 'string' && promptOverride.trim().length > 0;
 
     if (!model) {
       return NextResponse.json({ error: 'Missing model' }, { status: 400 });
@@ -149,7 +151,7 @@ export async function POST(req: Request) {
 
     // ✅ CACHE CHECK — return instantly if we've seen this model before
     const isFirstPass = !knownPartNumbers || knownPartNumbers.length === 0;
-    if (isFirstPass) {
+    if (isFirstPass && !hasPromptOverride) {
       const cached = await findCachedModelParts(model);
       if (cached) {
         const cachedIsExhaustive = cached.isExhaustive === 'true';
@@ -201,6 +203,10 @@ export async function POST(req: Request) {
         console.error('[BOM Route] Deterministic extraction failed:', detError);
       }
       console.log(`[BOM Route] Deterministic path yielded no results — calling Gemini`);
+    }
+
+    if (hasPromptOverride) {
+      console.log(`[BOM Route] Prompt override supplied for ${normalizeModelKey(model)} â€” bypassing cache and deterministic routing`);
     }
 
     const generativeModel = genAI.getGenerativeModel({

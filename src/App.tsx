@@ -384,7 +384,6 @@ Sort the final JSON alphabetically by part_name before outputting.`;
       .filter(Boolean);
 
     const passNumber = existingParts.length > 0 ? bomPassCount + 1 : 1;
-    const currentPrompt = buildBomPrompt(query, isExhaustive, passNumber, existingPartNumbers);
     const requestPayload = {
       model: query,
       normalizedQuery,
@@ -437,7 +436,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
         });
     }
 
-    setPendingBomPrompt(currentPrompt);
+    setPendingBomPrompt('');
     setPendingBomRequest(requestPayload);
     setIsPromptReviewOpen(true);
   };
@@ -529,6 +528,10 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
   const handleApprovePrompt = async () => {
     if (!pendingBomRequest) return;
+    if (!pendingBomPrompt.trim()) {
+      alert('Write the prompt before sending.');
+      return;
+    }
     await runApprovedBomPrompt(pendingBomRequest, pendingBomPrompt);
   };
 
@@ -1515,12 +1518,27 @@ Sort the final JSON alphabetically by part_name before outputting.`;
               </div>
 
               <div className="space-y-4 px-6 py-5">
+                {pendingBomRequest && (
+                  <div className="rounded-xl border border-pro-slate-200 bg-pro-slate-50 px-4 py-3 text-[11px] text-pro-slate-700">
+                    <div><span className="font-bold text-pro-slate-900">Model:</span> {pendingBomRequest.model}</div>
+                    <div><span className="font-bold text-pro-slate-900">Serial:</span> {pendingBomRequest.serial || 'None'}</div>
+                    <div><span className="font-bold text-pro-slate-900">Pass:</span> {pendingBomRequest.passNumber}</div>
+                  </div>
+                )}
                 <textarea
                   value={pendingBomPrompt}
                   onChange={(e) => setPendingBomPrompt(e.target.value)}
+                  placeholder="Write the post-OCR prompt here. This exact text will be sent."
                   className="min-h-[320px] w-full rounded-xl border border-pro-slate-200 bg-pro-slate-50 p-4 font-mono text-[12px] leading-6 text-pro-slate-800 outline-none focus:border-pro-blue"
                 />
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setPendingBomPrompt('')}
+                    className="pro-button pro-button-secondary px-5"
+                  >
+                    Clear
+                  </button>
                   <button
                     type="button"
                     onClick={() => {

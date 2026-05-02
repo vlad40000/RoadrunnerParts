@@ -399,6 +399,15 @@ export async function saveBomVisualTruth(
   });
 }
 
+export async function getBomVisualTruth(jobId: string) {
+  const job = await getBomJob(jobId);
+  if (!job) return null;
+  return ((job.diagramParse as Record<string, unknown> | null)?.visualTruth as
+    | Record<string, unknown>
+    | null
+    | undefined) ?? null;
+}
+
 export async function saveBomSupplierRunInput(
   jobId: string,
   supplierId: string,
@@ -447,5 +456,17 @@ export async function saveBomSupplierRunResult(
       },
     },
   });
+}
+
+export async function getBomSupplierRun(
+  jobId: string,
+  supplierId: string,
+) {
+  const job = await getBomJob(jobId);
+  if (!job) return null;
+
+  const diagramParse = (job.diagramParse as Record<string, unknown> | null) || {};
+  const supplierRuns = (diagramParse.supplierRuns as Record<string, unknown> | undefined) || {};
+  return (supplierRuns[supplierId] as Record<string, unknown> | undefined) ?? null;
 }
 

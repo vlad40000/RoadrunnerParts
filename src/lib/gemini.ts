@@ -485,20 +485,17 @@ export async function extractNameplateFromImage(imageData, mimeType) {
     required: ['modelNumber', 'serialNumber', 'brand', 'productType', 'confidence'],
   };
 
-  const prompt = `ACT AS A FORENSIC APPLIANCE TECHNICIAN. 
-  Your goal is to extract the IDENTITY of this appliance from the nameplate image.
-  
-  LOOK FOR THESE PATTERNS:
-  - MODEL NUMBER: "MODEL NO.", "MODEL NUMBER", "MODEL", "M/N", "MOD", "MODELO"
-  - SERIAL NUMBER: "SERIAL NO.", "SERIAL NUMBER", "SERIAL", "S/N", "SER", "SERIE"
+  const prompt = `Extract appliance identity from the attached nameplate image.
 
-  CRITICAL INSTRUCTIONS:
-  1. BE EXTREMELY PRECISE with alphanumeric characters (e.g., '0' vs 'O', '1' vs 'I', '8' vs 'B').
-  2. PRESERVE ALL PUNCTUATION in the model/serial. Do NOT strip slashes (/), hyphens (-), or dots (.).
-  3. FOR SAMSUNG: Suffixes like "/A2" or "/XAA" are EXTREMELY IMPORTANT. Do not lose them.
-  4. FOR KENMORE: Model numbers often look like "110.12345678". Preserve the dot.
-  
-  Return a structured JSON object. Use null for fields you cannot find with high confidence.`;
+Look for labels such as MODEL NO., MODEL NUMBER, MODEL, M/N, MOD, MODELO, SERIAL NO., SERIAL NUMBER, SERIAL, S/N, SER, and SERIE.
+
+Rules:
+1. Preserve punctuation exactly in model and serial values, including slashes, hyphens, and dots.
+2. Be careful with similar characters like 0/O, 1/I, and 8/B.
+3. Keep important suffixes such as Samsung /A2 or /XAA.
+4. Keep Kenmore-style dots such as 110.12345678.
+
+Return structured JSON and use null when a field is not confidently present.`;
 
   const { data } = await generateStructuredJson({
     model: 'gemini-3-flash-preview',
