@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Professional Color Palette (User Preferred) */
+  --color-pro-navy: #0F172A;
+  --color-pro-blue: #3B82F6;
+  --color-pro-emerald: #10B981;
+  --color-pro-amber: #F59E0B;
+  --color-pro-slate-50: #F8FAFC;
+  --color-pro-slate-100: #F1F5F9;
+  --color-pro-slate-200: #E2E8F0;
+  --color-pro-slate-300: #CBD5E1;
+  --color-pro-slate-400: #94A3B8;
+  --color-pro-slate-500: #64748B;
+  --color-pro-slate-600: #475569;
+  --color-pro-slate-900: #1E293B;
+
+  --shadow-pro: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-pro-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-pro-slate-100 text-pro-slate-900 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .pro-card {
+    @apply bg-white border border-pro-slate-200 shadow-pro transition-all duration-200;
+  }
+
+  .pro-card-hover {
+    @apply hover:border-pro-blue/50 hover:shadow-pro-md;
+  }
+
+  .pro-button {
+    @apply px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2;
+  }
+
+  .pro-button-primary {
+    @apply bg-pro-navy text-white hover:bg-pro-slate-900 shadow-pro active:scale-[0.98];
+  }
+
+  .pro-button-secondary {
+    @apply bg-white border border-pro-slate-200 text-pro-slate-900 hover:bg-pro-slate-100 active:scale-[0.98];
+  }
+
+  .pro-button-blue {
+    @apply bg-pro-blue text-white hover:bg-blue-600 shadow-pro active:scale-[0.98];
+  }
+
+  .pro-input {
+    @apply w-full bg-white border border-pro-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pro-blue/20 focus:border-pro-blue transition-all;
+  }
+
+  .pro-badge {
+    @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border;
+  }
+
+  .pro-section-title {
+    @apply text-[11px] font-bold uppercase tracking-[0.1em] text-pro-slate-400 mb-4;
+  }
+
+  /* Minimial Forensic Tweak for Conflict Visualization */
+  .conflict-pulse {
+    @apply border-pro-amber bg-pro-amber/5 animate-pulse;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-pro-slate-200 rounded-full hover:bg-pro-slate-300;
+}
+
+
