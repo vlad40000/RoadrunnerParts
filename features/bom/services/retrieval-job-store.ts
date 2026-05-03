@@ -10,6 +10,7 @@ export type EncompassRetrievalJobInput = {
     assemblyUrls?: string[];
     requestedBy?: string | null;
     metadata?: Record<string, unknown>;
+    payload?: Record<string, unknown>;
 };
 
 export type EncompassRetrievalJob = EncompassRetrievalJobInput & {
