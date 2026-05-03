@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "app/api/bom/route.ts": {
-      "maxDuration": 120
-    }
-  }
-}
