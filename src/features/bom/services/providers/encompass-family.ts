@@ -224,7 +224,7 @@ async function fetchEncompassSources(input: ProviderInput): Promise<RetrievedSou
         "SOURCE_PROVIDER: encompass-family",
         `MODEL: ${model}`,
         "SECTION: All Model Parts",
-        ...rows.map(r => `ROW|diagram_number=${r.partNumber}|description=${r.description}|original_part_number=|current_service_part_number=${r.partNumber}|nla_status=${r.nlaStatus}|replacement_note=`)
+        ...rows.map(r => `ROW|diagram_number=${r.diagramNumber || r.partNumber}|description=${r.description}|original_part_number=|current_service_part_number=${r.partNumber}|nla_status=${r.nlaStatus}|replacement_note=`)
       ].join("\n"),
       meta: { deterministic: true }
     }];
@@ -263,7 +263,7 @@ async function extractFromEncompassExplodedView(
         "SOURCE_PROVIDER: encompass-family",
         `MODEL: ${model}`,
         `SECTION: ${sectionName || "All Model Parts"}`,
-        ...sectionRows.map(r => `ROW|diagram_number=${r.partNumber}|description=${r.description}|original_part_number=|current_service_part_number=${r.partNumber}|nla_status=${r.nlaStatus}|replacement_note=`)
+        ...sectionRows.map(r => `ROW|diagram_number=${r.diagramNumber || r.partNumber}|description=${r.description}|original_part_number=|current_service_part_number=${r.partNumber}|nla_status=${r.nlaStatus}|replacement_note=`)
       ].join("\n"),
       meta: { 
         mfgCode: parsedUrl?.mfgCode,

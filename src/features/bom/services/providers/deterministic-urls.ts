@@ -51,15 +51,18 @@ export function buildEncompassUrl(input: { brand: string; model: string }) {
   const brand = cleanText(input.brand).toUpperCase();
   const model = normalizeModel(input.model);
   
-  let mfgCode = "";
   if (brand.includes("GE") || brand.includes("GENERAL ELECTRIC") || brand.includes("HOTPOINT") || brand.includes("HAIER")) {
     mfgCode = "HOT";
-  } else if (brand.includes("WHIRLPOOL") || brand.includes("MAYTAG") || brand.includes("KITCHENAID") || brand.includes("AMANA") || brand.includes("JENN-AIR")) {
+  } else if (brand.includes("WHIRLPOOL") || brand.includes("MAYTAG") || brand.includes("KITCHENAID") || brand.includes("AMANA") || brand.includes("JENN-AIR") || brand.includes("ROPER") || brand.includes("ADMIRAL")) {
     mfgCode = "WHI";
   } else if (brand.includes("SAMSUNG")) {
     mfgCode = "SAM";
   } else if (brand.includes("LG")) {
-    mfgCode = "ZEN"; // LG often uses ZEN in Encompass for some reason, or LGE. Checking verified lists.
+    mfgCode = "ZEN"; 
+  } else if (brand.includes("FRIGIDAIRE") || brand.includes("ELECTROLUX")) {
+    mfgCode = "FRI";
+  } else if (brand.includes("BOSCH") || brand.includes("THERMADOR")) {
+    mfgCode = "BCH";
   }
   
   if (!mfgCode) return null;

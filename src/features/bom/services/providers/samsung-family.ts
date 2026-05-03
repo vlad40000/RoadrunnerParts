@@ -239,7 +239,7 @@ export const samsungFamilyProvider: SourceProvider = {
     return !brand || SAMSUNG_FAMILY_BRANDS.has(brand);
   },
 
-  async fetchSources(input: ProviderInput) {
+  async fetchSources(input: ProviderInput & { visualTruth?: any }) {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
@@ -273,6 +273,7 @@ export const samsungFamilyProvider: SourceProvider = {
       meta: {
         rowCount: 1,
         sectionType: "supported-model-part-page",
+        visualTruth: input.visualTruth,
       },
     }));
   },

@@ -501,6 +501,10 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       extractedRowsRaw: mergedRows,
       finalRows: mergedRows,
       issues,
+      diagramParse: {
+        ...(job.diagramParse as any),
+        visualTruth: input.visualTruth || (job.diagramParse as any)?.visualTruth,
+      },
     });
 
     await updateBomJobSummary(input.jobId, {

@@ -173,7 +173,7 @@ export const lgFamilyProvider: SourceProvider = {
     return !brand || LG_FAMILY_BRANDS.has(brand);
   },
 
-  async fetchSources(input: ProviderInput) {
+  async fetchSources(input: ProviderInput & { visualTruth?: any }) {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
@@ -208,6 +208,7 @@ export const lgFamilyProvider: SourceProvider = {
       meta: {
         rowCount: 1,
         sectionType: "compatible-model-part-page",
+        visualTruth: input.visualTruth,
       },
     }));
   },
