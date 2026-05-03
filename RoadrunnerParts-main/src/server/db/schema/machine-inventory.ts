@@ -1,0 +1,31 @@
+import { pgTable, text, timestamp, uuid, numeric, integer, jsonb } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+export const machineInventory = pgTable("machine_inventory", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  machineCode: text("machine_code"),
+  brand: text("brand"),
+  brandFamily: text("brand_family"),
+  model: text("model").notNull(),
+  normalizedModel: text("normalized_model"),
+  serial: text("serial"),
+  applianceType: text("appliance_type"),
+  condition: text("condition"),
+  location: text("location"),
+  donorStatus: text("donor_status"),
+  wholeMachineStatus: text("whole_machine_status"),
+  testedStatus: text("tested_status"),
+  acquiredCost: numeric("acquired_cost", { precision: 10, scale: 2 }),
+  decodedYear: integer("decoded_year"),
+  decodedMonthOrWeek: text("decoded_month_or_week"),
+  decodedAgeMonths: integer("decoded_age_months"),
+  decodeConfidence: text("decode_confidence"),
+  originalMsrp: numeric("original_msrp", { precision: 10, scale: 2 }),
+  msrpConfidence: text("msrp_confidence"),
+  dispositionRecommendation: text("disposition_recommendation"),
+  priorityScore: numeric("priority_score", { precision: 10, scale: 2 }),
+  reasonCodes: text("reason_codes").array(),
+  raw: jsonb("raw").notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});

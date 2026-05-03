@@ -1,0 +1,15 @@
+FROM mcr.microsoft.com/playwright/python:v1.48.0-jammy
+
+WORKDIR /app
+
+COPY src/workers/bom-retrieval-worker/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENV WORKER_PLAYWRIGHT=1
+ENV WORKER_CAPTURE_ROOT=/app/captures/encompass
+
+RUN mkdir -p /app/captures/encompass
+
+CMD ["python", "src/workers/bom-retrieval-worker/worker.py"]
