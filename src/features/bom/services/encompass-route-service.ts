@@ -1,6 +1,7 @@
 import "server-only";
 import { db } from "@/server/db";
 import { encompassBrandRoutes } from "@/server/db/schema/encompass-brand-routes";
+import { encompassModelUrls } from "@/server/db/schema/encompass-model-urls";
 import { eq, sql } from "drizzle-orm";
 
 const BRAND_ALIASES: Record<string, string> = {
@@ -24,6 +25,20 @@ function normalizedKey(input: string) {
     .replace(/[^\w\s]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * Resolves a model-specific URL if it exists in the database.
+ * This is the ultimate hardened path bypass.
+ */
+export async function resolveEncompassModelUrl(model: string) {
+  if (!model) return null;
+  const result = await db
+    .select()
+    .from(encompassModelUrls)
+    .where(eq(encompassModelUrls.normalizedModel, model))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
 }
 
 export async function resolveEncompassBrandRoute(brandName: string) {

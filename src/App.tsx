@@ -47,6 +47,7 @@ import { partsData, Part } from './partsData';
 
 import { ApplianceDecoder, DecodeResult } from './lib/decoder';
 import { computeCurrentMarketValue, ApplianceCondition, ValuationResult } from './lib/valuation';
+import { ebaySearchUrl, ebaySoldSearchUrl } from './features/bom/services/ebay-links';
 
 const decoder = new ApplianceDecoder();
 const approvedPriceSources = ['encompass.com', 'searspartsdirect.com', 'fix.com'];
@@ -1388,12 +1389,16 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-pro-slate-100">
-                    {filteredParts.map((part) => (
-                      <tr
-                        key={part.id}
-                        onClick={() => setSelectedPart(part)}
-                        className="hover:bg-pro-slate-50 cursor-pointer transition-colors group"
-                      >
+                    {filteredParts.map((part) => {
+                      const activeEbayUrl = ebaySearchUrl(part.partNumber);
+                      const soldCompsUrl = ebaySoldSearchUrl(part.partNumber);
+
+                      return (
+                        <tr
+                          key={part.id}
+                          onClick={() => setSelectedPart(part)}
+                          className="hover:bg-pro-slate-50 cursor-pointer transition-colors group"
+                        >
                         <td className="px-4 py-3">
                           <div className="flex flex-col">
                             <span className="text-xs font-mono font-bold text-pro-navy group-hover:text-pro-blue underline decoration-transparent group-hover:decoration-pro-blue/30 transition-all">{part.partNumber}</span>
@@ -1418,19 +1423,31 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                             {part.section}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <a
-                            href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(part.partNumber)}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(event) => event.stopPropagation()}
-                            className="inline-flex h-7 items-center rounded border border-pro-blue bg-white px-3 text-[11px] font-semibold text-pro-blue transition-colors hover:bg-blue-50"
-                          >
-                            Sell on eBay
-                          </a>
-                        </td>
-                      </tr>
-                    ))}
+                          <td className="px-4 py-3">
+                            <div className="flex flex-wrap gap-2">
+                              <a
+                                href={activeEbayUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(event) => event.stopPropagation()}
+                                className="inline-flex h-7 items-center whitespace-nowrap rounded border border-pro-blue bg-white px-3 text-[11px] font-semibold text-pro-blue transition-colors hover:bg-blue-50"
+                              >
+                                Search eBay
+                              </a>
+                              <a
+                                href={soldCompsUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(event) => event.stopPropagation()}
+                                className="inline-flex h-7 items-center whitespace-nowrap rounded border border-pro-slate-300 bg-pro-slate-900 px-3 text-[11px] font-semibold text-white transition-colors hover:bg-pro-navy"
+                              >
+                                Sold Comps
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

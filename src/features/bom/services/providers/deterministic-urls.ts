@@ -15,7 +15,8 @@ import { normalizeModel, cleanText } from "./utils";
  * https://www.bosch-home.com/us/shop/spare-parts
  * 
  * 4. Encompass:
- * https://encompass.com/model/{MFG_CODE}{MODEL}
+ * Regular: https://partstore.encompass.com/model/{MFG_CODE}{MODEL}
+ * Diagram: https://encompass.com/Exploded-View-Assembly/{MFG_CODE}/{MODEL}
  * 
  * 5. GE Official:
  * Assembly: https://www.geapplianceparts.com/store/parts/assembly/{MODEL}
@@ -55,9 +56,10 @@ export function buildEncompassUrl(input: { brand: string; model: string }) {
   const CORE_MAP: Record<string, string> = {
     'WHIRLPOOL': 'WHI',
     'SAMSUNG': 'SAM',
-    'LG': 'ZEN',
-    'GE': 'HOT',
-    'GENERAL ELECTRIC': 'HOT',
+    'LG': 'LGE',
+    'GE': 'GEN',
+    'GENERAL ELECTRIC': 'GEN',
+    'HOTPOINT': 'HOT',
     'FRIGIDAIRE': 'FRI',
     'ELECTROLUX': 'FRI',
     'MAYTAG': 'WHI',
@@ -68,12 +70,12 @@ export function buildEncompassUrl(input: { brand: string; model: string }) {
   const mfgCode = CORE_MAP[brand] || null;
   if (!mfgCode) return null;
   
-  return `https://encompass.com/Exploded-View-Search/${mfgCode}/${brand.replace(/\s+/g, "_")}?searchTerm=${model}`;
+  return `https://encompass.com/Exploded-View-Assembly/${mfgCode}/${model}`;
 }
 
 /**
  * Builds a direct Exploded View Assembly URL using a template.
- * Pattern example: https://encompass.com/Exploded-View-Assembly/{abv}/{target_brand}/{model}
+ * Pattern example: https://encompass.com/Exploded-View-Assembly/{abv}/{model}
  */
 export function buildEncompassAssemblyUrl(input: { 
   abv: string; 
@@ -81,7 +83,7 @@ export function buildEncompassAssemblyUrl(input: {
   model: string; 
   pattern?: string | null 
 }) {
-  const pattern = input.pattern || 'https://encompass.com/Exploded-View-Assembly/{abv}/{target_brand}/{model}';
+  const pattern = input.pattern || 'https://encompass.com/Exploded-View-Assembly/{abv}/{model}';
   const model = normalizeModel(input.model);
   
   return pattern
@@ -97,13 +99,13 @@ export function parseEncompassExplodedViewUrl(url: string) {
 
   if (!match) return null;
 
-  const [, mfgCode, assemblyId, rawModel] = match;
+  const [, mfgCode, assemblyIdOrModel, rawModel] = match;
 
   return {
     source: "encompass",
     mfgCode: mfgCode.toUpperCase(),
-    assemblyId,
-    model: rawModel ? rawModel.toUpperCase() : null,
+    assemblyId: rawModel ? assemblyIdOrModel : null,
+    model: (rawModel || assemblyIdOrModel || "").toUpperCase() || null,
     originalUrl: url
   };
 }

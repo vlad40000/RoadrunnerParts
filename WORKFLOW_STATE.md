@@ -1,22 +1,35 @@
-# RoadrunnerParts — Encompass Hardening Workflow
+# Workflow State: Encompass Hardening & Agentic Pivot
 
-## Status: Phase 2 Hardened Retrieval COMPLETE
-- [x] **DB-Driven Routing**: `encompass_brand_routes` table is populated and active.
-- [x] **Universal Provider Hardening**: `encompass-universal.ts` refactored to use dynamic routes and bypass legacy 403 paths.
-- [x] **Telemetry Ingestion**: `bom_telemetry` table created and `encompass_403_blocked` events are successfully logging 403/429 failures.
-- [x] **Legacy Purge**: `ENCOMPASS_BRAND_MAP` and related hardcoded configs removed from `encompass-universal.ts` and `encompass-family.ts`.
+## Current Phase: Agentic Visual Bypass Integration
+We are transitioning the BOM extraction pipeline from legacy scraping to an agentic visual loop to resolve persistent Encompass 403/429 blocks.
 
-## Verification Results
-- **Hisense (HRF266N6CSE)**: Correctly attempts direct assembly path. 403 detected and logged to telemetry.
-- **Danby (DCR032A2BDB)**: Correctly attempts direct assembly path. 403 detected and logged to telemetry.
-- **Roper (RTW4516FW)**: Correctly resolves Whirlpool alias via DB and attempts hardened path. 403 detected and logged.
+### Completed Tasks
+- [x] Database migration for `bom_telemetry`, `diagram_manifest`, and `bom_part_mapping`.
+- [x] Implementation of `ComputerUseSupervisor` for real-time visual agent monitoring.
+- [x] Integration of `ComputerUseSupervisor` into `BomWorkflowControlPanel` (UI Refactor started).
+- [x] Telemetry instrumentation in `fetchHtml` to log block events.
+- [x] Deprecation of legacy hardcoded brand routes in favor of `encompass_brand_routes` DB table.
 
-## Next Actions
-1. [ ] **Telemetry Audit**: Run `SELECT * FROM bom_telemetry WHERE event = 'encompass_403_blocked' ORDER BY created_at DESC;` to identify current blocks.
-2. [ ] **Optimization**: Tune `BOM_FETCHER_MIN_DELAY` / retry settings based on observed 403/429 rates (currently set to 2s-5s in `.env`).
-3. [ ] **Infra Patching**: Consider adding proxy rotation or browser-based workers for the 403-blocked direct assembly paths.
+### **Gold Truth Reference**
+- **Maytag MVWB300WQ2**:
+  - `abv`: `MAY`
+  - `model_option_value`: `9272`
+  - `url`: `https://encompass.com/Exploded-View-Assembly/MAY/9272/MVWB300WQ2`
 
-## Source of Truth
-- **Table**: `encompass_brand_routes`
-- **Telemetry**: `bom_telemetry`
-- **Primary Service**: `encompass-route-service.ts`
+### **Current Tasks**
+1. [x] Telemetry Migration: `bom_telemetry` table active.
+2. [x] Direct Route Hardening: `encompass_brand_routes` integrated.
+3. [/] Computer Use Integration: `ComputerUseSupervisor` component added to `BomWorkflowControlPanel`.
+4. [x] Ingest Maytag Gold Truth into `encompass_model_urls`.
+5. [x] Implement `resolveEncompassModelUrl` in `EncompassRouteService`.
+6. [x] Update `encompass-universal.ts` to use `resolveEncompassModelUrl`.
+7. [ ] Verify `ComputerUseSupervisor` visual loop with Maytag model.
+
+### In Progress
+- [x] Finalizing the visual loop implementation in `computer-use-agent.mjs`.
+- [x] Testing the agentic bypass against real Encompass 403 triggers.
+- [x] Automated Reconciliation Service integration for high-integrity Truth Scores.
+
+### Blockers
+- [ ] Verifying visual capture stability in high-latency environments.
+- [ ] Finalizing the HITL (Human-in-the-Loop) approval flow for high-consequence agent actions.

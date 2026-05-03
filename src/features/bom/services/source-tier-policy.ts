@@ -1,3 +1,5 @@
+import modelRouteSeeds from "@/data/provider-seeds/model-routes.json";
+
 export const ALL_SUPPLIERS = [
   "encompass-family",
   "sears-partsdirect",
@@ -64,6 +66,112 @@ export function normalizeCanonicalModel(model: string) {
   return String(model || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
+export function inferEncompassPrefix(input: {
+  model: string;
+  brand?: string | null;
+}) {
+  const model = normalizeCanonicalModel(input.model);
+  const brand = String(input.brand || "").toLowerCase();
+
+  if (brand.includes("hotpoint") || /^(HTW|HTX)/.test(model)) {
+    return "HOT";
+  }
+
+  if (
+    brand.includes("whirlpool") ||
+    brand.includes("maytag") ||
+    brand.includes("kitchenaid") ||
+    brand.includes("amana") ||
+    /^(WTW|WED|WGD|WFW|WRS|WRF|MVW|MED|MGD|MDB|KUD|KUDE|KDT|AER|NTW)/.test(model)
+  ) {
+    return "WHI";
+  }
+
+  if (
+    brand === "ge" ||
+    brand.includes("general electric") ||
+    /^(GTW|GTD|GFW|GDF|PDT)/.test(model)
+  ) {
+    return "GEN";
+  }
+
+  if (brand.includes("lg") || /^(LDF|WM|DLG|DLE|LFX|LRF)/.test(model)) {
+    return "LGE";
+  }
+
+  if (brand.includes("samsung") || /^(WA|WF|DV|DW|RF)/.test(model)) {
+    return "SAM";
+  }
+
+  if (
+    brand.includes("frigidaire") ||
+    brand.includes("electrolux") ||
+    /^(FF|FG|EI|EF|EW)/.test(model)
+  ) {
+    return "FRI";
+  }
+
+  return "";
+}
+
+export function buildCanonicalEncompassUrls(input: {
+  model: string;
+  brand?: string | null;
+}) {
+  const canonical = normalizeCanonicalModel(input.model);
+  const prefix = inferEncompassPrefix(input);
+
+  if (!canonical || !prefix) {
+    return {
+      prefix,
+      regularModelUrl: "",
+      regularModelUrlAlt: "",
+      explodedViewUrl: "",
+    };
+  }
+
+  return {
+    prefix,
+    regularModelUrl: `https://partstore.encompass.com/model/${prefix}${canonical}`,
+    regularModelUrlAlt: `https://encompass.com/model/${prefix}${canonical}`,
+    explodedViewUrl: `https://encompass.com/Exploded-View-Assembly/${prefix}/${canonical}`,
+  };
+}
+
+export function buildKnownEncompassAssemblyUrl(model: string) {
+  const canonical = normalizeCanonicalModel(model);
+  const seedRoute = modelRouteSeeds.find((route) => {
+    return (
+      route.provider === "encompass-family" &&
+      normalizeCanonicalModel(route.model) === canonical &&
+      typeof route.providerAssemblyUrl === "string" &&
+      route.providerAssemblyUrl.trim()
+    );
+  });
+
+  if (seedRoute?.providerAssemblyUrl) {
+    return seedRoute.providerAssemblyUrl;
+  }
+
+  const canonicalUrl = buildCanonicalEncompassUrls({ model: canonical }).explodedViewUrl;
+  if (canonicalUrl) return canonicalUrl;
+
+  if (canonical === "MAYMVWB300WQ2") {
+    return "https://encompass.com/Exploded-View-Assembly/MAY/9272/MVWB300WQ2";
+  }
+
+  if (canonical === "MLE2000AYW") {
+    return "https://encompass.com/Exploded-View-Assembly/WHI/12074/MLE2000AYW";
+  }
+
+  const maytagMatch = canonical.match(/^MAY(.+)$/);
+  if (maytagMatch?.[1]) {
+    return `https://encompass.com/Exploded-View-Assembly/MAY/9272/${maytagMatch[1]}`;
+  }
+
+  return null;
+}
+
 export function normalizeModelForSupplier(input: {
   supplier: string;
   model: string;
@@ -118,7 +226,11 @@ export function buildSupplierSearchUrl(input: {
 
   switch (supplier) {
     case "encompass-family":
-      return `https://encompass.com/model/${formatted}`;
+      return (
+        buildKnownEncompassAssemblyUrl(input.canonicalModel) ||
+        buildKnownEncompassAssemblyUrl(input.formattedModel) ||
+        ""
+      );
 
     case "sears-partsdirect":
       return `https://www.searspartsdirect.com/search?q=${canonical}`;

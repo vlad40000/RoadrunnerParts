@@ -112,8 +112,14 @@ export function normalizeGeneratedParts(parts: any[] | null | undefined) {
   return parts.flatMap((part) => {
     if (!part || typeof part !== 'object') return [];
 
-    const price = Number(part.price);
-    const priceSource = normalizePriceSource(part.priceSource);
+    // Fallback logic for scrapers (which use retailPrice) vs AI (which uses price)
+    const rawPrice = part.price ?? part.retailPrice;
+    const rawSource = part.priceSource ?? part.retailPriceSource;
+
+    const price = Number(rawPrice);
+    const priceSource = normalizePriceSource(rawSource);
+    
+    // We still require a price to consider the part "valid" for the final BOM
     if (!Number.isFinite(price) || price <= 0 || !priceSource) {
       return [];
     }

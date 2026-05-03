@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Camera, RefreshCw, List, ExternalLink, Edit2, Check } from "lucide-react";
+import { Camera, RefreshCw, List, ExternalLink, Edit2, Check, FileText, Save } from "lucide-react";
 
 interface EncompassSupervisorProps {
   jobId?: string | null;
@@ -14,6 +14,51 @@ export function EncompassSupervisorPanel({ jobId, model, onTruthCaptured }: Enco
   const [truth, setTruth] = useState<any>(null);
   const [editingTotal, setEditingTotal] = useState(false);
   const [manualTotal, setManualTotal] = useState<number | string>("");
+  const [instructions, setInstructions] = useState("");
+  const [instructionName, setInstructionName] = useState("");
+  const [savingInstructions, setSavingInstructions] = useState(false);
+
+  async function persistVisualTruth(patch: Record<string, unknown>) {
+    const nextTruth = {
+      ...(truth || {}),
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    };
+
+    setTruth(nextTruth);
+    if (jobId) {
+      const res = await fetch(`/api/bom/jobs/${jobId}/visual-truth`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nextTruth),
+      });
+      if (!res.ok) throw new Error("Visual truth save failed");
+    }
+    onTruthCaptured?.(nextTruth);
+  }
+
+  async function saveInstructions(nextInstructions = instructions, nextName = instructionName) {
+    setSavingInstructions(true);
+    try {
+      await persistVisualTruth({
+        operatorInstructions: nextInstructions,
+        operatorInstructionName: nextName || "manual",
+        operatorInstructionsUploadedAt: new Date().toISOString(),
+      });
+    } finally {
+      setSavingInstructions(false);
+    }
+  }
+
+  async function handleInstructionFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    setInstructions(text);
+    setInstructionName(file.name);
+    await saveInstructions(text, file.name);
+    event.target.value = "";
+  }
 
   async function handleCapture() {
     try {
@@ -21,14 +66,19 @@ export function EncompassSupervisorPanel({ jobId, model, onTruthCaptured }: Enco
       const res = await fetch("/api/agents/encompass/assembly-overview-capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model, immediate: false }),
+        body: JSON.stringify({ model, canonUrl: truth?.canonUrl || undefined, immediate: false }),
       });
 
-      if (!res.ok) throw new Error("Capture failed");
+      if (!res.ok) {
+        const payload = await res.json().catch(() => null);
+        throw new Error(payload?.details || payload?.error || "Capture failed");
+      }
       
       const data = await res.json();
       const normalizedTruth = {
         ...data,
+        operatorInstructions: instructions || truth?.operatorInstructions || "",
+        operatorInstructionName: instructionName || truth?.operatorInstructionName || "",
         canonUrl: data.canonUrl || data.context?.canonUrl || null,
       };
       setTruth(normalizedTruth);
@@ -43,7 +93,7 @@ export function EncompassSupervisorPanel({ jobId, model, onTruthCaptured }: Enco
       if (onTruthCaptured) onTruthCaptured(normalizedTruth);
     } catch (err) {
       console.error(err);
-      alert("Supervisor capture failed. Ensure the model is valid.");
+      alert(`Supervisor capture failed: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
       setLoading(false);
     }
@@ -71,6 +121,49 @@ export function EncompassSupervisorPanel({ jobId, model, onTruthCaptured }: Enco
       </div>
 
       <div className="p-4 space-y-6">
+        <div className="rounded-lg border border-blue-100 bg-blue-50/40 p-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <FileText size={16} className="text-blue-600" />
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-blue-700">
+                  Build Instructions
+                </div>
+                <div className="text-[10px] font-semibold text-blue-500">
+                  {instructionName || truth?.operatorInstructionName || "Manual paste or upload .txt/.md"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border border-blue-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 hover:bg-blue-50">
+                <List size={12} />
+                Upload
+                <input
+                  type="file"
+                  accept=".txt,.md,.json,text/plain,text/markdown,application/json"
+                  className="hidden"
+                  onChange={handleInstructionFile}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => saveInstructions().catch((err) => alert(err instanceof Error ? err.message : "Instruction save failed"))}
+                disabled={savingInstructions}
+                className="inline-flex items-center gap-1 rounded-md border border-blue-600 bg-blue-600 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white disabled:opacity-50"
+              >
+                {savingInstructions ? <RefreshCw size={12} className="animate-spin" /> : <Save size={12} />}
+                Save
+              </button>
+            </div>
+          </div>
+          <textarea
+            value={instructions || truth?.operatorInstructions || ""}
+            onChange={(event) => setInstructions(event.target.value)}
+            placeholder="Paste the instructions that should travel with this job build and supplier-agent preflight."
+            className="min-h-24 w-full resize-y rounded-md border border-blue-100 bg-white p-2 font-mono text-xs text-neutral-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+          />
+        </div>
+
         {/* Actions Row */}
         <div className="grid grid-cols-3 gap-3">
           <button

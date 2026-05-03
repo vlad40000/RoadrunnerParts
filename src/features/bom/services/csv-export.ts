@@ -1,4 +1,5 @@
 import type { BomRow } from "../schemas/bom";
+import { ebaySearchUrl, ebaySoldSearchUrl, getBomRowPartNumber } from "./ebay-links";
 
 export function bomRowsToCsv(rows: BomRow[]) {
   const headers = [
@@ -15,6 +16,8 @@ export function bomRowsToCsv(rows: BomRow[]) {
     "Retail Price Source",
     "Retail Price Verified",
     "Retail Priced At",
+    "eBay Active Search URL",
+    "eBay Sold Search URL",
     "Source URL",
     "Source Type",
     "Confidence",
@@ -29,8 +32,10 @@ export function bomRowsToCsv(rows: BomRow[]) {
 
   const lines = [
     headers.join(","),
-    ...rows.map((row) =>
-      [
+    ...rows.map((row) => {
+      const partNumber = getBomRowPartNumber(row);
+
+      return [
         row.section,
         row.diagramNumber,
         row.originalPartNumber ?? "",
@@ -44,14 +49,16 @@ export function bomRowsToCsv(rows: BomRow[]) {
         row.retailPriceSource ?? "",
         row.retailPriceVerified ? "Yes" : "No",
         row.retailPricedAt ?? "",
+        ebaySearchUrl(partNumber),
+        ebaySoldSearchUrl(partNumber),
         row.sourceUrl,
         row.sourceType,
         row.confidence,
         row.replacementNote ?? "",
       ]
         .map(escape)
-        .join(","),
-    ),
+        .join(",");
+    }),
   ];
 
   return lines.join("\n");

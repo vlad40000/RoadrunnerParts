@@ -8,7 +8,7 @@ import {
 } from "./encompass-backed-family";
 import type { RetrievedSource, SourceProvider } from "./types";
 import { cleanText, fetchHtml, htmlToText, normalizeModel, uniqueBy } from "./utils";
-import { resolveEncompassBrandRoute } from "../encompass-route-service";
+import { resolveEncompassBrandRoute, resolveEncompassModelUrl } from "../encompass-route-service";
 import { logTelemetry } from "../telemetry";
 import { buildEncompassAssemblyUrl } from "./deterministic-urls";
 
@@ -199,19 +199,26 @@ export const encompassUniversalProvider: SourceProvider = {
     if (!model) return [];
 
     // 1. Try DB-first Route Resolution
-    const brandRoute = input.brand ? await resolveEncompassBrandRoute(input.brand) : null;
+    const modelUrlRecord = await resolveEncompassModelUrl(model);
+    let directUrl: string | null = null;
     
-    if (brandRoute) {
-      // Step 1: Attempt Direct Assembly Path (Bypass Strategy)
-      const directUrl = buildEncompassAssemblyUrl({
-        abv: brandRoute.abv,
-        targetBrand: brandRoute.targetBrand,
-        model,
-        pattern: brandRoute.explodedViewAssemblyUrlPattern
-      });
-      
-      console.log(`[Encompass Universal] Attempting direct assembly path: ${directUrl}`);
-      
+    if (modelUrlRecord?.url) {
+      directUrl = modelUrlRecord.url;
+      console.log(`[Encompass Universal] Using model-specific gold truth URL: ${directUrl}`);
+    } else {
+      const brandRoute = input.brand ? await resolveEncompassBrandRoute(input.brand) : null;
+      if (brandRoute) {
+        directUrl = buildEncompassAssemblyUrl({
+          abv: brandRoute.abv,
+          targetBrand: brandRoute.targetBrand,
+          model,
+          pattern: brandRoute.explodedViewAssemblyUrlPattern
+        });
+        console.log(`[Encompass Universal] Attempting direct assembly path from brand route: ${directUrl}`);
+      }
+    }
+    
+    if (directUrl) {
       try {
         const html = await fetchHtml(directUrl, {
           jobId: input.jobId,

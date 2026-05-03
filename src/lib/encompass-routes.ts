@@ -7,7 +7,6 @@ export type EncompassBrandRoute = {
   brand: string;
   code: string;
   regularPrefix: string;
-  explodedViewBaseUrl: string;
 };
 
 export const ENCOMPASS_BRAND_ROUTES: EncompassBrandRoute[] = [
@@ -15,67 +14,56 @@ export const ENCOMPASS_BRAND_ROUTES: EncompassBrandRoute[] = [
     brand: "Whirlpool",
     code: "whi",
     regularPrefix: "WHI",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/whi/Whirlpool",
   },
   {
     brand: "Maytag",
     code: "may",
-    regularPrefix: "MAY",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/may/Maytag",
+    regularPrefix: "WHI",
   },
   {
     brand: "LG",
     code: "lge",
     regularPrefix: "LGE",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/lge/LG",
   },
   {
     brand: "Samsung",
-    code: "smg",
-    regularPrefix: "SMG",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/smg/Samsung",
+    code: "sam",
+    regularPrefix: "SAM",
   },
   {
     brand: "Bosch",
     code: "bch",
     regularPrefix: "BCH",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/bch/Bosch",
   },
   {
     brand: "Electrolux",
     code: "fri",
     regularPrefix: "FRI",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/fri/Electrolux",
   },
   {
     brand: "Frigidaire",
     code: "fri",
     regularPrefix: "FRI",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/fri/Frigidaire",
   },
   {
     brand: "Haier",
     code: "hai",
     regularPrefix: "HAI",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/hai/Haier",
   },
   {
     brand: "Kenmore",
     code: "kmr",
     regularPrefix: "KMR",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/kmr/Kenmore",
   },
   {
     brand: "Sharp",
     code: "sha",
     regularPrefix: "SHA",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/sha/Sharp",
   },
   {
     brand: "Midea",
     code: "mid",
     regularPrefix: "MID",
-    explodedViewBaseUrl: "https://encompass.com/Exploded-View-Search/MID/Midea",
   },
 ];
 
@@ -159,8 +147,9 @@ export function buildEncompassUrls(model: string) {
   return {
     model: normalizedModel,
     brand: route.brand,
-    regularModelUrl: `https://encompass.com/model/${route.regularPrefix}${normalizedModel}`,
-    explodedViewUrl: route.explodedViewBaseUrl,
+    regularModelUrl: `https://partstore.encompass.com/model/${route.regularPrefix}${normalizedModel}`,
+    regularModelUrlAlt: `https://encompass.com/model/${route.regularPrefix}${normalizedModel}`,
+    explodedViewUrl: `https://encompass.com/Exploded-View-Assembly/${route.regularPrefix}/${normalizedModel}`,
     error: null,
   };
 }

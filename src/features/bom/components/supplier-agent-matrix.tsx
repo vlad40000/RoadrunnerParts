@@ -15,12 +15,30 @@ import {
   Settings2,
   ChevronDown,
   ChevronUp,
+  Copy,
   FlaskConical,
   Terminal,
   Cpu
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { normalizeCanonicalModel } from "@/src/features/bom/services/source-tier-policy";
+import {
+  buildKnownEncompassAssemblyUrl,
+  normalizeCanonicalModel,
+} from "@/src/features/bom/services/source-tier-policy";
+
+const SUPPLIER_AGENT_INSTRUCTION_PREVIEW = `System Role: Deterministic supplier-run operator.
+
+Task:
+- Use the provided supplier URL and model context to extract source-backed parts evidence.
+
+Rules:
+1. Use the supplied target URL first. Do not switch providers unless explicitly instructed.
+2. Use visual context only as guidance; do not invent rows from prompts.
+3. Return source-backed part rows only.
+4. Keep expected count evidence separate from extracted rows.
+5. Do not claim completeness unless evidence supports it.
+6. Preserve model/part punctuation exactly.
+7. Treat missing/blocked evidence as partial, not complete.`;
 
 interface AgentTuning {
   temperature: number;
@@ -53,6 +71,24 @@ const DEFAULT_TUNING: AgentTuning = {
   useSearch: true,
   usePython: true,
 };
+
+function agentCodeStorageKey(jobId: string) {
+  return `bom-workflow-agent-code:${jobId}`;
+}
+
+function readSharedAgentCode(jobId?: string | null) {
+  if (!jobId || typeof window === "undefined") return "";
+  return window.localStorage.getItem(agentCodeStorageKey(jobId)) || "";
+}
+
+function broadcastAgentCode(jobId: string, code: string) {
+  window.localStorage.setItem(agentCodeStorageKey(jobId), code);
+  window.dispatchEvent(
+    new CustomEvent("bom-workflow-agent-code", {
+      detail: { jobId, code },
+    }),
+  );
+}
 
 const INITIAL_AGENTS: AgentState[] = [
   {
@@ -120,13 +156,18 @@ const INITIAL_AGENTS: AgentState[] = [
 export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrixProps) {
   const [agents, setAgents] = useState<AgentState[]>(INITIAL_AGENTS);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [pendingAgentId, setPendingAgentId] = useState<string | null>(null);
+  const [pendingPayload, setPendingPayload] = useState<Record<string, unknown> | null>(null);
+  const [pendingRunText, setPendingRunText] = useState("");
+  const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
   const normalizedModel = normalizeCanonicalModel(model);
 
   const buildSupplierUrl = (supplierId: string) => {
     const encoded = encodeURIComponent(normalizedModel);
     switch (supplierId) {
       case "encompass-family":
-        return `https://encompass.com/model/${encoded}`;
+        return buildKnownEncompassAssemblyUrl(normalizedModel) || "";
       case "fix.com":
         return `https://www.fix.com/search/?SearchTerm=${encoded}`;
       case "repairclinic-family":
@@ -173,48 +214,106 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
     })));
   }, [normalizedModel]);
 
-  const runAgent = async (agent: AgentState) => {
+  const buildRunPayload = (agent: AgentState) => {
+    const sourceUrl = agent.url || buildSupplierUrl(agent.id);
+    const supplierId = agent.id;
+    const expectedTotal =
+      typeof truth?.expectedTotal === "number" && truth.expectedTotal > 0
+        ? truth.expectedTotal
+        : null;
+
+    return {
+      task: "run_supplier_agent",
+      jobId,
+      sourceUrl,
+      includeDiagram: agent.sendDiagram,
+      includeExpectedCount: agent.sendExpectedCount,
+      canonUrl: truth?.canonUrl || null,
+      diagramImageUrl: agent.sendDiagram
+        ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null)
+        : null,
+      expectedTotal: agent.sendExpectedCount ? expectedTotal : null,
+      expectedTotalSource: expectedTotal ? "visual_truth" : null,
+      assemblyNames: agent.sendDiagram ? truth?.assemblyNames : [],
+      operatorInstructions: truth?.operatorInstructions || null,
+      operatorInstructionName: truth?.operatorInstructionName || null,
+      normalizedModel,
+      supplierId,
+      canonicalModel: normalizedModel,
+      supplier: supplierId,
+      searchUrl: sourceUrl,
+      tuning: agent.tuning,
+      visualTruth: {
+        screenshotBase64: agent.sendDiagram ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null) : null,
+        storedImageUrl: agent.sendDiagram ? truth?.storedImageUrl || null : null,
+        base64: agent.sendDiagram ? truth?.base64 || null : null,
+        canonUrl: agent.sendDiagram ? truth?.canonUrl || null : null,
+        expectedTotal: agent.sendExpectedCount ? expectedTotal : null,
+        assemblyNames: agent.sendDiagram ? truth?.assemblyNames : [],
+        operatorInstructions: truth?.operatorInstructions || null,
+        operatorInstructionName: truth?.operatorInstructionName || null
+      }
+    };
+  };
+
+  const openRunReview = (agent: AgentState) => {
+    const payload = buildRunPayload(agent);
+    const sharedCode = readSharedAgentCode(jobId);
+    const runText = sharedCode || JSON.stringify(payload, null, 2);
+    setPendingAgentId(agent.id);
+    setPendingPayload(payload);
+    setPendingRunText(runText);
+    if (jobId && !sharedCode) broadcastAgentCode(jobId, runText);
+    setReviewOpen(true);
+  };
+
+  const updatePendingRunText = (value: string) => {
+    setPendingRunText(value);
+    if (jobId) broadcastAgentCode(jobId, value);
+  };
+
+  const buildPayloadFromRunText = () => {
+    const text = pendingRunText.trim();
+    if (!text) return pendingPayload;
+    try {
+      const parsed = JSON.parse(text);
+      return parsed && typeof parsed === "object"
+        ? (parsed as Record<string, unknown>)
+        : pendingPayload;
+    } catch {
+      return {
+        ...(pendingPayload || {}),
+        agentCode: pendingRunText,
+        agentCodeLanguage: "python",
+      };
+    }
+  };
+
+  useEffect(() => {
+    if (!jobId) return;
+    const onSharedCode = (event: Event) => {
+      const detail = (event as CustomEvent<{ jobId?: string; code?: string }>).detail;
+      if (detail?.jobId === jobId && typeof detail.code === "string") {
+        setPendingRunText(detail.code);
+      }
+    };
+    window.addEventListener("bom-workflow-agent-code", onSharedCode);
+    return () => window.removeEventListener("bom-workflow-agent-code", onSharedCode);
+  }, [jobId]);
+
+  const copyToClipboard = async (label: string, value: string) => {
+    await navigator.clipboard.writeText(value);
+    setCopiedLabel(label);
+    window.setTimeout(() => setCopiedLabel(null), 1400);
+  };
+
+  const runAgent = async (agent: AgentState, payloadOverride?: Record<string, unknown>) => {
     setAgents(prev => prev.map(a => a.id === agent.id ? { ...a, status: "running", error: undefined } : a));
     
     try {
-      const sourceUrl = agent.url || buildSupplierUrl(agent.id);
-      const supplierId = agent.id;
-      const expectedTotal =
-        typeof truth?.expectedTotal === "number" && truth.expectedTotal > 0
-          ? truth.expectedTotal
-          : null;
-
       if (!jobId) throw new Error("Missing persisted jobId.");
-      
-      const payload = {
-        task: "run_supplier_agent",
-        jobId,
-        sourceUrl,
-        includeDiagram: agent.sendDiagram,
-        includeExpectedCount: agent.sendExpectedCount,
-        canonUrl: truth?.canonUrl || null,
-        diagramImageUrl: agent.sendDiagram
-          ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null)
-          : null,
-        expectedTotal: agent.sendExpectedCount ? expectedTotal : null,
-        expectedTotalSource: expectedTotal ? "visual_truth" : null,
-        assemblyNames: agent.sendDiagram ? truth?.assemblyNames : [],
-        normalizedModel,
-        supplierId,
-        canonicalModel: normalizedModel,
-        supplier: supplierId,
-        searchUrl: sourceUrl,
-        // PASS TUNING TO BACKEND
-        tuning: agent.tuning,
-        visualTruth: {
-          screenshotBase64: agent.sendDiagram ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null) : null,
-          storedImageUrl: agent.sendDiagram ? truth?.storedImageUrl || null : null,
-          base64: agent.sendDiagram ? truth?.base64 || null : null,
-          canonUrl: agent.sendDiagram ? truth?.canonUrl || null : null,
-          expectedTotal: agent.sendExpectedCount ? expectedTotal : null,
-          assemblyNames: agent.sendDiagram ? truth?.assemblyNames : []
-        }
-      };
+      const payload = payloadOverride || buildRunPayload(agent);
+      const supplierId = String(payload.supplier || agent.id);
 
       await fetch(`/api/bom/jobs/${jobId}/supplier-runs/${supplierId}/input`, {
         method: "PUT",
@@ -269,8 +368,8 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               "bg-neutral-200"
             }`} />
 
-            <div className="p-5 space-y-5">
-              {/* Header */}
+            <details className="p-5" open={agent.id === "encompass-family"}>
+              <summary className="cursor-pointer list-none">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-sm ${
@@ -294,8 +393,13 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                     </button>
                   </div>
                 </div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                  Open
+                </div>
               </div>
+              </summary>
 
+              <div className="mt-5 space-y-5">
               {/* Tuning Panel */}
               <AnimatePresence>
                 {agent.showTuning && (
@@ -417,7 +521,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
 
               {/* Action Button */}
               <button
-                onClick={() => runAgent(agent)}
+                onClick={() => openRunReview(agent)}
                 disabled={agent.status === "running" || !model}
                 className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg ${
                   agent.status === "running" ? "bg-neutral-100 text-neutral-400 cursor-not-allowed" :
@@ -429,10 +533,119 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                 {agent.status === "running" ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} fill="currentColor" />}
                 Execute Mission
               </button>
-            </div>
+              </div>
+            </details>
           </motion.div>
         ))}
       </div>
+
+      <AnimatePresence>
+        {reviewOpen && pendingAgentId && pendingPayload ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+            onClick={() => setReviewOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.98, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.98, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-4xl rounded-2xl border border-neutral-200 bg-white shadow-2xl"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
+                    Agent Preflight Review
+                  </div>
+                  <h4 className="text-lg font-black text-neutral-900">
+                    Review instructions before run
+                  </h4>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReviewOpen(false)}
+                  className="rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-bold text-neutral-600 hover:bg-neutral-50"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="grid gap-4 p-5 md:grid-cols-2">
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
+                      Instruction Contract
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard("contract", SUPPLIER_AGENT_INSTRUCTION_PREVIEW)}
+                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-neutral-600 hover:bg-neutral-50"
+                    >
+                      <Copy size={12} />
+                      {copiedLabel === "contract" ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                  <textarea
+                    readOnly
+                    value={SUPPLIER_AGENT_INSTRUCTION_PREVIEW}
+                    onFocus={(event) => event.currentTarget.select()}
+                    className="h-[360px] w-full resize-y rounded-lg border border-neutral-200 bg-neutral-50 p-3 font-mono text-xs leading-relaxed text-neutral-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
+                      Run Payload
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard("payload", pendingRunText)}
+                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-neutral-600 hover:bg-neutral-50"
+                    >
+                      <Copy size={12} />
+                      {copiedLabel === "payload" ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                  <textarea
+                    value={pendingRunText}
+                    onChange={(event) => updatePendingRunText(event.target.value)}
+                    onFocus={(event) => event.currentTarget.select()}
+                    spellCheck={false}
+                    className="h-[360px] w-full resize-y rounded-lg border border-neutral-200 bg-neutral-50 p-3 font-mono text-xs leading-relaxed text-neutral-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 border-t border-neutral-200 px-5 py-4">
+                <button
+                  type="button"
+                  onClick={() => setReviewOpen(false)}
+                  className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const agent = agents.find((a) => a.id === pendingAgentId);
+                    if (!agent) return;
+                    const runPayload = buildPayloadFromRunText();
+                    if (!runPayload) return;
+                    setReviewOpen(false);
+                    await runAgent(agent, runPayload);
+                  }}
+                  className="rounded-md border border-neutral-900 bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-black"
+                >
+                  Confirm Run
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

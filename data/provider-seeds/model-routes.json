@@ -1,0 +1,46 @@
+[
+  {
+    "provider": "encompass-family",
+    "brandCode": "HOT",
+    "targetBrand": "HotPoint",
+    "model": "GTW485ASJ4WS",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "95634",
+    "providerAssemblyUrl": "https://encompass.com/Exploded-View-Assembly/HOT/95634/GTW485ASJ4WS",
+    "sourceStatus": "route_seed",
+    "sourceFile": "roadrunnerparts_master_seed_workbook_v6_1.xlsx:Model_Routes"
+  },
+  {
+    "provider": "encompass-family",
+    "brandCode": "WHI",
+    "targetBrand": "Whirlpool",
+    "model": "WTW7500GC2",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "",
+    "providerAssemblyUrl": "https://encompass.com/Exploded-View-Assembly/WHI/WTW7500GC2",
+    "sourceStatus": "route_seed",
+    "sourceFile": "roadrunnerparts_master_seed_workbook_v6_1.xlsx:Model_Routes"
+  },
+  {
+    "provider": "encompass-family",
+    "brandCode": "WHI",
+    "targetBrand": "Whirlpool",
+    "model": "MLE2000AYW",
+    "applianceTypeGuess": "laundry",
+    "providerOptionValue": "12074",
+    "providerAssemblyUrl": "https://encompass.com/Exploded-View-Assembly/WHI/12074/MLE2000AYW",
+    "sourceStatus": "route_seed",
+    "sourceFile": "manual_verified_route"
+  },
+  {
+    "provider": "encompass-family",
+    "brandCode": "MAY",
+    "targetBrand": "Maytag",
+    "model": "MVWB300WQ2",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "9272",
+    "providerAssemblyUrl": "https://encompass.com/Exploded-View-Assembly/MAY/9272/MVWB300WQ2",
+    "sourceStatus": "route_seed",
+    "sourceFile": "manual_verified_route"
+  }
+]

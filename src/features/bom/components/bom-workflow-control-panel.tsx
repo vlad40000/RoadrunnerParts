@@ -1,15 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
   Circle,
   ClipboardCheck,
+  Camera,
   Database,
   ExternalLink,
+  Home,
+  Image as ImageIcon,
   ListChecks,
   Loader2,
+  Monitor,
   Pencil,
   RefreshCw,
   RotateCcw,
@@ -24,8 +28,13 @@ import {
   Printer,
 } from "lucide-react";
 import { EncompassSupervisorPanel } from "./encompass-supervisor-panel";
+import { ComputerUseSupervisor } from "./computer-use-supervisor";
+
 import { SupplierAgentMatrix } from "./supplier-agent-matrix";
-import { normalizeCanonicalModel } from "../services/source-tier-policy";
+import {
+  buildKnownEncompassAssemblyUrl,
+  normalizeCanonicalModel,
+} from "../services/source-tier-policy";
 import { 
   getBomRowPartNumber, 
   ebaySearchUrl, 
@@ -97,6 +106,15 @@ const WORKFLOW_STEPS = [
   { key: "export", label: "Export", detail: "Final controlled output" },
 ] as const;
 
+const TERMINAL_HELP = [
+  "help",
+  "status",
+  "run fix.com",
+  "run repairclinic-family",
+  "run appliancepartspros",
+  "run sears-partsdirect",
+].join("\n");
+
 function asRecord(value: unknown) {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 }
@@ -115,6 +133,12 @@ function valueText(value: unknown) {
 function formatPercent(value: number | null | undefined) {
   if (typeof value !== "number" || !Number.isFinite(value)) return "";
   return `${Math.round(value * 100)}%`;
+}
+
+function usableVisualTruthUrl(value: unknown) {
+  const url = valueText(value).trim();
+  if (!url) return "";
+  return url.includes("/Exploded-View-Assembly/") ? url : "";
 }
 
 function buildSupplierUrl(supplierId: string, model: string) {
@@ -270,7 +294,19 @@ export function BomWorkflowControlPanel({
   const [job, setJob] = useState<BomJob | null>(null);
   const [truth, setTruth] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshAt, setLastRefreshAt] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrResult, setOcrResult] = useState<Record<string, unknown> | null>(null);
+  const [terminalInput, setTerminalInput] = useState("");
+  const [terminalLines, setTerminalLines] = useState<string[]>([
+    "Supplier-run console ready. Type 'help' for commands.",
+  ]);
+  const [terminalBusy, setTerminalBusy] = useState(false);
+  const [ocrSourceMenuOpen, setOcrSourceMenuOpen] = useState(false);
+  const ocrCameraInputRef = useRef<HTMLInputElement | null>(null);
+  const ocrUploadInputRef = useRef<HTMLInputElement | null>(null);
 
   const diagramParse = asRecord(job?.diagramParse);
   const liveTruth = truth || (asRecord(diagramParse.visualTruth) as Record<string, unknown>);
@@ -288,8 +324,16 @@ export function BomWorkflowControlPanel({
   const supplierInputCount = supplierRunValues.filter((run) => run.input).length;
   const pricedCount = job?.verifiedPriceCount ?? finalRows.filter((row) => Number(row.price ?? row.retailPrice) > 0).length;
   const expectedTotal = (job?.trustedTotalPartCount ?? job?.expectedPartsTotal ?? liveTruth?.expectedTotal ?? "") as string | number;
-  const truthUrl = valueText(liveTruth?.canonUrl || job?.truthSource || job?.trustedTotalCountSourceUrl);
+  const generatedAssemblyUrl = buildKnownEncompassAssemblyUrl(normalizedModel) || "";
+  const truthUrl =
+    usableVisualTruthUrl(liveTruth?.canonUrl) ||
+    usableVisualTruthUrl(job?.truthSource) ||
+    usableVisualTruthUrl(job?.trustedTotalCountSourceUrl) ||
+    generatedAssemblyUrl;
+  const agentSourceUrl = truthUrl || generatedAssemblyUrl;
   const screenshotUrl = valueText(liveTruth?.storedImageUrl || liveTruth?.screenshotBase64);
+  const solidifiedAt = valueText(liveTruth?.solidifiedAt);
+  const updatedAtText = job?.updatedAt ? new Date(job.updatedAt).toLocaleString() : "";
 
   async function refresh(id = jobId) {
     if (!id) return;
@@ -306,6 +350,19 @@ export function BomWorkflowControlPanel({
     const truthRes = await fetch(`/api/bom/jobs/${data.job.id}/visual-truth`, { cache: "no-store" });
     const truthData = await truthRes.json().catch(() => null);
     setTruth(truthData?.visualTruth || null);
+    setLastRefreshAt(new Date().toLocaleTimeString());
+  }
+
+  async function manualRefresh() {
+    if (!jobId) return;
+    setRefreshing(true);
+    try {
+      await refresh(jobId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Job refresh failed");
+    } finally {
+      setRefreshing(false);
+    }
   }
 
   async function createOrLoadJob() {
@@ -335,9 +392,8 @@ export function BomWorkflowControlPanel({
     }
   }
 
-  async function savePatch(patch: Record<string, unknown>) {
-    if (!jobId) throw new Error("Load a job first.");
-    const res = await fetch(`/api/bom/jobs/${jobId}`, {
+  async function savePatchForJob(targetJobId: string, patch: Record<string, unknown>) {
+    const res = await fetch(`/api/bom/jobs/${targetJobId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
@@ -346,7 +402,36 @@ export function BomWorkflowControlPanel({
     if (!res.ok || !data?.ok) {
       throw new Error(data?.error || "Save failed");
     }
-    await refresh(jobId);
+    await refresh(targetJobId);
+  }
+
+  async function savePatch(patch: Record<string, unknown>) {
+    if (!jobId) throw new Error("Load a job first.");
+    await savePatchForJob(jobId, patch);
+  }
+
+  async function solidifyCurrentState() {
+    if (!jobId) {
+      setError("Load a job before solidifying state.");
+      return;
+    }
+
+    await savePatch({
+      visualTruth: {
+        solidifiedAt: new Date().toISOString(),
+        solidifiedBy: "operator_dashboard",
+        solidifiedState: {
+          model: normalizedModel,
+          brand: job?.brand || null,
+          expectedTotal: expectedTotal || null,
+          finalRows: finalRows.length || job?.uniqueRowCount || 0,
+          rawRows: rawRows.length || job?.rawRowCount || 0,
+          coveragePct: job?.coveragePct ?? null,
+          truthUrl: truthUrl || null,
+        },
+      },
+    });
+    appendTerminal("state: current dashboard state solidified");
   }
 
   useEffect(() => {
@@ -377,6 +462,186 @@ export function BomWorkflowControlPanel({
     export: job?.bomComplete === "true" || job?.partsComplete ? "complete" : finalRows.length > 0 ? "active" : "waiting",
   };
 
+  const evidenceItems = [
+    { label: "Identity", value: [job?.brand, normalizedModel, job?.serial].filter(Boolean).join(" / ") || "waiting", status: stepStatus.identity },
+    { label: "Visual Truth", value: truthUrl || "waiting for canonical URL", status: stepStatus.encompass_url },
+    { label: "Capture", value: screenshotUrl ? "image evidence attached" : "waiting for rendered capture", status: stepStatus.visual_capture },
+    { label: "Trusted Count", value: expectedTotal ? `${expectedTotal} parts` : "no evidence/operator count", status: stepStatus.trusted_count },
+    { label: "Raw Rows", value: String(rawRows.length || job?.rawRowCount || 0), status: stepStatus.row_evidence },
+    { label: "Final Rows", value: String(finalRows.length || job?.uniqueRowCount || 0), status: stepStatus.reconcile },
+    { label: "Coverage", value: formatPercent(job?.coveragePct) || "not scored", status: stepStatus.coverage },
+    { label: "Pricing", value: `${pricedCount || 0} priced`, status: stepStatus.pricing },
+  ];
+
+  const ledgerItems = [
+    { label: "Provider rows", value: rawRows.length || job?.rawRowCount || 0 },
+    { label: "Reconciled rows", value: finalRows.length || job?.uniqueRowCount || 0 },
+    { label: "Supplier inputs", value: supplierInputCount },
+    { label: "Supplier complete", value: supplierCompleteCount },
+    { label: "Issues", value: (job?.issues || []).length + (job?.errorText ? 1 : 0) },
+    { label: "Last job update", value: updatedAtText || "none" },
+  ];
+
+  function jumpToSection(sectionId: string) {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function appendTerminal(line: string) {
+    setTerminalLines((prev) => [...prev.slice(-120), line]);
+  }
+
+  async function handleOcrImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setOcrBusy(true);
+    setError(null);
+    try {
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Could not read image file."));
+        reader.readAsDataURL(file);
+      });
+
+      const base64 = dataUrl.includes(",") ? dataUrl.split(",")[1] : dataUrl;
+      const res = await fetch("/api/ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64, mimeType: file.type }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(payload?.error || "OCR extraction failed");
+      }
+      const identity = {
+        brand: payload?.brand || null,
+        model: payload?.modelNumber || null,
+        serial: payload?.serialNumber || null,
+        productType: payload?.productType || null,
+        engineeringCode: payload?.engineeringCode || null,
+        confidence: payload?.confidence || null,
+        candidates: payload?.candidates || [],
+        decodeResult: payload?.decodeResult || null,
+      } as Record<string, unknown>;
+      const extractedModel = normalizeCanonicalModel(String(identity.model || model || ""));
+      const extractedSerial = String(identity.serial || "").trim().toUpperCase();
+
+      if (!extractedModel && !jobId) {
+        throw new Error("OCR did not extract a model. Enter a model or retry with a clearer nameplate image.");
+      }
+
+      let targetJobId = jobId;
+      if (!targetJobId || (extractedModel && extractedModel !== normalizedModel)) {
+        const createRes = await fetch("/api/bom/jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: extractedModel || normalizedModel,
+            brand: identity.brand || undefined,
+            serial: extractedSerial || undefined,
+            productType: identity.productType || undefined,
+          }),
+        });
+        const createPayload = await createRes.json().catch(() => null);
+        if (!createRes.ok || !createPayload?.job?.id) {
+          throw new Error(createPayload?.error || "OCR job creation failed");
+        }
+        targetJobId = createPayload.job.id;
+        setJobId(targetJobId);
+      }
+
+      if (extractedModel) setModel(extractedModel);
+      setOcrResult(identity || null);
+      await savePatchForJob(targetJobId, {
+        brand: identity.brand || undefined,
+        serial: extractedSerial || undefined,
+        productType: identity.productType || undefined,
+        visualTruth: {
+          screenshotBase64: dataUrl,
+          ocrImageDataUrl: dataUrl,
+          ocrImageName: file.name,
+          ocrIdentity: identity,
+        },
+      });
+      appendTerminal(`ocr: loaded ${file.name}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "OCR upload failed";
+      setError(msg);
+      appendTerminal(`error: ${msg}`);
+    } finally {
+      setOcrBusy(false);
+      if (event.target) event.target.value = "";
+      setOcrSourceMenuOpen(false);
+    }
+  }
+
+  async function runSupplierFromTerminal(supplierId: string) {
+    if (!jobId) throw new Error("Missing jobId. Create or load a job first.");
+    if (!normalizedModel) throw new Error("Missing model. Enter a model first.");
+
+    const supplier = SUPPLIERS.find((item) => item.id === supplierId);
+    if (!supplier) throw new Error(`Unsupported supplier: ${supplierId}`);
+
+    const searchUrl = buildSupplierUrl(supplierId, normalizedModel);
+    if (!searchUrl) throw new Error(`No route URL for supplier: ${supplierId}`);
+
+    const body = {
+      jobId,
+      task: "run_supplier_agent",
+      tierKey: "terminal",
+      supplier: supplierId,
+      canonicalModel: normalizedModel,
+      formattedModel: normalizedModel,
+      searchUrl,
+      brand: job?.brand || undefined,
+      serial: job?.serial || undefined,
+      productType: job?.productType || undefined,
+      visualTruth: liveTruth,
+    };
+
+    const res = await fetch("/api/bom/source-action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const payload = await res.json().catch(() => null);
+    if (!res.ok || !payload?.ok) {
+      throw new Error(payload?.detail || payload?.error || "Supplier run failed");
+    }
+    await refresh(jobId);
+    appendTerminal(`run ${supplierId}: complete`);
+  }
+
+  async function runTerminalCommand() {
+    const command = terminalInput.trim();
+    if (!command || terminalBusy) return;
+    setTerminalInput("");
+    appendTerminal(`> ${command}`);
+    setTerminalBusy(true);
+    try {
+      const lower = command.toLowerCase();
+      if (lower === "help") {
+        appendTerminal(TERMINAL_HELP);
+      } else if (lower === "status") {
+        appendTerminal(
+          `status: model=${normalizedModel || "-"} job=${jobId || "-"} rows=${finalRows.length} coverage=${formatPercent(job?.coveragePct) || "-"}`
+        );
+      } else if (lower.startsWith("run ")) {
+        const supplierId = lower.replace(/^run\s+/, "").trim();
+        await runSupplierFromTerminal(supplierId);
+      } else {
+        appendTerminal(`unknown command: ${command}`);
+      }
+    } catch (err) {
+      appendTerminal(`error: ${err instanceof Error ? err.message : "command failed"}`);
+    } finally {
+      setTerminalBusy(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-neutral-100 p-5 text-neutral-950 md:p-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -388,33 +653,206 @@ export function BomWorkflowControlPanel({
             </div>
             <h1 className="text-3xl font-black tracking-tight">BOM Step Control</h1>
             <p className="mt-1 max-w-2xl text-sm text-neutral-500">
-              Auto-filled fields stay live as evidence arrives. Take manual control only when you need to override or lock a value.
+              Evidence-first workflow state with manual controls for each BOM step.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/bom-ingest"
+              href="/"
               className="inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-neutral-50"
             >
-              Visual Panel
-              <ExternalLink size={14} />
+              <Home size={14} />
+              Home
+            </Link>
+            <Link
+              href={`/bom-workflow/verify?${new URLSearchParams({
+                ...(jobId ? { jobId } : {}),
+                ...(normalizedModel ? { model: normalizedModel } : {}),
+              })}`}
+              className="inline-flex items-center gap-2 rounded-md border border-blue-700 bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+            >
+              <ShieldCheck size={14} />
+              Verify
             </Link>
             {jobId ? (
               <button
                 type="button"
-                onClick={() => refresh(jobId)}
-                className="inline-flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-3 py-2 text-sm font-semibold text-white"
+                onClick={manualRefresh}
+                disabled={refreshing}
+                className="inline-flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
               >
-                <RefreshCw size={14} />
+                <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
                 Refresh
               </button>
             ) : null}
           </div>
         </header>
 
-        <section className="grid gap-4 rounded-lg border border-neutral-200 bg-white p-4 md:grid-cols-[1fr_auto] md:items-end">
-          <div className="grid gap-3 md:grid-cols-[1fr_1fr]">
+        <details className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+          <summary className="cursor-pointer list-none border-b border-neutral-200 bg-blue-700 px-4 py-3 text-white">
+            <div className="flex flex-col justify-between gap-2 md:flex-row md:items-center">
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-blue-100">
+                  Pre-emptive State Workflow Dashboard
+                </div>
+                <div className="text-sm font-semibold">
+                  {jobId ? `Job ${jobId}` : "No job loaded"}{lastRefreshAt ? ` / refreshed ${lastRefreshAt}` : ""}
+                </div>
+              </div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-blue-100">
+                Click to expand
+              </div>
+            </div>
+          </summary>
+          <div className="p-4">
+            <div className="mb-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => solidifyCurrentState().catch((err) => setError(err instanceof Error ? err.message : "Solidify failed"))}
+                disabled={!jobId}
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-blue-700 bg-blue-700 px-3 py-2 text-xs font-black uppercase tracking-widest text-white disabled:opacity-50"
+              >
+                <ClipboardCheck size={14} />
+                Solidify Current State
+              </button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {evidenceItems.map((item) => (
+                <div key={item.label} className={`rounded-lg border p-3 ${stepClasses(item.status as StepStatus)}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-[10px] font-black uppercase tracking-widest">{item.label}</div>
+                    {stepIcon(item.status as StepStatus)}
+                  </div>
+                  <div className="mt-2 truncate text-sm font-semibold" title={String(item.value)}>
+                    {item.value}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="border-t border-neutral-200 px-4 py-2 text-xs font-semibold text-neutral-500">
+            {solidifiedAt ? `Solidified ${new Date(solidifiedAt).toLocaleString()}` : "State has not been solidified yet."}
+          </div>
+        </details>
+
+        <section className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+          <details className="rounded-lg border border-neutral-200 bg-white">
+            <summary className="cursor-pointer list-none border-b border-neutral-200 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide">
+                <Database size={16} />
+                Log Bridge / Evidence Landing
+              </div>
+            </summary>
+            <div className="grid gap-3 p-4 md:grid-cols-3">
+                <AutoField
+                  label="Canonical Evidence URL"
+                  sourceValue={truthUrl}
+                  sourceLabel="visual truth"
+                  placeholder="Waiting for captured provider URL"
+                  onSave={(value) => savePatch({ truthSource: value, visualTruth: { canonUrl: value } })}
+                />
+                <AutoField
+                  label="Expected Total"
+                  sourceValue={expectedTotal}
+                  sourceLabel="DB/evidence/operator"
+                  placeholder="Null until evidence or override"
+                  onSave={(value) => savePatch({
+                    expectedPartsTotal: value,
+                    expectedPartsSource: "operator_override",
+                    visualTruth: { expectedTotal: value },
+                  })}
+                />
+                <AutoField
+                  label="Assemblies"
+                  sourceValue={assemblyNames}
+                  sourceLabel="visual capture"
+                  placeholder="Assembly names land here"
+                  multiline
+                  onSave={async (value) => {
+                    const names = value
+                      .split(/\r?\n|,/)
+                      .map((item) => item.trim())
+                      .filter(Boolean);
+                    await savePatch({ visualTruth: { assemblyNames: names } });
+                  }}
+                />
+            </div>
+          </details>
+
+          <details className="rounded-lg border border-neutral-200 bg-white">
+            <summary className="cursor-pointer list-none border-b border-neutral-200 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide">
+                <ListChecks size={16} />
+                Opportunistic Ledger
+              </div>
+            </summary>
+            <div className="grid grid-cols-2 gap-2 p-4">
+                {ledgerItems.map((item) => (
+                  <div key={item.label} className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">
+                      {item.label}
+                    </div>
+                    <div className="mt-1 truncate text-sm font-black text-neutral-900" title={String(item.value)}>
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </details>
+        </section>
+
+        <section className="rounded-lg border border-neutral-200 bg-white p-3">
+          <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
+            <button
+              type="button"
+              onClick={() => jumpToSection("step-setup")}
+              className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.identity)}`}
+            >
+              1 Setup
+            </button>
+            <button
+              type="button"
+              onClick={() => jumpToSection("step-capture")}
+              className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.visual_capture)}`}
+            >
+              2 Capture
+            </button>
+            <button
+              type="button"
+              onClick={() => jumpToSection("step-run-agents")}
+              className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.supplier_runs)}`}
+            >
+              3 Run Agents
+            </button>
+            <button
+              type="button"
+              onClick={() => jumpToSection("step-review-export")}
+              className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.export)}`}
+            >
+              4 Review / Export
+            </button>
+          </div>
+        </section>
+
+        <section id="step-setup" className="rounded-lg border border-neutral-200 bg-white p-4">
+          <input
+            ref={ocrCameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleOcrImageUpload}
+          />
+          <input
+            ref={ocrUploadInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleOcrImageUpload}
+          />
+
+          <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto_auto] lg:items-end">
             <label className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Model</span>
               <input
@@ -422,6 +860,19 @@ export function BomWorkflowControlPanel({
                 onChange={(event) => setModel(event.target.value.toUpperCase())}
                 className="w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-neutral-900"
                 placeholder="HTDX100ED3WW"
+              />
+            </label>
+            <label className="space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Active Serial</span>
+              <input
+                value={job?.serial || ""}
+                onChange={(event) => {
+                  if (jobId) {
+                    savePatch({ serial: event.target.value.toUpperCase() }).catch((err) => setError(err.message));
+                  }
+                }}
+                className="w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-neutral-900"
+                placeholder="ENTER SERIAL #"
               />
             </label>
             <label className="space-y-1">
@@ -433,16 +884,50 @@ export function BomWorkflowControlPanel({
                 placeholder="Load an existing job or create by model"
               />
             </label>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={jobId ? () => refresh(jobId).catch((err) => setError(err.message)) : createOrLoadJob}
+                disabled={loading}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50"
+              >
+                {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
+                {jobId ? "Load Job" : "Create Job"}
+              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOcrSourceMenuOpen((open) => !open)}
+                  disabled={ocrBusy}
+                  className="inline-flex h-10 w-12 items-center justify-center rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                  title="OCR nameplate intake"
+                >
+                  {ocrBusy ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+                </button>
+                {ocrSourceMenuOpen ? (
+                  <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => ocrCameraInputRef.current?.click()}
+                      className="flex w-full items-center gap-2 border-b border-neutral-100 px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <Camera size={14} />
+                      Take Photo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => ocrUploadInputRef.current?.click()}
+                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <ImageIcon size={14} />
+                      Upload Image
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={jobId ? () => refresh(jobId).catch((err) => setError(err.message)) : createOrLoadJob}
-            disabled={loading}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50"
-          >
-            {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
-            {jobId ? "Load Job" : "Create Job"}
-          </button>
         </section>
 
         {error ? (
@@ -451,78 +936,80 @@ export function BomWorkflowControlPanel({
           </div>
         ) : null}
 
-        {/* Visual Viewport — The "Master Eye" */}
-        <section className="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50/50 px-5 py-3">
+        {/* Agentic Command Center — The "Master Eye" */}
+        <details id="step-capture" className="rounded-lg border border-neutral-200 bg-white">
+          <summary className="cursor-pointer list-none p-4">
+            <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                <Database size={16} />
+                <Monitor size={16} />
               </div>
               <div>
-                <h3 className="text-xs font-black uppercase tracking-[0.1em] text-neutral-900">Active Visual Context</h3>
-                <p className="text-[10px] font-bold text-neutral-400">This image is shared with agents when "Diagram" is enabled.</p>
+                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-neutral-500">Agentic Command Center</h3>
+                <p className="text-[10px] font-bold text-neutral-400">Real-time visual agent supervision & bypass</p>
               </div>
             </div>
-            {screenshotUrl && (
-              <div className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full uppercase">
-                Active Evidence
-              </div>
-            )}
-          </div>
-          <div className="p-1">
+              <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Open</div>
+            </div>
+          </summary>
+          <div className="space-y-4 border-t border-neutral-200 p-4">
+          {jobId ? (
+            <div className="min-h-[600px]">
+              <ComputerUseSupervisor
+                jobId={jobId}
+                model={normalizedModel}
+                sourceUrl={agentSourceUrl}
+              />
+            </div>
+          ) : (
             <div className="relative aspect-video w-full rounded-xl bg-neutral-900 overflow-hidden flex items-center justify-center border-4 border-white shadow-inner">
-              {screenshotUrl ? (
-                <img 
-                  src={screenshotUrl} 
-                  alt="Active context" 
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-3 text-neutral-500">
-                  <Loader2 size={32} className="animate-spin opacity-20" />
-                  <p className="text-xs font-black uppercase tracking-widest opacity-50">Waiting for visual capture...</p>
-                </div>
-              )}
-              
-              {/* Overlay stats */}
-              <div className="absolute bottom-4 left-4 flex gap-2">
-                <div className="bg-black/60 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                  Model: {model || "???"}
-                </div>
-                {expectedTotal && (
-                  <div className="bg-emerald-600/80 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                    Target: {String(expectedTotal)} Parts
-                  </div>
-                )}
+              <div className="flex flex-col items-center gap-3 text-neutral-500">
+                <Loader2 size={32} className="animate-spin opacity-20" />
+                <p className="text-xs font-black uppercase tracking-widest opacity-50">Waiting for job initialization...</p>
               </div>
             </div>
+          )}
+
+          {ocrResult ? (
+            <div className="border-t border-neutral-200 p-3">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">
+                OCR Result Preview
+              </div>
+              <pre className="max-h-40 overflow-auto rounded-md border border-neutral-200 bg-neutral-50 p-2 text-[11px] text-neutral-800">
+                {JSON.stringify(ocrResult, null, 2)}
+              </pre>
+            </div>
+          ) : null}
           </div>
-        </section>
+        </details>
 
-        <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
-          <aside className="space-y-3">
-            {WORKFLOW_STEPS.map((step, index) => {
-              const status = stepStatus[step.key] || "waiting";
-              return (
-                <div
-                  key={step.key}
-                  className={`rounded-lg border p-3 transition ${stepClasses(status)}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-0.5">{stepIcon(status)}</div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-black uppercase tracking-wide">
-                        {String(index + 1).padStart(2, "0")} / {step.label}
-                      </div>
-                      <div className="mt-1 text-xs opacity-75">{step.detail}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </aside>
-
+        <div className="grid gap-6">
           <section className="space-y-6">
+            <details className="rounded-lg border border-neutral-200 bg-white">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black uppercase tracking-wide text-neutral-700">
+                Workflow Details (Optional)
+              </summary>
+              <div className="space-y-6 border-t border-neutral-200 p-4">
+                <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                  {WORKFLOW_STEPS.map((step, index) => {
+                    const status = stepStatus[step.key] || "waiting";
+                    return (
+                      <div
+                        key={step.key}
+                        className={`rounded-lg border p-2 transition ${stepClasses(status)}`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <div className="mt-0.5">{stepIcon(status)}</div>
+                          <div className="min-w-0">
+                            <div className="text-[11px] font-black uppercase tracking-wide">
+                              {String(index + 1).padStart(2, "0")} {step.label}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <AutoField
                 label="Brand"
@@ -630,34 +1117,114 @@ export function BomWorkflowControlPanel({
                 })}
               </div>
             </div>
-
-            <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
-              <div className="rounded-lg border border-neutral-200 bg-white p-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide">
-                  <ShieldCheck size={16} />
-                  Visual Supervisor
-                </div>
-                <EncompassSupervisorPanel
-                  jobId={jobId || null}
-                  model={normalizedModel}
-                  onTruthCaptured={async (data) => {
-                    setTruth(data);
-                    if (jobId) await refresh(jobId);
-                  }}
-                />
               </div>
+            </details>
 
-              <div className="rounded-lg border border-neutral-200 bg-white p-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide">
-                  <SlidersHorizontal size={16} />
-                  Supplier Agent Matrix
+            <div id="step-run-agents" className="grid gap-6 xl:grid-cols-[1fr_1fr]">
+              <details className="rounded-lg border border-neutral-200 bg-white">
+                <summary className="cursor-pointer list-none p-4">
+                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide">
+                    <ShieldCheck size={16} />
+                    Visual Supervisor
+                  </div>
+                </summary>
+                <div className="border-t border-neutral-200 p-4">
+                  <EncompassSupervisorPanel
+                    jobId={jobId || null}
+                    model={normalizedModel}
+                    onTruthCaptured={async (data) => {
+                      setTruth(data);
+                      if (jobId) await refresh(jobId);
+                    }}
+                  />
                 </div>
-                <SupplierAgentMatrix jobId={jobId || null} model={normalizedModel} truth={liveTruth} />
-              </div>
+              </details>
+
+              <details className="rounded-lg border border-neutral-200 bg-white">
+                <summary className="cursor-pointer list-none p-4">
+                  <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide">
+                    <SlidersHorizontal size={16} />
+                    Supplier Agent Matrix
+                  </div>
+                </summary>
+                <div className="border-t border-neutral-200 p-4">
+                  <SupplierAgentMatrix jobId={jobId || null} model={normalizedModel} truth={liveTruth} />
+                </div>
+              </details>
             </div>
+
+            <details className="rounded-lg border border-neutral-200 bg-white">
+              <summary className="cursor-pointer list-none p-4">
+                <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-neutral-400">
+                  <CheckCircle2 size={16} />
+                  Reconciliation & Coverage
+                </div>
+              </summary>
+              <div className="border-t border-neutral-200 p-4">
+              <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+                <div className="space-y-1">
+                  <div className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Confidence Score</div>
+                  <div className="text-2xl font-black text-neutral-900">{formatPercent(job?.coveragePct)}</div>
+                </div>
+                <div className="text-right space-y-1">
+                  <div className="text-[10px] font-black uppercase text-neutral-500 tracking-widest">Discrepancies</div>
+                  <div className={`text-2xl font-black ${finalRows.some(r => r.isDiscrepancy) ? 'text-amber-600' : 'text-emerald-600'}`}>
+                    {finalRows.filter(r => r.isDiscrepancy).length}
+                  </div>
+                </div>
+              </div>
+              </div>
+            </details>
+
+            <details className="rounded-lg border border-neutral-200 bg-white">
+              <summary className="cursor-pointer list-none p-4">
+                <div className="flex items-center justify-between gap-3">
+                <div className="text-sm font-black uppercase tracking-wide">Supplier-Run Console</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Open</div>
+                </div>
+              </summary>
+              <div className="border-t border-neutral-200 p-4">
+              <div className="mb-3 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => appendTerminal("hint: try 'help'")}
+                  className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
+                >
+                  Help
+                </button>
+              </div>
+              <div className="rounded-md border border-neutral-900 bg-neutral-950 p-3 font-mono text-xs text-emerald-300">
+                <div className="max-h-44 overflow-auto whitespace-pre-wrap">
+                  {terminalLines.join("\n")}
+                </div>
+                <div className="mt-3 flex gap-2">
+                  <input
+                    value={terminalInput}
+                    onChange={(event) => setTerminalInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        runTerminalCommand();
+                      }
+                    }}
+                    placeholder="help | status | run fix.com"
+                    className="flex-1 rounded-md border border-neutral-700 bg-black px-2 py-1 text-emerald-300 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={runTerminalCommand}
+                    disabled={terminalBusy}
+                    className="rounded-md border border-emerald-500 bg-emerald-600 px-3 py-1 text-xs font-bold text-white disabled:opacity-50"
+                  >
+                    {terminalBusy ? "..." : "Run"}
+                  </button>
+                </div>
+              </div>
+              </div>
+            </details>
             
             {/* Discovered Bill of Materials — The "Payday" Table */}
-            <div className="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-sm">
+            <div id="step-review-export" className="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-sm">
               <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-6 py-4">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
@@ -689,14 +1256,20 @@ export function BomWorkflowControlPanel({
                   <button
                     onClick={() => {
                       if (finalRows.length === 0) return;
-                      const headers = ["partNumber", "description", "source"];
+                      const headers = [
+                        "partNumber",
+                        "description",
+                        "source",
+                        "eBay Active Search URL",
+                        "eBay Sold Search URL",
+                      ];
                       const csvContent = [
                         headers.join(","),
                         ...finalRows.map(row => {
                           const pn = getBomRowPartNumber(row as any);
                           const desc = (row.description || row.partName || "Unknown").toString().replace(/,/g, " ");
                           const source = (row.source || row.provider || "Aggregated").toString().replace(/,/g, " ");
-                          return [pn, desc, source].join(",");
+                          return [pn, desc, source, ebaySearchUrl(pn), ebaySoldSearchUrl(pn)].join(",");
                         })
                       ].join("\n");
                       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -737,21 +1310,30 @@ export function BomWorkflowControlPanel({
                       const partNumber = getBomRowPartNumber(row as any);
                       const activeUrl = ebaySearchUrl(partNumber);
                       const soldUrl = ebaySoldSearchUrl(partNumber);
-                      
+
                       return (
-                        <tr key={idx} className="hover:bg-neutral-50/50 transition-colors group">
+                        <tr key={idx} className={`hover:bg-neutral-50/50 transition-colors group ${row.isDiscrepancy ? "bg-amber-50/30" : ""}`}>
                           <td className="px-6 py-4">
-                            <span className="text-sm font-mono font-black text-neutral-900 bg-neutral-100 px-2 py-1 rounded border border-neutral-200">
-                              {partNumber || "???"}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm font-mono font-black px-2 py-1 rounded border ${row.isDiscrepancy ? "text-amber-900 bg-amber-100 border-amber-200" : "text-neutral-900 bg-neutral-100 border-neutral-200"}`}>
+                                {partNumber || "???"}
+                              </span>
+                              {row.isDiscrepancy ? (
+                                <span className="text-[8px] font-black uppercase bg-amber-500 text-white px-1.5 py-0.5 rounded-full" title={String(row.discrepancyType)}>
+                                  DIFF
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <p className="text-sm font-bold text-neutral-700 line-clamp-1">{valueText(row.description || row.partName || "Unknown Component")}</p>
-                            <p className="text-[10px] font-black text-neutral-400 uppercase tracking-tighter">Source: {valueText(row.source || row.provider || "Aggregated")}</p>
+                            <p className="text-[10px] font-black text-neutral-400 uppercase tracking-tighter">
+                              Sources: {asArray(row.sources).join(", ") || valueText(row.source || row.provider || "Aggregated")}
+                            </p>
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
-                              <a 
+                              <a
                                 href={activeUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -760,14 +1342,14 @@ export function BomWorkflowControlPanel({
                                 <ShoppingBag size={12} />
                                 Selling
                               </a>
-                              <a 
+                              <a
                                 href={soldUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm"
                               >
                                 <Receipt size={12} />
-                                Sold Comp
+                                Sold Comps
                               </a>
                             </div>
                           </td>

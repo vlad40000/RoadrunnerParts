@@ -90,6 +90,23 @@ export async function POST(_req: NextRequest, { params }: Params) {
 
   try {
     const { runSourceActionAgent } = await import("@/features/bom/agents/source-action-agent");
+    const agentCode = String(input.agentCode || "").trim();
+    let agentCodeRun: Record<string, unknown> | null = null;
+
+    if (agentCode) {
+      const { runGeminiCodeExecution } = await import("@/features/bom/services/model-runner");
+      agentCodeRun = await runGeminiCodeExecution({
+        code: agentCode,
+        context: {
+          jobId,
+          supplierId,
+          supplier,
+          canonicalModel: String(job.model || ""),
+          sourceUrl: String(input.searchUrl || input.sourceUrl || ""),
+          language: String(input.agentCodeLanguage || "python"),
+        },
+      });
+    }
 
     const result = await runSourceActionAgent({
       jobId,
@@ -102,6 +119,8 @@ export async function POST(_req: NextRequest, { params }: Params) {
       brand: job.brand,
       serial: job.serial,
       productType: job.productType,
+      agentCode: String(input.agentCode || ""),
+      agentCodeLanguage: String(input.agentCodeLanguage || ""),
       visualTruth: includeDiagram
         ? {
             screenshotBase64: String(
@@ -115,6 +134,16 @@ export async function POST(_req: NextRequest, { params }: Params) {
             assemblyNames: Array.isArray(visualTruth?.assemblyNames)
               ? visualTruth.assemblyNames
               : [],
+            operatorInstructions: String(
+              input.operatorInstructions ||
+                visualTruth?.operatorInstructions ||
+                "",
+            ),
+            operatorInstructionName: String(
+              input.operatorInstructionName ||
+                visualTruth?.operatorInstructionName ||
+                "",
+            ),
           }
         : null,
     });
@@ -128,12 +157,17 @@ export async function POST(_req: NextRequest, { params }: Params) {
     await saveBomSupplierRunResult(jobId, supplierId, {
       jobId,
       supplierId,
-      result,
+      result: agentCodeRun ? { ...result, agentCodeRun } : result,
       completedAt: new Date().toISOString(),
       status: "complete",
     });
 
-    return NextResponse.json({ ok: true, jobId, supplierId, result });
+    return NextResponse.json({
+      ok: true,
+      jobId,
+      supplierId,
+      result: agentCodeRun ? { ...result, agentCodeRun } : result,
+    });
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     await saveBomSupplierRunInput(jobId, supplierId, {

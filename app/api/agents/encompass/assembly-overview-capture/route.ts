@@ -2,6 +2,7 @@ import { chromium } from "playwright";
 import { NextResponse } from "next/server";
 import { uploadFile } from "@/lib/blob";
 import { resolveEncompassExplodedViewUrl } from "@/src/features/bom/services/encompass-model-index";
+import { buildKnownEncompassAssemblyUrl } from "@/src/features/bom/services/source-tier-policy";
 import { normalizeModelNumber } from "@/lib/encompass-routes";
 import { recordCaptureArtifact } from "@/features/bom/services/retrieval-job-store";
 
@@ -26,7 +27,8 @@ export async function POST(request: Request) {
     const resolvedUrl = canonUrl?.trim()
       ? canonUrl
       : model?.trim()
-        ? (await resolveEncompassExplodedViewUrl({ model })).selected?.url
+        ? buildKnownEncompassAssemblyUrl(model) ||
+          (await resolveEncompassExplodedViewUrl({ model })).selected?.url
         : null;
 
     if (!resolvedUrl) {
@@ -42,14 +44,15 @@ export async function POST(request: Request) {
         deviceScaleFactor: 1,
       });
 
-      // Navigate to Encompass canonical URL
+      // Provider pages can keep background requests open, so do not wait on networkidle.
       await page.goto(resolvedUrl, {
-        waitUntil: "networkidle",
+        waitUntil: "domcontentloaded",
         timeout: 45000,
       });
 
-      // Brief wait for any client-side hydration or lazy-loaded assets
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState("load", { timeout: 15000 }).catch(() => undefined);
+      await page.locator("body").waitFor({ state: "visible", timeout: 10000 });
+      await page.waitForTimeout(3000);
 
       const buffer = await page.screenshot({
         fullPage: true,
@@ -69,8 +72,13 @@ export async function POST(request: Request) {
           .replace(/[^a-zA-Z0-9]/g, "");
         const filename = `encompass/captures/${safeId}_${Date.now()}.png`;
 
-        const blob = await uploadFile(filename, buffer, { access: "public" });
-        storedImageUrl = blob.url;
+        try {
+          const blob = await uploadFile(filename, buffer, { access: "public" });
+          storedImageUrl = blob.url;
+        } catch (error) {
+          console.warn("[Encompass Capture Blob Fallback]", error);
+          base64 = buffer.toString("base64");
+        }
       } else {
         base64 = buffer.toString("base64");
       }

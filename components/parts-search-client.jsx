@@ -1891,7 +1891,7 @@ export default function PartsSearchClient() {
                                             rel="noreferrer"
                                             className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-blue-300 hover:text-blue-600"
                                           >
-                                            Search
+                                            Search eBay
                                           </a>
                                           <a
                                             href={ebaySoldSearchUrl(getBomRowPartNumber(part))}
@@ -1899,7 +1899,7 @@ export default function PartsSearchClient() {
                                             rel="noreferrer"
                                             className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-blue-300 hover:text-blue-600"
                                           >
-                                            Sold
+                                            Sold Comps
                                           </a>
                                         </div>
                                         <button
@@ -1927,7 +1927,7 @@ export default function PartsSearchClient() {
 
                                 {results && results.parts.length > 0 && filteredParts.length === 0 && (
                                   <tr>
-                                    <td colSpan={4} className="px-8 py-10 text-center text-sm text-slate-500">
+                                    <td colSpan={6} className="px-8 py-10 text-center text-sm text-slate-500">
                                       <div className="mb-6 rounded-2xl border border-red-100 bg-red-50 p-4">
                                         <div className="flex items-center gap-3 text-red-700">
                                           <AlertCircle size={20} />

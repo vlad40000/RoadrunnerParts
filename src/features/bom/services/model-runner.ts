@@ -1,5 +1,6 @@
 import "server-only";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 export type ModelRunInput = {
   model?: "fast" | "pro" | "lite";
@@ -136,4 +137,45 @@ export async function runText(input: ModelRunInput): Promise<string> {
   });
 
   return result.response.text();
+}
+
+export async function runGeminiCodeExecution(input: {
+  code: string;
+  model?: "gemini-3-flash-preview" | "gemini-3-pro-preview";
+  context?: Record<string, unknown>;
+}) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("Missing GEMINI_API_KEY");
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
+  const response = await ai.models.generateContent({
+    model: input.model || "gemini-3-flash-preview",
+    contents: [
+      "Run this operator-supplied Python/code-execution block for preflight validation.",
+      "If the block is an SDK request template that cannot run inside the code sandbox, validate the configuration and report that it is a template rather than executable evidence.",
+      "Do not create final BOM truth. Return only execution output, validation notes, and any tool/code results.",
+      `Context JSON:\n${JSON.stringify(input.context || {}, null, 2)}`,
+      `Code:\n${input.code}`,
+    ].join("\n\n"),
+    config: {
+      temperature: 1,
+      tools: [{ codeExecution: {} }],
+    },
+  } as any);
+
+  const candidate = response.candidates?.[0];
+  const parts = candidate?.content?.parts || [];
+
+  return {
+    text: response.text || "",
+    executableCode: parts
+      .map((part: any) => part.executableCode?.code || "")
+      .filter(Boolean),
+    codeExecutionResult: parts
+      .map((part: any) => part.codeExecutionResult || null)
+      .filter(Boolean),
+    usageMetadata: response.usageMetadata || null,
+  };
 }

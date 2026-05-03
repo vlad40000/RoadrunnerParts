@@ -5,6 +5,10 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { db } from '../server/db';
 import { nameplateExtractions, applianceModels } from '../server/db/schema/appliance-models';
 import { eq, or } from 'drizzle-orm';
+import {
+  NAMEPLATE_OCR_PROMPT,
+  NAMEPLATE_OCR_RESPONSE_SCHEMA,
+} from './nameplate-ocr-contract';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
@@ -502,43 +506,10 @@ export async function extractIdentityFromManualPdf(pdfData, fileName = 'manual.p
 }
 
 export async function extractNameplateFromImage(imageData, mimeType) {
-  const responseSchema = {
-    type: 'object',
-    properties: {
-      modelNumber: { type: 'string', nullable: true },
-      serialNumber: { type: 'string', nullable: true },
-      brand: { type: 'string', nullable: true },
-      productType: { type: 'string', nullable: true },
-      engineeringCode: { type: 'string', nullable: true },
-      confidence: {
-        type: 'object',
-        properties: {
-          modelNumber: { type: 'number' },
-          serialNumber: { type: 'number' },
-          brand: { type: 'number' },
-          productType: { type: 'number' },
-        },
-      },
-    },
-    required: ['modelNumber', 'serialNumber', 'brand', 'productType', 'confidence'],
-  };
-
-  const prompt = `System Role: Act as an expert OCR and appliance data extraction system.
-Task: Extract the appliance identity from the provided nameplate image.
-
-Step-by-Step Instructions:
-1. Scan the image to identify the overall brand name and product type (e.g., Washing Machine, Refrigerator).
-2. Locate the model and serial numbers by searching for specific labels, such as: MODEL NO., MODEL NUMBER, MODEL, M/N, MOD, MODELO, SERIAL NO., SERIAL NUMBER, SERIAL, S/N, SER, and SERIE.
-3. Extract the exact string values based on these critical rules:
-   - Preserve punctuation exactly, including all slashes, hyphens, and dots.
-   - Keep Kenmore-style dots (e.g., 110.12345678) and important suffixes (e.g., Samsung /A2 or /XAA).
-   - Pay extremely close attention to similar characters to avoid mix-ups (0 vs. O, 1 vs. I, 8 vs. B).
-4. Format the output strictly as a JSON object mirroring the provided schema. Use null when a field is not confidently present in the image.`;
-
   const { data } = await generateStructuredJson({
     model: 'gemini-3-flash-preview',
     contents: [
-      { text: prompt },
+      { text: NAMEPLATE_OCR_PROMPT },
       {
         inlineData: {
           data: imageData,
@@ -546,9 +517,22 @@ Step-by-Step Instructions:
         },
       },
     ],
-    schema: responseSchema,
+    schema: NAMEPLATE_OCR_RESPONSE_SCHEMA,
     temperature: 1,
-    fallback: { modelNumber: null, serialNumber: null, brand: null, productType: null, confidence: {} },
+    fallback: {
+      modelNumber: null,
+      serialNumber: null,
+      brand: null,
+      productType: null,
+      engineeringCode: null,
+      confidence: {
+        brand: 0,
+        productType: 0,
+        modelNumber: 0,
+        serialNumber: 0,
+        engineeringCode: 0,
+      },
+    },
   });
 
   // Discovery: File the model number correctly

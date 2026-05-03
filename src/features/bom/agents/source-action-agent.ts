@@ -59,11 +59,15 @@ type SourceActionInput = {
   productType?: string | null;
   selectedAssemblies?: SelectedAssemblyInput[];
   pricingSource?: string | null;
+  agentCode?: string | null;
+  agentCodeLanguage?: string | null;
   visualTruth?: {
     screenshotBase64?: string | null;
     canonUrl?: string | null;
     expectedTotal?: number | null;
     assemblyNames?: string[];
+    operatorInstructions?: string | null;
+    operatorInstructionName?: string | null;
   } | null;
 };
 
