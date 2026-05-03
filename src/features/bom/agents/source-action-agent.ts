@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 
 import {
   getBomJob,
@@ -16,6 +16,7 @@ import {
   type SupplierAssemblyIndexItem,
 } from "@/features/bom/services/source-tier-policy";
 import { resolveEncompassExplodedViewUrl } from "@/features/bom/services/encompass-model-index";
+import { resolveEncompassBrandRoute } from "@/features/bom/services/encompass-route-service";
 import {
   buildSupplierIndexFromHtml,
   fetchExactSupplierUrl,
@@ -215,9 +216,10 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       return searchUrl;
     }
 
+    const brandRoute = await resolveEncompassBrandRoute(input.brand || "OTHER");
     const resolution = await resolveEncompassExplodedViewUrl({
       model: input.canonicalModel,
-      routeHint: input.brand?.toUpperCase().includes("HOT") ? "HOT" : "WHI",
+      routeHint: brandRoute?.abv ?? null,
     });
 
     if (!resolution.selected?.url) {

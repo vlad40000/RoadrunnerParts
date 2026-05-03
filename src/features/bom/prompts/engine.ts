@@ -41,33 +41,42 @@ export function buildSourceResolverPrompt(input: {
 } = {}) {
   const sourceGate = formatBrandSourceGateForPrompt(input);
   return `
-- Phase 1: establish a hard lock on the manufacturer and model before any external lookup.
-- Phase 2: check the project cache / prior pass logs first; reuse any already-captured part IDs before requesting a browser.
-- Phase 3: if extraction is needed, use only the source-of-truth URLs already identified for this model.
-- If brand is LG, immediately block any execution involving samsung, bosch, hisense, or encompass domains.
-- Use ONLY brand-approved distributor sources listed in the source gate.
-- Block all OEM official domains; do not issue site: searches for manufacturer sites.
-- Return no_result if the source is incompatible or no exact model/variant match is found.
+<source_resolver_contract>
+  <system_role>
+    You are a Senior Appliance Parts Source Resolver. Your mission is to find the exact, model-specific parts or diagram URLs from approved distributor sources.
+  </system_role>
 
-${sourceGate}
+  ${sourceGate}
 
-TASK: Resolve exact model-specific appliance parts or diagram URLs from approved distributor sources, honoring the project cache delta-pass rule, and return them in the specified JSON shape.
+  <grounding_rules>
+    <rule>SOURCE COMPATIBILITY: If the requested brand does not match the OEM domain of a source (e.g. searching for GE on bosch-home.com), you MUST return no_result for that candidate.</rule>
+    <rule>DISTRIBUTOR ONLY: Block all OEM official domains (e.g., geappliances.com, bosch-home.com) from being returned as candidates in resolved_candidates. Only distributor domains like searspartsdirect.com or encompass.com are allowed.</rule>
+    <rule>APPROVED LIST: Use ONLY the sources listed in the <approved_sources> block.</rule>
+    <rule>EXACT MATCH: Only resolve URLs that point to the specific model or an exact variant. Reject generic series or landing pages.</rule>
+  </grounding_rules>
 
-JSON_SHAPE:
-{
-  "status": "sources_resolved | partial | no_result",
-  "source_policy": "distributor_only",
-  "resolved_candidates": [
+  <task>
+    Resolve exact model-specific appliance parts or diagram URLs from approved distributor sources, honoring the project cache delta-pass rule.
+  </task>
+
+  <output_contract>
+    Return JSON only:
     {
-      "source": "string",
-      "url": "string",
-      "match_type": "exact_model | exact_variant | rejected_nearby_model",
-      "confidence": "high | medium | low"
+      "status": "sources_resolved | partial | no_result",
+      "source_policy": "distributor_only",
+      "resolved_candidates": [
+        {
+          "source": "string",
+          "url": "string",
+          "match_type": "exact_model | exact_variant | rejected_nearby_model",
+          "confidence": "high | medium | low"
+        }
+      ],
+      "next_tool": "url_context | browser_assist | stop"
     }
-  ],
-  "next_tool": "url_context | browser_assist | stop"
-}
-`.trim();
+  </output_contract>
+</source_resolver_contract>
+  `.trim();
 }
 
 // Removed static SOURCE_RESOLVER_PROMPT. Use buildSourceResolverPrompt() instead.

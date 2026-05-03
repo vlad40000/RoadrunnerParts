@@ -1,5 +1,6 @@
-import "server-only";
+// import "server-only";
 import { load } from "cheerio";
+import { logTelemetry } from "../telemetry";
 
 export function cleanText(value: string | null | undefined) {
   return (value ?? "")
@@ -64,7 +65,17 @@ function isLikelyHtmlErrorPage(body: string) {
   );
 }
 
-export async function fetchHtml(url: string) {
+export interface FetchMeta {
+  jobId?: string;
+  brand?: string;
+  model?: string;
+  provider?: string;
+}
+
+export async function fetchHtml(
+  url: string,
+  meta?: FetchMeta
+) {
   const minDelay = parseInt(process.env.BOM_FETCHER_MIN_DELAY || "0", 10);
   const randDelay = parseInt(process.env.BOM_FETCHER_RAND_DELAY || "0", 10);
   
@@ -108,9 +119,25 @@ export async function fetchHtml(url: string) {
       });
 
       if (!res.ok) {
-        if ((res.status === 403 || res.status === 429) && attempt < maxAttempts) {
-          await sleep(2500 * (attempt + 1));
-          continue;
+        if (res.status === 403 || res.status === 429) {
+          if (url.includes("encompass.com")) {
+            await logTelemetry({
+              ...meta,
+              event: "encompass_403_blocked",
+              status: "failed",
+              payload: {
+                url,
+                status: res.status,
+                attempt,
+                isDirectPath: url.includes("/Exploded-View-Assembly/")
+              }
+            });
+          }
+
+          if (attempt < maxAttempts) {
+            await sleep(2500 * (attempt + 1));
+            continue;
+          }
         }
         throw new Error(`Fetch failed ${res.status} for ${url}`);
       }

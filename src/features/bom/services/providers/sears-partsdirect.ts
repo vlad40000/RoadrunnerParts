@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 import { normalizeBrandLabel, normalizeSectionName } from "../../../identity/normalize";
 import { load } from "cheerio";
 import type { ProviderInput, RetrievedSource, SourceProvider } from "./types";

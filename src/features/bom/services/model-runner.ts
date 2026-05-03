@@ -2,7 +2,7 @@ import "server-only";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export type ModelRunInput = {
-  model?: "fast" | "pro";
+  model?: "fast" | "pro" | "lite";
   prompt: string;
   files?: Array<{
     mimeType: string;
@@ -26,7 +26,11 @@ export async function runStructuredJson<T>(
   const genAI = new GoogleGenerativeAI(apiKey);
 
   const modelId =
-    input.model === "pro" ? "gemini-3-pro" : "gemini-3-flash-preview";
+    input.model === "pro"
+      ? "gemini-3-pro-preview"
+      : input.model === "lite"
+        ? "gemini-3.1-flash-lite-preview"
+        : "gemini-3-flash-preview";
 
   const modelConfig: any = {
     model: modelId,
@@ -102,7 +106,11 @@ export async function runText(input: ModelRunInput): Promise<string> {
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const modelId =
-    input.model === "pro" ? "gemini-3-pro" : "gemini-3-flash-preview";
+    input.model === "pro"
+      ? "gemini-3-pro-preview"
+      : input.model === "lite"
+        ? "gemini-3.1-flash-lite-preview"
+        : "gemini-3-flash-preview";
 
   const modelConfig: any = {
     model: modelId,

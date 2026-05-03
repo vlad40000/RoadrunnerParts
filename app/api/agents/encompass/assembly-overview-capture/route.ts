@@ -2,6 +2,8 @@ import { chromium } from "playwright";
 import { NextResponse } from "next/server";
 import { uploadFile } from "@/lib/blob";
 import { resolveEncompassExplodedViewUrl } from "@/src/features/bom/services/encompass-model-index";
+import { normalizeModelNumber } from "@/lib/encompass-routes";
+import { recordCaptureArtifact } from "@/features/bom/services/retrieval-job-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -71,6 +73,33 @@ export async function POST(request: Request) {
         storedImageUrl = blob.url;
       } else {
         base64 = buffer.toString("base64");
+      }
+
+      const inferredModel = (() => {
+        if (model?.trim()) return normalizeModelNumber(model);
+        try {
+          const parsed = new URL(resolvedUrl);
+          const parts = parsed.pathname.split("/").filter(Boolean);
+          const maybeModel = parts[parts.length - 1] ?? "";
+          return normalizeModelNumber(maybeModel);
+        } catch {
+          return "";
+        }
+      })();
+
+      if (inferredModel) {
+        await recordCaptureArtifact({
+          normalizedModel: inferredModel,
+          sourceUrl: resolvedUrl,
+          artifactType: immediate ? "screenshot_inline" : "screenshot_blob",
+          storagePath: storedImageUrl,
+          metadata: {
+            immediate,
+            viewport: { width: 1600, height: 1400 },
+            byteLength: buffer.byteLength,
+            capturedBy: "api:assembly-overview-capture",
+          },
+        });
       }
 
       return NextResponse.json({

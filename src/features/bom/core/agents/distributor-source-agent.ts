@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 import { resolveSourceProviderPlan, fetchSourcesFromSpecificProviders } from "../../services/source-fetcher";
 import { logger } from "@/lib/logger";
 import type { RetrievedSource } from "../../services/providers/types";

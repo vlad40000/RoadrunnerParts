@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 
 import type { Identity } from "../schemas/bom";
 import { decodeSerialNumber } from "@/lib/serial/decoder";

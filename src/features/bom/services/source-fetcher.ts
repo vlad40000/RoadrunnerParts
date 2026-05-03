@@ -13,6 +13,7 @@ import { appliancePartsProsProvider } from "./providers/appliancepartspros";
 import { normalizeCanonicalModel as normalizeModel } from "../services/source-tier-policy";
 import { runWithConcurrency, uniqueBy, withDeadline } from "./providers/utils";
 import { encompassFamilyProvider } from "./providers/encompass-family";
+import { encompassUniversalProvider } from "./providers/encompass-universal";
 
 const ALL_PROVIDERS: SourceProvider[] = [
   repairClinicFamilyProvider,
@@ -20,6 +21,7 @@ const ALL_PROVIDERS: SourceProvider[] = [
   fixComDiagramsProvider,
   appliancePartsProsProvider,
   encompassFamilyProvider,
+  encompassUniversalProvider,
 ];
 
 const PROVIDER_BY_NAME = new Map<string, SourceProvider>(
@@ -72,6 +74,7 @@ function selectProviders(providerNames: string[]) {
 async function runProviders(
   providers: SourceProvider[],
   input: {
+    jobId?: string;
     brand: string | null;
     model: string | null;
     productType?: string | null;
@@ -101,6 +104,7 @@ async function runProviders(
     async (provider) => {
       try {
         return await provider.fetchSources({
+          jobId: input.jobId,
           brand: input.brand,
           model,
           productType: input.productType ?? null,
@@ -183,6 +187,7 @@ export async function fetchSourcesFromSpecificProviders(input: {
 }
 
 export async function fetchAuthoritativeSources(input: {
+  jobId?: string;
   brand: string | null;
   model: string | null;
   productType?: string | null;
@@ -196,13 +201,14 @@ export async function fetchAuthoritativeSources(input: {
     fixComDiagramsProvider,
     appliancePartsProsProvider,
     encompassFamilyProvider,
+    encompassUniversalProvider,
   ].filter((p) => p.supports({ brand, model }));
 
   const deadlineMs = parseInt(process.env.BOM_PROVIDER_DEADLINE_MS || "12000", 10);
 
   const results = await Promise.allSettled(
     providers.map((p) =>
-      withDeadline(p.fetchSources({ brand, model, productType: input.productType ?? null } as any), deadlineMs, p.name)
+      withDeadline(p.fetchSources({ jobId: input.jobId, brand, model, productType: input.productType ?? null } as any), deadlineMs, p.name)
     )
   );
 

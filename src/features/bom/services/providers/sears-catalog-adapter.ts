@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 
 export type SearsPayloadKind = "model_resolver" | "model_detail" | "unknown";
 

@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 import { normalizeModel, cleanText } from "./utils";
 
 /**
@@ -48,27 +48,46 @@ export function buildPartsDrUrl(input: { brand: string; model: string; appliance
 }
 
 export function buildEncompassUrl(input: { brand: string; model: string }) {
+  // DEPRECATED: Use resolveEncompassBrandRoute from encompass-route-service.ts
   const brand = cleanText(input.brand).toUpperCase();
   const model = normalizeModel(input.model);
-  let mfgCode = "";
   
-  if (brand.includes("GE") || brand.includes("GENERAL ELECTRIC") || brand.includes("HOTPOINT") || brand.includes("HAIER")) {
-    mfgCode = "HOT";
-  } else if (brand.includes("WHIRLPOOL") || brand.includes("MAYTAG") || brand.includes("KITCHENAID") || brand.includes("AMANA") || brand.includes("JENN-AIR") || brand.includes("ROPER") || brand.includes("ADMIRAL")) {
-    mfgCode = "WHI";
-  } else if (brand.includes("SAMSUNG")) {
-    mfgCode = "SAM";
-  } else if (brand.includes("LG")) {
-    mfgCode = "ZEN"; 
-  } else if (brand.includes("FRIGIDAIRE") || brand.includes("ELECTROLUX")) {
-    mfgCode = "FRI";
-  } else if (brand.includes("BOSCH") || brand.includes("THERMADOR")) {
-    mfgCode = "BCH";
-  }
-  
+  const CORE_MAP: Record<string, string> = {
+    'WHIRLPOOL': 'WHI',
+    'SAMSUNG': 'SAM',
+    'LG': 'ZEN',
+    'GE': 'HOT',
+    'GENERAL ELECTRIC': 'HOT',
+    'FRIGIDAIRE': 'FRI',
+    'ELECTROLUX': 'FRI',
+    'MAYTAG': 'WHI',
+    'KITCHENAID': 'WHI',
+    'AMANA': 'WHI'
+  };
+
+  const mfgCode = CORE_MAP[brand] || null;
   if (!mfgCode) return null;
   
-  return `https://encompass.com/model/${mfgCode}${model}`;
+  return `https://encompass.com/Exploded-View-Search/${mfgCode}/${brand.replace(/\s+/g, "_")}?searchTerm=${model}`;
+}
+
+/**
+ * Builds a direct Exploded View Assembly URL using a template.
+ * Pattern example: https://encompass.com/Exploded-View-Assembly/{abv}/{target_brand}/{model}
+ */
+export function buildEncompassAssemblyUrl(input: { 
+  abv: string; 
+  targetBrand: string; 
+  model: string; 
+  pattern?: string | null 
+}) {
+  const pattern = input.pattern || 'https://encompass.com/Exploded-View-Assembly/{abv}/{target_brand}/{model}';
+  const model = normalizeModel(input.model);
+  
+  return pattern
+    .replace('{abv}', input.abv)
+    .replace('{target_brand}', input.targetBrand.replace(/\s+/g, '_'))
+    .replace('{model}', model);
 }
 
 export function parseEncompassExplodedViewUrl(url: string) {

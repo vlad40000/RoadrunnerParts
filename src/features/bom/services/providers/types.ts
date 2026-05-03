@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 
 export type ProviderSourceType =
   | "oem"
@@ -20,6 +20,7 @@ export type RetrievedSource = {
 };
 
 export type ProviderInput = {
+  jobId?: string;
   brand: string | null;
   model: string | null;
   applianceType?: string | null;

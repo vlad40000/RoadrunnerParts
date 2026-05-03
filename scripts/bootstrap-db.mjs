@@ -2,7 +2,8 @@ import { neon } from '@neondatabase/serverless';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
-const sql = neon(process.env.DATABASE_URL);
+const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+const sql = neon(databaseUrl);
 
 /**
  * Bootstraps the full appliance parts database schema.
@@ -198,6 +199,205 @@ async function bootstrap() {
 
     console.log(' ✓ bom_job_groups');
     
+    await sql`
+      CREATE TABLE IF NOT EXISTS appliance_models (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        normalized_model text NOT NULL UNIQUE,
+        raw_model text,
+        brand text,
+        brand_code text,
+        product_type text,
+        serial text,
+        identity_confidence numeric,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+      );
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS model_source_urls (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        model_id uuid NOT NULL REFERENCES appliance_models(id) ON DELETE CASCADE,
+        source text NOT NULL DEFAULT 'encompass',
+        url_type text NOT NULL,
+        url text NOT NULL,
+        status text NOT NULL DEFAULT 'pending',
+        http_status integer,
+        last_checked_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (model_id, source, url_type, url)
+      );
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS retrieval_jobs (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        bom_job_id text,
+        model_id uuid REFERENCES appliance_models(id) ON DELETE CASCADE,
+        source_url_id uuid REFERENCES model_source_urls(id) ON DELETE SET NULL,
+        model_number text NOT NULL,
+        brand text,
+        source text NOT NULL DEFAULT 'encompass',
+        job_type text NOT NULL,
+        status text NOT NULL DEFAULT 'queued',
+        priority integer NOT NULL DEFAULT 100,
+        attempt_count integer NOT NULL DEFAULT 0,
+        max_attempts integer NOT NULL DEFAULT 3,
+        locked_at timestamptz,
+        locked_by text,
+        started_at timestamptz,
+        finished_at timestamptz,
+        error text,
+        result_summary jsonb NOT NULL DEFAULT '{}'::jsonb,
+        metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+      );
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS retrieval_jobs_status_idx ON retrieval_jobs (status, priority, created_at);`;
+    await sql`CREATE INDEX IF NOT EXISTS retrieval_jobs_bom_job_idx ON retrieval_jobs (bom_job_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS retrieval_jobs_model_idx ON retrieval_jobs (model_id, source, job_type);`;
+    await sql`
+      CREATE TABLE IF NOT EXISTS capture_artifacts (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        model_id uuid REFERENCES appliance_models(id) ON DELETE CASCADE,
+        job_id uuid REFERENCES retrieval_jobs(id) ON DELETE SET NULL,
+        source text NOT NULL DEFAULT 'encompass',
+        url text NOT NULL,
+        artifact_type text NOT NULL,
+        storage_path text,
+        content_hash text,
+        http_status integer,
+        captured_at timestamptz NOT NULL DEFAULT now(),
+        metadata jsonb NOT NULL DEFAULT '{}'::jsonb
+      );
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS bom_assemblies (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        model_id uuid NOT NULL REFERENCES appliance_models(id) ON DELETE CASCADE,
+        source text NOT NULL DEFAULT 'encompass',
+        assembly_name text NOT NULL,
+        assembly_url text,
+        diagram_url text,
+        position integer,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (model_id, source, assembly_name)
+      );
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS bom_parts (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        model_id uuid NOT NULL REFERENCES appliance_models(id) ON DELETE CASCADE,
+        assembly_id uuid REFERENCES bom_assemblies(id) ON DELETE SET NULL,
+        source text NOT NULL DEFAULT 'encompass',
+        part_number text NOT NULL,
+        description text,
+        diagram_ref text,
+        quantity integer,
+        source_url text,
+        confidence numeric NOT NULL DEFAULT 1,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (model_id, source, part_number, assembly_id)
+      );
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS part_pricing (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        model_id uuid NOT NULL REFERENCES appliance_models(id) ON DELETE CASCADE,
+        part_id uuid REFERENCES bom_parts(id) ON DELETE CASCADE,
+        source text NOT NULL DEFAULT 'encompass',
+        part_number text NOT NULL,
+        price numeric,
+        currency text NOT NULL DEFAULT 'USD',
+        availability text,
+        price_url text,
+        captured_at timestamptz NOT NULL DEFAULT now(),
+        evidence_artifact_id uuid REFERENCES capture_artifacts(id) ON DELETE SET NULL,
+        UNIQUE (model_id, source, part_number),
+        CONSTRAINT part_pricing_price_positive_or_null CHECK (price IS NULL OR price > 0)
+      );
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS model_retrieval_summary (
+        model_id uuid PRIMARY KEY REFERENCES appliance_models(id) ON DELETE CASCADE,
+        retrieval_state text NOT NULL DEFAULT 'queued',
+        expected_part_count integer,
+        actual_part_count integer NOT NULL DEFAULT 0,
+        priced_part_count integer NOT NULL DEFAULT 0,
+        assembly_count integer NOT NULL DEFAULT 0,
+        last_success_at timestamptz,
+        last_failure_at timestamptz,
+        error text,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      );
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS encompass_brand_routes (
+        brand text PRIMARY KEY,
+        abv text NOT NULL,
+        target_brand text NOT NULL,
+        exploded_view_search_url text NOT NULL,
+        is_alias_or_rollup boolean NOT NULL DEFAULT false,
+        exploded_view_assembly_url_pattern text
+      );
+    `;
+    await sql`
+      INSERT INTO encompass_brand_routes (
+        brand,
+        abv,
+        target_brand,
+        exploded_view_search_url,
+        is_alias_or_rollup,
+        exploded_view_assembly_url_pattern
+      ) VALUES
+        (
+          'Hisense',
+          'hie',
+          'Hisense',
+          'https://encompass.com/Exploded-View-Search/hie/Hisense',
+          false,
+          'https://encompass.com/Exploded-View-Assembly/{abv}/{target_brand}/{model}'
+        ),
+        (
+          'Gorenje',
+          'hie',
+          'Hisense',
+          'https://encompass.com/Exploded-View-Search/hie/Hisense',
+          true,
+          'https://encompass.com/Exploded-View-Assembly/{abv}/{target_brand}/{model}'
+        ),
+        (
+          'ASKO',
+          'hie',
+          'Hisense',
+          'https://encompass.com/Exploded-View-Search/hie/Hisense',
+          true,
+          'https://encompass.com/Exploded-View-Assembly/{abv}/{target_brand}/{model}'
+        )
+      ON CONFLICT (brand) DO UPDATE SET
+        abv = EXCLUDED.abv,
+        target_brand = EXCLUDED.target_brand,
+        exploded_view_search_url = EXCLUDED.exploded_view_search_url,
+        is_alias_or_rollup = EXCLUDED.is_alias_or_rollup,
+        exploded_view_assembly_url_pattern = EXCLUDED.exploded_view_assembly_url_pattern;
+    `;
+    await sql`
+      CREATE TABLE IF NOT EXISTS bom_telemetry (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        job_id text,
+        event text NOT NULL,
+        status text NOT NULL,
+        model text,
+        brand text,
+        payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+        created_at timestamptz NOT NULL DEFAULT now()
+      );
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS bom_telemetry_job_id_idx ON bom_telemetry (job_id);`;
+    await sql`CREATE INDEX IF NOT EXISTS bom_telemetry_event_idx ON bom_telemetry (event);`;
+    await sql`CREATE INDEX IF NOT EXISTS bom_telemetry_created_at_idx ON bom_telemetry (created_at);`;
+    console.log(' required retrieval architecture');
+
     await sql`
       CREATE TABLE IF NOT EXISTS model_parts_cache (
         id TEXT PRIMARY KEY,

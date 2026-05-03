@@ -4,6 +4,8 @@ import { db } from "@/server/db";
 import { encompassModelUrls } from "@/server/db/schema/encompass-model-urls";
 import { and, asc, eq, like, or } from "drizzle-orm";
 
+import { encompassBrandRoutes } from "@/server/db/schema/encompass-brand-routes";
+
 export const ENCOMPASS_FAMILIES: Record<string, string> = {
   HOT: "GE / HotPoint tree",
   WHI: "Whirlpool tree",

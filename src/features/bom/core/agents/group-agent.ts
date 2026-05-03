@@ -1,4 +1,4 @@
-import 'server-only';
+// import 'server-only';
 import { JobPacket, AgentResult } from './types';
 import { 
   discoverDiagramGroupsForJob, 

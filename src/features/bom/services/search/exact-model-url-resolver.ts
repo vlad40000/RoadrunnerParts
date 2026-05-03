@@ -78,16 +78,41 @@ function exactModelInText(text: string, model: string) {
 
 function buildQueries(input: ExactModelUrlResolverInput) {
   const model = normalizeModel(input.model);
+  const brand = input.brand?.toUpperCase() || "OTHER";
+  
   const baseQueries = input.preferredQueries
     .map((q) => cleanText(q))
     .filter(Boolean);
 
-  const queries = [
-    ...baseQueries,
-    `site:${input.domain} "${model}"`,
-    `site:${input.domain} "${model}" parts`,
-    `site:${input.domain} "${model}" model`,
-  ];
+  let templates: string[] = [];
+  
+  if (brand.includes("GE")) {
+    templates = [
+      `site:${input.domain} "${model}" diagrams`,
+      `site:${input.domain} "${model}" schematics`,
+      `site:${input.domain} "${model}" ge parts`,
+    ];
+  } else if (brand.includes("BOSCH")) {
+    templates = [
+      `site:${input.domain} "${model}" exploded view`,
+      `site:${input.domain} "${model}" diagrams`,
+      `site:${input.domain} "${model}" parts`,
+    ];
+  } else if (brand.includes("SAMSUNG") || brand.includes("LG")) {
+    templates = [
+      `site:${input.domain} "${model}" exploded view`,
+      `site:${input.domain} "${model}" parts list`,
+      `site:${input.domain} "${model}" diagrams`,
+    ];
+  } else {
+    templates = [
+      `site:${input.domain} "${model}"`,
+      `site:${input.domain} "${model}" parts`,
+      `site:${input.domain} "${model}" model`,
+    ];
+  }
+
+  const queries = [...baseQueries, ...templates];
 
   const seen = new Set<string>();
   const output: string[] = [];
@@ -202,6 +227,8 @@ export async function resolveExactModelUrl(
     await searchExistingGroundingLayer({
       queries,
       domain: input.domain,
+      brandFamily: input.brand ?? undefined,
+      model: model,
       maxResults: DEFAULT_MAX_RESULTS,
     }),
   );

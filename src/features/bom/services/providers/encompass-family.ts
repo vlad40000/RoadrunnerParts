@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 
 import { load } from "cheerio";
 import {
@@ -6,9 +6,11 @@ import {
   defaultParseVariationLinks,
   type EncompassParsedRow,
 } from "./encompass-backed-family";
-import { cleanText, normalizeModel, uniqueBy, normalizeBrand, absoluteUrl, fetchHtml } from "./utils";
-import { buildEncompassUrl, parseEncompassExplodedViewUrl } from "./deterministic-urls";
+import { cleanText, normalizeModel, uniqueBy, normalizeBrand, absoluteUrl, fetchHtml, htmlToText } from "./utils";
+import { buildEncompassUrl, parseEncompassExplodedViewUrl, buildEncompassAssemblyUrl } from "./deterministic-urls";
 import { resolveEncompassExplodedViewUrl } from "../encompass-model-index";
+import { resolveEncompassBrandRoute } from "../encompass-route-service";
+import { logTelemetry } from "../telemetry";
 import { type ProviderInput, type RetrievedSource } from "./types";
 
 interface EncompassParseRowsInput {
@@ -154,39 +156,78 @@ async function fetchEncompassSources(input: ProviderInput): Promise<RetrievedSou
   const model = normalizeModel(input.model);
   const brand = normalizeBrand(input.brand ?? "");
   
-  if (!model || !brand) return [];
+  if (!model) return [];
 
-  const BRAND_TO_ENCOMPASS_ROUTE: Record<string, string> = {
-    GE: "HOT",
-    HOTPOINT: "HOT",
-    HAIER: "HOT",
-    WHIRLPOOL: "WHI",
-    MAYTAG: "WHI",
-    KITCHENAID: "WHI",
-    AMANA: "WHI",
-    SAMSUNG: "SMG",
-    LG: "LGE",
-    BOSCH: "BCH",
-    FRIGIDAIRE: "FRI",
-    ELECTROLUX: "FRI",
-  };
+  // 1. Try DB-first Route Resolution
+  const brandRoute = brand ? await resolveEncompassBrandRoute(brand) : null;
+  
+  // 2. Try Direct Assembly URL (Bypass Strategy)
+  if (brandRoute) {
+    const assemblyUrl = buildEncompassAssemblyUrl({
+      abv: brandRoute.abv,
+      targetBrand: brandRoute.targetBrand,
+      model,
+      pattern: brandRoute.explodedViewAssemblyUrlPattern
+    });
 
-  const routeHint = BRAND_TO_ENCOMPASS_ROUTE[brand.toUpperCase()] || 
-    (brand.toLowerCase().includes("hot") || brand.toLowerCase().includes("ge") ? "HOT" : 
-     brand.toLowerCase().includes("whi") || brand.toLowerCase().includes("may") ? "WHI" : undefined);
+    console.log(`[Encompass Hardening] Attempting direct assembly path: ${assemblyUrl}`);
+    try {
+      const assemblyHtml = await fetchHtml(assemblyUrl, { 
+        jobId: input.jobId,
+        model, 
+        brand: input.brand ?? undefined,
+        provider: "encompass-family"
+      });
+      const text = htmlToText(assemblyHtml);
+      // Verify we didn't get a generic landing page or error
+      if (text.toUpperCase().includes(model.toUpperCase()) && !text.includes("Select Your Model")) {
+        return extractFromEncompassExplodedView(assemblyHtml, assemblyUrl, model);
+      }
+    } catch (err) {
+      console.log(`[Encompass Hardening] Direct assembly path failed, falling back.`);
+    }
+  }
+
+  // 3. Fallback to Model Index Lookup
+  const routeHint = brandRoute?.abv.toUpperCase();
 
   const resolved = await resolveEncompassExplodedViewUrl({
     model,
     routeHint,
   });
 
-  const modelUrl = resolved.status === "not_found" ? buildEncompassUrl({ brand, model }) : resolved.selected.url;
+  let modelUrl = resolved.status === "not_found" ? buildEncompassUrl({ brand: brand || "unknown", model }) : resolved.selected.url;
+  
+  if (resolved.status === "not_found" && brandRoute) {
+    modelUrl = `${brandRoute.explodedViewSearchUrl}?searchTerm=${model}`;
+  }
   let html: string | null = null;
   let resolvedUrl = modelUrl;
 
+  if (!resolvedUrl) return [];
+
   try {
-    html = await fetchHtml(resolvedUrl);
-  } catch {
+    html = await fetchHtml(resolvedUrl, { 
+      jobId: input.jobId,
+      model, 
+      brand: input.brand ?? undefined,
+      provider: "encompass-family"
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (/403|429/i.test(message)) {
+      await logTelemetry({
+        event: "encompass_hardened_path_blocked",
+        status: "failed",
+        model,
+        brand: input.brand ?? undefined,
+        payload: {
+          provider: "encompass-family",
+          url: resolvedUrl,
+          reason: message,
+        },
+      });
+    }
     return [];
   }
 
@@ -205,7 +246,7 @@ async function fetchEncompassSources(input: ProviderInput): Promise<RetrievedSou
     if (href) {
       const explodedUrl = absoluteUrl(resolvedUrl, href);
       try {
-        const explodedHtml = await fetchHtml(explodedUrl);
+        const explodedHtml = await fetchHtml(explodedUrl, { model, brand: input.brand ?? undefined });
         return extractFromEncompassExplodedView(explodedHtml, explodedUrl, model);
       } catch {
         // fallback to model page parsing
@@ -278,26 +319,7 @@ export const encompassFamilyProvider = createEncompassBackedFamilyProvider({
   name: "encompass-family",
   priority: 25,
   domain: "encompass.com",
-  brandNames: [
-    "Haier",
-    "Samsung",
-    "LG",
-    "Sony",
-    "Panasonic",
-    "Vizio",
-    "Toshiba",
-    "Sharp",
-    "Kenmore",
-    "Whirlpool",
-    "Maytag",
-    "KitchenAid",
-    "Amana",
-    "Jenn-Air",
-    "Magic Chef",
-    "Admiral",
-    "Norge",
-    "Roper",
-  ],
+  brandNames: [], // Dynamically resolved via DB
   replacementNoteDefault: "Authorized Encompass parts list",
   sourceSurfaceLabel: "encompass-distributor",
   buildPreferredQueries: buildEncompassQueries,
@@ -318,6 +340,11 @@ export const encompassFamilyProvider = createEncompassBackedFamilyProvider({
   },
   parseRows: parseEncompassRows,
 });
+
+encompassFamilyProvider.supports = (input) => {
+  const model = normalizeModel(input.model);
+  return !!model;
+};
 
 // Hook up deterministic fetcher before search-based factory fetcher
 const originalFetchSources = encompassFamilyProvider.fetchSources;

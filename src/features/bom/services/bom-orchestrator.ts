@@ -7,6 +7,7 @@ import { db } from "../../../server/db";
 import { providerPartSeedRows } from "../../../server/db/schema/provider-seeds";
 import { normalizeModel } from "./providers/utils";
 import { generateAiBom } from "./bom-ai-service";
+import { ReconciliationService } from "./reconciliation-service";
 
 export type BomOrchestratorResult = {
   parts: any[];
@@ -55,16 +56,15 @@ export async function orchestrateBomRetrieval(input: {
   let allParts: any[] = [];
 
   if (sources.length > 0) {
-    console.log(`[BOM Orchestrator] Found ${sources.length} authoritative sources for ${model}. Parsing...`);
+    const report = ReconciliationService.reconcile(model, sources);
+    console.log(`[BOM Orchestrator] Reconciliation complete for ${model}: ${report.totalUniqueParts} unique parts, overlap: ${report.overlapCount}`);
     
+    // Log raw rows to seed table first for auditability
     for (const source of sources) {
-      const parsed = parseStructuredSourceText(source.text);
-      
-      // DB-FIRST: Save raw rows to the seed table
-      if (parsed.length > 0) {
-        console.log(`[BOM Orchestrator] Logging ${parsed.length} raw rows from ${source.provider} to DB...`);
+      const parsedRaw = parseStructuredSourceText(source.text);
+      if (parsedRaw.length > 0) {
         await db.insert(providerPartSeedRows).values(
-          parsed.map(p => ({
+          parsedRaw.map(p => ({
             model: normalizeModel(model) || model,
             provider: source.provider,
             diagramNumber: p.id,
@@ -75,9 +75,16 @@ export async function orchestrateBomRetrieval(input: {
           }))
         ).onConflictDoNothing();
       }
-
-      allParts.push(...parsed);
     }
+
+    allParts = report.parts.map(p => ({
+      id: p.diagramNumber,
+      description: p.description,
+      partNumber: p.partNumber,
+      sources: p.sources,
+      isDiscrepancy: p.isDiscrepancy,
+      discrepancyType: p.discrepancyType
+    }));
     
     if (allParts.length > 0) {
       console.log(`[BOM Orchestrator] Parsed ${allParts.length} parts from deterministic sources. Enriching with pricing...`);
@@ -101,7 +108,10 @@ export async function orchestrateBomRetrieval(input: {
           brand: brand || undefined,
           retrievalState: isExhaustive ? 'bom_complete' : 'parts_complete_pricing_partial',
           validationVersion: CURRENT_VALIDATION_VERSION,
-          truthSource: sources[0]?.sourceUrl || 'deterministic_scraper'
+          truthSource: sources[0]?.sourceUrl || 'deterministic_scraper',
+          sourceSummary: [
+            { provider: 'reconciliation_report', ...report }
+          ]
         });
 
         return {

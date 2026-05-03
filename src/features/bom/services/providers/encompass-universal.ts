@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 
 import { load } from "cheerio";
 import {
@@ -8,55 +8,9 @@ import {
 } from "./encompass-backed-family";
 import type { RetrievedSource, SourceProvider } from "./types";
 import { cleanText, fetchHtml, htmlToText, normalizeModel, uniqueBy } from "./utils";
-
-/**
- * Universal brand-to-code mapping for Encompass Exploded View search.
- * Extracted from confirmed encompass_route files.
- */
-export const ENCOMPASS_BRAND_MAP: Record<string, { code: string; name: string }> = {
-  "whirlpool": { code: "whi", name: "Whirlpool" },
-  "aeon air": { code: "anr", name: "Aeon_Air" },
-  "avanti": { code: "AVA", name: "Avanti" },
-  "bertazzoni": { code: "brt", name: "Bertazzoni" },
-  "beko": { code: "bek", name: "Beko" },
-  "blomberg": { code: "blm", name: "Blomberg" },
-  "bosch": { code: "bch", name: "Bosch" },
-  "breville": { code: "bre", name: "Breville" },
-  "criterion": { code: "cri", name: "Criterion" },
-  "dacor": { code: "dac", name: "Dacor" },
-  "danby": { code: "dby", name: "Danby" },
-  "de'longhi": { code: "dei", name: "De'Longhi" },
-  "elica": { code: "eli", name: "Elica" },
-  "electrolux": { code: "fri", name: "Electrolux" },
-  "frigidaire": { code: "fri", name: "Frigidaire" },
-  "element": { code: "ele", name: "Element" },
-  "fisher paykel": { code: "fap", name: "Fisher_Paykel" },
-  "hotpoint": { code: "hot", name: "HotPoint" },
-  "haier": { code: "hai", name: "Haier" },
-  "hestan": { code: "HES", name: "Hestan" },
-  "ikea": { code: "ikea", name: "IKEA" },
-  "kenmore": { code: "kmr", name: "Kenmore" },
-  "lg": { code: "lge", name: "LG" },
-  "lge": { code: "lge", name: "LG" }, // Handle normalized form
-  "liebherr": { code: "lie", name: "Liebherr" },
-  "magic chef": { code: "mac", name: "MagicChef" },
-  "maytag": { code: "may", name: "Maytag" },
-  "middleby": { code: "mby", name: "Middleby" },
-  "midea": { code: "MID", name: "Midea" },
-  "miele": { code: "MIE", name: "Miele" },
-  "samsung": { code: "smg", name: "Samsung" },
-  "sharp": { code: "sha", name: "Sharp" },
-  "silhouette": { code: "sil", name: "Silhouette" },
-  "smeg": { code: "sgg", name: "Smeg" },
-  "speed queen": { code: "SPQ", name: "Speed-Queen" },
-  "viking": { code: "vik", name: "Viking" },
-  "vulcan": { code: "vul", name: "Vulcan" },
-};
-
-function getEncompassBrandInfo(brand: string | null | undefined) {
-  const normalized = (brand || "").trim().toLowerCase();
-  return ENCOMPASS_BRAND_MAP[normalized] || null;
-}
+import { resolveEncompassBrandRoute } from "../encompass-route-service";
+import { logTelemetry } from "../telemetry";
+import { buildEncompassAssemblyUrl } from "./deterministic-urls";
 
 function looksLikeEncompassModelUrl(url: string) {
   try {
@@ -95,19 +49,9 @@ function extractEncompassVariationCodeFromUrl(url: string) {
   return null;
 }
 
-function buildEncompassQueries(model: string, brand: string | null | undefined) {
+function buildEncompassQueries(model: string) {
   const normalized = normalizeModel(model);
-  const info = getEncompassBrandInfo(brand);
-  
-  if (!info) {
-    return [`site:encompass.com/model "${normalized}"`];
-  }
-
-  return [
-    `site:encompass.com/model/${info.code}/${info.name} "${normalized}"`,
-    `site:encompass.com/model "${normalized}" "${info.name}"`,
-    `site:encompass.com/model "${normalized}"`,
-  ];
+  return [`site:encompass.com/model "${normalized}"`];
 }
 
 function parseEncompassRowsFromTable(html: string): EncompassParsedRow[] {
@@ -207,10 +151,10 @@ const baseProvider = createEncompassBackedFamilyProvider({
   name: "encompass-universal",
   priority: 15,
   domain: "encompass.com",
-  brandNames: Object.keys(ENCOMPASS_BRAND_MAP),
+  brandNames: [], // Dynamically resolved via DB
   replacementNoteDefault: "Authorized Encompass Replacement Part",
   sourceSurfaceLabel: "encompass",
-  buildPreferredQueries: (model: string) => buildEncompassQueries(model, "unknown"),
+  buildPreferredQueries: (model: string) => buildEncompassQueries(model),
   looksLikeModelUrl: looksLikeEncompassModelUrl,
   isVariationUrl: isEncompassVariationUrl,
   extractVariationCodeFromUrl: extractEncompassVariationCodeFromUrl,
@@ -244,18 +188,37 @@ const baseProvider = createEncompassBackedFamilyProvider({
 
 export const encompassUniversalProvider: SourceProvider = {
   ...baseProvider,
+  supports(input) {
+    const model = normalizeModel(input.model);
+    if (!model) return false;
+    // Encompass supports hundreds of brands; we let fetchSources handle the DB-backed validation
+    return true;
+  },
   async fetchSources(input) {
     const model = normalizeModel(input.model);
     if (!model) return [];
 
-    const brandInfo = getEncompassBrandInfo(input.brand);
-    if (brandInfo) {
-      // Step 1: Attempt Direct Path (New Path Strategy)
-      const directUrl = `https://encompass.com/model/${brandInfo.code}/${brandInfo.name}/${model}`;
-      console.log(`[Encompass Universal] Attempting direct path: ${directUrl}`);
+    // 1. Try DB-first Route Resolution
+    const brandRoute = input.brand ? await resolveEncompassBrandRoute(input.brand) : null;
+    
+    if (brandRoute) {
+      // Step 1: Attempt Direct Assembly Path (Bypass Strategy)
+      const directUrl = buildEncompassAssemblyUrl({
+        abv: brandRoute.abv,
+        targetBrand: brandRoute.targetBrand,
+        model,
+        pattern: brandRoute.explodedViewAssemblyUrlPattern
+      });
+      
+      console.log(`[Encompass Universal] Attempting direct assembly path: ${directUrl}`);
       
       try {
-        const html = await fetchHtml(directUrl);
+        const html = await fetchHtml(directUrl, {
+          jobId: input.jobId,
+          brand: input.brand ?? undefined,
+          model: model,
+          provider: "encompass-universal"
+        });
         const text = htmlToText(html);
 
         if (text.toUpperCase().includes(model)) {
@@ -270,8 +233,6 @@ export const encompassUniversalProvider: SourceProvider = {
             });
             
             if (variationLinks.length) {
-              // Recurse using base variation fetcher logic if needed, 
-              // or just return from here using our logic.
               // For simplicity, we'll let the base provider handle the variations if we return the landing page.
             }
           }
@@ -288,8 +249,12 @@ export const encompassUniversalProvider: SourceProvider = {
             // Fetch first few assemblies (exhaustive but capped for performance)
             for (const assembly of assemblyLinks.slice(0, 15)) {
               try {
-                const assemblyHtml = await fetchHtml(assembly.url);
-                const assemblyText = htmlToText(assemblyHtml);
+                const assemblyHtml = await fetchHtml(assembly.url, {
+                  jobId: input.jobId,
+                  brand: input.brand ?? undefined,
+                  model: model,
+                  provider: "encompass-universal"
+                });
                 const rows = parseEncompassRowsFromTable(assemblyHtml);
                 
                 if (rows.length > 0) {
@@ -328,7 +293,21 @@ export const encompassUniversalProvider: SourceProvider = {
           }
         }
       } catch (err) {
-        console.log(`[Encompass Universal] Direct path failed for ${model}, falling back to search.`);
+        const message = err instanceof Error ? err.message : String(err);
+        if (/403|429/i.test(message)) {
+          await logTelemetry({
+            event: "encompass_hardened_path_blocked",
+            status: "failed",
+            model,
+            brand: input.brand ?? undefined,
+            payload: {
+              provider: "encompass-universal",
+              url: directUrl,
+              reason: message,
+            },
+          });
+        }
+        console.log(`[Encompass Universal] Hardened path failed for ${model}, falling back to search.`);
       }
     }
 

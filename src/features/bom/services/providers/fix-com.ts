@@ -1,4 +1,4 @@
-import "server-only";
+// import "server-only";
 import { load } from "cheerio";
 import type { ProviderInput, SourceProvider } from "./types";
 import { resolveExactModelUrl } from "../search/exact-model-url-resolver";

@@ -10,6 +10,8 @@ export type SearchHit = {
 export type SearchAdapterInput = {
   queries: string[];
   domain: string;
+  brandFamily?: string;
+  model?: string;
   maxResults?: number;
 };
 
