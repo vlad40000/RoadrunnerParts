@@ -43,6 +43,7 @@ import {
 
 type BomWorkflowControlPanelProps = {
   initialModel?: string;
+  initialSerial?: string;
   initialJobId?: string;
 };
 
@@ -115,6 +116,8 @@ const TERMINAL_HELP = [
   "run sears-partsdirect",
 ].join("\n");
 
+const WORKFLOW_DRAFT_STORAGE_KEY = "bom-workflow:draft";
+
 function asRecord(value: unknown) {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 }
@@ -128,6 +131,70 @@ function valueText(value: unknown) {
   if (Array.isArray(value)) return value.filter(Boolean).join(", ");
   if (typeof value === "object") return JSON.stringify(value, null, 2);
   return String(value);
+}
+
+function firstText(...values: unknown[]) {
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      const nested = firstText(...value);
+      if (nested) return nested;
+      continue;
+    }
+    if (value === null || value === undefined) continue;
+    const text = String(value).trim();
+    if (text) return text;
+  }
+  return "";
+}
+
+function normalizeOcrPayload(payload: unknown, fallbackModel: string) {
+  const root = asRecord(payload);
+  const nested =
+    asRecord(root.ocr).model || asRecord(root.ocr).modelNumber
+      ? asRecord(root.ocr)
+      : asRecord(root.data).model || asRecord(root.data).modelNumber
+        ? asRecord(root.data)
+        : asRecord(root.result).model || asRecord(root.result).modelNumber
+          ? asRecord(root.result)
+          : root;
+
+  const candidates = [
+    ...asArray(nested.candidates),
+    ...asArray(nested.modelCandidates),
+    ...asArray(nested.model_numbers),
+    ...asArray(root.candidates),
+  ];
+  const model = firstText(
+    nested.model,
+    nested.modelNumber,
+    nested.model_number,
+    nested.normalizedModel,
+    nested.normalized_model,
+    candidates,
+    fallbackModel,
+  );
+
+  return {
+    brand: firstText(nested.brand, nested.brandFamily, asRecord(nested.decodeResult).brandFamily) || null,
+    model: model || null,
+    serial:
+      firstText(
+        nested.serial,
+        nested.serialNumber,
+        nested.serial_number,
+        nested.serialNo,
+        nested.serial_no,
+        nested.serialNum,
+        nested.serial_num,
+        asRecord(nested.decodeResult).serial,
+      ) || null,
+    productType: firstText(nested.productType, nested.product_type, nested.applianceType) || null,
+    engineeringCode: firstText(nested.engineeringCode, nested.engineering_code) || null,
+    confidence: nested.confidence || null,
+    candidates,
+    decodeResult: nested.decodeResult || null,
+    raw: payload,
+  } as Record<string, unknown>;
 }
 
 function formatPercent(value: number | null | undefined) {
@@ -287,9 +354,11 @@ function AutoField({
 
 export function BomWorkflowControlPanel({
   initialModel = "",
+  initialSerial = "",
   initialJobId = "",
 }: BomWorkflowControlPanelProps) {
   const [model, setModel] = useState(initialModel.toUpperCase());
+  const [activeSerial, setActiveSerial] = useState(initialSerial.toUpperCase());
   const [jobId, setJobId] = useState(initialJobId);
   const [job, setJob] = useState<BomJob | null>(null);
   const [truth, setTruth] = useState<Record<string, unknown> | null>(null);
@@ -346,6 +415,9 @@ export function BomWorkflowControlPanel({
     setJob(data.job);
     setJobId(data.job.id);
     setModel(String(data.job.model || model || "").toUpperCase());
+    if (data.job.serial) {
+      setActiveSerial(String(data.job.serial).toUpperCase());
+    }
 
     const truthRes = await fetch(`/api/bom/jobs/${data.job.id}/visual-truth`, { cache: "no-store" });
     const truthData = await truthRes.json().catch(() => null);
@@ -378,7 +450,10 @@ export function BomWorkflowControlPanel({
       const res = await fetch("/api/bom/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: normalized }),
+        body: JSON.stringify({
+          model: normalized,
+          serial: activeSerial.trim().toUpperCase() || undefined,
+        }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.job?.id) {
@@ -433,6 +508,38 @@ export function BomWorkflowControlPanel({
     });
     appendTerminal("state: current dashboard state solidified");
   }
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(WORKFLOW_DRAFT_STORAGE_KEY);
+      if (!saved) return;
+      const draft = JSON.parse(saved) as {
+        model?: string;
+        serial?: string;
+        jobId?: string;
+      };
+      if (!initialModel && draft.model) setModel(String(draft.model).toUpperCase());
+      if (!initialSerial && draft.serial) setActiveSerial(String(draft.serial).toUpperCase());
+      if (!initialJobId && draft.jobId) setJobId(String(draft.jobId));
+    } catch {
+      // Ignore corrupted local draft data.
+    }
+  }, [initialJobId, initialModel, initialSerial]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        WORKFLOW_DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          model: normalizeCanonicalModel(model),
+          serial: activeSerial.trim().toUpperCase(),
+          jobId,
+        }),
+      );
+    } catch {
+      // Local persistence is best-effort only.
+    }
+  }, [activeSerial, jobId, model]);
 
   useEffect(() => {
     if (!initialJobId) return;
@@ -499,6 +606,7 @@ export function BomWorkflowControlPanel({
     setOcrBusy(true);
     setError(null);
     try {
+      const typedModel = normalizeCanonicalModel(model);
       const dataUrl: string = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result || ""));
@@ -516,21 +624,12 @@ export function BomWorkflowControlPanel({
       if (!res.ok) {
         throw new Error(payload?.error || "OCR extraction failed");
       }
-      const identity = {
-        brand: payload?.brand || null,
-        model: payload?.modelNumber || null,
-        serial: payload?.serialNumber || null,
-        productType: payload?.productType || null,
-        engineeringCode: payload?.engineeringCode || null,
-        confidence: payload?.confidence || null,
-        candidates: payload?.candidates || [],
-        decodeResult: payload?.decodeResult || null,
-      } as Record<string, unknown>;
-      const extractedModel = normalizeCanonicalModel(String(identity.model || model || ""));
+      const identity = normalizeOcrPayload(payload, typedModel);
+      const extractedModel = normalizeCanonicalModel(String(identity.model || typedModel || ""));
       const extractedSerial = String(identity.serial || "").trim().toUpperCase();
 
       if (!extractedModel && !jobId) {
-        throw new Error("OCR did not extract a model. Enter a model or retry with a clearer nameplate image.");
+        throw new Error("OCR did not extract a model. Enter a model first or retry with a clearer nameplate image.");
       }
 
       let targetJobId = jobId;
@@ -539,7 +638,7 @@ export function BomWorkflowControlPanel({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: extractedModel || normalizedModel,
+            model: extractedModel || typedModel || normalizedModel,
             brand: identity.brand || undefined,
             serial: extractedSerial || undefined,
             productType: identity.productType || undefined,
@@ -554,6 +653,7 @@ export function BomWorkflowControlPanel({
       }
 
       if (extractedModel) setModel(extractedModel);
+      if (extractedSerial) setActiveSerial(extractedSerial);
       setOcrResult(identity || null);
       await savePatchForJob(targetJobId, {
         brand: identity.brand || undefined,
@@ -564,9 +664,14 @@ export function BomWorkflowControlPanel({
           ocrImageDataUrl: dataUrl,
           ocrImageName: file.name,
           ocrIdentity: identity,
+          ocrRawPayload: payload,
         },
       });
-      appendTerminal(`ocr: loaded ${file.name}`);
+      appendTerminal(
+        `ocr: loaded ${file.name}${extractedModel ? ` -> ${extractedModel}` : ""}${
+          extractedSerial ? ` / serial ${extractedSerial}` : ""
+        }`,
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "OCR upload failed";
       setError(msg);
@@ -865,10 +970,12 @@ export function BomWorkflowControlPanel({
             <label className="space-y-1">
               <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Active Serial</span>
               <input
-                value={job?.serial || ""}
+                value={activeSerial}
                 onChange={(event) => {
+                  const nextSerial = event.target.value.toUpperCase();
+                  setActiveSerial(nextSerial);
                   if (jobId) {
-                    savePatch({ serial: event.target.value.toUpperCase() }).catch((err) => setError(err.message));
+                    savePatch({ serial: nextSerial }).catch((err) => setError(err.message));
                   }
                 }}
                 className="w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-neutral-900"

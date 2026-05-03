@@ -112,6 +112,7 @@ const cropImage = async (base64: string, mimeType: string, factor = 0.8): Promis
 };
 
 const normalizeModelId = (value?: string | null) => (value || '').toUpperCase().trim();
+const HOME_DRAFT_STORAGE_KEY = 'roadrunner:home-draft';
 
 
 export default function App() {
@@ -251,6 +252,41 @@ export default function App() {
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const expectedCountLookupModelRef = useRef<string | null>(null);
   const expectedCountRequestRef = useRef(0);
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(HOME_DRAFT_STORAGE_KEY);
+      if (!saved) return;
+      const draft = JSON.parse(saved) as {
+        searchTerm?: string;
+        lookupModel?: string;
+        lookupSerial?: string;
+        checkModel?: string;
+      };
+      if (draft.searchTerm) setSearchTerm(draft.searchTerm);
+      if (draft.lookupModel) setLookupModel(draft.lookupModel);
+      if (draft.lookupSerial) setLookupSerial(draft.lookupSerial);
+      if (draft.checkModel) setCheckModel(draft.checkModel);
+    } catch {
+      // Draft restore is best-effort only.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        HOME_DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          searchTerm,
+          lookupModel,
+          lookupSerial,
+          checkModel,
+        }),
+      );
+    } catch {
+      // Draft persistence is best-effort only.
+    }
+  }, [checkModel, lookupModel, lookupSerial, searchTerm]);
 
 
   useEffect(() => {
@@ -935,7 +971,10 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
             <nav className="flex flex-col gap-3">
               <a
-                href="/bom-workflow"
+                href={`/bom-workflow?${new URLSearchParams({
+                  ...(lookupModel || searchTerm ? { model: lookupModel || searchTerm } : {}),
+                  ...(lookupSerial ? { serial: lookupSerial } : {}),
+                }).toString()}`}
                 className="w-full flex items-center gap-3 px-6 py-4 text-sm font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all rounded-lg border border-emerald-200 mb-4 shadow-sm"
               >
                 <Zap size={18} className="fill-emerald-600" />

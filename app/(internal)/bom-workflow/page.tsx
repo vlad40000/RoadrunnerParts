@@ -17,6 +17,7 @@ export default async function BomWorkflowPage({ searchParams }: PageProps) {
   return (
     <BomWorkflowControlPanel
       initialModel={firstParam(params.model)}
+      initialSerial={firstParam(params.serial)}
       initialJobId={firstParam(params.jobId)}
     />
   );
