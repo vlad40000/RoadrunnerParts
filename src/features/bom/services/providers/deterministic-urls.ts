@@ -50,6 +50,7 @@ export function buildPartsDrUrl(input: { brand: string; model: string; appliance
 export function buildEncompassUrl(input: { brand: string; model: string }) {
   const brand = cleanText(input.brand).toUpperCase();
   const model = normalizeModel(input.model);
+  let mfgCode = "";
   
   if (brand.includes("GE") || brand.includes("GENERAL ELECTRIC") || brand.includes("HOTPOINT") || brand.includes("HAIER")) {
     mfgCode = "HOT";
