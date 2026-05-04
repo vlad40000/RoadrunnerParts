@@ -78,6 +78,96 @@
     color: #172033 !important;
   }
 
+  .bom-studio-light .bom-superbar {
+    background: #18181c !important;
+    border-color: #18181c !important;
+    color: #ffffff !important;
+  }
+
+  .bom-super-btn {
+    @apply flex h-[22px] w-[22px] items-center justify-center rounded border-0 transition-colors;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .bom-super-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+  }
+
+  .bom-super-copy {
+    @apply h-[22px] rounded px-3 text-[10px] font-semibold;
+    background: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .bom-super-primary {
+    @apply h-[22px] rounded px-3 text-[10px] font-bold text-white;
+    background: #3b7ef5;
+  }
+
+  .bom-mode-tabs {
+    height: 100%;
+  }
+
+  .bom-mode-tab {
+    @apply flex h-full shrink-0 items-center border-b-2 border-transparent px-3 text-[10px] font-bold uppercase tracking-[0.07em] transition-colors;
+    color: #8890aa;
+  }
+
+  .bom-mode-tab:hover {
+    background: #f5f6f9;
+    color: #1a1c28;
+  }
+
+  .bom-mode-tab.is-active {
+    border-bottom-color: #1a1c28;
+    color: #1a1c28;
+  }
+
+  .bom-bottom-bar {
+    background: #ffffff !important;
+    border-color: #d9e2ec !important;
+  }
+
+  .bom-bottom-label {
+    @apply px-1 text-[8px] font-bold uppercase tracking-[0.12em];
+    color: #9aa3b8;
+  }
+
+  .bom-bottom-btn {
+    @apply h-[26px] rounded border px-3 text-[9px] font-bold uppercase tracking-[0.07em] transition-colors;
+    background: #ffffff;
+    border-color: #cdd0db;
+    color: #667085;
+  }
+
+  .bom-bottom-btn:hover {
+    background: #f5f6f9;
+    color: #1a1c28;
+  }
+
+  .bom-bottom-run {
+    @apply h-[26px] rounded px-3 text-[9px] font-extrabold uppercase tracking-[0.07em] transition-transform;
+    background: #fbbf24;
+    color: #6a3e00;
+  }
+
+  .bom-bottom-run:active {
+    transform: scale(0.97);
+  }
+
+  .bom-bottom-ok {
+    @apply h-[26px] rounded px-3 text-[9px] font-extrabold uppercase tracking-[0.07em] text-white;
+    background: #1a1c28;
+  }
+
+  .bom-bottom-sep {
+    width: 1px;
+    height: 18px;
+    background: #d9e2ec;
+  }
+
   .bom-studio-light .bom-work-area {
     background: linear-gradient(180deg, #f4f7fb 0%, #e9eef5 100%) !important;
   }
@@ -85,7 +175,7 @@
   .bom-studio-light .bom-central-panel {
     background: #f8fafc !important;
     border-color: #d9e2ec !important;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.10);
   }
 
   .bom-studio-light .bom-panel,
@@ -152,6 +242,934 @@
 
   .bom-studio-light pre {
     color: #243044 !important;
+  }
+
+  .bom-studio-light .gemini-model-card {
+    background: #f5f7fb !important;
+    border: 1px solid #e0e6ef;
+  }
+
+  .gemini-tuning-slider {
+    width: 100%;
+    accent-color: #3b7ef5;
+  }
+
+  .bom-cockpit {
+    --cockpit-bg: #edeef2;
+    --cockpit-surface: #ffffff;
+    --cockpit-surface-2: #f5f6f9;
+    --cockpit-border: #e0e2ea;
+    --cockpit-border-2: #cdd0db;
+    --cockpit-text: #1a1c28;
+    --cockpit-muted: #6b7280;
+    --cockpit-faint: #9aa3b8;
+    --cockpit-amber: #fbbf24;
+    --cockpit-blue: #3b7ef5;
+    display: flex;
+    flex-direction: column;
+    background: var(--cockpit-bg);
+    color: var(--cockpit-text);
+    font-size: 12px;
+    user-select: none;
+  }
+
+  .bom-cockpit button,
+  .bom-cockpit input,
+  .bom-cockpit select,
+  .bom-cockpit textarea {
+    font-family: inherit;
+  }
+
+  .bom-cockpit-super {
+    display: flex;
+    height: 30px;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    background: #18181c;
+    padding: 0 12px;
+    color: #fff;
+  }
+
+  .bom-cockpit-super-icon {
+    display: flex;
+    height: 22px;
+    width: 22px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .bom-cockpit-super-icon:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+  }
+
+  .bom-cockpit-version {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  .bom-cockpit-copy,
+  .bom-cockpit-publish {
+    height: 22px;
+    border: 0;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .bom-cockpit-copy {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .bom-cockpit-publish {
+    background: var(--cockpit-blue);
+    color: #fff;
+  }
+
+  .bom-cockpit-top {
+    display: flex;
+    height: 38px;
+    flex-shrink: 0;
+    align-items: center;
+    border-bottom: 1px solid var(--cockpit-border);
+    background: var(--cockpit-surface);
+  }
+
+  .bom-cockpit-brand {
+    display: flex;
+    height: 100%;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 7px;
+    border-right: 1px solid var(--cockpit-border);
+    padding: 0 12px;
+  }
+
+  .bom-cockpit-home {
+    display: flex;
+    height: 22px;
+    width: 22px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: var(--cockpit-faint);
+  }
+
+  .bom-cockpit-home:hover {
+    background: var(--cockpit-surface-2);
+    color: var(--cockpit-text);
+  }
+
+  .bom-cockpit-logo {
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+  }
+
+  .bom-cockpit-logo span {
+    color: var(--cockpit-blue);
+  }
+
+  .bom-cockpit-job {
+    border: 1px solid var(--cockpit-border);
+    border-radius: 2px;
+    background: var(--cockpit-surface-2);
+    padding: 2px 6px;
+    color: var(--cockpit-faint);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .bom-cockpit-tabs {
+    display: flex;
+    min-width: 0;
+    height: 100%;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .bom-cockpit-tab {
+    height: 100%;
+    flex-shrink: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-top: 2px solid transparent;
+    background: transparent;
+    padding: 0 13px;
+    color: #8890aa;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .bom-cockpit-tab:hover {
+    background: var(--cockpit-surface-2);
+    color: var(--cockpit-text);
+  }
+
+  .bom-cockpit-tab.active {
+    border-bottom-color: var(--cockpit-text);
+    color: var(--cockpit-text);
+  }
+
+  .bom-cockpit-top-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 5px;
+    padding: 0 10px;
+  }
+
+  .bom-cockpit-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c97a;
+  }
+
+  .bom-cockpit-icon-button {
+    display: flex;
+    height: 26px;
+    width: 26px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--cockpit-border);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--cockpit-faint);
+  }
+
+  .bom-cockpit-icon-button:hover,
+  .bom-cockpit-icon-button.on {
+    background: #eef2fe;
+    color: var(--cockpit-blue);
+  }
+
+  .bom-cockpit-body {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .bom-cockpit-rail {
+    display: flex;
+    width: 38px;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    border-right: 1px solid var(--cockpit-border);
+    background: var(--cockpit-surface);
+    padding: 6px 0;
+  }
+
+  .bom-cockpit-rail-button {
+    display: flex;
+    width: 26px;
+    height: 26px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--cockpit-faint);
+    font-size: 11px;
+    font-weight: 900;
+  }
+
+  .bom-cockpit-rail-button:hover {
+    background: var(--cockpit-surface-2);
+    color: var(--cockpit-text);
+  }
+
+  .bom-cockpit-rail-button.on {
+    background: var(--cockpit-amber);
+    color: #6a3e00;
+  }
+
+  .bom-cockpit-rail-button.spaced {
+    margin-top: 5px;
+  }
+
+  .bom-cockpit-rail-button.bottom {
+    margin-top: auto;
+  }
+
+  .bom-cockpit-drawer {
+    display: flex;
+    width: 208px;
+    flex-shrink: 0;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--cockpit-border);
+    background: var(--cockpit-surface);
+  }
+
+  .bom-cockpit-drawer-head {
+    display: flex;
+    height: 30px;
+    flex-shrink: 0;
+    align-items: center;
+    border-bottom: 1px solid var(--cockpit-border);
+    padding: 0 10px;
+  }
+
+  .bom-cockpit-drawer-head span,
+  .bom-drawer-card-head span {
+    color: var(--cockpit-faint);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .bom-cockpit-drawer-body {
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .bom-drawer-section {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .bom-drawer-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+
+  .bom-drawer-stat {
+    border: 1px solid var(--cockpit-border);
+    border-radius: 5px;
+    background: var(--cockpit-surface-2);
+    padding: 8px 9px;
+  }
+
+  .bom-drawer-stat b {
+    display: block;
+    color: var(--cockpit-text);
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .bom-drawer-stat span {
+    display: block;
+    margin-top: 4px;
+    color: var(--cockpit-faint);
+    font-size: 7px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .bom-drawer-stat.good b {
+    color: #1a7a3a;
+  }
+
+  .bom-drawer-stat.warn b {
+    color: #d97706;
+  }
+
+  .bom-drawer-stat.bad b {
+    color: #dc2626;
+  }
+
+  .bom-field {
+    display: grid;
+    gap: 3px;
+  }
+
+  .bom-field span {
+    color: var(--cockpit-faint);
+    font-size: 7px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .bom-field input,
+  .bom-prompt-head select {
+    height: 26px;
+    border: 1px solid var(--cockpit-border-2);
+    border-radius: 4px;
+    background: #fff;
+    padding: 0 8px;
+    color: var(--cockpit-text);
+    font-size: 10px;
+    outline: none;
+  }
+
+  .bom-drawer-primary {
+    height: 26px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--cockpit-blue);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .bom-drawer-error {
+    color: #dc2626;
+    font-size: 10px;
+  }
+
+  .bom-drawer-card {
+    overflow: hidden;
+    border: 1px solid var(--cockpit-border);
+    border-radius: 6px;
+    background: #fff;
+  }
+
+  .bom-drawer-card-head {
+    display: flex;
+    height: 28px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--cockpit-border);
+    background: var(--cockpit-surface-2);
+    padding: 0 9px;
+  }
+
+  .bom-drawer-card-head b {
+    color: var(--cockpit-blue);
+    font-size: 10px;
+  }
+
+  .bom-scenario-row,
+  .bom-supplier-row,
+  .bom-history-row {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border: 0;
+    border-bottom: 1px solid var(--cockpit-border);
+    background: #fff;
+    padding: 7px 9px;
+    text-align: left;
+  }
+
+  .bom-scenario-row.active,
+  .bom-scenario-row:hover,
+  .bom-supplier-row:hover {
+    background: #fef9ec;
+  }
+
+  .bom-scenario-row span,
+  .bom-supplier-row strong,
+  .bom-history-row strong {
+    display: block;
+    color: var(--cockpit-text);
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .bom-scenario-row small,
+  .bom-supplier-row small,
+  .bom-history-row small {
+    display: block;
+    color: var(--cockpit-faint);
+    font-size: 8px;
+  }
+
+  .bom-supplier-actions {
+    display: flex;
+    gap: 3px;
+  }
+
+  .bom-supplier-actions button {
+    height: 21px;
+    border: 1px solid var(--cockpit-border);
+    border-radius: 3px;
+    background: var(--cockpit-surface-2);
+    padding: 0 5px;
+    color: var(--cockpit-muted);
+    font-size: 8px;
+    font-weight: 900;
+  }
+
+  .bom-drawer-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+
+  .bom-drawer-table th {
+    border-bottom: 1px solid var(--cockpit-border);
+    padding: 6px 4px;
+    color: var(--cockpit-faint);
+    font-size: 7px;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .bom-drawer-table td {
+    border-bottom: 1px solid var(--cockpit-border);
+    padding: 6px 4px;
+    color: var(--cockpit-muted);
+  }
+
+  .bom-empty-mini {
+    border: 1px dashed var(--cockpit-border);
+    border-radius: 5px;
+    padding: 18px 8px;
+    color: var(--cockpit-faint);
+    font-size: 9px;
+    font-weight: 800;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .bom-console-mini {
+    min-height: 180px;
+    border-radius: 4px;
+    background: #0c0e12;
+    padding: 8px;
+    color: #3ec878;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+
+  .bom-cockpit-center {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--cockpit-bg);
+  }
+
+  .bom-browser-wrap {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  .bom-browser-canvas {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1.5px solid transparent;
+    border-radius: 3px;
+    background: #000;
+  }
+
+  .bom-browser-bar {
+    display: flex;
+    height: 32px;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    background: #1e1e26;
+    padding: 0 10px;
+  }
+
+  .bom-browser-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .bom-browser-dot.red {
+    background: #ff5f57;
+  }
+
+  .bom-browser-dot.yellow {
+    background: #febc2e;
+  }
+
+  .bom-browser-dot.green {
+    background: #28c840;
+  }
+
+  .bom-browser-url {
+    display: flex;
+    height: 18px;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0 8px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bom-browser-spinner {
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-top-color: var(--cockpit-amber);
+    border-radius: 50%;
+  }
+
+  .bom-browser-body {
+    position: relative;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+    background: #f8f8f0;
+  }
+
+  .bom-browser-body iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+  }
+
+  .bom-canvas-idle {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.16);
+  }
+
+  .bom-canvas-idle span {
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .bom-canvas-idle small {
+    color: rgba(255, 255, 255, 0.25);
+    font-family: var(--font-mono);
+    font-size: 9px;
+  }
+
+  .bom-scan-line {
+    position: absolute;
+    right: 0;
+    left: 0;
+    top: 32px;
+    height: 2px;
+    background: linear-gradient(to right, transparent, #f97316, transparent);
+    opacity: 0.35;
+  }
+
+  .bom-extraction-feed {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: none;
+    max-height: 140px;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(10, 10, 18, 0.92);
+  }
+
+  .bom-extraction-feed.show {
+    display: flex;
+  }
+
+  .bom-feed-head,
+  .bom-feed-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+  }
+
+  .bom-feed-head {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .bom-feed-head b {
+    margin-left: auto;
+    color: var(--cockpit-amber);
+  }
+
+  .bom-feed-body {
+    overflow: auto;
+  }
+
+  .bom-feed-row span {
+    width: 58px;
+    color: var(--cockpit-blue);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 900;
+  }
+
+  .bom-feed-row strong {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 9px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .bom-feed-row small {
+    width: 70px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 8px;
+    text-align: right;
+  }
+
+  .bom-prompt-drawer {
+    position: absolute;
+    right: 0;
+    bottom: 42px;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-top: 1px solid var(--cockpit-border);
+    background: var(--cockpit-surface);
+    transition: height 0.18s ease;
+  }
+
+  .bom-prompt-drawer.closed {
+    height: 0;
+  }
+
+  .bom-prompt-drawer.open {
+    height: 220px;
+  }
+
+  .bom-prompt-head {
+    display: flex;
+    height: 34px;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--cockpit-border);
+    background: var(--cockpit-surface-2);
+    padding: 0 12px;
+  }
+
+  .bom-prompt-head span {
+    color: var(--cockpit-muted);
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .bom-prompt-head select {
+    width: 220px;
+    margin-left: auto;
+  }
+
+  .bom-prompt-head button {
+    height: 24px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--cockpit-blue);
+    padding: 0 10px;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
+  }
+
+  .bom-prompt-body {
+    display: grid;
+    min-height: 0;
+    flex: 1;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .bom-prompt-body label {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    border-right: 1px solid var(--cockpit-border);
+  }
+
+  .bom-prompt-body label:last-child {
+    border-right: 0;
+  }
+
+  .bom-prompt-body span {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--cockpit-border);
+    padding: 5px 10px 4px;
+    color: var(--cockpit-faint);
+    font-size: 7px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .bom-prompt-body textarea {
+    min-height: 0;
+    flex: 1;
+    resize: none;
+    border: 0;
+    background: #fff;
+    padding: 8px 10px;
+    color: var(--cockpit-muted);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.55;
+    outline: none;
+  }
+
+  .bom-prompt-foot {
+    display: flex;
+    height: 25px;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--cockpit-border);
+    padding: 0 12px;
+    color: var(--cockpit-faint);
+    font-size: 9px;
+  }
+
+  .bom-prompt-foot b {
+    margin-left: auto;
+    color: var(--cockpit-blue);
+  }
+
+  .bom-cockpit-bottom {
+    display: flex;
+    height: 42px;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 5px;
+    border-top: 1px solid var(--cockpit-border);
+    background: var(--cockpit-surface);
+    padding: 0 12px;
+  }
+
+  .bom-cockpit-bottom-label {
+    padding: 0 4px;
+    color: var(--cockpit-faint);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .bom-cockpit-action,
+  .bom-cockpit-run,
+  .bom-cockpit-ok {
+    display: inline-flex;
+    height: 26px;
+    align-items: center;
+    gap: 4px;
+    border-radius: 4px;
+    padding: 0 10px;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .bom-cockpit-action {
+    border: 1px solid var(--cockpit-border-2);
+    background: transparent;
+    color: var(--cockpit-muted);
+  }
+
+  .bom-cockpit-action:hover {
+    background: var(--cockpit-surface-2);
+    color: var(--cockpit-text);
+  }
+
+  .bom-cockpit-run {
+    border: 0;
+    background: var(--cockpit-amber);
+    color: #6a3e00;
+  }
+
+  .bom-cockpit-ok {
+    border: 0;
+    background: var(--cockpit-text);
+    color: #fff;
+  }
+
+  .bom-cockpit-sep {
+    width: 1px;
+    height: 18px;
+    flex-shrink: 0;
+    background: var(--cockpit-border);
+  }
+
+  .bom-cockpit .bom-inspector {
+    display: flex !important;
+    width: 238px;
+    flex-shrink: 0;
+    background: #fff !important;
+    color: var(--cockpit-text) !important;
+    border-left-color: var(--cockpit-border) !important;
+  }
+
+  .bom-cockpit .bom-inspector * {
+    border-color: var(--cockpit-border) !important;
+  }
+
+  .bom-cockpit .bom-inspector [class*="bg-[#"],
+  .bom-cockpit .bom-inspector [class*="bg-white/"],
+  .bom-cockpit .bom-inspector .gemini-model-card {
+    background: var(--cockpit-surface-2) !important;
+    color: var(--cockpit-text) !important;
+  }
+
+  .bom-cockpit .bom-inspector [class*="text-white"],
+  .bom-cockpit .bom-inspector [class*="text-[#"] {
+    color: var(--cockpit-text) !important;
+  }
+
+  .bom-cockpit .bom-inspector select,
+  .bom-cockpit .bom-inspector input {
+    background: #fff !important;
+    color: var(--cockpit-text) !important;
+  }
+
+  .bom-cockpit .bom-inspector button.bg-white {
+    background: var(--cockpit-text) !important;
+    color: #fff !important;
   }
 }
 

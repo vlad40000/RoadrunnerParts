@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Encompass OCR Capture",
+  "version": "1.0",
+  "description": "Capture and push BOM data from Encompass to Neon.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://encompass.com/*",
+    "https://*.encompass.com/*",
+    "https://YOUR_APP_DOMAIN.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://encompass.com/*", "https://*.encompass.com/*"],
+      "js": ["content/index.js"]
+    }
+  ]
+}

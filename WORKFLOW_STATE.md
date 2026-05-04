@@ -88,3 +88,10 @@ We are transitioning the BOM extraction pipeline from legacy scraping to an agen
 - **Next Concrete Action**: Monitor agentic visual loops in the cockpit for high-integrity BOM extraction.
 why are the prompts not auto loading? why are the URLs not loading? 
 - **REACTIVE FIX**: Resolved auto-population failure for URLs and Prompts. All 7 agents (including PartsDr) now initialize immediately upon model entry.
+
+### **Encompass OCR Extension Integration**
+- [x] **Database Schema**: Created `bom_capture_session` and `bom_captured_part` tables in Neon.
+- [x] **API Route**: Implemented `POST /api/bom/captured-parts` with Zod validation and CORS support.
+- [x] **Neon Client**: Created dedicated raw SQL client in `src/server/db/neon.ts`.
+- [x] **Extension Scaffold**: Created `encompass-extension` with `pushToDb.ts` logic and `manifest.json`.
+

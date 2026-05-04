@@ -237,6 +237,7 @@ export function BomPromptWorkspace({
   const [browserFrameUrl, setBrowserFrameUrl] = useState("");
   const [browserSupplier, setBrowserSupplier] = useState<SupplierId>("encompass");
   const [captures, setCaptures] = useState<BrowserSourceCapture[]>([]);
+  const [promptDrawerOpen, setPromptDrawerOpen] = useState(true);
 
   const selectedScenario = useMemo(
     () => scenarios.find((scenario) => scenario.id === selectedScenarioId) || scenarios[0],
@@ -501,198 +502,524 @@ export function BomPromptWorkspace({
   }
 
   return (
-    <main className="bom-studio-light fixed inset-0 overflow-hidden bg-[#101113] text-white">
-      <div className="flex h-full min-h-0">
-        <aside className="bom-left-rail flex w-[72px] shrink-0 flex-col items-center border-r border-white/10 bg-[#15171a] py-3">
-          <Link
-            href="/"
-            className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 text-white/60 hover:bg-white/5 hover:text-white"
-            aria-label="Home"
-          >
-            <Home size={18} />
+    <main className="bom-cockpit fixed inset-0 overflow-hidden">
+      <div className="bom-cockpit-super">
+        <button className="bom-cockpit-super-icon" type="button" title="Preview">
+          <Search size={12} />
+        </button>
+        <button className="bom-cockpit-super-icon" type="button" title="Code">
+          <Braces size={12} />
+        </button>
+        <span className="bom-cockpit-version">v4 - Latest</span>
+        <div className="flex-1" />
+        <button className="bom-cockpit-copy" type="button" onClick={() => copyText(inputPayloadText)}>
+          Copy
+        </button>
+        <button className="bom-cockpit-publish" type="button" onClick={saveWinningPrompt}>
+          Publish
+        </button>
+      </div>
+
+      <div className="bom-cockpit-top">
+        <div className="bom-cockpit-brand">
+          <Link href="/" className="bom-cockpit-home" aria-label="Home">
+            <Home size={13} />
           </Link>
-          <nav className="flex flex-1 flex-col items-center gap-1">
-            {MODES.map((item) => {
-              const Icon = item.icon;
-              const active = activeMode === item.mode;
-              return (
-                <button
-                  key={item.mode}
-                  type="button"
-                  onClick={() => setActiveMode(item.mode)}
-                  className={`group relative flex h-11 w-11 items-center justify-center rounded-xl transition ${
-                    active
-                      ? "bg-[#2f6fec] text-white shadow-lg shadow-blue-950/30"
-                      : "text-white/45 hover:bg-white/7 hover:text-white"
-                  }`}
-                  aria-label={item.label}
-                  title={item.label}
-                >
-                  <Icon size={18} />
-                  {active ? <span className="absolute -right-[15px] h-5 w-1 rounded-l bg-[#8ab4ff]" /> : null}
-                </button>
-              );
-            })}
-          </nav>
+          <span className="bom-cockpit-logo">
+            BOM<span>Studio</span>
+          </span>
+          <span className="bom-cockpit-job">{jobId || model || "JOB"}</span>
+        </div>
+        <nav className="bom-cockpit-tabs">
+          {[
+            ["identity", "Job"],
+            ["prompt_scenarios", "Evidence"],
+            ["supplier_runs", "Suppliers"],
+            ["bom_extraction", "Rows"],
+            ["validation", "Reconcile"],
+            ["export_review", "Approve"],
+            ["pricing", "Pricing"],
+            ["browser_tool", "Console"],
+          ].map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setActiveMode(mode as BomWorkspaceMode)}
+              className={`bom-cockpit-tab ${activeMode === mode ? "active" : ""}`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+        <div className="bom-cockpit-top-actions">
+          <span className="bom-cockpit-pulse" title="ready" />
+          <button className="bom-cockpit-icon-button" type="button" title="Inspector">
+            <PanelRight size={13} />
+          </button>
+          <button
+            className={`bom-cockpit-icon-button ${promptDrawerOpen ? "on" : ""}`}
+            type="button"
+            title="Prompt Cockpit"
+            onClick={() => setPromptDrawerOpen((open) => !open)}
+          >
+            <FileCode2 size={13} />
+          </button>
+        </div>
+      </div>
+
+      <div className="bom-cockpit-body">
+        <aside className="bom-cockpit-rail">
+          {[
+            ["S", "supplier_runs", "Supplier runs"],
+            ["R", "prompt_scenarios", "Reference evidence"],
+            ["L", "validation", "Review lock"],
+            ["B", "browser_tool", "Browser"],
+            ["P", "pricing", "Pricing"],
+          ].map(([label, mode, title], index) => (
+            <button
+              key={label}
+              type="button"
+              title={title}
+              onClick={() => setActiveMode(mode as BomWorkspaceMode)}
+              className={`bom-cockpit-rail-button ${activeMode === mode ? "on" : ""} ${index === 3 ? "spaced" : ""}`}
+            >
+              {label}
+            </button>
+          ))}
+          <button className="bom-cockpit-rail-button bottom" type="button" title="Settings">
+            <Settings2 size={12} />
+          </button>
         </aside>
 
-        <section className="flex min-w-0 flex-1 flex-col">
-          <header className="bom-topbar flex h-14 shrink-0 items-center justify-between border-b border-white/10 bg-[#17191d] px-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <Link href="/" className="text-white/45 hover:text-white" aria-label="Back home">
-                <ChevronLeft size={18} />
-              </Link>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold tracking-tight">BOM Studio</span>
-                  <span className="rounded bg-white/8 px-2 py-0.5 font-mono text-[10px] text-white/60">
-                    {model || "NO MODEL"}
-                  </span>
-                </div>
-                <div className="truncate text-[11px] text-white/40">
-                  Prompt scenarios, two model slots, browser scaffold, validation gate
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
+        <WorkspaceDrawer
+          activeMode={activeMode}
+          model={model}
+          serial={serial}
+          job={job}
+          jobIdInput={jobIdInput}
+          jobBusy={jobBusy}
+          jobError={jobError}
+          scenarios={scenarios}
+          selectedScenario={selectedScenario}
+          lastRun={lastRun}
+          lastValidation={lastValidation}
+          runHistory={runHistory}
+          finalRows={finalRows}
+          rawRows={rawRows}
+          captures={captures}
+          suppliers={SUPPLIERS}
+          setModel={setModel}
+          setSerial={setSerial}
+          setJobIdInput={setJobIdInput}
+          createOrLoadJob={createOrLoadJob}
+          loadScenario={loadScenario}
+          selectSupplierAction={selectSupplierAction}
+          validateLatestRun={validateLatestRun}
+          setActiveMode={setActiveMode}
+        />
+
+        <section className="bom-cockpit-center">
+          <BrowserCanvas
+            browserFrameUrl={browserFrameUrl}
+            browserUrl={browserUrl}
+            browserSupplier={browserSupplier}
+            model={model}
+            lastRun={lastRun}
+            captures={captures}
+          />
+
+          <PromptCockpitDrawer
+            open={promptDrawerOpen || activeMode === "prompt_scenarios"}
+            scenarios={scenarios}
+            selectedScenario={selectedScenario}
+            systemPrompt={systemPrompt}
+            userPromptTemplate={userPromptTemplate}
+            inputPayloadText={inputPayloadText}
+            inputError={inputPayload.error}
+            runBusy={runBusy}
+            runError={runError}
+            lastRun={lastRun}
+            savedPromptStatus={savedPromptStatus}
+            setInputPayloadText={setInputPayloadText}
+            setSystemPrompt={setSystemPrompt}
+            setUserPromptTemplate={setUserPromptTemplate}
+            loadScenario={loadScenario}
+            runScenario={runScenario}
+            saveWinningPrompt={saveWinningPrompt}
+          />
+
+          <footer className="bom-cockpit-bottom">
+            <span className="bom-cockpit-bottom-label">Actions</span>
+            <button type="button" className="bom-cockpit-action" onClick={createOrLoadJob}>
+              DB
+            </button>
+            <button type="button" className="bom-cockpit-action" onClick={() => setPromptDrawerOpen((open) => !open)}>
+              Prompt
+            </button>
+            <button type="button" className="bom-cockpit-action" onClick={() => setActiveMode("browser_tool")}>
+              Browser
+            </button>
+            <span className="bom-cockpit-sep" />
+            <span className="bom-cockpit-bottom-label">Suppliers</span>
+            {SUPPLIERS.slice(0, 4).map((supplier) => (
               <button
+                key={`bottom-${supplier.id}`}
                 type="button"
-                onClick={runScenario}
-                disabled={runBusy || !selectedScenario || !activeSlots.length}
-                className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#8ab4ff] px-4 text-xs font-bold text-[#07111f] hover:bg-[#a8c7fa] disabled:opacity-50"
+                className="bom-cockpit-run"
+                onClick={() => selectSupplierAction(supplier, "bom")}
               >
-                {runBusy ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
-                Run
+                <Play size={10} />
+                {supplier.label.replace(" PartsDirect", "").replace("RepairClinic", "RC")}
               </button>
-              <button
-                type="button"
-                onClick={validateLatestRun}
-                disabled={!lastRun}
-                className="inline-flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 text-xs font-semibold text-white/75 hover:bg-white/10 disabled:opacity-40"
-              >
-                <ShieldCheck size={15} />
-                Validate
-              </button>
-            </div>
-          </header>
-
-          <div className="bom-work-area grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_340px] bg-[#101113]">
-            <div className="min-w-0 overflow-hidden">
-              <div className="h-full overflow-auto p-5">
-                <div className="bom-central-panel mx-auto min-h-full max-w-[1520px] rounded-2xl border border-white/10 bg-[#17191d] p-4">
-                  {activeMode === "identity" ? (
-                    <IdentityPanel
-                      model={model}
-                      serial={serial}
-                      job={job}
-                      jobIdInput={jobIdInput}
-                      jobBusy={jobBusy}
-                      jobError={jobError}
-                      setModel={setModel}
-                      setSerial={setSerial}
-                      setJobIdInput={setJobIdInput}
-                      createOrLoadJob={createOrLoadJob}
-                      loadScenarioByType={loadScenarioByType}
-                      setActiveMode={setActiveMode}
-                    />
-                  ) : null}
-
-                  {activeMode === "prompt_scenarios" ? (
-                    <PromptScenarioPanel
-                      scenarios={scenarios}
-                      selectedScenario={selectedScenario}
-                      systemPrompt={systemPrompt}
-                      userPromptTemplate={userPromptTemplate}
-                      inputPayloadText={inputPayloadText}
-                      inputError={inputPayload.error}
-                      runBusy={runBusy}
-                      runError={runError}
-                      lastRun={lastRun}
-                      savedPromptStatus={savedPromptStatus}
-                      setInputPayloadText={setInputPayloadText}
-                      setSystemPrompt={setSystemPrompt}
-                      setUserPromptTemplate={setUserPromptTemplate}
-                      loadScenario={loadScenario}
-                      runScenario={runScenario}
-                      saveWinningPrompt={saveWinningPrompt}
-                      copyText={copyText}
-                    />
-                  ) : null}
-
-                  {activeMode === "supplier_runs" ? (
-                    <SupplierActionGrid
-                      suppliers={SUPPLIERS}
-                      model={model}
-                      selectSupplierAction={selectSupplierAction}
-                    />
-                  ) : null}
-
-                  {activeMode === "browser_tool" || activeMode === "diagram_context" ? (
-                    <BrowserWorkbench
-                      browserSupplier={browserSupplier}
-                      browserUrl={browserUrl}
-                      browserFrameUrl={browserFrameUrl}
-                      captures={captures}
-                      setBrowserSupplier={setBrowserSupplier}
-                      setBrowserUrl={setBrowserUrl}
-                      setBrowserFrameUrl={setBrowserFrameUrl}
-                      queueCapture={queueCapture}
-                      suppliers={SUPPLIERS}
-                      model={model}
-                    />
-                  ) : null}
-
-                  {activeMode === "bom_extraction" ? (
-                    <BomExtractionPanel
-                      rawRows={rawRows}
-                      finalRows={finalRows}
-                      loadScenarioByType={loadScenarioByType}
-                      setActiveMode={setActiveMode}
-                    />
-                  ) : null}
-
-                  {activeMode === "pricing" ? (
-                    <PricingPanel
-                      finalRows={finalRows}
-                      loadScenarioByType={loadScenarioByType}
-                      setActiveMode={setActiveMode}
-                    />
-                  ) : null}
-
-                  {activeMode === "validation" ? (
-                    <ValidationPanel
-                      lastValidation={lastValidation}
-                      validateLatestRun={validateLatestRun}
-                      lastRun={lastRun}
-                      finalRows={finalRows}
-                    />
-                  ) : null}
-
-                  {activeMode === "export_review" ? (
-                    <ExportReviewPanel runHistory={runHistory} lastRun={lastRun} />
-                  ) : null}
-                </div>
-              </div>
-            </div>
-
-            <RightInspector
-              modelSlots={modelSlots}
-              activeMode={activeMode}
-              selectedScenario={selectedScenario}
-              inputPayload={inputPayload.value}
-              job={job}
-              jobId={jobId}
-              model={model}
-              browserFrameUrl={browserFrameUrl}
-              lastRun={lastRun}
-              lastValidation={lastValidation}
-              updateSlot={updateSlot}
-              saveWinningPrompt={saveWinningPrompt}
-            />
-          </div>
+            ))}
+            <span className="bom-cockpit-sep" />
+            <button type="button" className="bom-cockpit-ok" onClick={validateLatestRun}>
+              OK
+            </button>
+          </footer>
         </section>
+
+        <RightInspector
+          modelSlots={modelSlots}
+          activeMode={activeMode}
+          selectedScenario={selectedScenario}
+          inputPayload={inputPayload.value}
+          job={job}
+          jobId={jobId}
+          model={model}
+          browserFrameUrl={browserFrameUrl}
+          lastRun={lastRun}
+          lastValidation={lastValidation}
+          updateSlot={updateSlot}
+          saveWinningPrompt={saveWinningPrompt}
+        />
       </div>
     </main>
+  );
+}
+
+function WorkspaceDrawer(props: {
+  activeMode: BomWorkspaceMode;
+  model: string;
+  serial: string;
+  job: BomJob | null;
+  jobIdInput: string;
+  jobBusy: boolean;
+  jobError: string | null;
+  scenarios: PromptScenario[];
+  selectedScenario: PromptScenario | undefined;
+  lastRun: PromptRun | null;
+  lastValidation: PromptValidationResult | null;
+  runHistory: PromptRun[];
+  finalRows: Array<Record<string, unknown>>;
+  rawRows: Array<Record<string, unknown>>;
+  captures: BrowserSourceCapture[];
+  suppliers: SupplierCard[];
+  setModel: (value: string) => void;
+  setSerial: (value: string) => void;
+  setJobIdInput: (value: string) => void;
+  createOrLoadJob: () => void;
+  loadScenario: (scenario: PromptScenario, patch?: Record<string, unknown>) => void;
+  selectSupplierAction: (supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") => void;
+  validateLatestRun: () => void;
+  setActiveMode: (mode: BomWorkspaceMode) => void;
+}) {
+  const activeLabel =
+    {
+      identity: "Job",
+      prompt_scenarios: "Evidence",
+      supplier_runs: "Suppliers",
+      browser_tool: "Console",
+      diagram_context: "Diagrams",
+      bom_extraction: "Rows",
+      pricing: "Pricing",
+      validation: "Reconcile",
+      export_review: "Approve",
+    }[props.activeMode] || "Workspace";
+
+  return (
+    <aside className="bom-cockpit-drawer">
+      <div className="bom-cockpit-drawer-head">
+        <span>{activeLabel}</span>
+      </div>
+      <div className="bom-cockpit-drawer-body">
+        {props.activeMode === "identity" ? (
+          <div className="bom-drawer-section">
+            <div className="bom-drawer-stats">
+              <DrawerStat label="Rows" value={String(props.job?.uniqueRowCount ?? props.finalRows.length)} />
+              <DrawerStat label="Raw" value={String(props.job?.rawRowCount ?? props.rawRows.length)} tone="warn" />
+              <DrawerStat label="Solid" value={props.lastValidation?.valid ? "yes" : "no"} tone={props.lastValidation?.valid ? "good" : "bad"} />
+              <DrawerStat label="Issues" value={String(props.job?.issues?.length ?? 0)} tone="warn" />
+            </div>
+            <label className="bom-field">
+              <span>Job ID</span>
+              <input value={props.jobIdInput} onChange={(event) => props.setJobIdInput(event.target.value)} placeholder="existing job id" />
+            </label>
+            <label className="bom-field">
+              <span>Model</span>
+              <input value={props.model} onChange={(event) => props.setModel(event.target.value.toUpperCase())} />
+            </label>
+            <label className="bom-field">
+              <span>Serial</span>
+              <input value={props.serial} onChange={(event) => props.setSerial(event.target.value.toUpperCase())} />
+            </label>
+            <button className="bom-drawer-primary" type="button" onClick={props.createOrLoadJob} disabled={props.jobBusy}>
+              {props.jobBusy ? "Loading" : "Load / Create"}
+            </button>
+            {props.jobError ? <p className="bom-drawer-error">{props.jobError}</p> : null}
+          </div>
+        ) : null}
+
+        {props.activeMode === "prompt_scenarios" ? (
+          <div className="bom-drawer-section">
+            <div className="bom-drawer-card">
+              <div className="bom-drawer-card-head">
+                <span>Scenario</span>
+                <b>{props.scenarios.length}</b>
+              </div>
+              {props.scenarios.map((scenario) => (
+                <button
+                  key={scenario.id}
+                  type="button"
+                  className={`bom-scenario-row ${scenario.id === props.selectedScenario?.id ? "active" : ""}`}
+                  onClick={() => props.loadScenario(scenario)}
+                >
+                  <span>{scenario.name}</span>
+                  <small>{scenario.type.replaceAll("_", " ")}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {props.activeMode === "supplier_runs" || props.activeMode === "diagram_context" ? (
+          <div className="bom-drawer-section">
+            {props.suppliers.map((supplier) => (
+              <div key={supplier.id} className="bom-supplier-row">
+                <div>
+                  <strong>{supplier.label}</strong>
+                  <small>{supplier.domain}</small>
+                </div>
+                <div className="bom-supplier-actions">
+                  <button type="button" onClick={() => props.selectSupplierAction(supplier, "diagrams")}>
+                    Diag
+                  </button>
+                  <button type="button" onClick={() => props.selectSupplierAction(supplier, "bom")}>
+                    BOM
+                  </button>
+                  <button type="button" onClick={() => props.selectSupplierAction(supplier, "pricing")}>
+                    $
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {props.activeMode === "bom_extraction" ? (
+          <div className="bom-drawer-section">
+            <DrawerTable rows={props.finalRows.length ? props.finalRows : props.rawRows} />
+          </div>
+        ) : null}
+
+        {props.activeMode === "pricing" ? (
+          <div className="bom-drawer-section">
+            <DrawerStat label="Validated" value={String(props.finalRows.length)} />
+            <DrawerStat label="Pricing" value="deferred" tone="warn" />
+            <DrawerStat label="Source" value="manual" />
+          </div>
+        ) : null}
+
+        {props.activeMode === "validation" ? (
+          <div className="bom-drawer-section">
+            <DrawerStat label="Accepted" value={String(props.lastValidation?.acceptedRows.length ?? 0)} tone="good" />
+            <DrawerStat label="Rejected" value={String(props.lastValidation?.rejectedRows.length ?? 0)} tone="bad" />
+            <DrawerStat label="Warnings" value={String(props.lastValidation?.warnings.length ?? 0)} tone="warn" />
+            <button className="bom-drawer-primary" type="button" onClick={props.validateLatestRun}>
+              Run Gate
+            </button>
+          </div>
+        ) : null}
+
+        {props.activeMode === "export_review" ? (
+          <div className="bom-drawer-section">
+            {(props.runHistory.length ? props.runHistory : props.lastRun ? [props.lastRun] : []).map((run) => (
+              <div key={run.id} className="bom-history-row">
+                <strong>{run.scenarioName}</strong>
+                <small>{run.id.slice(0, 8)} - {run.outputs.length} outputs</small>
+              </div>
+            ))}
+            {!props.runHistory.length && !props.lastRun ? <div className="bom-empty-mini">No saved runs</div> : null}
+          </div>
+        ) : null}
+
+        {props.activeMode === "browser_tool" ? (
+          <div className="bom-drawer-section">
+            <DrawerStat label="Captures" value={String(props.captures.length)} />
+            <DrawerStat label="Run" value={props.lastRun?.id.slice(0, 8) || "idle"} />
+            <div className="bom-console-mini">
+              {props.captures.length
+                ? props.captures.slice(0, 5).map((capture) => `> capture ${capture.captureKind}: ${capture.status}`).join("\n")
+                : "> ready\n> browser scaffold only"}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </aside>
+  );
+}
+
+function DrawerStat({ label, value, tone = "neutral" }: { label: string; value: string; tone?: "neutral" | "good" | "warn" | "bad" }) {
+  return (
+    <div className={`bom-drawer-stat ${tone}`}>
+      <b>{value}</b>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function DrawerTable({ rows }: { rows: Array<Record<string, unknown>> }) {
+  if (!rows.length) return <div className="bom-empty-mini">No rows</div>;
+  return (
+    <table className="bom-drawer-table">
+      <thead>
+        <tr>
+          <th>Part</th>
+          <th>Title</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.slice(0, 12).map((row, index) => (
+          <tr key={`${firstRowText(row, ["partNumber", "part_number"])}-${index}`}>
+            <td>{firstRowText(row, ["partNumber", "part_number", "currentServicePartNumber"]) || "-"}</td>
+            <td>{firstRowText(row, ["partTitle", "part_title", "description", "title"]) || "-"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function BrowserCanvas(props: {
+  browserFrameUrl: string;
+  browserUrl: string;
+  browserSupplier: SupplierId;
+  model: string;
+  lastRun: PromptRun | null;
+  captures: BrowserSourceCapture[];
+}) {
+  const visibleUrl = props.browserFrameUrl || props.browserUrl || "about:blank";
+  return (
+    <div className="bom-browser-wrap">
+      <div className="bom-browser-canvas">
+        <div className="bom-browser-bar">
+          <span className="bom-browser-dot red" />
+          <span className="bom-browser-dot yellow" />
+          <span className="bom-browser-dot green" />
+          <div className="bom-browser-url">{visibleUrl}</div>
+          <div className="bom-browser-spinner" />
+        </div>
+        <div className="bom-browser-body">
+          {props.browserFrameUrl ? (
+            <iframe title="BOM browser preview" src={props.browserFrameUrl} sandbox="allow-same-origin allow-scripts" />
+          ) : (
+            <div className="bom-canvas-idle">
+              <Globe2 size={42} />
+              <span>Run a supplier to begin scanning</span>
+              <small>{props.model || "No model selected"} - {props.browserSupplier}</small>
+            </div>
+          )}
+          <div className="bom-scan-line" />
+          <div className={`bom-extraction-feed ${props.lastRun?.outputs.length || props.captures.length ? "show" : ""}`}>
+            <div className="bom-feed-head">
+              <span>Extraction Feed</span>
+              <b>{props.lastRun?.outputs.length || props.captures.length}</b>
+            </div>
+            <div className="bom-feed-body">
+              {props.lastRun?.outputs.slice(0, 5).map((output) => (
+                <div key={output.id} className="bom-feed-row">
+                  <span>{output.slotId}</span>
+                  <strong>{output.modelName}</strong>
+                  <small>{output.validationStatus}</small>
+                </div>
+              ))}
+              {!props.lastRun?.outputs.length && props.captures.map((capture) => (
+                <div key={capture.id} className="bom-feed-row">
+                  <span>{capture.captureKind}</span>
+                  <strong>{capture.label}</strong>
+                  <small>{capture.status}</small>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PromptCockpitDrawer(props: {
+  open: boolean;
+  scenarios: PromptScenario[];
+  selectedScenario: PromptScenario | undefined;
+  systemPrompt: string;
+  userPromptTemplate: string;
+  inputPayloadText: string;
+  inputError: string | null;
+  runBusy: boolean;
+  runError: string | null;
+  lastRun: PromptRun | null;
+  savedPromptStatus: string | null;
+  setInputPayloadText: (value: string) => void;
+  setSystemPrompt: (value: string) => void;
+  setUserPromptTemplate: (value: string) => void;
+  loadScenario: (scenario: PromptScenario, patch?: Record<string, unknown>) => void;
+  runScenario: () => void;
+  saveWinningPrompt: () => void;
+}) {
+  return (
+    <div className={`bom-prompt-drawer ${props.open ? "open" : "closed"}`}>
+      <div className="bom-prompt-head">
+        <span>Prompt Cockpit</span>
+        <select
+          value={props.selectedScenario?.id || ""}
+          onChange={(event) => {
+            const scenario = props.scenarios.find((item) => item.id === event.target.value);
+            if (scenario) props.loadScenario(scenario);
+          }}
+        >
+          {props.scenarios.map((scenario) => (
+            <option key={scenario.id} value={scenario.id}>
+              {scenario.name}
+            </option>
+          ))}
+        </select>
+        <button type="button" onClick={props.runScenario} disabled={props.runBusy}>
+          {props.runBusy ? "Running" : "Run two models"}
+        </button>
+        <button type="button" onClick={props.saveWinningPrompt}>
+          Save
+        </button>
+      </div>
+      <div className="bom-prompt-body">
+        <label>
+          <span>System</span>
+          <textarea value={props.systemPrompt} onChange={(event) => props.setSystemPrompt(event.target.value)} />
+        </label>
+        <label>
+          <span>User Template</span>
+          <textarea value={props.userPromptTemplate} onChange={(event) => props.setUserPromptTemplate(event.target.value)} />
+        </label>
+        <label>
+          <span>Input Payload</span>
+          <textarea value={props.inputPayloadText} onChange={(event) => props.setInputPayloadText(event.target.value)} />
+        </label>
+      </div>
+      <div className="bom-prompt-foot">
+        <span>{props.inputError ? `JSON: ${props.inputError}` : props.runError || props.savedPromptStatus || "Ready"}</span>
+        <b>{props.lastRun ? `${props.lastRun.outputs.length} outputs` : "0 outputs"}</b>
+      </div>
+    </div>
   );
 }
 
@@ -1423,9 +1750,14 @@ function RightInspector(props: {
           <InspectorBlock title="Model Settings" icon={<Settings2 size={14} />}>
             <div className="grid gap-3">
               {props.modelSlots.slice(0, 2).map((slot) => (
-                <div key={slot.id} className="rounded-lg bg-[#0f1115] p-3">
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="font-mono text-xs text-white/70">{slot.id}</span>
+                <div key={slot.id} className="gemini-model-card rounded-lg bg-[#0f1115] p-3">
+                  <div className="mb-3 flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/45">
+                        {slot.id === "slot_a" ? "Model A" : "Model B"}
+                      </div>
+                      <div className="font-mono text-[10px] text-white/40">{slot.id}</div>
+                    </div>
                     <label className="flex items-center gap-2 text-[11px] text-white/45">
                       <input
                         type="checkbox"
@@ -1435,50 +1767,69 @@ function RightInspector(props: {
                       enabled
                     </label>
                   </div>
-                  <select
-                    value={slot.modelName}
-                    onChange={(event) =>
-                      props.updateSlot(slot.id, {
-                        modelName: event.target.value as ModelSlot["modelName"],
-                      })
-                    }
-                    className="mb-2 h-9 w-full rounded-md border border-white/10 bg-[#17191d] px-2 text-xs text-white outline-none"
-                  >
-                    <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
-                    <option value="gemini-3-pro-preview">gemini-3-pro-preview</option>
-                  </select>
-                  <select
-                    value={slot.provider}
-                    onChange={(event) =>
-                      props.updateSlot(slot.id, {
-                        provider: event.target.value as ModelSlot["provider"],
-                      })
-                    }
-                    className="mb-2 h-9 w-full rounded-md border border-white/10 bg-[#17191d] px-2 text-xs text-white outline-none"
-                  >
-                    <option value="gemini">gemini</option>
-                    <option value="manual">manual</option>
-                    <option value="mock">mock</option>
-                  </select>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      ["Temp", "temperature", slot.temperature ?? 1],
-                      ["TopP", "topP", slot.topP ?? 0.8],
-                      ["Max", "maxOutputTokens", slot.maxOutputTokens ?? 8192],
-                    ].map(([label, key, value]) => (
-                      <label key={String(key)} className="grid gap-1">
-                        <span className="text-[9px] uppercase tracking-widest text-white/30">{label}</span>
-                        <input
-                          value={String(value)}
-                          onChange={(event) =>
-                            props.updateSlot(slot.id, {
-                              [String(key)]: Number(event.target.value),
-                            } as Partial<ModelSlot>)
-                          }
-                          className="h-8 rounded-md border border-white/10 bg-[#17191d] px-2 font-mono text-[11px] text-white outline-none"
-                        />
-                      </label>
-                    ))}
+                  <label className="mb-2 grid gap-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">Model</span>
+                    <select
+                      value={slot.modelName}
+                      onChange={(event) =>
+                        props.updateSlot(slot.id, {
+                          modelName: event.target.value as ModelSlot["modelName"],
+                        })
+                      }
+                      className="h-9 w-full rounded-md border border-white/10 bg-[#17191d] px-2 text-xs text-white outline-none"
+                    >
+                      <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
+                      <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
+                    </select>
+                  </label>
+                  <label className="mb-2 grid gap-1">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/30">Provider</span>
+                    <select
+                      value={slot.provider}
+                      onChange={(event) =>
+                        props.updateSlot(slot.id, {
+                          provider: event.target.value as ModelSlot["provider"],
+                        })
+                      }
+                      className="h-9 w-full rounded-md border border-white/10 bg-[#17191d] px-2 text-xs text-white outline-none"
+                    >
+                      <option value="gemini">Gemini API</option>
+                      <option value="manual">Manual</option>
+                      <option value="mock">Mock</option>
+                    </select>
+                  </label>
+                  <div className="grid gap-3">
+                    <TuningSlider
+                      label="Temperature"
+                      value={slot.temperature ?? 1}
+                      min={0}
+                      max={2}
+                      step={0.1}
+                      onChange={(value) => props.updateSlot(slot.id, { temperature: value })}
+                    />
+                    <TuningSlider
+                      label="Top P"
+                      value={slot.topP ?? 0.8}
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      onChange={(value) => props.updateSlot(slot.id, { topP: value })}
+                    />
+                    <label className="grid gap-1">
+                      <span className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-white/30">
+                        Max output
+                        <span className="font-mono text-[10px] text-white/55">{slot.maxOutputTokens ?? 8192}</span>
+                      </span>
+                      <input
+                        value={String(slot.maxOutputTokens ?? 8192)}
+                        onChange={(event) =>
+                          props.updateSlot(slot.id, {
+                            maxOutputTokens: Number(event.target.value),
+                          })
+                        }
+                        className="h-8 rounded-md border border-white/10 bg-[#17191d] px-2 font-mono text-[11px] text-white outline-none"
+                      />
+                    </label>
                   </div>
                 </div>
               ))}
@@ -1549,6 +1900,40 @@ function InspectorBlock({
       </div>
       <div className="grid gap-2 p-3">{children}</div>
     </div>
+  );
+}
+
+function TuningSlider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="grid gap-1">
+      <span className="flex items-center justify-between text-[9px] font-bold uppercase tracking-widest text-white/30">
+        {label}
+        <span className="font-mono text-[10px] text-white/55">{value}</span>
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+        className="gemini-tuning-slider"
+      />
+    </label>
   );
 }
 
