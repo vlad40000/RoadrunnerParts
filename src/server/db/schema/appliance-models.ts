@@ -1,12 +1,17 @@
-import { pgTable, text, timestamp, integer, boolean, uuid, check, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, boolean, uuid, check, jsonb, numeric } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-export const applianceModels = pgTable("appliance_model", {
+export const applianceModels = pgTable("appliance_models", {
   id: uuid("id").primaryKey().defaultRandom(),
   brand: text("brand"),
+  brandCode: text("brand_code"),
   brandFamily: text("brand_family"),
   normalizedModel: text("normalized_model").unique().notNull(),
+  rawModel: text("raw_model"),
   applianceType: text("appliance_type"),
+  productType: text("product_type"),
+  serial: text("serial"),
+  identityConfidence: numeric("identity_confidence"),
 
   expectedPartCount: integer("expected_part_count"),
   trustedTotalPartCount: integer("trusted_total_part_count"),

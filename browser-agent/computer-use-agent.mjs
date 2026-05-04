@@ -20,14 +20,62 @@ const SCREEN_WIDTH = 1440;
 const SCREEN_HEIGHT = 900;
 
 class ComputerUseAgent {
-  constructor(apiKey) {
+  constructor(apiKey, options = {}) {
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({
       model: 'gemini-2.5-computer-use-preview-10-2025',
     });
+    this.jobId = options.jobId || process.env.ROADRUNNER_JOB_ID || null;
+    this.appUrl = options.appUrl || process.env.ROADRUNNER_APP_URL || null;
+    this.modelNumber = options.model || null;
     this.browser = null;
     this.context = null;
     this.page = null;
+  }
+
+  async telemetry(event, status, payload = {}) {
+    if (!this.jobId || !this.appUrl) return null;
+    try {
+      const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event,
+          status,
+          model: this.modelNumber,
+          payload,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      return data?.telemetry || null;
+    } catch (err) {
+      console.warn(`[CU Agent] Telemetry failed for ${event}:`, err.message);
+      return null;
+    }
+  }
+
+  async waitForConfirmation(targetTelemetryId, timeoutMs = 300000) {
+    if (!this.jobId || !this.appUrl || !targetTelemetryId) return 'timeout';
+
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      try {
+        const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry?limit=50`);
+        const data = await res.json().catch(() => null);
+        const events = Array.isArray(data?.telemetry) ? data.telemetry : [];
+        const decision = events.find((event) =>
+          event.event === 'cu_confirmation' &&
+          event.payload?.targetTelemetryId === targetTelemetryId
+        );
+        if (decision?.status === 'approved') return 'approved';
+        if (decision?.status === 'rejected') return 'rejected';
+      } catch (err) {
+        console.warn('[CU Agent] Confirmation poll failed:', err.message);
+      }
+    }
+
+    return 'timeout';
   }
 
   // 2. Coordinate Translation
@@ -36,6 +84,7 @@ class ComputerUseAgent {
 
   async init() {
     console.log('[CU Agent] Initializing Playwright browser...');
+    await this.telemetry('cu_agent_init', 'running', { viewport: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } });
     this.browser = await chromium.launch({ headless: false }); // Headless: false for visual debugging
     this.context = await this.browser.newContext({
       viewport: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }
@@ -100,6 +149,7 @@ class ComputerUseAgent {
   }
 
   async run(goal, initialUrl = 'https://www.google.com') {
+    await this.telemetry('cu_agent_start', 'running', { goal, initialUrl });
     await this.init();
     await this.page.goto(initialUrl);
 
@@ -117,6 +167,11 @@ class ComputerUseAgent {
       console.log(`\n--- [CU Agent] Turn ${i + 1} ---`);
       
       const state = await this.captureState();
+      await this.telemetry('cu_screenshot', 'running', {
+        turn: i + 1,
+        url: state.url,
+        screenshot: state.screenshot,
+      });
       
       // Inject current visual state into the last user message or add new one
       history[history.length - 1].parts.push({
@@ -161,7 +216,48 @@ class ComputerUseAgent {
 
       const functionResponses = [];
       for (const fc of functionCalls) {
+        const safetyDecision = fc.args?.safety_decision;
+        if (safetyDecision?.decision === 'require_confirmation') {
+          const confirmationEvent = await this.telemetry('cu_action', 'require_confirmation', {
+            turn: i + 1,
+            name: fc.name,
+            args: fc.args,
+            explanation: safetyDecision.explanation || 'Operator confirmation required before executing this action.',
+          });
+          const decision = await this.waitForConfirmation(confirmationEvent?.id);
+          if (decision !== 'approved') {
+            functionResponses.push({
+              functionResponse: {
+                name: fc.name,
+                response: {
+                  url: this.page.url(),
+                  blocked: true,
+                  decision,
+                }
+              }
+            });
+            await this.telemetry('cu_action', decision === 'rejected' ? 'failed' : 'timeout', {
+              turn: i + 1,
+              name: fc.name,
+              args: fc.args,
+              decision,
+            });
+            continue;
+          }
+        }
+
+        await this.telemetry('cu_action', 'executing', {
+          turn: i + 1,
+          name: fc.name,
+          args: fc.args,
+        });
         const executionResult = await this.executeAction(fc);
+        await this.telemetry('cu_action', executionResult.error ? 'failed' : 'complete', {
+          turn: i + 1,
+          name: fc.name,
+          args: fc.args,
+          result: executionResult,
+        });
         functionResponses.push({
           functionResponse: {
             name: fc.name,
@@ -179,17 +275,39 @@ class ComputerUseAgent {
       });
     }
 
+    await this.telemetry('cu_agent_finished', 'complete', { url: this.page?.url() || null });
+
     // Keep browser open for inspection if needed, otherwise:
     // await this.browser.close();
   }
 }
 
+function parseCliArgs(argv) {
+  const out = {};
+  for (let i = 0; i < argv.length; i += 1) {
+    const item = argv[i];
+    if (!item.startsWith('--')) continue;
+    const key = item.slice(2).replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+    out[key] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true;
+  }
+  return out;
+}
+
 // CLI Execution Example:
 // node browser-agent/computer-use-agent.mjs "Search Encompass for Whirlpool model WDF520PADM, navigate to the Exploded View, and list the price of the Dishrack."
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const goal = process.argv.slice(2).join(' ') || "Go to encompass.com and search for model WDF520PADM";
-  const agent = new ComputerUseAgent(process.env.GEMINI_API_KEY);
-  agent.run(goal, 'https://encompass.com').catch(console.error);
+  const args = parseCliArgs(process.argv.slice(2));
+  const positionalGoal = process.argv.slice(2).filter((item) => !item.startsWith('--')).join(' ');
+  const goal = args.goal || positionalGoal || "Go to encompass.com and search for model WDF520PADM";
+  const agent = new ComputerUseAgent(process.env.GEMINI_API_KEY, {
+    jobId: args.jobId,
+    appUrl: args.appUrl,
+    model: args.model,
+  });
+  agent.run(goal, args.url || 'https://encompass.com').catch(async (err) => {
+    console.error(err);
+    await agent.telemetry('cu_agent_failed', 'failed', { error: err.message });
+  });
 }
 
 export { ComputerUseAgent };

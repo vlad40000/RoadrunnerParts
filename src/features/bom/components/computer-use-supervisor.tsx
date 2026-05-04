@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { 
@@ -11,7 +11,8 @@ import {
   Loader2,
   Clock,
   ExternalLink,
-  ChevronRight
+  Play,
+  Terminal
 } from "lucide-react";
 
 interface ComputerUseAction {
@@ -189,9 +190,12 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
   const [config, setConfig] = useState<AgentConfig>(DEFAULT_AGENT_CONFIG);
   const [panelMode, setPanelMode] = useState<"configure" | "evidence">("configure");
   const [agentCode, setAgentCode] = useState("");
+  const [isLaunching, setIsLaunching] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
+  const [launchPid, setLaunchPid] = useState<number | null>(null);
   const [display, setDisplay] = useState({
     modelSelector: true,
-    codePreview: true,
+    codePreview: false,
     sidePanel: true,
   });
 
@@ -221,6 +225,56 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
       codePreview: !feedOnly,
       sidePanel: !feedOnly,
     });
+  }
+
+  async function launchAgent() {
+    if (!jobId || isLaunching) return;
+
+    const defaultContents = buildDefaultContents({ model, sourceUrl });
+    const goal = extractContentsFromCode(agentCode, defaultContents);
+    setIsLaunching(true);
+    setLaunchError(null);
+
+    try {
+      const res = await fetch(`/api/bom/jobs/${jobId}/agent-launch`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          sourceUrl,
+          goal,
+          config,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || "Computer-use launch failed.");
+      }
+      setLaunchPid(typeof data.pid === "number" ? data.pid : null);
+      setIsAgentRunning(data?.status !== "complete");
+      setPanelMode("evidence");
+    } catch (err) {
+      setLaunchError(err instanceof Error ? err.message : "Computer-use launch failed.");
+    } finally {
+      setIsLaunching(false);
+    }
+  }
+
+  async function confirmAction(actionId: string | undefined, confirmed: boolean) {
+    if (!actionId) return;
+
+    await fetch(`/api/bom/jobs/${jobId}/telemetry/${actionId}/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        confirmed,
+      }),
+    }).catch((err) => {
+      console.error("Confirmation telemetry failed", err);
+    });
+
+    onActionConfirmed?.(actionId, confirmed);
+    setPendingConfirmation(null);
   }
 
   useEffect(() => {
@@ -316,6 +370,15 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
           </div>
           <button
             type="button"
+            onClick={launchAgent}
+            disabled={isLaunching}
+            className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/50 bg-emerald-500 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white hover:bg-emerald-400 disabled:opacity-50"
+          >
+            {isLaunching ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+            Launch
+          </button>
+          <button
+            type="button"
             onClick={toggleFeedOnly}
             className="rounded-md border border-white/10 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-neutral-300 hover:bg-white/10"
           >
@@ -333,7 +396,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
             onClick={() => toggleDisplay("codePreview")}
             className={`rounded-md border border-white/10 px-2 py-1 text-[10px] font-black uppercase tracking-widest ${display.codePreview ? "bg-white text-neutral-900" : "text-neutral-400 hover:bg-white/10"}`}
           >
-            Code
+            Advanced
           </button>
           <button
             type="button"
@@ -351,8 +414,27 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
             {display.modelSelector ? (
             <div className="rounded-xl border border-white/10 bg-neutral-900 p-4">
               <div className="mb-3 text-[10px] font-black uppercase tracking-widest text-neutral-500">
-                Agent Model Selector
+                Launch Controls
               </div>
+              <button
+                type="button"
+                onClick={launchAgent}
+                disabled={isLaunching}
+                className="mb-3 flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-500/50 bg-emerald-500 px-3 py-2 text-xs font-black uppercase tracking-widest text-white hover:bg-emerald-400 disabled:opacity-50"
+              >
+                {isLaunching ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+                Launch Local Agent
+              </button>
+              {launchPid ? (
+                <div className="mb-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-2 text-[10px] font-bold text-emerald-300">
+                  Launched local process PID {launchPid}. Telemetry will appear in the evidence feed.
+                </div>
+              ) : null}
+              {launchError ? (
+                <div className="mb-3 rounded-lg border border-red-500/30 bg-red-500/10 p-2 text-[10px] font-bold text-red-300">
+                  {launchError}
+                </div>
+              ) : null}
               <select
                 value={config.model}
                 onChange={(event) => patchConfig({ model: event.target.value as AgentConfig["model"] })}
@@ -403,7 +485,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
                 <ToggleRow label="Grounding with Google Search" enabled={config.googleSearch} onClick={() => patchConfig({ googleSearch: !config.googleSearch })} />
                 <ToggleRow label="Grounding with Google Maps" enabled={config.googleMaps} onClick={() => patchConfig({ googleMaps: !config.googleMaps })} />
                 <ToggleRow label="URL Context" enabled={config.urlContext} onClick={() => patchConfig({ urlContext: !config.urlContext })} />
-                <ToggleRow label="Computer Use" enabled={config.computerUse} onClick={() => patchConfig({ computerUse: !config.computerUse })} />
+                <ToggleRow label="Computer Use" enabled={true} onClick={() => undefined} disabled />
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2 border-t border-white/10 pt-4">
@@ -446,7 +528,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
             ) : null}
 
             <div className="space-y-4">
-              <div className="relative aspect-[1440/900] w-full overflow-hidden rounded-lg border border-white/10 bg-neutral-950 shadow-inner">
+              <div className="relative w-full aspect-[1440/900] overflow-hidden rounded-lg border border-white/10 bg-neutral-950 shadow-inner">
                 {activeScreen ? (
                   <img 
                     src={activeScreen.startsWith('data:') ? activeScreen : `data:image/png;base64,${activeScreen}`} 
@@ -477,8 +559,11 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
               {display.codePreview ? (
               <div className="rounded-xl border border-white/10 bg-neutral-900">
                 <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Get Code</div>
-                  <div className="text-[10px] font-bold text-neutral-500">Python</div>
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                    <Terminal size={12} />
+                    Advanced Launch Goal / Code Preview
+                  </div>
+                  <div className="text-[10px] font-bold text-neutral-500">Editable</div>
                 </div>
                 <pre className="max-h-72 overflow-auto p-4 text-[11px] leading-relaxed text-blue-100">
                   <textarea
@@ -508,14 +593,14 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <button 
-                    onClick={() => onActionConfirmed?.(pendingConfirmation.id, false)}
+                    onClick={() => confirmAction(pendingConfirmation.id, false)}
                     className="flex items-center justify-center gap-2 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white text-xs font-black uppercase tracking-widest transition-all"
                   >
                     <XCircle size={16} />
                     Reject
                   </button>
                   <button 
-                    onClick={() => onActionConfirmed?.(pendingConfirmation.id, true)}
+                    onClick={() => confirmAction(pendingConfirmation.id, true)}
                     className="flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-900/40"
                   >
                     <CheckCircle2 size={16} />
@@ -552,6 +637,12 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
                 <div className="rounded-lg border border-white/10 bg-white/5 p-3">
                   <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Selected Model</div>
                   <div className="mt-1 text-sm font-bold text-white">{config.model}</div>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Launch State</div>
+                  <div className="mt-1 text-sm font-bold text-white">
+                    {isAgentRunning ? "Running / streaming" : launchPid ? `Started PID ${launchPid}` : "Ready"}
+                  </div>
                 </div>
                 <div className="rounded-lg border border-white/10 bg-white/5 p-3">
                   <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Active Tools</div>
@@ -622,7 +713,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
 
           <div className="p-4 border-t border-white/5 space-y-3">
             <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white text-neutral-900 text-xs font-black uppercase tracking-widest hover:bg-neutral-200 transition-all">
-              Pause Intake
+              Monitor Intake
             </button>
             <div className="flex items-center justify-between text-[10px] font-bold text-neutral-500 px-1">
               <span>{telemetry.length} event(s) delivered</span>
@@ -631,7 +722,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
               </div>
             </div>
             <div className="rounded-lg border border-white/10 bg-black/20 p-3 text-[10px] font-semibold leading-relaxed text-neutral-400">
-              This panel displays whatever the job delivers: URL context, grounding checks, screenshots, redirects, blockers, confirmations, or extracted evidence. It does not decide final BOM truth or write speculative cache rows.
+              Launch starts the local browser agent from this UI. This panel monitors screenshots, actions, blockers, confirmations, and extracted evidence; it does not decide final BOM truth or write speculative cache rows.
             </div>
           </div>
         </div>

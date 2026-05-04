@@ -9,19 +9,10 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+import { applianceModels as retrievalApplianceModels } from "./appliance-models";
+export { retrievalApplianceModels };
 
-export const retrievalApplianceModels = pgTable("appliance_models", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  normalizedModel: text("normalized_model").notNull().unique(),
-  rawModel: text("raw_model"),
-  brand: text("brand"),
-  brandCode: text("brand_code"),
-  productType: text("product_type"),
-  serial: text("serial"),
-  identityConfidence: numeric("identity_confidence"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+// Using applianceModels from appliance-models.ts as retrievalApplianceModels
 
 export const modelSourceUrls = pgTable(
   "model_source_urls",

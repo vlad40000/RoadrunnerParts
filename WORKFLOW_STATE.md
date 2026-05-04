@@ -4,11 +4,11 @@
 We are transitioning the BOM extraction pipeline from legacy scraping to an agentic visual loop to resolve persistent Encompass 403/429 blocks.
 
 ### Completed Tasks
-- [x] Database migration for `bom_telemetry`, `diagram_manifest`, and `bom_part_mapping`.
-- [x] Implementation of `ComputerUseSupervisor` for real-time visual agent monitoring.
-- [x] Integration of `ComputerUseSupervisor` into `BomWorkflowControlPanel` (UI Refactor started).
-- [x] Telemetry instrumentation in `fetchHtml` to log block events.
-- [x] Deprecation of legacy hardcoded brand routes in favor of `encompass_brand_routes` DB table.
+- [x] Database migration for `appliance_models` and `nameplate_extractions`.
+- [x] Consistently typed `appliance_models` across retrieval and BOM services.
+- [x] Fixed JSX parsing and TypeScript errors in `BomWorkflowControlPanel`.
+- [x] Hardened `runTargetedBomRecovery` logic with safe iteration and filtering.
+- [x] Ingested Maytag gold truth record into DB for direct bypass testing.
 
 ### **Gold Truth Reference**
 - **Maytag MVWB300WQ2**:
@@ -19,11 +19,11 @@ We are transitioning the BOM extraction pipeline from legacy scraping to an agen
 ### **Current Tasks**
 1. [x] Telemetry Migration: `bom_telemetry` table active.
 2. [x] Direct Route Hardening: `encompass_brand_routes` integrated.
-3. [/] Computer Use Integration: `ComputerUseSupervisor` component added to `BomWorkflowControlPanel`.
-4. [x] Ingest Maytag Gold Truth into `encompass_model_urls`.
+3. [x] Computer Use Integration: `ComputerUseSupervisor` component added to `BomWorkflowControlPanel`.
+4. [x] Ingest Maytag Gold Truth into `appliance_models`.
 5. [x] Implement `resolveEncompassModelUrl` in `EncompassRouteService`.
 6. [x] Update `encompass-universal.ts` to use `resolveEncompassModelUrl`.
-7. [ ] Verify `ComputerUseSupervisor` visual loop with Maytag model.
+7. [/] Verify `ComputerUseSupervisor` visual loop with Maytag model.
 
 ### In Progress
 - [x] Finalizing the visual loop implementation in `computer-use-agent.mjs`.
