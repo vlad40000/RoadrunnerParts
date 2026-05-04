@@ -19,6 +19,34 @@ function positiveNumber(value: unknown) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
+function normalizeModel(value: unknown) {
+  return value === "gemini-3-pro-preview" ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
+}
+
+function normalizeTemperature(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(String(value || "").trim());
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 2 ? parsed : 1;
+}
+
+function normalizeThinking(value: unknown) {
+  const normalized = String(value || "medium").trim().toLowerCase();
+  return normalized === "low" || normalized === "high" ? normalized : "medium";
+}
+
+function normalizeToolConfig(value: unknown) {
+  const input = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  return {
+    directFetch: true,
+    structuredOutput: true,
+    googleSearch: input.googleSearch === true || input.useSearch === true,
+    urlContext: input.urlContext !== false,
+    codeExecution: input.codeExecution === true || input.usePython === true,
+    functionCalling: input.functionCalling === true,
+    googleMaps: input.googleMaps === true,
+    computerUse: input.computerUse === true,
+  };
+}
+
 export async function PUT(req: NextRequest, { params }: Params) {
   const { jobId, supplierId: rawSupplierId } = await params;
   const supplierId = normalizeSupplierId(rawSupplierId);
@@ -30,6 +58,15 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
   const supplier = normalizeSupplierId(String(body.supplier || supplierId));
   const expectedTotal = positiveNumber(body.expectedTotal);
+  const bodyTuning = (body.tuning && typeof body.tuning === "object" ? body.tuning : {}) as Record<string, unknown>;
+  const toolConfig = normalizeToolConfig(body.toolConfig || bodyTuning.toolConfig || bodyTuning.tools || bodyTuning);
+  const agentConfig = {
+    model: normalizeModel(body.model || bodyTuning.model),
+    temperature: normalizeTemperature(body.temperature ?? bodyTuning.temperature),
+    thinkingLevel: normalizeThinking(body.thinkingLevel || bodyTuning.thinkingLevel),
+    systemInstruction: String(body.systemInstruction || bodyTuning.systemInstruction || "").trim(),
+    toolConfig,
+  };
 
   const persistedInput = {
     task: String(body.task || "run_supplier_agent"),
@@ -49,6 +86,15 @@ export async function PUT(req: NextRequest, { params }: Params) {
     operatorInstructionName: String(body.operatorInstructionName || body.visualTruth?.operatorInstructionName || "").trim(),
     agentCode: String(body.agentCode || "").trim(),
     agentCodeLanguage: String(body.agentCodeLanguage || "").trim(),
+    agentConfig,
+    modelConfig: agentConfig,
+    toolConfig,
+    tuning: {
+      model: agentConfig.model,
+      temperature: agentConfig.temperature,
+      thinkingLevel: agentConfig.thinkingLevel,
+      toolConfig,
+    },
     normalizedModel: String(job.model || ""),
     promptVersion: body.promptVersion || "supplier-agent-matrix-v1",
     functionVersion: body.functionVersion || "supplier-run-route-v2",

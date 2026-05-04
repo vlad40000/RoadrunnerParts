@@ -217,6 +217,7 @@ export async function updateBomJobSummary(
     errorText?: string | null;
     requiresApproval?: boolean | null;
     approvalStatus?: string | null;
+    diagramParse?: Record<string, unknown> | null;
   },
 ) {
   const job = await getBomJob(jobId);
@@ -259,6 +260,7 @@ export async function updateBomJobSummary(
       errorText: partial.errorText ?? job.errorText,
       requiresApproval: partial.requiresApproval ?? job.requiresApproval,
       approvalStatus: partial.approvalStatus ?? job.approvalStatus,
+      diagramParse: partial.diagramParse ?? job.diagramParse,
       updatedAt: new Date(),
     })
     .where(eq(bomJobs.id, jobId));

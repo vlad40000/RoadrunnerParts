@@ -61,6 +61,22 @@ type SourceActionInput = {
   pricingSource?: string | null;
   agentCode?: string | null;
   agentCodeLanguage?: string | null;
+  agentConfig?: {
+    model?: "gemini-3-flash-preview" | "gemini-3-pro-preview";
+    temperature?: number;
+    thinkingLevel?: "low" | "medium" | "high";
+    systemInstruction?: string | null;
+    toolConfig?: {
+      directFetch?: boolean;
+      structuredOutput?: boolean;
+      googleSearch?: boolean;
+      urlContext?: boolean;
+      codeExecution?: boolean;
+      functionCalling?: boolean;
+      googleMaps?: boolean;
+      computerUse?: boolean;
+    };
+  } | null;
   visualTruth?: {
     screenshotBase64?: string | null;
     canonUrl?: string | null;
@@ -461,6 +477,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       sourceType: "distributor",
       assemblyName: "Supplier Agent Source",
       visualTruth: input.visualTruth,
+      agentConfig: input.agentConfig || undefined,
     });
 
     const extractedRows = rowsRaw.map((row: any) => ({
@@ -604,6 +621,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
           sourceUrl: fetched.finalUrl,
           sourceType: "supplier_assembly",
           visualTruth: input.visualTruth,
+          agentConfig: input.agentConfig || undefined,
         });
 
         const rows = rowsRaw.map((row: any) => ({

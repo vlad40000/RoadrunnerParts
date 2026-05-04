@@ -14,6 +14,8 @@ import {
 } from "@/features/bom/services/source-tier-policy";
 
 type Params = { params: Promise<{ jobId: string; supplierId: string }> };
+type GeminiModel = "gemini-3-flash-preview" | "gemini-3-pro-preview";
+type ThinkingLevel = "low" | "medium" | "high";
 
 function positiveNumber(value: unknown) {
   const parsed =
@@ -24,6 +26,74 @@ function positiveNumber(value: unknown) {
         : NaN;
 
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizeModel(value: unknown): GeminiModel {
+  return value === "gemini-3-pro-preview" ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
+}
+
+function normalizeTemperature(value: unknown) {
+  const parsed = typeof value === "number" ? value : Number(String(value || "").trim());
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 2 ? parsed : 1;
+}
+
+function normalizeThinking(value: unknown): ThinkingLevel {
+  const normalized = String(value || "medium").trim().toLowerCase();
+  return normalized === "low" || normalized === "high" ? normalized : "medium";
+}
+
+function normalizeToolConfig(value: unknown) {
+  const input = (value && typeof value === "object" ? value : {}) as Record<string, unknown>;
+  return {
+    directFetch: true,
+    structuredOutput: true,
+    googleSearch: input.googleSearch === true || input.useSearch === true,
+    urlContext: input.urlContext !== false,
+    codeExecution: input.codeExecution === true || input.usePython === true,
+    functionCalling: input.functionCalling === true,
+    googleMaps: input.googleMaps === true,
+    computerUse: input.computerUse === true,
+  };
+}
+
+function normalizeAgentConfig(input: Record<string, unknown>): {
+  model: GeminiModel;
+  temperature: number;
+  thinkingLevel: ThinkingLevel;
+  systemInstruction: string;
+  toolConfig: {
+    directFetch: boolean;
+    structuredOutput: boolean;
+    googleSearch: boolean;
+    urlContext: boolean;
+    codeExecution: boolean;
+    functionCalling: boolean;
+    googleMaps: boolean;
+    computerUse: boolean;
+  };
+} {
+  const rawAgentConfig =
+    input.agentConfig && typeof input.agentConfig === "object"
+      ? (input.agentConfig as Record<string, unknown>)
+      : {};
+  const rawTuning =
+    input.tuning && typeof input.tuning === "object"
+      ? (input.tuning as Record<string, unknown>)
+      : {};
+  const rawToolConfig =
+    rawAgentConfig.toolConfig ||
+    input.toolConfig ||
+    rawTuning.toolConfig ||
+    rawTuning.tools ||
+    rawTuning;
+
+  return {
+    model: normalizeModel(rawAgentConfig.model || input.model || rawTuning.model),
+    temperature: normalizeTemperature(rawAgentConfig.temperature ?? input.temperature ?? rawTuning.temperature),
+    thinkingLevel: normalizeThinking(rawAgentConfig.thinkingLevel || input.thinkingLevel || rawTuning.thinkingLevel),
+    systemInstruction: String(rawAgentConfig.systemInstruction || input.systemInstruction || rawTuning.systemInstruction || "").trim(),
+    toolConfig: normalizeToolConfig(rawToolConfig),
+  };
 }
 
 export async function POST(_req: NextRequest, { params }: Params) {
@@ -63,6 +133,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
   }
   const supplier = normalizeSupplierId(String(input.supplier || supplierId));
   const task = String(input.task || "run_supplier_agent") as ManualSourceActionTask;
+  const agentConfig = normalizeAgentConfig(input);
   const expectedTotalSource = String(input.expectedTotalSource || "");
   const inputExpectedTotal = positiveNumber(input.expectedTotalUsed ?? input.expectedTotal);
   const expectedTotal =
@@ -93,10 +164,11 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const agentCode = String(input.agentCode || "").trim();
     let agentCodeRun: Record<string, unknown> | null = null;
 
-    if (agentCode) {
+    if (agentCode && agentConfig.toolConfig.codeExecution) {
       const { runGeminiCodeExecution } = await import("@/features/bom/services/model-runner");
       agentCodeRun = await runGeminiCodeExecution({
         code: agentCode,
+        model: agentConfig.model,
         context: {
           jobId,
           supplierId,
@@ -104,6 +176,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
           canonicalModel: String(job.model || ""),
           sourceUrl: String(input.searchUrl || input.sourceUrl || ""),
           language: String(input.agentCodeLanguage || "python"),
+          agentConfig,
         },
       });
     }
@@ -121,6 +194,7 @@ export async function POST(_req: NextRequest, { params }: Params) {
       productType: job.productType,
       agentCode: String(input.agentCode || ""),
       agentCodeLanguage: String(input.agentCodeLanguage || ""),
+      agentConfig,
       visualTruth: includeDiagram
         ? {
             screenshotBase64: String(

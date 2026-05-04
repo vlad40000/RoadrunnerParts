@@ -66,6 +66,15 @@ export async function runPartsExtractor(input: {
   sourceType: ProviderSourceType;
   assemblyName?: string;
   visualTruth?: any;
+  agentConfig?: {
+    model?: "gemini-3-flash-preview" | "gemini-3-pro-preview";
+    temperature?: number;
+    systemInstruction?: string | null;
+    toolConfig?: {
+      googleSearch?: boolean;
+      urlContext?: boolean;
+    };
+  };
 }): Promise<BomRow[]> {
   const deterministic = parseStructuredRows(input.sourceText, input.sourceUrl);
 
@@ -78,6 +87,7 @@ export async function runPartsExtractor(input: {
   }
 
   const raw = await runStructuredJson<{ rows: BomRow[] }>({
+    model: input.agentConfig?.model,
     prompt: buildPartsPrompt({ 
       assemblyContext: input.assemblyName,
       sourceUrl: input.sourceUrl,
@@ -88,6 +98,9 @@ export async function runPartsExtractor(input: {
       sourceType: input.sourceType,
       content: input.sourceText,
     }),
+    enableSearch: input.agentConfig?.toolConfig?.googleSearch === true,
+    systemInstruction: input.agentConfig?.systemInstruction || undefined,
+    temperature: input.agentConfig?.temperature,
   });
 
   return partsResultSchema.parse(raw).rows.map((row) => ({

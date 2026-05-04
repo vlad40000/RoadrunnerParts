@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { 
   Globe, 
   CheckSquare, 
   Square, 
   Play, 
-  ExternalLink, 
   Loader2,
   CheckCircle2,
   AlertCircle,
@@ -21,7 +21,6 @@ import {
   Cpu,
   Pencil
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 import {
   buildKnownEncompassAssemblyUrl,
   normalizeCanonicalModel,
@@ -39,13 +38,28 @@ Rules:
 4. Keep expected count evidence separate from extracted rows.
 5. Do not claim completeness unless evidence supports it.
 6. Preserve model/part punctuation exactly.
-7. Treat missing/blocked evidence as partial, not complete.`;
+7. Treat missing/blocked evidence as partial, not complete.
+8. Honor the operator-selected tool policy. Direct fetch and structured output are mandatory; browser/computer-use evidence is a separate supervised path.`;
+
+type GeminiModel = "gemini-3-flash-preview" | "gemini-3-pro-preview";
+
+interface AgentToolConfig {
+  directFetch: boolean;
+  structuredOutput: boolean;
+  googleSearch: boolean;
+  urlContext: boolean;
+  codeExecution: boolean;
+  functionCalling: boolean;
+  googleMaps: boolean;
+  computerUse: boolean;
+}
 
 interface AgentTuning {
+  model: GeminiModel;
   temperature: number;
   thinkingLevel: "low" | "medium" | "high";
-  useSearch: boolean;
-  usePython: boolean;
+  systemInstruction: string;
+  toolConfig: AgentToolConfig;
 }
 
 interface AgentState {
@@ -66,12 +80,51 @@ interface SupplierAgentMatrixProps {
   truth: any;
 }
 
+const DEFAULT_TOOL_CONFIG: AgentToolConfig = {
+  directFetch: true,
+  structuredOutput: true,
+  googleSearch: false,
+  urlContext: true,
+  codeExecution: true,
+  functionCalling: false,
+  googleMaps: false,
+  computerUse: false,
+};
+
 const DEFAULT_TUNING: AgentTuning = {
+  model: "gemini-3-flash-preview",
   temperature: 1.0,
   thinkingLevel: "medium",
-  useSearch: true,
-  usePython: true,
+  systemInstruction: "",
+  toolConfig: { ...DEFAULT_TOOL_CONFIG },
 };
+
+function createDefaultTuning(patch: Partial<AgentTuning> = {}): AgentTuning {
+  return {
+    ...DEFAULT_TUNING,
+    ...patch,
+    toolConfig: {
+      ...DEFAULT_TOOL_CONFIG,
+      ...(patch.toolConfig || {}),
+    },
+  };
+}
+
+const TOOL_ROWS: Array<{
+  key: keyof AgentToolConfig;
+  label: string;
+  detail: string;
+  locked?: boolean;
+}> = [
+  { key: "directFetch", label: "Direct URL", detail: "Route fetches the selected supplier URL first.", locked: true },
+  { key: "structuredOutput", label: "Schema", detail: "Extractor must return structured JSON rows.", locked: true },
+  { key: "urlContext", label: "URL Context", detail: "Saved for preflight/handoff; supplier extraction uses direct fetched source text." },
+  { key: "googleSearch", label: "Search", detail: "Optional grounding/search for recovery, not final truth by itself." },
+  { key: "codeExecution", label: "Code", detail: "Runs operator-supplied code/preflight when present." },
+  { key: "functionCalling", label: "Functions", detail: "Persisted for staged function agents; supplier route uses fixed functions." },
+  { key: "googleMaps", label: "Maps", detail: "Persisted only; not used by appliance supplier extraction." },
+  { key: "computerUse", label: "Computer Use", detail: "Persisted handoff flag; supervised in Evidence workspace." },
+];
 
 function agentCodeStorageKey(jobId: string) {
   return `bom-workflow-agent-code:${jobId}`;
@@ -110,8 +163,8 @@ const INITIAL_AGENTS: AgentState[] = [
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
-    showTuning: false,
-    tuning: { ...DEFAULT_TUNING },
+    showTuning: true,
+    tuning: createDefaultTuning(),
   },
   {
     id: "sears-partsdirect",
@@ -120,8 +173,8 @@ const INITIAL_AGENTS: AgentState[] = [
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
-    showTuning: false,
-    tuning: { ...DEFAULT_TUNING },
+    showTuning: true,
+    tuning: createDefaultTuning(),
   },
   {
     id: "fix.com",
@@ -130,8 +183,8 @@ const INITIAL_AGENTS: AgentState[] = [
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
-    showTuning: false,
-    tuning: { ...DEFAULT_TUNING },
+    showTuning: true,
+    tuning: createDefaultTuning(),
   },
   {
     id: "repairclinic-family",
@@ -140,8 +193,8 @@ const INITIAL_AGENTS: AgentState[] = [
     sendDiagram: true,
     sendExpectedCount: false,
     status: "idle",
-    showTuning: false,
-    tuning: { ...DEFAULT_TUNING },
+    showTuning: true,
+    tuning: createDefaultTuning(),
   },
   {
     id: "appliancepartspros",
@@ -150,8 +203,8 @@ const INITIAL_AGENTS: AgentState[] = [
     sendDiagram: false,
     sendExpectedCount: true,
     status: "idle",
-    showTuning: false,
-    tuning: { ...DEFAULT_TUNING },
+    showTuning: true,
+    tuning: createDefaultTuning(),
   },
   {
     id: "ai-recovery",
@@ -160,8 +213,8 @@ const INITIAL_AGENTS: AgentState[] = [
     sendDiagram: true,
     sendExpectedCount: true,
     status: "idle",
-    showTuning: false,
-    tuning: { ...DEFAULT_TUNING, temperature: 1.2, thinkingLevel: "high" },
+    showTuning: true,
+    tuning: createDefaultTuning({ thinkingLevel: "high" }),
   },
 ];
 
@@ -209,7 +262,37 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
 
   const updateTuning = (id: string, patch: Partial<AgentTuning>) => {
     setAgents(prev => prev.map(agent => 
-      agent.id === id ? { ...agent, tuning: { ...agent.tuning, ...patch } } : agent
+      agent.id === id
+        ? {
+            ...agent,
+            tuning: {
+              ...agent.tuning,
+              ...patch,
+              toolConfig: {
+                ...agent.tuning.toolConfig,
+                ...(patch.toolConfig || {}),
+              },
+            },
+          }
+        : agent
+    ));
+  };
+
+  const updateToolConfig = (id: string, key: keyof AgentToolConfig, value: boolean) => {
+    if (key === "directFetch" || key === "structuredOutput") return;
+    setAgents(prev => prev.map(agent =>
+      agent.id === id
+        ? {
+            ...agent,
+            tuning: {
+              ...agent.tuning,
+              toolConfig: {
+                ...agent.tuning.toolConfig,
+                [key]: value,
+              },
+            },
+          }
+        : agent
     ));
   };
 
@@ -238,6 +321,18 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
       task: "run_supplier_agent",
       jobId,
       sourceUrl,
+      model: agent.tuning.model,
+      temperature: agent.tuning.temperature,
+      thinkingLevel: agent.tuning.thinkingLevel,
+      systemInstruction: agent.tuning.systemInstruction,
+      toolConfig: agent.tuning.toolConfig,
+      agentConfig: {
+        model: agent.tuning.model,
+        temperature: agent.tuning.temperature,
+        thinkingLevel: agent.tuning.thinkingLevel,
+        systemInstruction: agent.tuning.systemInstruction,
+        toolConfig: agent.tuning.toolConfig,
+      },
       includeDiagram: agent.sendDiagram,
       includeExpectedCount: agent.sendExpectedCount,
       canonUrl: truth?.canonUrl || null,
@@ -254,7 +349,13 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
       canonicalModel: normalizedModel,
       supplier: supplierId,
       searchUrl: sourceUrl,
-      tuning: agent.tuning,
+      tuning: {
+        model: agent.tuning.model,
+        temperature: agent.tuning.temperature,
+        thinkingLevel: agent.tuning.thinkingLevel,
+        systemInstruction: agent.tuning.systemInstruction,
+        toolConfig: agent.tuning.toolConfig,
+      },
       visualTruth: {
         screenshotBase64: agent.sendDiagram ? truth?.storedImageUrl || (truth?.base64 ? `data:image/png;base64,${truth.base64}` : truth?.screenshotBase64 || null) : null,
         storedImageUrl: agent.sendDiagram ? truth?.storedImageUrl || null : null,
@@ -358,7 +459,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 2xl:grid-cols-3">
         {agents.map((agent) => (
           <motion.div
             key={agent.id}
@@ -380,7 +481,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               "bg-neutral-200"
             }`} />
 
-            <details className="p-3" open={agent.id === "encompass-family"}>
+            <details className="p-3" open>
               <summary className="cursor-pointer list-none">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-3">
@@ -424,46 +525,87 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                     <div className="grid grid-cols-1 gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
-                          <FlaskConical size={10} /> Temp: {agent.tuning.temperature.toFixed(1)}
+                          <Cpu size={10} /> Model
                         </label>
-                        <input 
-                          type="range" min="0" max="2" step="0.1" 
-                          value={agent.tuning.temperature}
-                          onChange={(e) => updateTuning(agent.id, { temperature: parseFloat(e.target.value) })}
-                          className="w-full accent-blue-600"
-                        />
+                        <select
+                          value={agent.tuning.model}
+                          onChange={(e) => updateTuning(agent.id, { model: e.target.value as GeminiModel })}
+                          className="w-full rounded border bg-white p-1 text-[10px] font-bold"
+                        >
+                          <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
+                          <option value="gemini-3-pro-preview">Gemini 3 Pro</option>
+                        </select>
                       </div>
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
                           <Cpu size={10} /> Thinking: {agent.tuning.thinkingLevel}
                         </label>
-                        <select 
+                        <select
                           value={agent.tuning.thinkingLevel}
-                          onChange={(e) => updateTuning(agent.id, { thinkingLevel: e.target.value as any })}
-                          className="w-full text-[10px] font-bold p-1 rounded border bg-white"
+                          onChange={(e) => updateTuning(agent.id, { thinkingLevel: e.target.value as AgentTuning["thinkingLevel"] })}
+                          className="w-full rounded border bg-white p-1 text-[10px] font-bold"
                         >
                           <option value="low">Low</option>
                           <option value="medium">Medium</option>
                           <option value="high">High</option>
                         </select>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200 pt-2 sm:col-span-2">
-                         <button 
-                          onClick={() => updateTuning(agent.id, { useSearch: !agent.tuning.useSearch })}
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border transition-all ${
-                            agent.tuning.useSearch ? "bg-blue-100 border-blue-200 text-blue-700" : "bg-white border-neutral-200 text-neutral-400"
-                          }`}
-                         >
-                           <Globe size={10} /> Search {agent.tuning.useSearch ? "ON" : "OFF"}
-                         </button>
-                         <button 
-                          onClick={() => updateTuning(agent.id, { usePython: !agent.tuning.usePython })}
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border transition-all ${
-                            agent.tuning.usePython ? "bg-emerald-100 border-emerald-200 text-emerald-700" : "bg-white border-neutral-200 text-neutral-400"
-                          }`}
-                         >
-                           <Terminal size={10} /> Python {agent.tuning.usePython ? "ON" : "OFF"}
-                         </button>
+                      <div className="space-y-2 sm:col-span-2">
+                        <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
+                          <FlaskConical size={10} /> Temp: {agent.tuning.temperature.toFixed(1)}
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="2"
+                          step="0.1"
+                          value={agent.tuning.temperature}
+                          onChange={(e) => updateTuning(agent.id, { temperature: parseFloat(e.target.value) })}
+                          className="w-full accent-blue-600"
+                        />
+                        <div className="text-[9px] font-bold text-neutral-400">
+                          Gemini 3 default is 1.0. Change only for a stage-specific reason.
+                        </div>
+                      </div>
+                      <label className="space-y-2 sm:col-span-2">
+                        <span className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
+                          <Terminal size={10} /> Agent instruction override
+                        </span>
+                        <textarea
+                          value={agent.tuning.systemInstruction}
+                          onChange={(e) => updateTuning(agent.id, { systemInstruction: e.target.value })}
+                          placeholder="Optional supplier-specific instruction. Leave blank to use the default contract."
+                          className="min-h-16 w-full resize-y rounded border bg-white p-2 text-[10px] font-semibold text-neutral-700 outline-none focus:border-blue-300"
+                        />
+                      </label>
+                      <div className="sm:col-span-2">
+                        <div className="mb-2 flex items-center justify-between text-[9px] font-black uppercase text-neutral-500">
+                          <span>Tool access</span>
+                          <span>Saved with run</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {TOOL_ROWS.map((tool) => {
+                            const enabled = agent.tuning.toolConfig[tool.key];
+                            return (
+                              <Tooltip key={tool.key} label={tool.detail}>
+                                <button
+                                  type="button"
+                                  onClick={() => updateToolConfig(agent.id, tool.key, !enabled)}
+                                  disabled={tool.locked}
+                                  aria-label={`${tool.label}: ${tool.detail}`}
+                                  className={`flex items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-[9px] font-black uppercase transition-all disabled:cursor-default ${
+                                    enabled
+                                      ? "border-blue-200 bg-blue-50 text-blue-800"
+                                      : "border-neutral-200 bg-white text-neutral-400"
+                                  }`}
+                                >
+                                  <span className="truncate">{tool.label}</span>
+                                  <span>{enabled ? "ON" : "OFF"}</span>
+                                </button>
+                              </Tooltip>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   </motion.div>

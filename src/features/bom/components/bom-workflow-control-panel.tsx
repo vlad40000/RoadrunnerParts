@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -9,9 +10,28 @@ import {
   Home,
   ImageIcon,
   Loader2,
+  Globe,
+  List,
+  DollarSign,
+  Terminal,
+  CheckCircle2,
+  LayoutGrid,
+  Layers,
+  Lock,
+  Maximize2,
   Pencil,
   RotateCcw,
   Save,
+  Briefcase,
+  Search,
+  Table,
+  GitMerge,
+  CheckSquare,
+  ChevronLeft,
+  RefreshCw,
+  MoreHorizontal,
+  Activity,
+  User,
 } from "lucide-react";
 import { EncompassEvidenceSummary } from "./encompass-supervisor-panel";
 import { ComputerUseSupervisor } from "./computer-use-supervisor";
@@ -68,6 +88,7 @@ type BomJob = {
 type StepStatus = "waiting" | "active" | "filled" | "complete";
 type BomWorkspaceMode =
   | "job"
+  | "ocr"
   | "evidence"
   | "suppliers"
   | "rows"
@@ -344,8 +365,8 @@ export function BomWorkflowControlPanel({
     "Supplier-run console ready. Type 'help' for commands.",
   ]);
   const [terminalBusy, setTerminalBusy] = useState(false);
-  const [ocrSourceMenuOpen, setOcrSourceMenuOpen] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState<BomWorkspaceMode>("job");
+  const [ocrSourceMenuOpen, setOcrSourceMenuOpen] = useState(false);
   const ocrCameraInputRef = useRef<HTMLInputElement | null>(null);
   const ocrUploadInputRef = useRef<HTMLInputElement | null>(null);
   const isRefreshInFlightRef = useRef(false);
@@ -353,6 +374,7 @@ export function BomWorkflowControlPanel({
 
   const diagramParse = asRecord(job?.diagramParse);
   const liveTruth = truth || (asRecord(diagramParse.visualTruth) as Record<string, unknown>);
+
   const supplierRuns = asRecord(diagramParse.supplierRuns);
   const supplierRunValues = Object.values(supplierRuns).map(asRecord);
   const normalizedModel = normalizeCanonicalModel(job?.model || model);
@@ -505,6 +527,27 @@ export function BomWorkflowControlPanel({
     appendTerminal("state: current dashboard state solidified");
   }
 
+  async function reconcileJob() {
+    if (!jobId) return;
+    setRefreshing(true);
+    try {
+      const res = await fetch(`/api/bom/jobs/${jobId}/reconcile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || "Reconciliation failed");
+      }
+      await refresh(jobId);
+      appendTerminal("reconcile: truth scores computed and persisted");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Reconciliation failed");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(WORKFLOW_DRAFT_STORAGE_KEY);
@@ -523,6 +566,7 @@ export function BomWorkflowControlPanel({
       // Ignore corrupted local draft data.
     }
   }, [initialJobId, initialModel, initialSerial]);
+
 
   useEffect(() => {
     try {
@@ -598,7 +642,6 @@ export function BomWorkflowControlPanel({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setOcrSourceMenuOpen(false);
     setOcrBusy(true);
     setError(null);
     try {
@@ -676,7 +719,6 @@ export function BomWorkflowControlPanel({
     } finally {
       setOcrBusy(false);
       if (event.target) event.target.value = "";
-      setOcrSourceMenuOpen(false);
     }
   }
 
@@ -744,15 +786,22 @@ export function BomWorkflowControlPanel({
     }
   }
 
-  const workspaceDockItems: Array<{ mode: BomWorkspaceMode; label: string }> = [
-    { mode: "job", label: "JOB" },
-    { mode: "evidence", label: "EV" },
-    { mode: "suppliers", label: "SUP" },
-    { mode: "rows", label: "ROW" },
-    { mode: "reconcile", label: "REC" },
-    { mode: "pricing", label: "PRICE" },
-    { mode: "approve", label: "APPROVE" },
-    { mode: "console", label: "CLI" },
+  const workspaceSteps: Array<{
+    mode: BomWorkspaceMode;
+    dockLabel: string;
+    title: string;
+    goal: string;
+    status: StepStatus;
+  }> = [
+    { mode: "job", dockLabel: "Job", title: "Job Identity", goal: "Set model, serial, job, OCR prompt.", status: stepStatus.identity },
+    { mode: "ocr", dockLabel: "OCR", title: "OCR Review", goal: "Edit prompt, then capture or upload nameplate evidence.", status: ocrResult ? "complete" : model ? "active" : "waiting" },
+    { mode: "suppliers", dockLabel: "SUP", title: "Supplier Agents", goal: "Tune each agent, edit URL, review payload, run.", status: stepStatus.supplier_runs },
+    { mode: "evidence", dockLabel: "EV", title: "Evidence", goal: "Capture visual proof, source URL, and agent output.", status: stepStatus.visual_capture },
+    { mode: "rows", dockLabel: "ROW", title: "Rows", goal: "Inspect raw and final row previews.", status: stepStatus.row_evidence },
+    { mode: "reconcile", dockLabel: "REC", title: "Reconcile", goal: "Check counts, coverage, and issues.", status: stepStatus.reconcile },
+    { mode: "pricing", dockLabel: "PRICE", title: "Pricing", goal: "Check priced, required, and missing prices.", status: stepStatus.pricing },
+    { mode: "approve", dockLabel: "OK", title: "Approval", goal: "Review evidence state and solidify.", status: stepStatus.export },
+    { mode: "console", dockLabel: "CLI", title: "Console", goal: "Run terminal commands only when needed.", status: terminalBusy ? "active" : "waiting" },
   ];
 
   const supplierActions = [
@@ -768,6 +817,49 @@ export function BomWorkflowControlPanel({
   const unpricedCount = job?.unpricedCount ?? Math.max(0, requiredPriceCount - pricedCount);
   const coverageText = formatPercent(job?.coveragePct) || "-";
   const issuesCount = (job?.issues || []).length + (job?.errorText ? 1 : 0);
+  const activeStepIndex = Math.max(0, workspaceSteps.findIndex((step) => step.mode === activeWorkspace));
+  const activeStep = workspaceSteps[activeStepIndex] || workspaceSteps[0];
+  const previousStep = activeStepIndex > 0 ? workspaceSteps[activeStepIndex - 1] : null;
+  const nextStep = activeStepIndex < workspaceSteps.length - 1 ? workspaceSteps[activeStepIndex + 1] : null;
+
+  function statusDotClass(status: StepStatus) {
+    if (status === "complete") return "bg-emerald-500";
+    if (status === "filled") return "bg-blue-500";
+    if (status === "active") return "bg-amber-500";
+    return "bg-neutral-300";
+  }
+
+  function statusLabel(status: StepStatus) {
+    if (status === "complete") return "done";
+    if (status === "filled") return "ready";
+    if (status === "active") return "now";
+    return "wait";
+  }
+
+  function modeIcon(mode: BomWorkspaceMode) {
+    switch (mode) {
+      case "job":
+        return <Database size={16} />;
+      case "ocr":
+        return <Camera size={16} />;
+      case "suppliers":
+        return <Globe size={16} />;
+      case "evidence":
+        return <ImageIcon size={16} />;
+      case "rows":
+        return <List size={16} />;
+      case "reconcile":
+        return <Layers size={16} />;
+      case "pricing":
+        return <DollarSign size={16} />;
+      case "approve":
+        return <CheckCircle2 size={16} />;
+      case "console":
+        return <Terminal size={16} />;
+      default:
+        return null;
+    }
+  }
 
   function runSupplierDockAction(supplierId: string) {
     if (terminalBusy) return;
@@ -883,7 +975,7 @@ export function BomWorkflowControlPanel({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setOcrSourceMenuOpen((open) => !open)}
+                  onClick={() => setActiveWorkspace("ocr")}
                   disabled={ocrBusy}
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-5 text-xs font-black uppercase tracking-widest text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
                   title="Edit OCR prompt before running OCR"
@@ -895,47 +987,6 @@ export function BomWorkflowControlPanel({
 
               {error ? (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">{error}</div>
-              ) : null}
-
-              {ocrSourceMenuOpen ? (
-                <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">OCR Prompt</div>
-                    <button
-                      type="button"
-                      onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)}
-                      className="inline-flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-2 py-1 text-[10px] font-black uppercase text-neutral-700 hover:bg-neutral-50"
-                    >
-                      <RotateCcw size={12} />
-                      Reset
-                    </button>
-                  </div>
-                  <textarea
-                    value={ocrPrompt}
-                    onChange={(event) => setOcrPrompt(event.target.value)}
-                    className="min-h-0 flex-1 resize-none rounded-lg border border-neutral-300 bg-white p-3 font-mono text-xs text-neutral-900 outline-none focus:border-neutral-900"
-                  />
-                  <div className="mt-3 flex flex-wrap justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => ocrCameraInputRef.current?.click()}
-                      disabled={ocrBusy || !ocrPrompt.trim()}
-                      className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-900 bg-neutral-950 px-3 text-xs font-black uppercase tracking-wide text-white disabled:opacity-50"
-                    >
-                      <Camera size={14} />
-                      Photo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => ocrUploadInputRef.current?.click()}
-                      disabled={ocrBusy || !ocrPrompt.trim()}
-                      className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 text-xs font-black uppercase tracking-wide text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
-                    >
-                      <ImageIcon size={14} />
-                      Upload
-                    </button>
-                  </div>
-                </div>
               ) : null}
             </div>
 
@@ -971,6 +1022,70 @@ export function BomWorkflowControlPanel({
           </div>
         );
 
+      case "ocr":
+        return (
+          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="flex min-h-0 flex-col rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">OCR Prompt</div>
+                  <div className="text-sm font-bold text-neutral-700">Edit this before running camera or upload OCR.</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)}
+                  className="inline-flex h-9 items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-neutral-700 hover:bg-neutral-50"
+                >
+                  <RotateCcw size={12} />
+                  Reset
+                </button>
+              </div>
+              <textarea
+                value={ocrPrompt}
+                onChange={(event) => setOcrPrompt(event.target.value)}
+                className="min-h-0 flex-1 resize-none rounded-xl border border-neutral-300 bg-neutral-50 p-4 font-mono text-xs leading-relaxed text-neutral-900 outline-none focus:border-neutral-900"
+              />
+            </div>
+
+            <div className="flex min-h-0 flex-col gap-3">
+              <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Nameplate Input</div>
+                <div className="mt-3 grid gap-2">
+                  <button
+                    type="button"
+                    onClick={() => ocrCameraInputRef.current?.click()}
+                    disabled={ocrBusy || !ocrPrompt.trim()}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-neutral-950 px-4 text-xs font-black uppercase tracking-widest text-white disabled:opacity-50"
+                  >
+                    {ocrBusy ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
+                    Take Photo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => ocrUploadInputRef.current?.click()}
+                    disabled={ocrBusy || !ocrPrompt.trim()}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-neutral-300 bg-white px-4 text-xs font-black uppercase tracking-widest text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
+                  >
+                    <ImageIcon size={14} />
+                    Upload Image
+                  </button>
+                </div>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">OCR Result</div>
+                {ocrResult ? (
+                  <pre className="whitespace-pre-wrap font-mono text-xs text-neutral-700">{JSON.stringify(ocrResult, null, 2)}</pre>
+                ) : (
+                  <div className="flex h-full min-h-[180px] items-center justify-center rounded-xl border border-dashed border-neutral-200 bg-neutral-50 text-center text-[11px] font-black uppercase tracking-widest text-neutral-400">
+                    No OCR result yet
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
       case "evidence":
         return (
           <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -997,18 +1112,18 @@ export function BomWorkflowControlPanel({
       case "suppliers":
         return (
           <div className="flex h-full min-h-0 flex-col gap-3">
-            <div className="flex flex-none flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
-              {supplierActions.map((supplier) => (
-                <button
-                  key={`supplier-workspace-${supplier.id}`}
-                  type="button"
-                  onClick={() => runSupplierDockAction(supplier.id)}
-                  disabled={!jobId || terminalBusy}
-                  className="inline-flex h-10 items-center rounded-lg border border-neutral-300 bg-white px-4 text-xs font-black uppercase tracking-widest text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
-                >
-                  RUN {supplier.label}
-                </button>
-              ))}
+            <div className="flex flex-none items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+              <div className="min-w-0">
+                <div className="text-xs font-black uppercase tracking-widest text-neutral-500">Agent Models</div>
+                <div className="truncate text-sm font-bold text-neutral-700">Tune model settings, edit target URLs, select evidence, review payload, then run from each card.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveWorkspace("console")}
+                className="h-10 shrink-0 rounded-lg border border-neutral-300 bg-white px-4 text-xs font-black uppercase tracking-widest text-neutral-700 hover:bg-neutral-50"
+              >
+                Open CLI
+              </button>
             </div>
             <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
               <SupplierAgentMatrix jobId={jobId || null} model={normalizedModel} truth={liveTruth} />
@@ -1025,17 +1140,63 @@ export function BomWorkflowControlPanel({
         );
 
       case "reconcile":
+        const report = asRecord(diagramParse.reconciliationReport);
+        const reconciledParts = asArray(report.parts).map(asRecord);
+        const overlapCount = Number(report.overlapCount || 0);
+        const encompassCount = Number(report.encompassCount || 0);
+        const searsCount = Number(report.searsCount || 0);
+        const truthScore = overlapCount > 0 ? Math.round((overlapCount / Math.max(encompassCount, searsCount)) * 100) : 0;
+
         return (
           <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[420px_minmax(0,1fr)]">
-            <div className="grid content-start gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
-              {ledgerItems.map((item) => (
-                <div key={item.label} className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
-                  <div className="font-mono text-sm font-black text-neutral-950">{item.value}</div>
+            <div className="flex flex-col gap-3">
+              <div className="grid content-start gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Global Ledger</div>
+                {ledgerItems.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
+                    <div className="font-mono text-sm font-black text-neutral-950">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Truth Integrity</div>
+                  <div className={`rounded-full px-2 py-0.5 text-[10px] font-black text-white ${truthScore > 80 ? "bg-emerald-500" : truthScore > 50 ? "bg-amber-500" : "bg-red-500"}`}>
+                    {truthScore}% MATCH
+                  </div>
                 </div>
-              ))}
+                
+                <div className="space-y-4">
+                  <div className="relative h-2 w-full overflow-hidden rounded-full bg-neutral-100">
+                    <div className="absolute h-full bg-emerald-500" style={{ width: `${truthScore}%` }} />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-center">
+                    <div className="rounded-lg bg-neutral-50 p-2">
+                      <div className="text-[9px] font-black uppercase text-neutral-400">Encompass</div>
+                      <div className="font-mono text-lg font-black text-neutral-950">{encompassCount}</div>
+                    </div>
+                    <div className="rounded-lg bg-neutral-50 p-2">
+                      <div className="text-[9px] font-black uppercase text-neutral-400">Sears</div>
+                      <div className="font-mono text-lg font-black text-neutral-950">{searsCount}</div>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={reconcileJob}
+                    disabled={refreshing || (asArray(job?.retrievedSources).length === 0)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-950 py-3 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-neutral-800 disabled:opacity-30"
+                  >
+                    {refreshing ? <Loader2 size={14} className="animate-spin" /> : <GitMerge size={14} />}
+                    Run Reconciliation
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="min-h-0 overflow-auto rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+
+            <div className="flex min-h-0 flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-xl bg-neutral-50 p-4">
                   <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Expected</div>
@@ -1046,22 +1207,41 @@ export function BomWorkflowControlPanel({
                   <div className="mt-1 font-mono text-2xl font-black">{coverageText}</div>
                 </div>
                 <div className="rounded-xl bg-neutral-50 p-4">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Issues</div>
-                  <div className="mt-1 font-mono text-2xl font-black">{issuesCount}</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Overlap</div>
+                  <div className="mt-1 font-mono text-2xl font-black text-emerald-600">{overlapCount}</div>
                 </div>
               </div>
-              <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Issue Log</div>
-                {job?.errorText ? <div className="mb-2 text-sm font-bold text-red-700">{job.errorText}</div> : null}
-                {(job?.issues || []).length ? (
-                  <div className="space-y-2">
-                    {(job?.issues || []).map((issue, index) => (
-                      <div key={`${issue}-${index}`} className="rounded-lg bg-white px-3 py-2 text-sm text-neutral-700">{issue}</div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm font-bold text-neutral-400">No issues recorded.</div>
-                )}
+
+              <div className="min-h-0 flex-1 overflow-hidden border-t border-neutral-100 pt-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Part Discrepancies</div>
+                  <div className="text-[10px] font-bold text-neutral-400">{reconciledParts.length} unique parts</div>
+                </div>
+                
+                <div className="h-full overflow-auto">
+                  {reconciledParts.length > 0 ? (
+                    <div className="space-y-1">
+                      {reconciledParts.map((part, index) => (
+                        <div key={`${String(part.partNumber || "")}-${index}`} className={`grid grid-cols-[120px_1fr_100px] items-center gap-3 rounded-lg px-3 py-2 text-xs ${part.isDiscrepancy ? 'bg-amber-50' : 'bg-neutral-50'}`}>
+                          <div className="font-mono font-bold text-neutral-950">{String(part.partNumber || "")}</div>
+                          <div className="truncate text-neutral-600">{String(part.description || "")}</div>
+                          <div className="flex justify-end gap-1">
+                            {asArray(part.sources).map((source) => {
+                              const sourceName = String(source || "");
+                              return (
+                                <div key={sourceName} className="h-2 w-2 rounded-full" style={{ backgroundColor: sourceName === 'sears-partsdirect' ? '#0284c7' : '#10b981' }} title={sourceName} />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex h-48 items-center justify-center text-center text-[11px] font-black uppercase tracking-widest text-neutral-400">
+                      Run reconciliation to identify<br />source discrepancies.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1174,8 +1354,189 @@ export function BomWorkflowControlPanel({
     }
   }
 
+  function renderCommandBar() {
+    switch (activeWorkspace) {
+      case "job":
+        return (
+          <>
+            <input
+              value={model}
+              onChange={(event) => setModel(event.target.value.toUpperCase())}
+              className="h-10 min-w-0 flex-1 rounded-xl border border-white/10 bg-white/10 px-3 font-mono text-xs uppercase text-white outline-none placeholder:text-neutral-500 focus:border-yellow-400"
+              placeholder="MODEL"
+            />
+            <input
+              value={activeSerial}
+              onChange={(event) => setActiveSerial(event.target.value.toUpperCase())}
+              className="h-10 min-w-0 flex-1 rounded-xl border border-white/10 bg-white/10 px-3 font-mono text-xs uppercase text-white outline-none placeholder:text-neutral-500 focus:border-yellow-400"
+              placeholder="SERIAL"
+            />
+            <input
+              value={jobIdInput}
+              onChange={(event) => setJobIdInput(event.target.value.trim())}
+              className="h-10 min-w-0 flex-[1.2] rounded-xl border border-white/10 bg-white/10 px-3 font-mono text-xs text-white outline-none placeholder:text-neutral-500 focus:border-yellow-400"
+              placeholder="JOB ID"
+            />
+            <button
+              type="button"
+              onClick={createOrLoadJob}
+              disabled={loading}
+              className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black shadow-lg shadow-yellow-500/20 disabled:opacity-50"
+            >
+              {loading ? "Loading" : "Load / Create"}
+            </button>
+          </>
+        );
+
+      case "ocr":
+        return (
+          <>
+            <div className="min-w-0 flex-1 truncate text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
+              Prompt is editable in the active card
+            </div>
+            <button type="button" onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white">
+              Reset
+            </button>
+            <button type="button" onClick={() => ocrCameraInputRef.current?.click()} disabled={ocrBusy || !ocrPrompt.trim()} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white disabled:opacity-50">
+              Take Photo
+            </button>
+            <button type="button" onClick={() => ocrUploadInputRef.current?.click()} disabled={ocrBusy || !ocrPrompt.trim()} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black disabled:opacity-50">
+              Upload Image
+            </button>
+          </>
+        );
+
+      case "suppliers":
+        return (
+          <>
+            <div className="min-w-0 flex-1 truncate text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
+              Tune cards first, then run explicit supplier actions
+            </div>
+            {supplierActions.map((supplier) => (
+              <button
+                key={`bar-run-${supplier.id}`}
+                type="button"
+                onClick={() => runSupplierDockAction(supplier.id)}
+                disabled={!jobId || terminalBusy}
+                className="h-10 rounded-xl border border-white/10 bg-white/10 px-3 text-[11px] font-black uppercase tracking-[0.14em] text-white disabled:opacity-50"
+              >
+                Run {supplier.label}
+              </button>
+            ))}
+          </>
+        );
+
+      case "evidence":
+        return (
+          <>
+            <div className="min-w-0 flex-1 truncate font-mono text-xs text-neutral-400">{truthUrl || "No source URL yet"}</div>
+            <button type="button" onClick={manualRefresh} disabled={!jobId || refreshing} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white disabled:opacity-50">
+              Refresh Evidence
+            </button>
+            {truthUrl ? (
+              <a href={truthUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black">
+                Open Source
+              </a>
+            ) : null}
+          </>
+        );
+
+      case "rows":
+        return (
+          <>
+            <div className="flex min-w-0 flex-1 items-center gap-4 text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
+              <span>Raw {rawCount}</span>
+              <span>Final {finalCount}</span>
+              <span>Unique {job?.uniqueRowCount || finalCount}</span>
+              <span>Priced {pricedCount}</span>
+            </div>
+            <button type="button" onClick={() => setActiveWorkspace("reconcile")} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black">
+              Review Reconcile
+            </button>
+          </>
+        );
+
+      case "reconcile":
+        return (
+          <>
+            <div className="flex min-w-0 flex-1 items-center gap-4 text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
+              <span>Coverage {coverageText}</span>
+              <span>Issues {issuesCount}</span>
+            </div>
+            <button type="button" onClick={() => setActiveWorkspace("suppliers")} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white">
+              Needs More Evidence
+            </button>
+            <button type="button" onClick={() => setActiveWorkspace("pricing")} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black">
+              Continue Price
+            </button>
+          </>
+        );
+
+      case "pricing":
+        return (
+          <>
+            <div className="flex min-w-0 flex-1 items-center gap-4 text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
+              <span>Priced {pricedCount}</span>
+              <span>Required {requiredPriceCount}</span>
+              <span>Unpriced {unpricedCount}</span>
+            </div>
+            <button type="button" onClick={() => setActiveWorkspace("approve")} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black">
+              Review Approval
+            </button>
+          </>
+        );
+
+      case "approve":
+        return (
+          <>
+            <div className="min-w-0 flex-1 truncate text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
+              Identity {job?.model ? "OK" : "-"} / Evidence {truthUrl || screenshotUrl ? "OK" : "-"} / Rows {finalCount} / Price {pricedCount}
+            </div>
+            <button type="button" onClick={() => setActiveWorkspace("suppliers")} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white">
+              Reject / More Evidence
+            </button>
+            <button type="button" onClick={solidifyCurrentState} disabled={!jobId || !job?.model || !finalCount} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black disabled:opacity-50">
+              Approve BOM
+            </button>
+          </>
+        );
+
+      case "console":
+        return (
+          <>
+            <input
+              value={terminalInput}
+              onChange={(event) => setTerminalInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  runTerminalCommand();
+                }
+              }}
+              className="h-10 min-w-0 flex-1 rounded-xl border border-white/10 bg-white/10 px-3 font-mono text-xs text-emerald-300 outline-none"
+              placeholder="help | status | run fix.com"
+            />
+            <button type="button" onClick={runTerminalCommand} disabled={terminalBusy} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black disabled:opacity-50">
+              Run Command
+            </button>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  }
+
   return (
-    <main className="fixed inset-0 overflow-hidden bg-neutral-100 p-3 text-neutral-950">
+    <main className="fixed inset-0 overflow-hidden bg-[#0d0d0d] text-white font-sans selection:bg-amber-400 selection:text-black">
+      {/* Background Grid Layer */}
+      <div className="absolute inset-0 z-0 opacity-20" 
+           style={{ 
+             backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
+             backgroundSize: '40px 40px' 
+           }} 
+      />
+
       <input
         ref={ocrCameraInputRef}
         type="file"
@@ -1192,134 +1553,338 @@ export function BomWorkflowControlPanel({
         onChange={handleOcrImageUpload}
       />
 
-      <div className="flex h-full min-h-0 flex-col gap-3">
-        <header className="flex h-14 flex-none items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 shadow-sm">
-          <div className="flex min-w-0 items-center gap-4">
-            <h1 className="shrink-0 text-2xl font-black tracking-tight">BOM Cockpit</h1>
-            <div className="hidden min-w-0 items-center gap-2 text-[11px] font-black uppercase tracking-widest text-neutral-500 xl:flex">
-              <span className="truncate">MODEL {normalizedModel || "-"}</span>
-              <span>RAW {rawCount}</span>
-              <span>FINAL {finalCount}</span>
-              <span>PRICE {pricedCount}</span>
-              <span>JOB {jobId ? "OK" : "-"}</span>
-              <span>RF {lastRefreshAt || "-"}</span>
+      <div className="relative z-10 flex h-full flex-col">
+        {/* TOP PHASE BAR */}
+        <header className="flex h-10 flex-none items-center justify-between border-b border-white/5 bg-[#111]/80 px-4 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="text-white/40 hover:text-white transition-colors">
+              <ChevronLeft size={16} />
+            </Link>
+            
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${normalizedModel ? 'bg-amber-400 text-black' : 'bg-white/10 text-white/40'}`}>
+                {normalizedModel || "NO MODEL"}
+              </div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">
+                BOM WORKFLOW
+              </div>
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Link href="/" className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 text-xs font-black uppercase tracking-widest hover:bg-neutral-50">
-              <Home size={14} />
-              Home
-            </Link>
-            <Link
+
+          {/* Phase Navigation */}
+          <nav className="flex items-center gap-1">
+            {workspaceSteps.map((step) => {
+              const isActive = activeWorkspace === step.mode;
+              const label = step.dockLabel.toUpperCase();
+              
+              return (
+                <button
+                  key={`top-nav-${step.mode}-${step.dockLabel}`}
+                  onClick={() => {
+                    setActiveWorkspace(step.mode);
+                    if (step.dockLabel === "OCR") setOcrSourceMenuOpen(true);
+                    else if (step.mode === "job") setOcrSourceMenuOpen(false);
+                  }}
+                  className={`relative flex items-center px-3 py-1 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    isActive ? "text-white" : "text-white/30 hover:text-white/60"
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div 
+                      layoutId="top-pill"
+                      className="absolute inset-0 rounded-full bg-white/10" 
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    <span className={`h-1 w-1 rounded-full ${statusDotClass(step.status)}`} />
+                    {label}
+                  </span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 text-white/30">
+              <div className="flex items-center gap-1.5">
+                <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${jobId ? 'bg-emerald-500' : 'bg-white/10'}`} />
+                <span className="text-[9px] font-black uppercase tracking-wider">ONLINE</span>
+              </div>
+              <button onClick={() => manualRefresh()} className="hover:text-white transition-colors">
+                <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+              </button>
+              <button onClick={() => solidifyCurrentState()} className="hover:text-white transition-colors">
+                <Lock size={12} className={solidifiedAt ? "text-amber-400" : ""} />
+              </button>
+              <button className="hover:text-white transition-colors">
+                <Maximize2 size={12} />
+              </button>
+            </div>
+            
+            <div className="h-4 w-[1px] bg-white/10" />
+            
+            <Link 
               href={`/bom-workflow/verify?${new URLSearchParams({
                 ...(jobId ? { jobId } : {}),
                 ...(normalizedModel ? { model: normalizedModel } : {}),
               })}`}
-              className="inline-flex h-9 items-center gap-2 rounded-lg border border-blue-700 bg-blue-700 px-3 text-xs font-black uppercase tracking-widest text-white hover:bg-blue-800"
+              className="flex items-center gap-2 rounded-full bg-blue-600 px-3 py-1 text-[9px] font-black uppercase tracking-widest text-white transition-all hover:bg-blue-500 hover:shadow-[0_0_15px_rgba(37,99,235,0.4)]"
             >
-              <ShieldCheck size={14} />
-              Verify
+              <ShieldCheck size={12} />
+              VERIFY
             </Link>
           </div>
         </header>
 
-        <div className="grid min-h-0 flex-1 gap-3 min-[1400px]:grid-cols-[minmax(0,1fr)_460px]">
-          <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 shadow-sm">
-            <div className="flex flex-none items-center justify-between border-b border-neutral-200 bg-white px-4 py-3">
-              <div className="text-xs font-black uppercase tracking-widest text-neutral-500">Workspace</div>
-              <div className="font-mono text-sm font-black uppercase tracking-widest text-neutral-950">{activeWorkspace}</div>
+        <div className="flex flex-1 min-h-0">
+          {/* LEFT VERTICAL RAIL */}
+          <aside className="flex w-12 flex-none flex-col items-center border-r border-white/5 bg-[#111] py-4">
+            <div className="flex flex-col gap-2">
+              {[
+                { icon: Briefcase, mode: "job", label: "Job", ocr: false },
+                { icon: Camera, mode: "job", label: "OCR", ocr: true },
+                { icon: Layers, mode: "suppliers", label: "Suppliers" },
+                { icon: Search, mode: "evidence", label: "Evidence" },
+                { icon: Table, mode: "rows", label: "Rows" },
+                { icon: GitMerge, mode: "reconcile", label: "Reconcile" },
+                { icon: DollarSign, mode: "pricing", label: "Price" },
+                { icon: CheckSquare, mode: "approve", label: "Approve" },
+                { icon: Terminal, mode: "console", label: "Console" },
+              ].map((item) => {
+                const isActive = activeWorkspace === item.mode && (item.ocr ? ocrSourceMenuOpen : (item.mode !== "job" || !ocrSourceMenuOpen));
+                const status = workspaceSteps.find(s => s.mode === item.mode)?.status || "waiting";
+                
+                return (
+                  <button
+                    key={`rail-${item.label}`}
+                    title={item.label}
+                    onClick={() => {
+                      setActiveWorkspace(item.mode as BomWorkspaceMode);
+                      if (item.label === "OCR") setOcrSourceMenuOpen(true);
+                      else if (item.mode === "job") setOcrSourceMenuOpen(false);
+                    }}
+                    className={`group relative flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+                      isActive 
+                        ? "bg-white/10 text-white shadow-inner" 
+                        : "text-white/20 hover:bg-white/5 hover:text-white/60"
+                    }`}
+                  >
+                    <item.icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                    <div className={`absolute bottom-1 right-1 h-1.5 w-1.5 rounded-full border border-[#111] ${statusDotClass(status)}`} />
+                    {isActive && (
+                      <div className="absolute left-0 h-4 w-1 rounded-r-full bg-amber-400" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
-            <div className="min-h-0 flex-1 overflow-hidden p-3">
-              {renderWorkspace()}
-            </div>
-          </section>
-
-          <aside className="hidden min-h-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-3 shadow-sm min-[1400px]:flex min-[1400px]:flex-col min-[1400px]:gap-3">
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Job</div>
-              <div className="grid gap-2 text-xs font-bold">
-                <div className="flex justify-between"><span>status</span><span>{job?.jobStage || job?.retrievalState || "-"}</span></div>
-                <div className="flex justify-between"><span>raw</span><span>{rawCount}</span></div>
-                <div className="flex justify-between"><span>final</span><span>{finalCount}</span></div>
-                <div className="flex justify-between"><span>price</span><span>{pricedCount}</span></div>
-                <div className="flex justify-between"><span>solidified</span><span>{solidifiedAt ? "OK" : "-"}</span></div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Evidence</div>
-              <div className="grid gap-2 text-xs font-bold">
-                <div className="flex justify-between"><span>URL</span><span>{truthUrl ? "OK" : "-"}</span></div>
-                <div className="flex justify-between"><span>CAP</span><span>{screenshotUrl ? "OK" : "-"}</span></div>
-                <div className="flex justify-between"><span>COUNT</span><span>{expectedTotal || "-"}</span></div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Suppliers</div>
-              <div className="grid grid-cols-4 gap-2 text-center text-xs font-black">
-                {supplierActions.map((supplier) => (
-                  <div key={`rail-${supplier.id}`} className="rounded-lg bg-white px-2 py-2">
-                    <div className="text-[10px] text-neutral-500">{supplier.label}</div>
-                    <div className="font-mono text-lg">{supplierMark(supplier.id)}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
-              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Reconcile</div>
-              <div className="grid gap-2 text-xs font-bold">
-                <div className="flex justify-between"><span>coverage</span><span>{coverageText}</span></div>
-                <div className="flex justify-between"><span>issues</span><span>{issuesCount}</span></div>
-              </div>
+            
+            <div className="mt-auto flex flex-col gap-4 text-white/10">
+              <button className="hover:text-white/40 transition-colors"><User size={18} /></button>
+              <button className="hover:text-white/40 transition-colors"><MoreHorizontal size={18} /></button>
             </div>
           </aside>
+
+          {/* MAIN CENTER WORKSPACE */}
+          <section className="relative flex-1 min-w-0 overflow-hidden p-6 lg:p-10">
+            <div className="mx-auto flex h-full max-w-6xl flex-col rounded-2xl border border-white/10 bg-[#161616] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden">
+              {/* Card Header Strip */}
+              <div className="flex h-12 flex-none items-center justify-between border-b border-white/5 bg-white/2 px-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/5 text-[10px] font-black text-white/40">
+                    {activeStepIndex + 1}
+                  </div>
+                  <h2 className="text-xs font-black uppercase tracking-[0.2em] text-white">
+                    {activeStep.title}
+                  </h2>
+                </div>
+                <div className="hidden max-w-md truncate text-[10px] font-bold uppercase tracking-widest text-white/30 xl:block">
+                  {activeStep.goal}
+                </div>
+              </div>
+
+              {/* Workspace Content - Light Surface */}
+              <div className="flex-1 min-h-0 overflow-hidden bg-neutral-50/95 backdrop-blur-sm">
+                <div className="h-full overflow-auto p-6 text-neutral-950">
+                  {renderWorkspace()}
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
-        <nav className="flex h-16 flex-none items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 shadow-sm">
-          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
-            {workspaceDockItems.map((item) => (
-              <button
-                key={item.mode}
-                type="button"
-                onClick={() => setActiveWorkspace(item.mode)}
-                className={`h-10 rounded-lg px-3 text-[11px] font-black uppercase tracking-widest transition ${
-                  activeWorkspace === item.mode
-                    ? "bg-neutral-950 text-white"
-                    : "border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+        {/* BOTTOM OPERATOR COMMAND BAR */}
+        <footer className="flex h-14 flex-none items-center justify-between border-t border-white/5 bg-[#111]/90 px-6 backdrop-blur-md">
+          <div className="flex items-center gap-6">
+            {activeWorkspace === "job" && (
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">MODEL</span>
+                  <input 
+                    value={model} 
+                    onChange={e => setModel(e.target.value.toUpperCase())}
+                    className="w-32 bg-transparent font-mono text-sm font-bold text-white outline-none placeholder:text-white/10"
+                    placeholder="REQUIRED"
+                  />
+                </div>
+                <div className="h-6 w-[1px] bg-white/5" />
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">SERIAL</span>
+                  <input 
+                    value={activeSerial} 
+                    onChange={e => setActiveSerial(e.target.value.toUpperCase())}
+                    className="w-32 bg-transparent font-mono text-sm font-bold text-white outline-none placeholder:text-white/10"
+                    placeholder="OPTIONAL"
+                  />
+                </div>
+                <button 
+                  onClick={createOrLoadJob}
+                  disabled={loading}
+                  className="ml-2 flex h-9 items-center gap-2 rounded-lg bg-white px-4 text-[10px] font-black uppercase tracking-widest text-black transition-all hover:bg-amber-400 disabled:opacity-50"
+                >
+                  {loading ? <Loader2 size={14} className="animate-spin" /> : <Database size={14} />}
+                  LOAD / CREATE
+                </button>
+              </div>
+            )}
+
+            {activeWorkspace === "evidence" && (
+              <div className="flex items-center gap-6">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">SOURCE URL</span>
+                  <div className="max-w-xs truncate font-mono text-[10px] font-bold text-white/60">
+                    {agentSourceUrl || "NO SOURCE"}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => manualRefresh()} className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10">
+                    REFRESH
+                  </button>
+                  {agentSourceUrl && (
+                    <a href={agentSourceUrl} target="_blank" className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10">
+                      OPEN SOURCE
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {activeWorkspace === "suppliers" && (
+              <div className="flex items-center gap-4">
+                <div className="text-[10px] font-black uppercase tracking-widest text-white/40">OPERATIONS:</div>
+                <details className="relative">
+                  <summary className="flex h-9 cursor-pointer list-none items-center rounded-lg border border-white/10 bg-white/5 px-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-white/10">
+                    QUICK RUN
+                  </summary>
+                  <div className="absolute bottom-full left-0 z-20 mb-2 grid w-48 gap-1 rounded-xl border border-white/10 bg-[#161616] p-2 shadow-2xl">
+                    {supplierActions.map((supplier) => (
+                      <button
+                        key={`bottom-run-${supplier.id}`}
+                        onClick={() => runSupplierDockAction(supplier.id)}
+                        disabled={terminalBusy}
+                        className="rounded-lg px-3 py-2 text-left text-[10px] font-black uppercase tracking-widest text-white/60 hover:bg-white/5 hover:text-white"
+                      >
+                        {supplier.label}
+                      </button>
+                    ))}
+                  </div>
+                </details>
+              </div>
+            )}
+
+            {(activeWorkspace === "rows" || activeWorkspace === "reconcile") && (
+              <div className="flex items-center gap-8">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">RAW ROWS</span>
+                  <span className="font-mono text-sm font-black text-amber-400">{rawCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">FINAL ROWS</span>
+                  <span className="font-mono text-sm font-black text-emerald-400">{finalCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">COVERAGE</span>
+                  <span className="font-mono text-sm font-black text-white">{coverageText}</span>
+                </div>
+              </div>
+            )}
+
+            {activeWorkspace === "pricing" && (
+              <div className="flex items-center gap-8">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">PRICED</span>
+                  <span className="font-mono text-sm font-black text-emerald-400">{pricedCount}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/30">UNPRICED</span>
+                  <span className="font-mono text-sm font-black text-red-400">{unpricedCount}</span>
+                </div>
+              </div>
+            )}
+
+            {activeWorkspace === "approve" && (
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={solidifyCurrentState}
+                  disabled={!jobId}
+                  className="flex h-10 items-center gap-2 rounded-lg bg-amber-400 px-6 text-[11px] font-black uppercase tracking-[0.2em] text-black transition-all hover:bg-amber-300 hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] disabled:opacity-50"
+                >
+                  <Lock size={14} />
+                  APPROVE & SOLIDIFY
+                </button>
+                <button 
+                  className="flex h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-6 text-[11px] font-black uppercase tracking-[0.2em] text-white/40 hover:bg-white/10 hover:text-white"
+                >
+                  NEEDS EVIDENCE
+                </button>
+              </div>
+            )}
+
+            {activeWorkspace === "console" && (
+              <div className="flex flex-1 items-center gap-3">
+                <div className="flex h-9 flex-1 items-center gap-2 rounded-lg bg-black/50 px-3 ring-1 ring-white/10">
+                  <Terminal size={14} className="text-emerald-500" />
+                  <input
+                    value={terminalInput}
+                    onChange={(event) => setTerminalInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        runTerminalCommand();
+                      }
+                    }}
+                    placeholder="Type a command..."
+                    className="flex-1 bg-transparent font-mono text-xs text-emerald-400 outline-none"
+                  />
+                </div>
+                <button
+                  onClick={runTerminalCommand}
+                  disabled={terminalBusy}
+                  className="flex h-9 items-center gap-2 rounded-lg bg-emerald-600 px-4 text-[10px] font-black uppercase tracking-widest text-white hover:bg-emerald-500 disabled:opacity-50"
+                >
+                  RUN
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-none items-center gap-1 border-l border-neutral-200 pl-2">
-            <button type="button" onClick={createOrLoadJob} disabled={loading} className="h-10 rounded-lg bg-neutral-950 px-3 text-[11px] font-black uppercase tracking-widest text-white disabled:opacity-50">DB</button>
-            <button type="button" onClick={() => ocrUploadInputRef.current?.click()} disabled={ocrBusy || !ocrPrompt.trim()} className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700 disabled:opacity-50">OCR</button>
-            <button type="button" onClick={manualRefresh} disabled={!jobId || refreshing} className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700 disabled:opacity-50">RF</button>
-            <button type="button" onClick={solidifyCurrentState} disabled={!jobId} className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700 disabled:opacity-50">OK</button>
-            <details className="relative">
-              <summary className="flex h-10 cursor-pointer list-none items-center rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700">
-                RUN
-              </summary>
-              <div className="absolute bottom-full right-0 z-20 mb-2 grid w-44 gap-1 rounded-xl border border-neutral-200 bg-white p-2 shadow-xl">
-                {supplierActions.map((supplier) => (
-                  <button
-                    key={`dock-run-${supplier.id}`}
-                    type="button"
-                    onClick={() => runSupplierDockAction(supplier.id)}
-                    disabled={!jobId || terminalBusy}
-                    className="rounded-lg px-3 py-2 text-left text-xs font-black uppercase tracking-widest text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-                  >
-                    {supplier.label}
-                  </button>
+          <div className="flex items-center gap-4 text-right">
+            <div className="flex flex-col">
+              <span className="text-[8px] font-black uppercase tracking-widest text-white/20">WORKFLOW STATUS</span>
+              <div className="flex gap-1 mt-1">
+                {workspaceSteps.map((step, idx) => (
+                  <div 
+                    key={`dot-${idx}`}
+                    className={`h-1 w-3 rounded-full transition-all ${
+                      activeWorkspace === step.mode ? 'bg-amber-400 w-6' : statusDotClass(step.status)
+                    } ${step.status === 'waiting' ? 'opacity-20' : 'opacity-100'}`}
+                  />
                 ))}
               </div>
-            </details>
+            </div>
           </div>
-        </nav>
+        </footer>
       </div>
     </main>
   );

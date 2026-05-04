@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleGenAI } from "@google/genai";
 
 export type ModelRunInput = {
-  model?: "fast" | "pro" | "lite";
+  model?: "fast" | "pro" | "lite" | "gemini-3-flash-preview" | "gemini-3-pro-preview";
   prompt: string;
   files?: Array<{
     mimeType: string;
@@ -16,6 +16,21 @@ export type ModelRunInput = {
   temperature?: number;
 };
 
+function resolveModelId(model: ModelRunInput["model"]) {
+  if (model === "gemini-3-pro-preview" || model === "gemini-3-flash-preview") {
+    return model;
+  }
+  if (model === "pro") return "gemini-3-pro-preview";
+  if (model === "lite") return "gemini-3.1-flash-lite-preview";
+  return "gemini-3-flash-preview";
+}
+
+function buildModelTools(input: Pick<ModelRunInput, "enableSearch">) {
+  const tools: Array<Record<string, unknown>> = [];
+  if (input.enableSearch) tools.push({ googleSearch: {} });
+  return tools;
+}
+
 export async function runStructuredJson<T>(
   input: ModelRunInput,
 ): Promise<T> {
@@ -26,12 +41,7 @@ export async function runStructuredJson<T>(
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  const modelId =
-    input.model === "pro"
-      ? "gemini-3-pro-preview"
-      : input.model === "lite"
-        ? "gemini-3.1-flash-lite-preview"
-        : "gemini-3-flash-preview";
+  const modelId = resolveModelId(input.model);
 
   const modelConfig: any = {
     model: modelId,
@@ -42,9 +52,8 @@ export async function runStructuredJson<T>(
     systemInstruction: input.systemInstruction,
   };
 
-  if (input.enableSearch) {
-    modelConfig.tools = [{ googleSearch: {} }];
-  }
+  const tools = buildModelTools(input);
+  if (tools.length) modelConfig.tools = tools;
 
   const model = genAI.getGenerativeModel(modelConfig);
 
@@ -106,12 +115,7 @@ export async function runText(input: ModelRunInput): Promise<string> {
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelId =
-    input.model === "pro"
-      ? "gemini-3-pro-preview"
-      : input.model === "lite"
-        ? "gemini-3.1-flash-lite-preview"
-        : "gemini-3-flash-preview";
+  const modelId = resolveModelId(input.model);
 
   const modelConfig: any = {
     model: modelId,
@@ -121,9 +125,8 @@ export async function runText(input: ModelRunInput): Promise<string> {
     systemInstruction: input.systemInstruction,
   };
 
-  if (input.enableSearch) {
-    modelConfig.tools = [{ googleSearch: {} }];
-  }
+  const tools = buildModelTools(input);
+  if (tools.length) modelConfig.tools = tools;
 
   const model = genAI.getGenerativeModel(modelConfig);
   const parts: any[] = [{ text: input.prompt }];

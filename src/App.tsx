@@ -1160,6 +1160,11 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                   className="pro-input h-[54px] pl-12 rounded-lg text-base font-medium placeholder:text-pro-slate-400"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchTerm.trim().length >= 3) {
+                      handleAILookup(searchTerm.trim());
+                    }
+                  }}
                 />
               </div>
 
