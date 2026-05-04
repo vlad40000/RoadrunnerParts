@@ -6,22 +6,13 @@ import {
   ShieldCheck,
   Database,
   Camera,
-  Monitor,
-  RefreshCw,
   Home,
-  CheckCircle2,
-  ExternalLink,
   ImageIcon,
-  FileSpreadsheet,
   Loader2,
-  SlidersHorizontal,
-  Circle,
-  ClipboardCheck,
   Pencil,
   RotateCcw,
   Save,
 } from "lucide-react";
-import { CockpitLayout } from "./cockpit-layout";
 import { EncompassEvidenceSummary } from "./encompass-supervisor-panel";
 import { ComputerUseSupervisor } from "./computer-use-supervisor";
 
@@ -75,27 +66,21 @@ type BomJob = {
 };
 
 type StepStatus = "waiting" | "active" | "filled" | "complete";
+type BomWorkspaceMode =
+  | "job"
+  | "evidence"
+  | "suppliers"
+  | "rows"
+  | "reconcile"
+  | "pricing"
+  | "approve"
+  | "console";
 
 const SUPPLIERS = [
   { id: "fix.com", label: "Fix.com" },
   { id: "repairclinic-family", label: "RepairClinic" },
   { id: "appliancepartspros", label: "AppliancePartsPros" },
   { id: "sears-partsdirect", label: "Sears PartsDirect" },
-] as const;
-
-const WORKFLOW_STEPS = [
-  { key: "identity", label: "Identity", detail: "Model, brand, serial, appliance type" },
-  { key: "encompass_url", label: "Visual URL", detail: "Canonical Encompass or truth source URL" },
-  { key: "visual_capture", label: "Visual Capture", detail: "Screenshot and assembly overview" },
-  { key: "trusted_count", label: "Trusted Count", detail: "Expected total from evidence or operator" },
-  { key: "supplier_targets", label: "Supplier Targets", detail: "Supplier URLs and source context" },
-  { key: "supplier_runs", label: "Supplier Runs", detail: "Run each supplier agent deliberately" },
-  { key: "row_evidence", label: "Row Evidence", detail: "Raw supplier rows and source records" },
-  { key: "reconcile", label: "Reconcile", detail: "Merge rows, de-dupe, map against truth" },
-  { key: "coverage", label: "Coverage", detail: "Compare accepted rows to trusted count" },
-  { key: "pricing", label: "Pricing", detail: "Verified price coverage" },
-  { key: "review", label: "Review", detail: "Issues, conflicts, manual checks" },
-  { key: "export", label: "Export", detail: "Final controlled output" },
 ] as const;
 
 const TERMINAL_HELP = [
@@ -221,13 +206,6 @@ function stepClasses(status: StepStatus) {
   if (status === "filled") return "border-blue-200 bg-blue-50 text-blue-900";
   if (status === "active") return "border-amber-200 bg-amber-50 text-amber-900";
   return "border-neutral-200 bg-white text-neutral-500";
-}
-
-function stepIcon(status: StepStatus) {
-  if (status === "complete") return <CheckCircle2 size={16} />;
-  if (status === "filled") return <ClipboardCheck size={16} />;
-  if (status === "active") return <Loader2 size={16} className="animate-spin" />;
-  return <Circle size={16} />;
 }
 
 function AutoField({
@@ -367,6 +345,7 @@ export function BomWorkflowControlPanel({
   ]);
   const [terminalBusy, setTerminalBusy] = useState(false);
   const [ocrSourceMenuOpen, setOcrSourceMenuOpen] = useState(false);
+  const [activeWorkspace, setActiveWorkspace] = useState<BomWorkspaceMode>("job");
   const ocrCameraInputRef = useRef<HTMLInputElement | null>(null);
   const ocrUploadInputRef = useRef<HTMLInputElement | null>(null);
   const isRefreshInFlightRef = useRef(false);
@@ -377,7 +356,6 @@ export function BomWorkflowControlPanel({
   const supplierRuns = asRecord(diagramParse.supplierRuns);
   const supplierRunValues = Object.values(supplierRuns).map(asRecord);
   const normalizedModel = normalizeCanonicalModel(job?.model || model);
-  const assemblyNames = asArray(liveTruth?.assemblyNames);
   const finalRows = Array.isArray(job?.finalRows) ? job.finalRows : [];
   const rawRows = Array.isArray(job?.extractedRowsRaw) ? job.extractedRowsRaw : [];
   const supplierCompleteCount = supplierRunValues.filter((run) => {
@@ -594,25 +572,13 @@ export function BomWorkflowControlPanel({
   };
 
   const evidenceItems = [
-    { label: "ID", value: job?.model ? "✓" : "—", status: stepStatus.identity },
-    { label: "URL", value: truthUrl ? "✓" : "—", status: stepStatus.encompass_url },
-    { label: "CAP", value: screenshotUrl ? "✓" : "—", status: stepStatus.visual_capture },
-    { label: "COUNT", value: expectedTotal ? String(expectedTotal) : "—", status: stepStatus.trusted_count },
+    { label: "ID", value: job?.model ? "OK" : "-", status: stepStatus.identity },
+    { label: "URL", value: truthUrl ? "OK" : "-", status: stepStatus.encompass_url },
+    { label: "CAP", value: screenshotUrl ? "OK" : "-", status: stepStatus.visual_capture },
+    { label: "COUNT", value: expectedTotal ? String(expectedTotal) : "-", status: stepStatus.trusted_count },
     { label: "RAW", value: String(rawRows.length || job?.rawRowCount || 0), status: stepStatus.row_evidence },
     { label: "FINAL", value: String(finalRows.length || job?.uniqueRowCount || 0), status: stepStatus.reconcile },
     { label: "PRICE", value: String(pricedCount || 0), status: stepStatus.pricing },
-  ];
-
-  const workflowRailItems = [
-    { label: "Job", target: "step-setup", status: stepStatus.identity },
-    { label: "ID", target: "step-setup", status: stepStatus.identity },
-    { label: "Evidence", target: "step-capture", status: stepStatus.visual_capture },
-    { label: "Suppliers", target: "step-run-agents", status: stepStatus.supplier_runs },
-    { label: "Rows", target: "step-review-export", status: stepStatus.row_evidence },
-    { label: "Reconcile", target: "step-review-export", status: stepStatus.reconcile },
-    { label: "Price", target: "step-review-export", status: stepStatus.pricing },
-    { label: "Issues", target: "step-review-export", status: stepStatus.review },
-    { label: "Approve", target: "step-review-export", status: stepStatus.export },
   ];
 
   const ledgerItems = [
@@ -623,12 +589,6 @@ export function BomWorkflowControlPanel({
     { label: "Issues", value: (job?.issues || []).length + (job?.errorText ? 1 : 0) },
     { label: "Last job update", value: updatedAtText || "none" },
   ];
-
-  function jumpToSection(sectionId: string) {
-    const el = document.getElementById(sectionId);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
 
   function appendTerminal(line: string) {
     setTerminalLines((prev) => [...prev.slice(-120), line]);
@@ -784,424 +744,583 @@ export function BomWorkflowControlPanel({
     }
   }
 
-  return (
-    <CockpitLayout
-      rightRail={
-        <>
-          <details open className="rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <summary className="cursor-pointer list-none p-3">
-              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
-                <SlidersHorizontal size={14} />
-                Suppliers
-              </div>
-            </summary>
-            <div className="max-h-[720px] overflow-auto border-t border-neutral-200 p-3">
-              <SupplierAgentMatrix jobId={jobId || null} model={normalizedModel} truth={liveTruth} />
-            </div>
-          </details>
+  const workspaceDockItems: Array<{ mode: BomWorkspaceMode; label: string }> = [
+    { mode: "job", label: "JOB" },
+    { mode: "evidence", label: "EV" },
+    { mode: "suppliers", label: "SUP" },
+    { mode: "rows", label: "ROW" },
+    { mode: "reconcile", label: "REC" },
+    { mode: "pricing", label: "PRICE" },
+    { mode: "approve", label: "APPROVE" },
+    { mode: "console", label: "CLI" },
+  ];
 
-          <details open className="rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <summary className="cursor-pointer list-none p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-xs font-black uppercase tracking-widest">Console</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Run</div>
+  const supplierActions = [
+    { id: "fix.com", label: "FIX" },
+    { id: "repairclinic-family", label: "RC" },
+    { id: "appliancepartspros", label: "APP" },
+    { id: "sears-partsdirect", label: "SEARS" },
+  ] as const;
+
+  const rawCount = rawRows.length || job?.rawRowCount || 0;
+  const finalCount = finalRows.length || job?.uniqueRowCount || 0;
+  const requiredPriceCount = job?.requiredPriceCount ?? finalCount;
+  const unpricedCount = job?.unpricedCount ?? Math.max(0, requiredPriceCount - pricedCount);
+  const coverageText = formatPercent(job?.coveragePct) || "-";
+  const issuesCount = (job?.issues || []).length + (job?.errorText ? 1 : 0);
+
+  function runSupplierDockAction(supplierId: string) {
+    if (terminalBusy) return;
+    setTerminalBusy(true);
+    runSupplierFromTerminal(supplierId)
+      .catch((err) => {
+        const message = err instanceof Error ? err.message : "Supplier run failed";
+        setError(message);
+        appendTerminal(`error: ${message}`);
+      })
+      .finally(() => setTerminalBusy(false));
+  }
+
+  function supplierMark(supplierId: string) {
+    const run = asRecord(supplierRuns[supplierId]);
+    const input = asRecord(run.input);
+    const result = asRecord(run.result);
+    if (input.status === "complete" || result.status === "complete") return "OK";
+    if (input.url || result.url || input.status || result.status) return "*";
+    return "-";
+  }
+
+  function rowNumber(row: Record<string, unknown>) {
+    return valueText(row.partNumber || row.oem_number || row.oemNumber || row.part_number || row.partNo || "-");
+  }
+
+  function rowName(row: Record<string, unknown>) {
+    return valueText(row.partName || row.part_name || row.description || row.name || row.title || "-");
+  }
+
+  function rowSource(row: Record<string, unknown>) {
+    return valueText(row.source || row.provider || row.supplier || row.sourceName || "-");
+  }
+
+  function renderRowsPreview(title: string, rows: Array<Record<string, unknown>>, count: number) {
+    const visibleRows = rows.slice(0, 25);
+    return (
+      <div className="flex min-h-0 flex-col rounded-xl border border-neutral-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
+          <div className="text-xs font-black uppercase tracking-widest text-neutral-600">{title}</div>
+          <div className="rounded-full bg-neutral-100 px-2 py-1 font-mono text-[11px] font-bold text-neutral-600">{count}</div>
+        </div>
+        <div className="min-h-0 flex-1 overflow-auto">
+          {visibleRows.length ? (
+            visibleRows.map((row, index) => (
+              <div key={`${title}-${rowNumber(row)}-${index}`} className="grid grid-cols-[160px_minmax(0,1fr)_120px] gap-3 border-b border-neutral-100 px-4 py-2 text-xs last:border-b-0">
+                <div className="truncate font-mono font-bold text-neutral-950">{rowNumber(row)}</div>
+                <div className="truncate text-neutral-600">{rowName(row)}</div>
+                <div className="truncate text-right text-neutral-500">{rowSource(row)}</div>
               </div>
-            </summary>
-            <div className="border-t border-neutral-200 p-3">
-              <div className="mb-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => appendTerminal(TERMINAL_HELP)}
-                  className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-[10px] font-black uppercase text-neutral-700 hover:bg-neutral-50"
-                >
-                  Help
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTerminalLines([])}
-                  className="rounded-md border border-neutral-300 bg-white px-2 py-1 text-[10px] font-black uppercase text-neutral-700 hover:bg-neutral-50"
-                >
-                  Clear
-                </button>
-              </div>
-              <div className="rounded-md border border-neutral-900 bg-neutral-950 p-3 font-mono text-xs text-emerald-300">
-                <div className="max-h-32 overflow-auto whitespace-pre-wrap">
-                  {terminalLines.join("\n")}
-                </div>
-                <div className="mt-2 flex gap-2">
+            ))
+          ) : (
+            <div className="flex h-full min-h-[220px] items-center justify-center text-[11px] font-black uppercase tracking-widest text-neutral-400">
+              No rows
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  function renderWorkspace() {
+    switch (activeWorkspace) {
+      case "job":
+        return (
+          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(340px,0.8fr)]">
+            <div className="flex min-h-0 flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="grid gap-3 lg:grid-cols-3">
+                <label className="space-y-1">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-neutral-500">MODEL</span>
                   <input
-                    value={terminalInput}
-                    onChange={(event) => setTerminalInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        runTerminalCommand();
+                    value={model}
+                    onChange={(event) => setModel(event.target.value.toUpperCase())}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-3 font-mono text-sm uppercase outline-none focus:border-neutral-900"
+                    placeholder="HTDX100ED3WW"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-neutral-500">SERIAL</span>
+                  <input
+                    value={activeSerial}
+                    onChange={(event) => {
+                      const nextSerial = event.target.value.toUpperCase();
+                      setActiveSerial(nextSerial);
+                      if (jobId) {
+                        savePatch({ serial: nextSerial }).catch((err) => setError(err.message));
                       }
                     }}
-                    placeholder="run fix.com"
-                    className="min-w-0 flex-1 rounded-md border border-neutral-700 bg-black px-2 py-1 text-emerald-300 outline-none"
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-3 font-mono text-sm uppercase outline-none focus:border-neutral-900"
+                    placeholder="ENTER SERIAL #"
                   />
-                  <button
-                    type="button"
-                    onClick={runTerminalCommand}
-                    disabled={terminalBusy}
-                    className="rounded-md border border-emerald-500 bg-emerald-600 px-3 py-1 text-[10px] font-black uppercase text-white disabled:opacity-50"
-                  >
-                    {terminalBusy ? "..." : "Run"}
-                  </button>
-                </div>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[11px] font-black uppercase tracking-widest text-neutral-500">JOB</span>
+                  <input
+                    value={jobIdInput}
+                    onChange={(event) => setJobIdInput(event.target.value.trim())}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-3 font-mono text-sm outline-none focus:border-neutral-900"
+                    placeholder="Load or create job"
+                  />
+                </label>
               </div>
-            </div>
-          </details>
 
-          <details className="rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <summary className="cursor-pointer list-none p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
-                  <ImageIcon size={14} />
-                  Evidence
-                </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Open</div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={createOrLoadJob}
+                  disabled={loading}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-neutral-950 px-5 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-neutral-200 disabled:opacity-50"
+                >
+                  {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
+                  LOAD
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOcrSourceMenuOpen((open) => !open)}
+                  disabled={ocrBusy}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-5 text-xs font-black uppercase tracking-widest text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
+                  title="Edit OCR prompt before running OCR"
+                >
+                  {ocrBusy ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
+                  OCR
+                </button>
               </div>
-            </summary>
-            <div className="max-h-[360px] overflow-auto border-t border-neutral-200 p-3">
-              <EncompassEvidenceSummary model={normalizedModel} truth={liveTruth} />
-            </div>
-          </details>
-        </>
-      }
-    >
-      <header className="flex flex-col justify-between gap-3 border-b border-neutral-200 pb-4 md:flex-row md:items-center">
-        <h1 className="text-3xl font-black tracking-tight">BOM Cockpit</h1>
 
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-bold uppercase hover:bg-neutral-50"
-          >
-            <Home size={14} />
-            Home
-          </Link>
-          <Link
-            href={`/bom-workflow/verify?${new URLSearchParams({
-              ...(jobId ? { jobId } : {}),
-              ...(normalizedModel ? { model: normalizedModel } : {}),
-            })}`}
-            className="inline-flex items-center gap-2 rounded-md border border-blue-700 bg-blue-700 px-3 py-2 text-xs font-bold uppercase text-white hover:bg-blue-800"
-          >
-            <ShieldCheck size={14} />
-            Verify
-          </Link>
-          {jobId ? (
-            <button
-              type="button"
-              onClick={manualRefresh}
-              disabled={refreshing}
-              className="inline-flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-3 py-2 text-xs font-bold uppercase text-white disabled:opacity-60"
-            >
-              <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
-              Refresh
-            </button>
-          ) : null}
-        </div>
-      </header>
+              {error ? (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">{error}</div>
+              ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[180px_minmax(0,1fr)]">
-        <aside className="hidden xl:block">
-          <nav className="sticky top-4 rounded-lg border border-neutral-200 bg-white p-2 shadow-sm">
-            {workflowRailItems.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                onClick={() => jumpToSection(item.target)}
-                className="mb-1 flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-[11px] font-black uppercase tracking-widest text-neutral-600 hover:bg-neutral-50"
-              >
-                <span>{item.label}</span>
-                <span className={`h-2 w-2 rounded-full ${
-                  item.status === "complete" ? "bg-emerald-500" :
-                  item.status === "filled" ? "bg-blue-500" :
-                  item.status === "active" ? "bg-amber-500" :
-                  "bg-neutral-300"
-                }`} />
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        <div className="min-w-0 space-y-4">
-          <section id="step-setup" className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-        <input
-          ref={ocrCameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={handleOcrImageUpload}
-        />
-        <input
-          ref={ocrUploadInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleOcrImageUpload}
-        />
-
-        <div className="grid gap-3 lg:grid-cols-[1fr_1fr_minmax(220px,0.8fr)_auto] lg:items-end">
-          <label className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">MODEL</span>
-            <input
-              value={model}
-              onChange={(event) => setModel(event.target.value.toUpperCase())}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-neutral-900"
-              placeholder="HTDX100ED3WW"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">SERIAL</span>
-            <input
-              value={activeSerial}
-              onChange={(event) => {
-                const nextSerial = event.target.value.toUpperCase();
-                setActiveSerial(nextSerial);
-                if (jobId) {
-                  savePatch({ serial: nextSerial }).catch((err) => setError(err.message));
-                }
-              }}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-sm uppercase outline-none focus:border-neutral-900"
-              placeholder="ENTER SERIAL #"
-            />
-          </label>
-          <label className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">JOB</span>
-            <input
-              value={jobIdInput}
-              onChange={(event) => setJobIdInput(event.target.value.trim())}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-sm outline-none focus:border-neutral-900"
-              placeholder="Load or create job"
-            />
-          </label>
-
-          <div className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">LOAD / OCR</span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={createOrLoadJob}
-                disabled={loading}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50 shadow-lg shadow-neutral-200"
-              >
-                {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
-                LOAD
-              </button>
-              <button
-                type="button"
-                onClick={() => setOcrSourceMenuOpen((open) => !open)}
-                disabled={ocrBusy}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-neutral-300 bg-white px-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-                title="Edit OCR prompt before running OCR"
-              >
-                {ocrBusy ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
-                OCR
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {ocrSourceMenuOpen ? (
-          <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">OCR Prompt</div>
-              <button
-                type="button"
-                onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)}
-                className="inline-flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-2 py-1 text-[10px] font-black uppercase text-neutral-700 hover:bg-neutral-50"
-              >
-                <RotateCcw size={12} />
-                Reset
-              </button>
-            </div>
-            <textarea
-              value={ocrPrompt}
-              onChange={(event) => setOcrPrompt(event.target.value)}
-              className="h-40 w-full resize-y rounded-md border border-neutral-300 bg-white p-3 font-mono text-xs text-neutral-900 outline-none focus:border-neutral-900"
-            />
-            <div className="mt-3 flex flex-wrap justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => ocrCameraInputRef.current?.click()}
-                disabled={ocrBusy || !ocrPrompt.trim()}
-                className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-900 bg-neutral-950 px-3 text-xs font-black uppercase tracking-wide text-white disabled:opacity-50"
-              >
-                <Camera size={14} />
-                Take Photo
-              </button>
-              <button
-                type="button"
-                onClick={() => ocrUploadInputRef.current?.click()}
-                disabled={ocrBusy || !ocrPrompt.trim()}
-                className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 text-xs font-black uppercase tracking-wide text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
-              >
-                <ImageIcon size={14} />
-                Upload Image
-              </button>
-            </div>
-          </div>
-        ) : null}
-          </section>
-
-          <section id="step-run-agents" className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Run</span>
-              {[
-                { id: "fix.com", label: "Fix" },
-                { id: "repairclinic-family", label: "RC" },
-                { id: "appliancepartspros", label: "APP" },
-                { id: "sears-partsdirect", label: "Sears" },
-              ].map((supplier) => (
-                <button
-                  key={`quick-run-${supplier.id}`}
-                  type="button"
-                  onClick={() => runSupplierFromTerminal(supplier.id)}
-                  disabled={!jobId || terminalBusy}
-                  className="inline-flex h-9 items-center rounded-md border border-neutral-300 bg-white px-4 text-xs font-black uppercase tracking-wider text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
-                >
-                  {supplier.label}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-            <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
-              {evidenceItems.map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(item.status)}`}
-                >
-                  {item.label} {item.value}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section id="step-capture" className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <div className="bg-neutral-950 p-3 text-white">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500 shadow-lg shadow-blue-900/40">
-                    <Monitor size={16} />
+              {ocrSourceMenuOpen ? (
+                <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">OCR Prompt</div>
+                    <button
+                      type="button"
+                      onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)}
+                      className="inline-flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-2 py-1 text-[10px] font-black uppercase text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <RotateCcw size={12} />
+                      Reset
+                    </button>
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-[0.18em] text-blue-300">Evidence</h3>
+                  <textarea
+                    value={ocrPrompt}
+                    onChange={(event) => setOcrPrompt(event.target.value)}
+                    className="min-h-0 flex-1 resize-none rounded-lg border border-neutral-300 bg-white p-3 font-mono text-xs text-neutral-900 outline-none focus:border-neutral-900"
+                  />
+                  <div className="mt-3 flex flex-wrap justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => ocrCameraInputRef.current?.click()}
+                      disabled={ocrBusy || !ocrPrompt.trim()}
+                      className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-900 bg-neutral-950 px-3 text-xs font-black uppercase tracking-wide text-white disabled:opacity-50"
+                    >
+                      <Camera size={14} />
+                      Photo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => ocrUploadInputRef.current?.click()}
+                      disabled={ocrBusy || !ocrPrompt.trim()}
+                      className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 text-xs font-black uppercase tracking-wide text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      <ImageIcon size={14} />
+                      Upload
+                    </button>
+                  </div>
                 </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Feed</div>
-              </div>
+              ) : null}
             </div>
-            <div className="border-t border-neutral-800 bg-neutral-900/5 p-3">
+
+            <div className="grid min-h-0 gap-4">
+              <AutoField
+                label="Build Instructions"
+                sourceValue={liveTruth?.operatorInstructions}
+                sourceLabel="operator instructions"
+                placeholder="Instructions for the agent..."
+                multiline
+                onSave={(value) => savePatch({ visualTruth: { operatorInstructions: value, operatorInstructionName: "manual" } })}
+              />
+              <div className="grid gap-3 md:grid-cols-2">
+                <AutoField
+                  label="Brand"
+                  sourceValue={job?.brand}
+                  sourceLabel="job identity"
+                  onSave={(value) => savePatch({ brand: value })}
+                />
+                <AutoField
+                  label="Product Type"
+                  sourceValue={job?.productType}
+                  sourceLabel="job identity"
+                  onSave={(value) => savePatch({ productType: value })}
+                />
+              </div>
+              {ocrResult ? (
+                <div className="min-h-0 overflow-auto rounded-xl border border-neutral-200 bg-white p-3 font-mono text-xs text-neutral-700">
+                  {JSON.stringify(ocrResult, null, 2)}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        );
+
+      case "evidence":
+        return (
+          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="min-h-0 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
               {jobId ? (
-                <div className="max-h-[420px] overflow-hidden rounded-xl border border-neutral-200 bg-white">
-                  <ComputerUseSupervisor
-                    jobId={jobId}
-                    model={normalizedModel}
-                    sourceUrl={agentSourceUrl}
-                  />
-                </div>
+                <ComputerUseSupervisor jobId={jobId} model={normalizedModel} sourceUrl={agentSourceUrl} />
               ) : (
-                <div className="flex min-h-[180px] items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50">
-                  <div className="flex flex-col items-center gap-2 text-neutral-400">
-                    <Loader2 size={24} className="animate-spin opacity-30" />
-                    <p className="text-center text-[11px] font-black uppercase tracking-widest opacity-60">Load a job to start evidence</p>
-                  </div>
+                <div className="flex h-full items-center justify-center text-[11px] font-black uppercase tracking-widest text-neutral-400">
+                  Load a job to start evidence
                 </div>
               )}
             </div>
+            <div className="min-h-0 overflow-auto rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="mb-3 grid grid-cols-3 gap-2 text-center text-[11px] font-black uppercase tracking-widest">
+                <div className="rounded-lg bg-neutral-50 p-3">URL<br /><span className="text-lg text-neutral-950">{truthUrl ? "OK" : "-"}</span></div>
+                <div className="rounded-lg bg-neutral-50 p-3">CAP<br /><span className="text-lg text-neutral-950">{screenshotUrl ? "OK" : "-"}</span></div>
+                <div className="rounded-lg bg-neutral-50 p-3">COUNT<br /><span className="text-lg text-neutral-950">{expectedTotal || "-"}</span></div>
+              </div>
+              <EncompassEvidenceSummary model={normalizedModel} truth={liveTruth} />
+            </div>
+          </div>
+        );
+
+      case "suppliers":
+        return (
+          <div className="flex h-full min-h-0 flex-col gap-3">
+            <div className="flex flex-none flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+              {supplierActions.map((supplier) => (
+                <button
+                  key={`supplier-workspace-${supplier.id}`}
+                  type="button"
+                  onClick={() => runSupplierDockAction(supplier.id)}
+                  disabled={!jobId || terminalBusy}
+                  className="inline-flex h-10 items-center rounded-lg border border-neutral-300 bg-white px-4 text-xs font-black uppercase tracking-widest text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
+                >
+                  RUN {supplier.label}
+                </button>
+              ))}
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
+              <SupplierAgentMatrix jobId={jobId || null} model={normalizedModel} truth={liveTruth} />
+            </div>
+          </div>
+        );
+
+      case "rows":
+        return (
+          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-2">
+            {renderRowsPreview("Raw Rows", rawRows, rawCount)}
+            {renderRowsPreview("Final Rows", finalRows, finalCount)}
+          </div>
+        );
+
+      case "reconcile":
+        return (
+          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[420px_minmax(0,1fr)]">
+            <div className="grid content-start gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              {ledgerItems.map((item) => (
+                <div key={item.label} className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
+                  <div className="font-mono text-sm font-black text-neutral-950">{item.value}</div>
+                </div>
+              ))}
+            </div>
+            <div className="min-h-0 overflow-auto rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="grid gap-3 md:grid-cols-3">
+                <div className="rounded-xl bg-neutral-50 p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Expected</div>
+                  <div className="mt-1 font-mono text-2xl font-black">{expectedTotal || "-"}</div>
+                </div>
+                <div className="rounded-xl bg-neutral-50 p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Coverage</div>
+                  <div className="mt-1 font-mono text-2xl font-black">{coverageText}</div>
+                </div>
+                <div className="rounded-xl bg-neutral-50 p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Issues</div>
+                  <div className="mt-1 font-mono text-2xl font-black">{issuesCount}</div>
+                </div>
+              </div>
+              <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+                <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Issue Log</div>
+                {job?.errorText ? <div className="mb-2 text-sm font-bold text-red-700">{job.errorText}</div> : null}
+                {(job?.issues || []).length ? (
+                  <div className="space-y-2">
+                    {(job?.issues || []).map((issue, index) => (
+                      <div key={`${issue}-${index}`} className="rounded-lg bg-white px-3 py-2 text-sm text-neutral-700">{issue}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-sm font-bold text-neutral-400">No issues recorded.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case "pricing":
+        return (
+          <div className="grid h-full content-start gap-4 md:grid-cols-4">
+            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+              <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Priced</div>
+              <div className="mt-2 font-mono text-4xl font-black">{pricedCount}</div>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+              <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Required</div>
+              <div className="mt-2 font-mono text-4xl font-black">{requiredPriceCount}</div>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+              <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Unpriced</div>
+              <div className="mt-2 font-mono text-4xl font-black">{unpricedCount}</div>
+            </div>
+            <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
+              <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Complete</div>
+              <div className="mt-2 font-mono text-4xl font-black">{job?.pricingComplete ? "OK" : "-"}</div>
+            </div>
+          </div>
+        );
+
+      case "approve":
+        return (
+          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <div className="min-h-0 overflow-auto rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div className="grid gap-2 md:grid-cols-4">
+                {evidenceItems.map((item) => (
+                  <div key={item.label} className={`rounded-xl border p-4 ${stepClasses(item.status)}`}>
+                    <div className="text-[10px] font-black uppercase tracking-widest opacity-70">{item.label}</div>
+                    <div className="mt-2 font-mono text-2xl font-black">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="rounded-xl bg-neutral-50 p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Parts</div>
+                  <div className="mt-1 font-mono text-2xl font-black">{job?.partsComplete ? "OK" : "-"}</div>
+                </div>
+                <div className="rounded-xl bg-neutral-50 p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">BOM</div>
+                  <div className="mt-1 font-mono text-2xl font-black">{job?.bomComplete === "true" || job?.partsComplete ? "OK" : "-"}</div>
+                </div>
+                <div className="rounded-xl bg-neutral-50 p-4">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Solidified</div>
+                  <div className="mt-1 truncate font-mono text-sm font-black">{solidifiedAt || "-"}</div>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col justify-between rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+              <div>
+                <div className="text-xs font-black uppercase tracking-widest text-neutral-500">Operator Gate</div>
+                <div className="mt-4 space-y-2 text-sm font-bold text-neutral-600">
+                  <div>raw {rawCount}</div>
+                  <div>final {finalCount}</div>
+                  <div>price {pricedCount}</div>
+                  <div>issues {issuesCount}</div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={solidifyCurrentState}
+                disabled={!jobId}
+                className="mt-4 h-12 rounded-xl bg-neutral-950 text-xs font-black uppercase tracking-widest text-white disabled:opacity-50"
+              >
+                OK Solidify
+              </button>
+            </div>
+          </div>
+        );
+
+      case "console":
+        return (
+          <div className="flex h-full min-h-0 flex-col rounded-xl border border-neutral-900 bg-neutral-950 p-4 font-mono text-xs text-emerald-300 shadow-sm">
+            <div className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap">
+              {terminalLines.join("\n")}
+            </div>
+            <div className="mt-3 flex flex-none gap-2">
+              <input
+                value={terminalInput}
+                onChange={(event) => setTerminalInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    runTerminalCommand();
+                  }
+                }}
+                placeholder="help | status | run fix.com"
+                className="min-w-0 flex-1 rounded-lg border border-neutral-700 bg-black px-3 py-2 text-emerald-300 outline-none"
+              />
+              <button
+                type="button"
+                onClick={runTerminalCommand}
+                disabled={terminalBusy}
+                className="rounded-lg border border-emerald-500 bg-emerald-600 px-4 py-2 text-[10px] font-black uppercase text-white disabled:opacity-50"
+              >
+                {terminalBusy ? "..." : "Run"}
+              </button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <main className="fixed inset-0 overflow-hidden bg-neutral-100 p-3 text-neutral-950">
+      <input
+        ref={ocrCameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleOcrImageUpload}
+      />
+      <input
+        ref={ocrUploadInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleOcrImageUpload}
+      />
+
+      <div className="flex h-full min-h-0 flex-col gap-3">
+        <header className="flex h-14 flex-none items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 shadow-sm">
+          <div className="flex min-w-0 items-center gap-4">
+            <h1 className="shrink-0 text-2xl font-black tracking-tight">BOM Cockpit</h1>
+            <div className="hidden min-w-0 items-center gap-2 text-[11px] font-black uppercase tracking-widest text-neutral-500 xl:flex">
+              <span className="truncate">MODEL {normalizedModel || "-"}</span>
+              <span>RAW {rawCount}</span>
+              <span>FINAL {finalCount}</span>
+              <span>PRICE {pricedCount}</span>
+              <span>JOB {jobId ? "OK" : "-"}</span>
+              <span>RF {lastRefreshAt || "-"}</span>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link href="/" className="inline-flex h-9 items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 text-xs font-black uppercase tracking-widest hover:bg-neutral-50">
+              <Home size={14} />
+              Home
+            </Link>
+            <Link
+              href={`/bom-workflow/verify?${new URLSearchParams({
+                ...(jobId ? { jobId } : {}),
+                ...(normalizedModel ? { model: normalizedModel } : {}),
+              })}`}
+              className="inline-flex h-9 items-center gap-2 rounded-lg border border-blue-700 bg-blue-700 px-3 text-xs font-black uppercase tracking-widest text-white hover:bg-blue-800"
+            >
+              <ShieldCheck size={14} />
+              Verify
+            </Link>
+          </div>
+        </header>
+
+        <div className="grid min-h-0 flex-1 gap-3 min-[1400px]:grid-cols-[minmax(0,1fr)_460px]">
+          <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 shadow-sm">
+            <div className="flex flex-none items-center justify-between border-b border-neutral-200 bg-white px-4 py-3">
+              <div className="text-xs font-black uppercase tracking-widest text-neutral-500">Workspace</div>
+              <div className="font-mono text-sm font-black uppercase tracking-widest text-neutral-950">{activeWorkspace}</div>
+            </div>
+            <div className="min-h-0 flex-1 overflow-hidden p-3">
+              {renderWorkspace()}
+            </div>
           </section>
 
-          <section id="step-review-export" className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
-            <div className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-              <div className="mb-3 text-xs font-black uppercase tracking-widest text-neutral-600">Reconcile</div>
-              <div className="grid grid-cols-2 gap-2">
-                {ledgerItems.slice(0, 4).map((item) => (
-                  <div key={item.label} className="rounded-lg border border-neutral-100 bg-neutral-50 p-3">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
-                    <div className="text-xl font-black text-neutral-900">{item.value}</div>
+          <aside className="hidden min-h-0 overflow-hidden rounded-xl border border-neutral-200 bg-white p-3 shadow-sm min-[1400px]:flex min-[1400px]:flex-col min-[1400px]:gap-3">
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Job</div>
+              <div className="grid gap-2 text-xs font-bold">
+                <div className="flex justify-between"><span>status</span><span>{job?.jobStage || job?.retrievalState || "-"}</span></div>
+                <div className="flex justify-between"><span>raw</span><span>{rawCount}</span></div>
+                <div className="flex justify-between"><span>final</span><span>{finalCount}</span></div>
+                <div className="flex justify-between"><span>price</span><span>{pricedCount}</span></div>
+                <div className="flex justify-between"><span>solidified</span><span>{solidifiedAt ? "OK" : "-"}</span></div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Evidence</div>
+              <div className="grid gap-2 text-xs font-bold">
+                <div className="flex justify-between"><span>URL</span><span>{truthUrl ? "OK" : "-"}</span></div>
+                <div className="flex justify-between"><span>CAP</span><span>{screenshotUrl ? "OK" : "-"}</span></div>
+                <div className="flex justify-between"><span>COUNT</span><span>{expectedTotal || "-"}</span></div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Suppliers</div>
+              <div className="grid grid-cols-4 gap-2 text-center text-xs font-black">
+                {supplierActions.map((supplier) => (
+                  <div key={`rail-${supplier.id}`} className="rounded-lg bg-white px-2 py-2">
+                    <div className="text-[10px] text-neutral-500">{supplier.label}</div>
+                    <div className="font-mono text-lg">{supplierMark(supplier.id)}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="text-xs font-black uppercase tracking-widest text-neutral-600">Final Rows</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{finalRows.length || job?.uniqueRowCount || 0}</div>
-              </div>
-              {finalRows.length ? (
-                <div className="max-h-56 overflow-auto rounded-lg border border-neutral-100">
-                  {finalRows.slice(0, 8).map((row, index) => (
-                    <div key={`${valueText(row.partNumber || row.oem_number || row.part_name)}-${index}`} className="grid grid-cols-[160px_minmax(0,1fr)_90px] gap-3 border-b border-neutral-100 px-3 py-2 text-xs last:border-b-0">
-                      <div className="truncate font-mono font-bold">{valueText(row.partNumber || row.oem_number || row.oemNumber || "-")}</div>
-                      <div className="truncate text-neutral-600">{valueText(row.partName || row.part_name || row.description || "-")}</div>
-                      <div className="truncate text-right font-bold">{valueText(row.price || row.retailPrice || "-")}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-[11px] font-black uppercase tracking-widest text-neutral-400">
-                  No final rows
-                </div>
-              )}
-            </div>
-          </section>
-
-          <details className="rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black uppercase tracking-wide text-neutral-700 transition-colors hover:bg-neutral-50">
-              Advanced
-            </summary>
-            <div className="grid gap-4 border-t border-neutral-200 bg-neutral-50/50 p-4 lg:grid-cols-2">
-              <div className="space-y-4 rounded-lg border border-neutral-200 bg-white p-3">
-                <div className="text-xs font-black uppercase tracking-widest text-neutral-600">Job Fields</div>
-            <AutoField
-              label="Build Instructions"
-              sourceValue={liveTruth?.operatorInstructions}
-              sourceLabel="operator instructions"
-              placeholder="Instructions for the agent..."
-              multiline
-              onSave={(value) => savePatch({ visualTruth: { operatorInstructions: value, operatorInstructionName: "manual" } })}
-            />
-            <div className="grid gap-3 md:grid-cols-2">
-              <AutoField
-                label="Brand"
-                sourceValue={job?.brand}
-                sourceLabel="job identity"
-                onSave={(value) => savePatch({ brand: value })}
-              />
-              <AutoField
-                label="Product Type"
-                sourceValue={job?.productType}
-                sourceLabel="job identity"
-                onSave={(value) => savePatch({ productType: value })}
-              />
-            </div>
-              </div>
-
-              <div className="rounded-lg border border-neutral-200 bg-white p-3">
-                <div className="mb-3 text-xs font-black uppercase tracking-widest text-neutral-600">Ledger</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {ledgerItems.map((item) => (
-                <div key={item.label} className="rounded-lg border border-neutral-100 bg-neutral-50 p-3">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
-                  <div className="text-xl font-black text-neutral-900">{item.value}</div>
-                </div>
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <EncompassEvidenceSummary model={normalizedModel} truth={liveTruth} />
-                </div>
+            <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Reconcile</div>
+              <div className="grid gap-2 text-xs font-bold">
+                <div className="flex justify-between"><span>coverage</span><span>{coverageText}</span></div>
+                <div className="flex justify-between"><span>issues</span><span>{issuesCount}</span></div>
               </div>
             </div>
-          </details>
+          </aside>
         </div>
+
+        <nav className="flex h-16 flex-none items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 shadow-sm">
+          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
+            {workspaceDockItems.map((item) => (
+              <button
+                key={item.mode}
+                type="button"
+                onClick={() => setActiveWorkspace(item.mode)}
+                className={`h-10 rounded-lg px-3 text-[11px] font-black uppercase tracking-widest transition ${
+                  activeWorkspace === item.mode
+                    ? "bg-neutral-950 text-white"
+                    : "border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-none items-center gap-1 border-l border-neutral-200 pl-2">
+            <button type="button" onClick={createOrLoadJob} disabled={loading} className="h-10 rounded-lg bg-neutral-950 px-3 text-[11px] font-black uppercase tracking-widest text-white disabled:opacity-50">DB</button>
+            <button type="button" onClick={() => ocrUploadInputRef.current?.click()} disabled={ocrBusy || !ocrPrompt.trim()} className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700 disabled:opacity-50">OCR</button>
+            <button type="button" onClick={manualRefresh} disabled={!jobId || refreshing} className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700 disabled:opacity-50">RF</button>
+            <button type="button" onClick={solidifyCurrentState} disabled={!jobId} className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700 disabled:opacity-50">OK</button>
+            <details className="relative">
+              <summary className="flex h-10 cursor-pointer list-none items-center rounded-lg border border-neutral-300 bg-white px-3 text-[11px] font-black uppercase tracking-widest text-neutral-700">
+                RUN
+              </summary>
+              <div className="absolute bottom-full right-0 z-20 mb-2 grid w-44 gap-1 rounded-xl border border-neutral-200 bg-white p-2 shadow-xl">
+                {supplierActions.map((supplier) => (
+                  <button
+                    key={`dock-run-${supplier.id}`}
+                    type="button"
+                    onClick={() => runSupplierDockAction(supplier.id)}
+                    disabled={!jobId || terminalBusy}
+                    className="rounded-lg px-3 py-2 text-left text-xs font-black uppercase tracking-widest text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                  >
+                    {supplier.label}
+                  </button>
+                ))}
+              </div>
+            </details>
+          </div>
+        </nav>
       </div>
-    </CockpitLayout>
+    </main>
   );
 }
