@@ -55,7 +55,11 @@ Rules:
 7. Treat missing/blocked source data as partial, not complete.
 8. Honor the operator-selected tool policy. Direct fetch and structured output are mandatory; browser/computer-use source data is a separate supervised path.`;
 
-type GeminiModel = "gemini-3-flash-preview" | "gemini-3-pro-preview";
+type GeminiModel =
+  | "gemini-3-flash-preview"
+  | "gemini-3-pro-preview"
+  | "gemini-3.1-flash-preview"
+  | "gemini-3.1-pro-preview";
 
 interface AgentToolConfig {
   directFetch: boolean;
@@ -284,7 +288,9 @@ function parseThinking(value: unknown): AgentTuning["thinkingLevel"] {
 }
 
 function parseModel(value: unknown): GeminiModel {
-  return value === "gemini-3-pro-preview" ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
+  if (value === "gemini-3-pro-preview" || value === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
+  if (value === "gemini-3-flash-preview" || value === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
+  return "gemini-3-flash-preview";
 }
 
 function parseTemperature(value: unknown): number {

@@ -5,7 +5,21 @@ import { runStructuredJson } from "../services/model-runner";
 
 const partsResultSchema = z.object({
   rows: z.array(bomRowSchema),
+  sourceModel: z.string().nullable().optional(),
+  extractionMeta: z.record(z.string(), z.unknown()).nullable().optional(),
 });
+
+function normalizeQuantity(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.max(0, Math.trunc(value));
+  }
+  if (typeof value === "string") {
+    const match = value.match(/\d+/);
+    if (!match) return undefined;
+    return Number(match[0]);
+  }
+  return undefined;
+}
 
 function isExplicitNoRowsSource(sourceText: string) {
   const normalized = sourceText.toUpperCase();
@@ -67,7 +81,11 @@ export async function runPartsExtractor(input: {
   assemblyName?: string;
   visualTruth?: any;
   agentConfig?: {
-    model?: "gemini-3-flash-preview" | "gemini-3-pro-preview";
+    model?:
+      | "gemini-3-flash-preview"
+      | "gemini-3-pro-preview"
+      | "gemini-3.1-flash-preview"
+      | "gemini-3.1-pro-preview";
     temperature?: number;
     systemInstruction?: string | null;
     toolConfig?: {
@@ -103,9 +121,13 @@ export async function runPartsExtractor(input: {
     temperature: input.agentConfig?.temperature,
   });
 
-  return partsResultSchema.parse(raw).rows.map((row) => ({
-    ...row,
-    sourceUrl: row.sourceUrl || input.sourceUrl,
-    sourceType: row.sourceType || input.sourceType,
-  }));
+  return partsResultSchema.parse(raw).rows.map((row) => {
+    const normalizedQuantity = normalizeQuantity((row as any).quantity);
+    return {
+      ...row,
+      quantity: normalizedQuantity ?? row.quantity,
+      sourceUrl: row.sourceUrl || input.sourceUrl,
+      sourceType: row.sourceType || input.sourceType,
+    };
+  });
 }

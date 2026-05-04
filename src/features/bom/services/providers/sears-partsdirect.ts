@@ -472,6 +472,25 @@ function collectPaginationUrls(html: string, currentUrl: string) {
   return uniqueBy(urls, (url) => url).slice(0, 7);
 }
 
+function buildDeterministicSearsModelPageUrls(currentUrl: string, maxPage: number) {
+  try {
+    const parsed = new URL(currentUrl);
+    const isSears = /(^|\.)searspartsdirect\.com$/i.test(parsed.hostname);
+    const isModelPartsPath = /\/model\/.+-parts$/i.test(parsed.pathname);
+    if (!isSears || !isModelPartsPath) return [];
+
+    const urls: string[] = [];
+    for (let page = 2; page <= maxPage; page += 1) {
+      const next = new URL(currentUrl);
+      next.searchParams.set("page", String(page));
+      urls.push(next.toString());
+    }
+    return urls;
+  } catch {
+    return [];
+  }
+}
+
 async function fetchAndParseSearsPage(url: string, modelNumber: string) {
   const html = await fetchHtml(url);
   const payload = extractSearsCatalogPayload(html);
@@ -560,10 +579,15 @@ export const searsPartsDirectProvider: SourceProvider = {
     // If authoritative payload gave us the part count, use it
     const expectedPartsTotal = (first as any).catalogModel?.partCount || null;
 
-    const extraPages =
+    const pageCapRaw = Number(process.env.SEARS_MAX_MODEL_PAGE || "9");
+    const pageCap = Number.isFinite(pageCapRaw) ? Math.max(2, Math.min(20, Math.floor(pageCapRaw))) : 9;
+
+    const discoveredPages =
       first.lines.some((line) => isPaginationMarker(line))
         ? collectPaginationUrls(first.html, url)
         : [];
+    const deterministicPages = buildDeterministicSearsModelPageUrls(url, pageCap);
+    const extraPages = uniqueBy([...discoveredPages, ...deterministicPages], (nextUrl) => nextUrl);
 
     // Parallel fetch with concurrency limit of 3 to avoid aggressive blocking
     const pageResults = await runWithConcurrency(

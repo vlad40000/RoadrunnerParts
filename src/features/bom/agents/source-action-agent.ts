@@ -62,7 +62,11 @@ type SourceActionInput = {
   agentCode?: string | null;
   agentCodeLanguage?: string | null;
   agentConfig?: {
-    model?: "gemini-3-flash-preview" | "gemini-3-pro-preview";
+    model?:
+      | "gemini-3-flash-preview"
+      | "gemini-3-pro-preview"
+      | "gemini-3.1-flash-preview"
+      | "gemini-3.1-pro-preview";
     temperature?: number;
     thinkingLevel?: "minimal" | "low" | "medium" | "high";
     systemInstruction?: string | null;

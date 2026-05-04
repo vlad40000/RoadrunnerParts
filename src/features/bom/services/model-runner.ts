@@ -3,7 +3,14 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { GoogleGenAI } from "@google/genai";
 
 export type ModelRunInput = {
-  model?: "fast" | "pro" | "lite" | "gemini-3-flash-preview" | "gemini-3-pro-preview";
+  model?:
+    | "fast"
+    | "pro"
+    | "lite"
+    | "gemini-3-flash-preview"
+    | "gemini-3-pro-preview"
+    | "gemini-3.1-flash-preview"
+    | "gemini-3.1-pro-preview";
   prompt: string;
   files?: Array<{
     mimeType: string;
@@ -18,9 +25,8 @@ export type ModelRunInput = {
 };
 
 function resolveModelId(model: ModelRunInput["model"]) {
-  if (model === "gemini-3-pro-preview" || model === "gemini-3-flash-preview") {
-    return model;
-  }
+  if (model === "gemini-3-pro-preview" || model === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
+  if (model === "gemini-3-flash-preview" || model === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
   if (model === "pro") return "gemini-3-pro-preview";
   if (model === "lite") return "gemini-3.1-flash-lite-preview";
   return "gemini-3-flash-preview";
@@ -149,7 +155,7 @@ export async function runText(input: ModelRunInput): Promise<string> {
 
 export async function runGeminiCodeExecution(input: {
   code: string;
-  model?: "gemini-3-flash-preview" | "gemini-3-pro-preview";
+  model?: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-3.1-flash-preview" | "gemini-3.1-pro-preview";
   context?: Record<string, unknown>;
 }) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -158,8 +164,9 @@ export async function runGeminiCodeExecution(input: {
   }
 
   const ai = new GoogleGenAI({ apiKey });
+  const modelId = resolveModelId(input.model as ModelRunInput["model"]);
   const response = await ai.models.generateContent({
-    model: input.model || "gemini-3-flash-preview",
+    model: modelId,
     contents: [
       "Run this operator-supplied Python/code-execution block for preflight validation.",
       "If the block is an SDK request template that cannot run inside the code sandbox, validate the configuration and report that it is a template rather than executable evidence.",

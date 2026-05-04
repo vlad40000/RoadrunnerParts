@@ -14,7 +14,11 @@ import {
 } from "@/features/bom/services/source-tier-policy";
 
 type Params = { params: Promise<{ jobId: string; supplierId: string }> };
-type GeminiModel = "gemini-3-flash-preview" | "gemini-3-pro-preview";
+type GeminiModel =
+  | "gemini-3-flash-preview"
+  | "gemini-3-pro-preview"
+  | "gemini-3.1-flash-preview"
+  | "gemini-3.1-pro-preview";
 type ThinkingLevel = "minimal" | "low" | "medium" | "high";
 
 function positiveNumber(value: unknown) {
@@ -29,7 +33,9 @@ function positiveNumber(value: unknown) {
 }
 
 function normalizeModel(value: unknown): GeminiModel {
-  return value === "gemini-3-pro-preview" ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
+  if (value === "gemini-3-pro-preview" || value === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
+  if (value === "gemini-3-flash-preview" || value === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
+  return "gemini-3-flash-preview";
 }
 
 function normalizeTemperature(value: unknown) {

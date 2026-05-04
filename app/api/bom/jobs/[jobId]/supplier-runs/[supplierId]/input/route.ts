@@ -20,7 +20,9 @@ function positiveNumber(value: unknown) {
 }
 
 function normalizeModel(value: unknown) {
-  return value === "gemini-3-pro-preview" ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
+  if (value === "gemini-3-pro-preview" || value === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
+  if (value === "gemini-3-flash-preview" || value === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
+  return "gemini-3-flash-preview";
 }
 
 function normalizeTemperature(value: unknown) {

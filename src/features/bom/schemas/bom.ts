@@ -91,6 +91,15 @@ export const bomRowSchema = z.object({
   // LEGACY COMPATIBILITY FIELDS (kept for existing app code)
   section: z.string().optional(),
   diagramNumber: z.union([z.number(), z.string()]).optional(),
+  diagram: z
+    .object({
+      diagramId: z.string().nullable().optional(),
+      diagramName: z.string().nullable().optional(),
+      diagramUrl: z.string().nullable().optional(),
+    })
+    .optional(),
+  referenceNumber: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
   originalPartNumber: z.string().nullable().optional(),
   currentServicePartNumber: z.string().nullable().optional(),
   sourceUrl: z.string().optional(),
