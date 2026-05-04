@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
-  Search,
   Database,
   Camera,
   Monitor,
@@ -13,11 +12,6 @@ import {
   CheckCircle2,
   ExternalLink,
   ImageIcon,
-  ShoppingBag,
-  Receipt,
-  ListChecks,
-  Printer,
-  FileJson,
   FileSpreadsheet,
   Loader2,
   SlidersHorizontal,
@@ -36,11 +30,6 @@ import {
   buildKnownEncompassAssemblyUrl,
   normalizeCanonicalModel,
 } from "../services/source-tier-policy";
-import { 
-  getBomRowPartNumber, 
-  ebaySearchUrl, 
-  ebaySoldSearchUrl 
-} from "../services/ebay-links";
 
 type BomWorkflowControlPanelProps = {
   initialModel?: string;
@@ -360,7 +349,8 @@ export function BomWorkflowControlPanel({
 }: BomWorkflowControlPanelProps) {
   const [model, setModel] = useState(initialModel.toUpperCase());
   const [activeSerial, setActiveSerial] = useState(initialSerial.toUpperCase());
-  const [jobId, setJobId] = useState(initialJobId);
+  const [jobId, setJobId] = useState(initialJobId || "");
+  const [jobIdInput, setJobIdInput] = useState(initialJobId || "");
   const [job, setJob] = useState<BomJob | null>(null);
   const [truth, setTruth] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
@@ -407,9 +397,9 @@ export function BomWorkflowControlPanel({
   const solidifiedAt = valueText(liveTruth?.solidifiedAt);
   const updatedAtText = job?.updatedAt ? new Date(job.updatedAt).toLocaleString() : "";
 
-  const refresh = useCallback(async (id = jobId) => {
+  const refresh = useCallback(async (id = jobId, options: { force?: boolean } = {}) => {
     if (!id) return;
-    if (isRefreshInFlightRef.current) return;
+    if (isRefreshInFlightRef.current && !options.force) return;
     isRefreshInFlightRef.current = true;
     setError(null);
     try {
@@ -421,6 +411,7 @@ export function BomWorkflowControlPanel({
       if (refreshUnmountedRef.current) return;
       setJob(data.job);
       setJobId(data.job.id);
+      setJobIdInput(data.job.id);
       setModel((prev) => String(data.job.model || prev || "").toUpperCase());
       if (data.job.serial) {
         setActiveSerial(String(data.job.serial).toUpperCase());
@@ -449,9 +440,23 @@ export function BomWorkflowControlPanel({
   }
 
   async function createOrLoadJob() {
+    const typedJobId = jobIdInput.trim();
+    if (typedJobId) {
+      setLoading(true);
+      setError(null);
+      try {
+        await refresh(typedJobId, { force: true });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Job load failed");
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     const normalized = normalizeCanonicalModel(model);
     if (!normalized) {
-      setError("Enter a model before loading a job.");
+      setError("Enter a model to create a job, or paste a Job ID to load one.");
       return;
     }
 
@@ -470,7 +475,7 @@ export function BomWorkflowControlPanel({
       if (!res.ok || !data?.job?.id) {
         throw new Error(data?.error || "Job creation failed");
       }
-      await refresh(data.job.id);
+      await refresh(data.job.id, { force: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Job creation failed");
     } finally {
@@ -531,7 +536,9 @@ export function BomWorkflowControlPanel({
       };
       if (!initialModel && draft.model) setModel(String(draft.model).toUpperCase());
       if (!initialSerial && draft.serial) setActiveSerial(String(draft.serial).toUpperCase());
-      if (!initialJobId && draft.jobId) setJobId(String(draft.jobId));
+      if (!initialJobId && draft.jobId) {
+        setJobIdInput(String(draft.jobId));
+      }
     } catch {
       // Ignore corrupted local draft data.
     }
@@ -544,13 +551,13 @@ export function BomWorkflowControlPanel({
         JSON.stringify({
           model: normalizeCanonicalModel(model),
           serial: activeSerial.trim().toUpperCase(),
-          jobId,
+          jobId: jobIdInput.trim() || jobId,
         }),
       );
     } catch {
       // Local persistence is best-effort only.
     }
-  }, [activeSerial, jobId, model]);
+  }, [activeSerial, jobId, jobIdInput, model]);
 
   useEffect(() => {
     if (!initialJobId) return;
@@ -665,6 +672,7 @@ export function BomWorkflowControlPanel({
         }
         targetJobId = createPayload.job.id;
         setJobId(targetJobId);
+        setJobIdInput(targetJobId);
       }
 
       if (extractedModel) setModel(extractedModel);
@@ -996,8 +1004,8 @@ export function BomWorkflowControlPanel({
           <label className="space-y-1">
             <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Job ID</span>
             <input
-              value={jobId}
-              onChange={(event) => setJobId(event.target.value.trim())}
+              value={jobIdInput}
+              onChange={(event) => setJobIdInput(event.target.value.trim())}
               className="w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-sm outline-none focus:border-neutral-900"
               placeholder="Load or create job"
             />
@@ -1006,12 +1014,12 @@ export function BomWorkflowControlPanel({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={jobId ? () => refresh(jobId).catch((err) => setError(err.message)) : createOrLoadJob}
+              onClick={createOrLoadJob}
               disabled={loading}
               className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50 shadow-lg shadow-neutral-200"
             >
               {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
-              {jobId ? "Load" : "Create"}
+              {jobIdInput.trim() ? "Load" : "Create"}
             </button>
             <div className="relative">
               <button
@@ -1053,122 +1061,6 @@ export function BomWorkflowControlPanel({
           </div>
         </div>
       </section>
-
-      {/* Discovered Bill of Materials — The "Payday" Table */}
-      <div id="step-review-export" className="rounded-2xl border border-neutral-200 bg-white overflow-hidden shadow-sm flex-1">
-        <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
-              <ListChecks size={16} />
-            </div>
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-[0.1em] text-neutral-900">Discovered Bill of Materials</h3>
-              <p className="text-[10px] font-bold text-neutral-400">{finalRows.length} parts found across all agents</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                if (finalRows.length === 0) return;
-                const blob = new Blob([JSON.stringify(finalRows, null, 2)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", `BOM_${normalizedModel}.json`);
-                link.click();
-              }}
-              disabled={finalRows.length === 0}
-              className="flex h-8 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-neutral-600 transition-all hover:bg-neutral-50 disabled:opacity-50"
-            >
-              <FileJson size={14} />
-              JSON
-            </button>
-            <button
-              onClick={() => window.print()}
-              disabled={finalRows.length === 0}
-              className="flex h-8 items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-neutral-600 transition-all hover:bg-neutral-50 disabled:opacity-50"
-            >
-              <Printer size={14} />
-              PRINT
-            </button>
-          </div>
-        </div>
-        
-        <div className="overflow-x-auto min-h-[400px]">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-neutral-50/50 border-b border-neutral-200">
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-500">Part Number</th>
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-500">Description</th>
-                <th className="px-6 py-3 text-[10px] font-black uppercase tracking-widest text-neutral-500 text-right">Market Pulse</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {finalRows.length > 0 ? finalRows.map((row, idx) => {
-                const partNumber = getBomRowPartNumber(row as any);
-                const activeUrl = ebaySearchUrl(partNumber);
-                const soldUrl = ebaySoldSearchUrl(partNumber);
-
-                return (
-                  <tr key={idx} className={`hover:bg-neutral-50/50 transition-colors group ${row.isDiscrepancy ? "bg-amber-50/30" : ""}`}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-mono font-black px-2 py-1 rounded border ${row.isDiscrepancy ? "text-amber-900 bg-amber-100 border-amber-200" : "text-neutral-900 bg-neutral-100 border-neutral-200"}`}>
-                          {partNumber || "???"}
-                        </span>
-                        {row.isDiscrepancy ? (
-                          <span className="text-[8px] font-black uppercase bg-amber-500 text-white px-1.5 py-0.5 rounded-full" title={String(row.discrepancyType)}>
-                            DIFF
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-bold text-neutral-700 line-clamp-1">{valueText(row.description || row.partName || "Unknown Component")}</p>
-                      <p className="text-[10px] font-black text-neutral-400 uppercase tracking-tighter">
-                        Sources: {asArray(row.sources).join(", ") || valueText(row.source || row.provider || "Aggregated")}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <a
-                          href={activeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm hover:shadow-blue-200"
-                        >
-                          <ShoppingBag size={12} />
-                          Selling
-                        </a>
-                        <a
-                          href={soldUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-sm"
-                        >
-                          <Receipt size={12} />
-                          Sold
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              }) : (
-                <tr>
-                  <td colSpan={3} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center gap-2 text-neutral-400">
-                      <Search size={32} className="opacity-20" />
-                      <p className="text-xs font-black uppercase tracking-[0.2em]">No parts discovered yet</p>
-                      <p className="text-[10px] font-bold">Fire an agent above to begin the search</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
 
       {/* Advanced Job Controls (Lower Left) */}
       <section className="grid gap-4 lg:grid-cols-2">

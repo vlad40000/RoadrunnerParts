@@ -141,6 +141,17 @@ function hydrateStoredCode(code: string, contents: string) {
     .replace("INSERT_INPUT_HERE", contents.replace(/\n/g, " "));
 }
 
+function replaceContentsInCode(code: string, contents: string) {
+  const contentsLiteral = JSON.stringify(contents);
+  if (/contents\s*=/.test(code)) {
+    return code.replace(
+      /contents\s*=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/,
+      `contents=${contentsLiteral}`,
+    );
+  }
+  return hydrateStoredCode(code, contents);
+}
+
 function extractContentsFromCode(code: string, fallback: string) {
   const match = code.match(/contents\s*=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/);
   if (!match?.[1]) return fallback;
@@ -373,7 +384,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
     const existing = window.localStorage.getItem(agentCodeStorageKey(jobId));
     const initialCode = !existing || existing.includes("INSERT_INPUT_HERE")
       ? hydrateStoredCode(existing || defaultCode, defaultContents)
-      : existing;
+      : replaceContentsInCode(existing, defaultContents);
     setAgentCode(initialCode);
     if (!existing || initialCode !== existing) broadcastAgentCode(jobId, initialCode);
 

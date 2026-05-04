@@ -188,14 +188,15 @@ export async function generateText({
       generationConfigFinal.thinkingConfig = thinkingConfig;
     }
 
-    const result = await generativeModel.generateContent({
+    const requestPayload: any = {
       contents: normalizeContents(contents),
       generationConfig: generationConfigFinal,
-    tools: [
-      ...(tools || []),
-      { codeExecution: {} }
-    ],
-    });
+    };
+    if (Array.isArray(tools) && tools.length > 0) {
+      requestPayload.tools = tools;
+    }
+
+    const result = await generativeModel.generateContent(requestPayload);
 
     const response = await result.response;
 
