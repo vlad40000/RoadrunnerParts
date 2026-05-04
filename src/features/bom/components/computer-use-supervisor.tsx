@@ -445,10 +445,10 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
   }, [jobId, model, sourceUrl]);
 
   return (
-    <div className="flex flex-col h-full rounded-2xl border border-neutral-200 bg-neutral-900 overflow-hidden shadow-2xl">
+    <div className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-900 shadow-2xl">
       {/* Header / Top Bar */}
-      <div className="flex items-center justify-between px-6 py-4 bg-neutral-800 border-b border-white/5">
-        <div className="flex items-center gap-3">
+      <div className="flex items-start justify-between gap-3 border-b border-white/5 bg-neutral-800 px-4 py-4">
+        <div className="flex min-w-0 items-center gap-3">
           <div className={`w-3 h-3 rounded-full ${isAgentRunning ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-600'}`} />
           <div>
             <h2 className="text-sm font-black uppercase tracking-widest text-white flex items-center gap-2">
@@ -461,7 +461,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {pendingConfirmation && (
             <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/50 px-3 py-1 rounded-full text-[10px] font-black uppercase text-amber-500">
               <ShieldAlert size={12} />
@@ -474,7 +474,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
               Manual Gate Pending
             </div>
           ) : null}
-          <div className="text-[10px] font-bold text-neutral-500 bg-white/5 px-2 py-1 rounded">
+          <div className="max-w-[220px] truncate rounded bg-white/5 px-2 py-1 text-[10px] font-bold text-neutral-500">
             JOB: {jobId}
           </div>
           <button
@@ -517,9 +517,9 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden min-h-[600px]">
-        <div className="flex-1 overflow-y-auto bg-black p-4">
-          <div className={`grid gap-4 ${display.modelSelector ? "xl:grid-cols-[360px_1fr]" : ""}`}>
+      <div className="flex flex-1 min-h-[600px] overflow-hidden">
+        <div className="relative flex-1 overflow-y-auto bg-black p-4">
+          <div className="grid gap-4">
             {display.modelSelector ? (
             <div className="rounded-xl border border-white/10 bg-neutral-900 p-4">
               <div className="mb-3 text-[10px] font-black uppercase tracking-widest text-neutral-500">
@@ -757,7 +757,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
         </div>
 
         {display.sidePanel ? (
-        <div className="w-80 border-l border-white/5 bg-neutral-800/50 flex flex-col">
+        <div className="w-full border-t border-white/5 bg-neutral-800/50 flex flex-col">
           <div className="grid grid-cols-2 border-b border-white/5 p-2">
             <button
               type="button"

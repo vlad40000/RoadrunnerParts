@@ -1013,14 +1013,43 @@ export function BomWorkflowControlPanel({
               {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
               {jobId ? "Load" : "Create"}
             </button>
-            <button
-              type="button"
-              onClick={() => setOcrSourceMenuOpen((open) => !open)}
-              disabled={ocrBusy}
-              className="inline-flex h-10 w-12 items-center justify-center rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-            >
-              {ocrBusy ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setOcrSourceMenuOpen((open) => !open)}
+                disabled={ocrBusy}
+                className="inline-flex h-10 w-12 items-center justify-center rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                title="OCR nameplate intake"
+              >
+                {ocrBusy ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+              </button>
+              {ocrSourceMenuOpen ? (
+                <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOcrSourceMenuOpen(false);
+                      ocrCameraInputRef.current?.click();
+                    }}
+                    className="flex w-full items-center gap-2 border-b border-neutral-100 px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-neutral-700 hover:bg-neutral-50"
+                  >
+                    <Camera size={14} />
+                    Take Photo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOcrSourceMenuOpen(false);
+                      ocrUploadInputRef.current?.click();
+                    }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-neutral-700 hover:bg-neutral-50"
+                  >
+                    <ImageIcon size={14} />
+                    Upload Image
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>

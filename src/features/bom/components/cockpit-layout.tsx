@@ -14,15 +14,15 @@ export function CockpitLayout({ children, rightRail }: CockpitLayoutProps) {
   return (
     <main className="min-h-screen bg-neutral-100 p-4 text-neutral-950 overflow-x-hidden">
       <div className="mx-auto flex w-full max-w-[2400px] flex-col gap-4">
-        <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_460px]">
+        <div className="grid grid-cols-1 items-start gap-4 min-[1900px]:grid-cols-[minmax(0,1fr)_460px]">
           {/* Main Content Area (BOM Table, Job Controls) */}
-          <div className="flex flex-col gap-4 overflow-hidden">
+          <div className="relative z-10 flex min-w-0 flex-col gap-4 overflow-hidden">
             {children}
           </div>
 
           {/* Right Rail (Agent Supervision, Supplier Matrix, Console) */}
           {rightRail && (
-            <aside className="flex flex-col gap-4 min-w-0">
+            <aside className="relative z-0 flex min-w-0 flex-col gap-4 overflow-hidden">
               {rightRail}
             </aside>
           )}
