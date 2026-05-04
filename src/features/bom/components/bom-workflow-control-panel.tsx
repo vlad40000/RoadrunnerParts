@@ -30,6 +30,7 @@ import {
   buildKnownEncompassAssemblyUrl,
   normalizeCanonicalModel,
 } from "../services/source-tier-policy";
+import { NAMEPLATE_OCR_PROMPT } from "@/src/lib/nameplate-ocr-contract";
 
 type BomWorkflowControlPanelProps = {
   initialModel?: string;
@@ -359,6 +360,7 @@ export function BomWorkflowControlPanel({
   const [error, setError] = useState<string | null>(null);
   const [ocrBusy, setOcrBusy] = useState(false);
   const [ocrResult, setOcrResult] = useState<Record<string, unknown> | null>(null);
+  const [ocrPrompt, setOcrPrompt] = useState(NAMEPLATE_OCR_PROMPT);
   const [terminalInput, setTerminalInput] = useState("");
   const [terminalLines, setTerminalLines] = useState<string[]>([
     "Supplier-run console ready. Type 'help' for commands.",
@@ -625,6 +627,7 @@ export function BomWorkflowControlPanel({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setOcrSourceMenuOpen(false);
     setOcrBusy(true);
     setError(null);
     try {
@@ -640,7 +643,7 @@ export function BomWorkflowControlPanel({
       const res = await fetch("/api/ocr", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, mimeType: file.type }),
+        body: JSON.stringify({ image: base64, mimeType: file.type, prompt: ocrPrompt }),
       });
       const payload = await res.json().catch(() => null);
       if (!res.ok) {
@@ -774,42 +777,6 @@ export function BomWorkflowControlPanel({
     <CockpitLayout
       rightRail={
         <>
-          {/* Agentic Command Center (Step 2) */}
-          <details id="step-capture" open className="rounded-lg border border-neutral-200 bg-white overflow-hidden shadow-sm">
-            <summary className="cursor-pointer list-none bg-neutral-950 p-4 text-white">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-900/40">
-                    <Monitor size={16} />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em] text-blue-300">Agentic Command Center</h3>
-                    <p className="text-[10px] font-bold text-neutral-400">Visual agent supervision &middot; manual gate</p>
-                  </div>
-                </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Step 2</div>
-              </div>
-            </summary>
-            <div className="border-t border-neutral-800 p-4 bg-neutral-900/5">
-              {jobId ? (
-                <div className="min-h-[520px]">
-                  <ComputerUseSupervisor
-                    jobId={jobId}
-                    model={normalizedModel}
-                    sourceUrl={agentSourceUrl}
-                  />
-                </div>
-              ) : (
-                <div className="flex min-h-[300px] items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50">
-                  <div className="flex flex-col items-center gap-3 text-neutral-400">
-                    <Loader2 size={28} className="animate-spin opacity-30" />
-                    <p className="text-[11px] font-black uppercase tracking-widest opacity-60">Initialize a job to start the agent feed</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </details>
-
           {/* Supplier Agent Matrix */}
           <details className="rounded-lg border border-neutral-200 bg-white shadow-sm">
             <summary className="cursor-pointer list-none p-4">
@@ -976,7 +943,7 @@ export function BomWorkflowControlPanel({
           onChange={handleOcrImageUpload}
         />
 
-        <div className="grid gap-3 lg:grid-cols-[1fr_1fr_auto_auto] lg:items-end">
+        <div className="grid gap-3 lg:grid-cols-[1fr_1fr_minmax(220px,0.8fr)_auto] lg:items-end">
           <label className="space-y-1">
             <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Model</span>
             <input
@@ -1011,54 +978,107 @@ export function BomWorkflowControlPanel({
             />
           </label>
 
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={createOrLoadJob}
-              disabled={loading}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50 shadow-lg shadow-neutral-200"
-            >
-              {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
-              {jobIdInput.trim() ? "Load" : "Create"}
-            </button>
-            <div className="relative">
+          <div className="space-y-1">
+            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Actions</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={createOrLoadJob}
+                disabled={loading}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50 shadow-lg shadow-neutral-200"
+              >
+                {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
+                {jobIdInput.trim() ? "Load" : "Create"}
+              </button>
               <button
                 type="button"
                 onClick={() => setOcrSourceMenuOpen((open) => !open)}
                 disabled={ocrBusy}
-                className="inline-flex h-10 w-12 items-center justify-center rounded-md border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-                title="OCR nameplate intake"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-neutral-300 bg-white px-3 text-sm font-bold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                title="Edit OCR prompt before running OCR"
               >
-                {ocrBusy ? <Loader2 size={18} className="animate-spin" /> : <Camera size={18} />}
+                {ocrBusy ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
+                OCR
               </button>
-              {ocrSourceMenuOpen ? (
-                <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-lg">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOcrSourceMenuOpen(false);
-                      ocrCameraInputRef.current?.click();
-                    }}
-                    className="flex w-full items-center gap-2 border-b border-neutral-100 px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-neutral-700 hover:bg-neutral-50"
-                  >
-                    <Camera size={14} />
-                    Take Photo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOcrSourceMenuOpen(false);
-                      ocrUploadInputRef.current?.click();
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-neutral-700 hover:bg-neutral-50"
-                  >
-                    <ImageIcon size={14} />
-                    Upload Image
-                  </button>
-                </div>
-              ) : null}
             </div>
           </div>
+        </div>
+
+        {ocrSourceMenuOpen ? (
+          <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">OCR Prompt</div>
+              <button
+                type="button"
+                onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)}
+                className="inline-flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-2 py-1 text-[10px] font-black uppercase text-neutral-700 hover:bg-neutral-50"
+              >
+                <RotateCcw size={12} />
+                Reset
+              </button>
+            </div>
+            <textarea
+              value={ocrPrompt}
+              onChange={(event) => setOcrPrompt(event.target.value)}
+              className="h-40 w-full resize-y rounded-md border border-neutral-300 bg-white p-3 font-mono text-xs text-neutral-900 outline-none focus:border-neutral-900"
+            />
+            <div className="mt-3 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => ocrCameraInputRef.current?.click()}
+                disabled={ocrBusy || !ocrPrompt.trim()}
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-900 bg-neutral-950 px-3 text-xs font-black uppercase tracking-wide text-white disabled:opacity-50"
+              >
+                <Camera size={14} />
+                Take Photo
+              </button>
+              <button
+                type="button"
+                onClick={() => ocrUploadInputRef.current?.click()}
+                disabled={ocrBusy || !ocrPrompt.trim()}
+                className="inline-flex h-9 items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 text-xs font-black uppercase tracking-wide text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
+              >
+                <ImageIcon size={14} />
+                Upload Image
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      {/* Agentic Command Center (Step 2) */}
+      <section id="step-capture" className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
+        <div className="bg-neutral-950 p-4 text-white">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500 shadow-lg shadow-blue-900/40">
+                <Monitor size={18} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-black uppercase tracking-[0.18em] text-blue-300">Agentic Command Center</h3>
+                <p className="text-xs font-bold text-neutral-400">Visual agent supervision &middot; manual gate</p>
+              </div>
+            </div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Step 2</div>
+          </div>
+        </div>
+        <div className="border-t border-neutral-800 bg-neutral-900/5 p-4">
+          {jobId ? (
+            <div className="min-h-[720px]">
+              <ComputerUseSupervisor
+                jobId={jobId}
+                model={normalizedModel}
+                sourceUrl={agentSourceUrl}
+              />
+            </div>
+          ) : (
+            <div className="flex min-h-[520px] items-center justify-center rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50">
+              <div className="flex flex-col items-center gap-3 text-neutral-400">
+                <Loader2 size={28} className="animate-spin opacity-30" />
+                <p className="text-center text-[11px] font-black uppercase tracking-widest opacity-60">Initialize a job to start the agent feed</p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

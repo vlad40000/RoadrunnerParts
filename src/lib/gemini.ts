@@ -1,14 +1,12 @@
 import 'server-only';
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI, ThinkingLevel } from '@google/genai';
 
 import { db } from '../server/db';
 import { nameplateExtractions, applianceModels } from '../server/db/schema/appliance-models';
 import { eq, or } from 'drizzle-orm';
-import {
-  NAMEPLATE_OCR_PROMPT,
-  NAMEPLATE_OCR_RESPONSE_SCHEMA,
-} from './nameplate-ocr-contract';
+import { NAMEPLATE_OCR_PROMPT } from './nameplate-ocr-contract';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
@@ -43,6 +41,14 @@ function createClient() {
   return new GoogleGenerativeAI(apiKey);
 }
 
+function createGenAIClient() {
+  if (!apiKey) {
+    throw new Error('Missing GEMINI_API_KEY environment variable.');
+  }
+
+  return new GoogleGenAI({ apiKey });
+}
+
 function safeJsonParse(text, fallback) {
   try {
     return JSON.parse(text);
@@ -50,6 +56,50 @@ function safeJsonParse(text, fallback) {
     console.error('JSON parse error', error, text);
     return fallback;
   }
+}
+
+function stripJsonFence(text: string) {
+  const trimmed = String(text || '').trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return fenced?.[1]?.trim() || trimmed;
+}
+
+function ocrFieldValue(data: Record<string, any>, camelKey: string, snakeKey: string) {
+  const field = data[camelKey] ?? data[snakeKey];
+  if (field && typeof field === 'object' && 'value' in field) {
+    return field.value ?? null;
+  }
+  return field ?? null;
+}
+
+function ocrFieldConfidence(data: Record<string, any>, camelKey: string, snakeKey: string) {
+  const field = data[camelKey] ?? data[snakeKey];
+  if (field && typeof field === 'object' && typeof field.confidence === 'number') {
+    return field.confidence;
+  }
+  const confidence = data.confidence || {};
+  return typeof confidence[camelKey] === 'number'
+    ? confidence[camelKey]
+    : typeof confidence[snakeKey] === 'number'
+      ? confidence[snakeKey]
+      : 0;
+}
+
+function normalizeNameplateOcrResult(data: Record<string, any>) {
+  return {
+    brand: ocrFieldValue(data, 'brand', 'brand'),
+    productType: ocrFieldValue(data, 'productType', 'product_type'),
+    modelNumber: ocrFieldValue(data, 'modelNumber', 'model_number'),
+    serialNumber: ocrFieldValue(data, 'serialNumber', 'serial_number'),
+    engineeringCode: ocrFieldValue(data, 'engineeringCode', 'engineering_code'),
+    confidence: {
+      brand: ocrFieldConfidence(data, 'brand', 'brand'),
+      productType: ocrFieldConfidence(data, 'productType', 'product_type'),
+      modelNumber: ocrFieldConfidence(data, 'modelNumber', 'model_number'),
+      serialNumber: ocrFieldConfidence(data, 'serialNumber', 'serial_number'),
+      engineeringCode: ocrFieldConfidence(data, 'engineeringCode', 'engineering_code'),
+    },
+  };
 }
 
 /**
@@ -506,35 +556,34 @@ export async function extractIdentityFromManualPdf(pdfData, fileName = 'manual.p
   return data;
 }
 
-export async function extractNameplateFromImage(imageData, mimeType) {
-  const { data } = await generateStructuredJson({
-    model: 'gemini-3-flash-preview',
-    contents: [
-      { text: NAMEPLATE_OCR_PROMPT },
-      {
-        inlineData: {
-          data: imageData,
-          mimeType,
-        },
-      },
-    ],
-    schema: NAMEPLATE_OCR_RESPONSE_SCHEMA,
-    temperature: 1,
-    fallback: {
-      modelNumber: null,
-      serialNumber: null,
-      brand: null,
-      productType: null,
-      engineeringCode: null,
-      confidence: {
-        brand: 0,
-        productType: 0,
-        modelNumber: 0,
-        serialNumber: 0,
-        engineeringCode: 0,
+export async function extractNameplateFromImage(imageData, mimeType, prompt = NAMEPLATE_OCR_PROMPT) {
+  const ocrPrompt = String(prompt || "").trim() || NAMEPLATE_OCR_PROMPT;
+  const ai = createGenAIClient();
+  const response = await ai.models.generateContent({
+    model: 'gemini-3.1-flash-lite-preview',
+    config: {
+      thinkingConfig: {
+        thinkingLevel: ThinkingLevel.MINIMAL,
       },
     },
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          {
+            inlineData: {
+              data: imageData,
+              mimeType,
+            },
+          },
+          { text: ocrPrompt },
+        ],
+      },
+    ],
   });
+  const rawText = String(response.text || '').trim();
+  const parsed = safeJsonParse(stripJsonFence(rawText), {});
+  const data = normalizeNameplateOcrResult(parsed && typeof parsed === 'object' ? parsed : {});
 
   // Discovery: File the model number correctly
   if (data.modelNumber) {

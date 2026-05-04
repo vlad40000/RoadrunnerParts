@@ -3,13 +3,13 @@ import { extractNameplateFromImage } from '@/lib/gemini';
 
 export async function POST(req: NextRequest) {
   try {
-    const { image, mimeType } = await req.json();
+    const { image, mimeType, prompt } = await req.json();
 
     if (!image) {
       return NextResponse.json({ error: 'Missing image data' }, { status: 400 });
     }
 
-    const data = await extractNameplateFromImage(image, mimeType);
+    const data = await extractNameplateFromImage(image, mimeType, prompt);
     
     // Derive candidates for the frontend lookup cascade
     const { getLookupCandidates } = await import('@/lib/identity-service');
