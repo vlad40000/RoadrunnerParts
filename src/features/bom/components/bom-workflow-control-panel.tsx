@@ -594,14 +594,25 @@ export function BomWorkflowControlPanel({
   };
 
   const evidenceItems = [
-    { label: "Identity", value: [job?.brand, normalizedModel, job?.serial].filter(Boolean).join(" / ") || "waiting", status: stepStatus.identity },
-    { label: "Visual Truth", value: truthUrl || "waiting for canonical URL", status: stepStatus.encompass_url },
-    { label: "Capture", value: screenshotUrl ? "image evidence attached" : "waiting for rendered capture", status: stepStatus.visual_capture },
-    { label: "Trusted Count", value: expectedTotal ? `${expectedTotal} parts` : "no evidence/operator count", status: stepStatus.trusted_count },
-    { label: "Raw Rows", value: String(rawRows.length || job?.rawRowCount || 0), status: stepStatus.row_evidence },
-    { label: "Final Rows", value: String(finalRows.length || job?.uniqueRowCount || 0), status: stepStatus.reconcile },
-    { label: "Coverage", value: formatPercent(job?.coveragePct) || "not scored", status: stepStatus.coverage },
-    { label: "Pricing", value: `${pricedCount || 0} priced`, status: stepStatus.pricing },
+    { label: "ID", value: job?.model ? "✓" : "—", status: stepStatus.identity },
+    { label: "URL", value: truthUrl ? "✓" : "—", status: stepStatus.encompass_url },
+    { label: "CAP", value: screenshotUrl ? "✓" : "—", status: stepStatus.visual_capture },
+    { label: "COUNT", value: expectedTotal ? String(expectedTotal) : "—", status: stepStatus.trusted_count },
+    { label: "RAW", value: String(rawRows.length || job?.rawRowCount || 0), status: stepStatus.row_evidence },
+    { label: "FINAL", value: String(finalRows.length || job?.uniqueRowCount || 0), status: stepStatus.reconcile },
+    { label: "PRICE", value: String(pricedCount || 0), status: stepStatus.pricing },
+  ];
+
+  const workflowRailItems = [
+    { label: "Job", target: "step-setup", status: stepStatus.identity },
+    { label: "ID", target: "step-setup", status: stepStatus.identity },
+    { label: "Evidence", target: "step-capture", status: stepStatus.visual_capture },
+    { label: "Suppliers", target: "step-run-agents", status: stepStatus.supplier_runs },
+    { label: "Rows", target: "step-review-export", status: stepStatus.row_evidence },
+    { label: "Reconcile", target: "step-review-export", status: stepStatus.reconcile },
+    { label: "Price", target: "step-review-export", status: stepStatus.pricing },
+    { label: "Issues", target: "step-review-export", status: stepStatus.review },
+    { label: "Approve", target: "step-review-export", status: stepStatus.export },
   ];
 
   const ledgerItems = [
@@ -777,29 +788,27 @@ export function BomWorkflowControlPanel({
     <CockpitLayout
       rightRail={
         <>
-          {/* Supplier Agent Matrix */}
-          <details className="rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <summary className="cursor-pointer list-none p-4">
-              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide">
-                <SlidersHorizontal size={16} />
-                Supplier Agent Matrix
+          <details open className="rounded-lg border border-neutral-200 bg-white shadow-sm">
+            <summary className="cursor-pointer list-none p-3">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
+                <SlidersHorizontal size={14} />
+                Suppliers
               </div>
             </summary>
-            <div className="border-t border-neutral-200 p-4">
+            <div className="max-h-[720px] overflow-auto border-t border-neutral-200 p-3">
               <SupplierAgentMatrix jobId={jobId || null} model={normalizedModel} truth={liveTruth} />
             </div>
           </details>
 
-          {/* Supplier-Run Console */}
-          <details className="rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <summary className="cursor-pointer list-none p-4">
+          <details open className="rounded-lg border border-neutral-200 bg-white shadow-sm">
+            <summary className="cursor-pointer list-none p-3">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-black uppercase tracking-wide">Supplier-Run Console</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Terminal</div>
+                <div className="text-xs font-black uppercase tracking-widest">Console</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Run</div>
               </div>
             </summary>
-            <div className="border-t border-neutral-200 p-4">
-              <div className="mb-3 flex justify-end gap-2">
+            <div className="border-t border-neutral-200 p-3">
+              <div className="mb-2 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => appendTerminal(TERMINAL_HELP)}
@@ -816,10 +825,10 @@ export function BomWorkflowControlPanel({
                 </button>
               </div>
               <div className="rounded-md border border-neutral-900 bg-neutral-950 p-3 font-mono text-xs text-emerald-300">
-                <div className="max-h-44 overflow-auto whitespace-pre-wrap">
+                <div className="max-h-32 overflow-auto whitespace-pre-wrap">
                   {terminalLines.join("\n")}
                 </div>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-2 flex gap-2">
                   <input
                     value={terminalInput}
                     onChange={(event) => setTerminalInput(event.target.value)}
@@ -829,8 +838,8 @@ export function BomWorkflowControlPanel({
                         runTerminalCommand();
                       }
                     }}
-                    placeholder="help | status | run fix.com"
-                    className="flex-1 rounded-md border border-neutral-700 bg-black px-2 py-1 text-emerald-300 outline-none"
+                    placeholder="run fix.com"
+                    className="min-w-0 flex-1 rounded-md border border-neutral-700 bg-black px-2 py-1 text-emerald-300 outline-none"
                   />
                   <button
                     type="button"
@@ -845,40 +854,30 @@ export function BomWorkflowControlPanel({
             </div>
           </details>
 
-          {/* Visual Evidence Card */}
           <details className="rounded-lg border border-neutral-200 bg-white shadow-sm">
-            <summary className="cursor-pointer list-none p-4">
+            <summary className="cursor-pointer list-none p-3">
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-sm font-black uppercase tracking-wide">
-                  <ImageIcon size={16} />
-                  Visual Evidence Card
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
+                  <ImageIcon size={14} />
+                  Evidence
                 </div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Open</div>
               </div>
             </summary>
-            <div className="border-t border-neutral-200 p-4">
+            <div className="max-h-[360px] overflow-auto border-t border-neutral-200 p-3">
               <EncompassEvidenceSummary model={normalizedModel} truth={liveTruth} />
             </div>
           </details>
         </>
       }
     >
-      <header className="flex flex-col justify-between gap-4 border-b border-neutral-200 pb-5 md:flex-row md:items-end">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-neutral-500">
-            <SlidersHorizontal size={14} />
-            Operator Workflow Dashboard
-          </div>
-          <h1 className="text-3xl font-black tracking-tight">BOM Step Control</h1>
-          <p className="mt-1 max-w-2xl text-sm text-neutral-500">
-            Evidence-first workflow state with manual controls for each BOM step.
-          </p>
-        </div>
+      <header className="flex flex-col justify-between gap-3 border-b border-neutral-200 pb-4 md:flex-row md:items-center">
+        <h1 className="text-3xl font-black tracking-tight">BOM Cockpit</h1>
 
         <div className="flex flex-wrap gap-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm font-semibold hover:bg-neutral-50"
+            className="inline-flex items-center gap-2 rounded-md border border-neutral-300 bg-white px-3 py-2 text-xs font-bold uppercase hover:bg-neutral-50"
           >
             <Home size={14} />
             Home
@@ -888,7 +887,7 @@ export function BomWorkflowControlPanel({
               ...(jobId ? { jobId } : {}),
               ...(normalizedModel ? { model: normalizedModel } : {}),
             })}`}
-            className="inline-flex items-center gap-2 rounded-md border border-blue-700 bg-blue-700 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-700 bg-blue-700 px-3 py-2 text-xs font-bold uppercase text-white hover:bg-blue-800"
           >
             <ShieldCheck size={14} />
             Verify
@@ -898,7 +897,7 @@ export function BomWorkflowControlPanel({
               type="button"
               onClick={manualRefresh}
               disabled={refreshing}
-              className="inline-flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-3 py-2 text-xs font-bold uppercase text-white disabled:opacity-60"
             >
               <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
               Refresh
@@ -907,26 +906,30 @@ export function BomWorkflowControlPanel({
         </div>
       </header>
 
-      {/* Step Navigation */}
-      <section className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-        <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
-          <button type="button" onClick={() => jumpToSection("step-setup")} className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.identity)}`}>
-            1 Setup
-          </button>
-          <button type="button" onClick={() => jumpToSection("step-capture")} className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.visual_capture)}`}>
-            2 Agent
-          </button>
-          <button type="button" onClick={() => jumpToSection("step-run-agents")} className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.supplier_runs)}`}>
-            3 Suppliers
-          </button>
-          <button type="button" onClick={() => jumpToSection("step-review-export")} className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(stepStatus.export)}`}>
-            4 Review
-          </button>
-        </div>
-      </section>
+      <div className="grid gap-4 xl:grid-cols-[180px_minmax(0,1fr)]">
+        <aside className="hidden xl:block">
+          <nav className="sticky top-4 rounded-lg border border-neutral-200 bg-white p-2 shadow-sm">
+            {workflowRailItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => jumpToSection(item.target)}
+                className="mb-1 flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-[11px] font-black uppercase tracking-widest text-neutral-600 hover:bg-neutral-50"
+              >
+                <span>{item.label}</span>
+                <span className={`h-2 w-2 rounded-full ${
+                  item.status === "complete" ? "bg-emerald-500" :
+                  item.status === "filled" ? "bg-blue-500" :
+                  item.status === "active" ? "bg-amber-500" :
+                  "bg-neutral-300"
+                }`} />
+              </button>
+            ))}
+          </nav>
+        </aside>
 
-      {/* Setup & Inputs (Left Side Top) */}
-      <section id="step-setup" className="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm">
+        <div className="min-w-0 space-y-4">
+          <section id="step-setup" className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
         <input
           ref={ocrCameraInputRef}
           type="file"
@@ -945,7 +948,7 @@ export function BomWorkflowControlPanel({
 
         <div className="grid gap-3 lg:grid-cols-[1fr_1fr_minmax(220px,0.8fr)_auto] lg:items-end">
           <label className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Model</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">MODEL</span>
             <input
               value={model}
               onChange={(event) => setModel(event.target.value.toUpperCase())}
@@ -954,7 +957,7 @@ export function BomWorkflowControlPanel({
             />
           </label>
           <label className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Active Serial</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">SERIAL</span>
             <input
               value={activeSerial}
               onChange={(event) => {
@@ -969,7 +972,7 @@ export function BomWorkflowControlPanel({
             />
           </label>
           <label className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Job ID</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">JOB</span>
             <input
               value={jobIdInput}
               onChange={(event) => setJobIdInput(event.target.value.trim())}
@@ -979,7 +982,7 @@ export function BomWorkflowControlPanel({
           </label>
 
           <div className="space-y-1">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">Actions</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-neutral-500">LOAD / OCR</span>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -988,7 +991,7 @@ export function BomWorkflowControlPanel({
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-neutral-950 px-4 text-sm font-bold text-white disabled:opacity-50 shadow-lg shadow-neutral-200"
               >
                 {loading ? <Loader2 size={15} className="animate-spin" /> : <Database size={15} />}
-                {jobIdInput.trim() ? "Load" : "Create"}
+                LOAD
               </button>
               <button
                 type="button"
@@ -1044,51 +1047,119 @@ export function BomWorkflowControlPanel({
             </div>
           </div>
         ) : null}
-      </section>
+          </section>
 
-      {/* Agentic Command Center (Step 2) */}
-      <section id="step-capture" className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
-        <div className="bg-neutral-950 p-4 text-white">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500 shadow-lg shadow-blue-900/40">
-                <Monitor size={18} />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-sm font-black uppercase tracking-[0.18em] text-blue-300">Agentic Command Center</h3>
-                <p className="text-xs font-bold text-neutral-400">Visual agent supervision &middot; manual gate</p>
-              </div>
+          <section id="step-run-agents" className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-[10px] font-black uppercase tracking-widest text-neutral-500">Run</span>
+              {[
+                { id: "fix.com", label: "Fix" },
+                { id: "repairclinic-family", label: "RC" },
+                { id: "appliancepartspros", label: "APP" },
+                { id: "sears-partsdirect", label: "Sears" },
+              ].map((supplier) => (
+                <button
+                  key={`quick-run-${supplier.id}`}
+                  type="button"
+                  onClick={() => runSupplierFromTerminal(supplier.id)}
+                  disabled={!jobId || terminalBusy}
+                  className="inline-flex h-9 items-center rounded-md border border-neutral-300 bg-white px-4 text-xs font-black uppercase tracking-wider text-neutral-800 hover:bg-neutral-50 disabled:opacity-50"
+                >
+                  {supplier.label}
+                </button>
+              ))}
             </div>
-            <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Step 2</div>
-          </div>
-        </div>
-        <div className="border-t border-neutral-800 bg-neutral-900/5 p-4">
-          {jobId ? (
-            <div className="min-h-[720px]">
-              <ComputerUseSupervisor
-                jobId={jobId}
-                model={normalizedModel}
-                sourceUrl={agentSourceUrl}
-              />
-            </div>
-          ) : (
-            <div className="flex min-h-[520px] items-center justify-center rounded-lg border-2 border-dashed border-neutral-200 bg-neutral-50">
-              <div className="flex flex-col items-center gap-3 text-neutral-400">
-                <Loader2 size={28} className="animate-spin opacity-30" />
-                <p className="text-center text-[11px] font-black uppercase tracking-widest opacity-60">Initialize a job to start the agent feed</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+          </section>
 
-      {/* Advanced Job Controls (Lower Left) */}
-      <section className="grid gap-4 lg:grid-cols-2">
-        <details className="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden">
-          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black uppercase tracking-wide text-neutral-700 hover:bg-neutral-50 transition-colors">
-            Job Fields & Instructions
-          </summary>
-          <div className="space-y-6 border-t border-neutral-200 p-4 bg-neutral-50/50">
+          <section className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
+            <div className="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest">
+              {evidenceItems.map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  className={`rounded-md border px-2 py-1 transition hover:brightness-95 ${stepClasses(item.status)}`}
+                >
+                  {item.label} {item.value}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section id="step-capture" className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
+            <div className="bg-neutral-950 p-3 text-white">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500 shadow-lg shadow-blue-900/40">
+                    <Monitor size={16} />
+                  </div>
+                  <h3 className="text-sm font-black uppercase tracking-[0.18em] text-blue-300">Evidence</h3>
+                </div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Feed</div>
+              </div>
+            </div>
+            <div className="border-t border-neutral-800 bg-neutral-900/5 p-3">
+              {jobId ? (
+                <div className="max-h-[420px] overflow-hidden rounded-xl border border-neutral-200 bg-white">
+                  <ComputerUseSupervisor
+                    jobId={jobId}
+                    model={normalizedModel}
+                    sourceUrl={agentSourceUrl}
+                  />
+                </div>
+              ) : (
+                <div className="flex min-h-[180px] items-center justify-center rounded-xl border-2 border-dashed border-neutral-200 bg-neutral-50">
+                  <div className="flex flex-col items-center gap-2 text-neutral-400">
+                    <Loader2 size={24} className="animate-spin opacity-30" />
+                    <p className="text-center text-[11px] font-black uppercase tracking-widest opacity-60">Load a job to start evidence</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section id="step-review-export" className="grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
+              <div className="mb-3 text-xs font-black uppercase tracking-widest text-neutral-600">Reconcile</div>
+              <div className="grid grid-cols-2 gap-2">
+                {ledgerItems.slice(0, 4).map((item) => (
+                  <div key={item.label} className="rounded-lg border border-neutral-100 bg-neutral-50 p-3">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
+                    <div className="text-xl font-black text-neutral-900">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="text-xs font-black uppercase tracking-widest text-neutral-600">Final Rows</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">{finalRows.length || job?.uniqueRowCount || 0}</div>
+              </div>
+              {finalRows.length ? (
+                <div className="max-h-56 overflow-auto rounded-lg border border-neutral-100">
+                  {finalRows.slice(0, 8).map((row, index) => (
+                    <div key={`${valueText(row.partNumber || row.oem_number || row.part_name)}-${index}`} className="grid grid-cols-[160px_minmax(0,1fr)_90px] gap-3 border-b border-neutral-100 px-3 py-2 text-xs last:border-b-0">
+                      <div className="truncate font-mono font-bold">{valueText(row.partNumber || row.oem_number || row.oemNumber || "-")}</div>
+                      <div className="truncate text-neutral-600">{valueText(row.partName || row.part_name || row.description || "-")}</div>
+                      <div className="truncate text-right font-bold">{valueText(row.price || row.retailPrice || "-")}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-[11px] font-black uppercase tracking-widest text-neutral-400">
+                  No final rows
+                </div>
+              )}
+            </div>
+          </section>
+
+          <details className="rounded-lg border border-neutral-200 bg-white shadow-sm">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black uppercase tracking-wide text-neutral-700 transition-colors hover:bg-neutral-50">
+              Advanced
+            </summary>
+            <div className="grid gap-4 border-t border-neutral-200 bg-neutral-50/50 p-4 lg:grid-cols-2">
+              <div className="space-y-4 rounded-lg border border-neutral-200 bg-white p-3">
+                <div className="text-xs font-black uppercase tracking-widest text-neutral-600">Job Fields</div>
             <AutoField
               label="Build Instructions"
               sourceValue={liveTruth?.operatorInstructions}
@@ -1111,43 +1182,26 @@ export function BomWorkflowControlPanel({
                 onSave={(value) => savePatch({ productType: value })}
               />
             </div>
-          </div>
-        </details>
+              </div>
 
-        <details className="rounded-lg border border-neutral-200 bg-white shadow-sm overflow-hidden">
-          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black uppercase tracking-wide text-neutral-700 hover:bg-neutral-50 transition-colors">
-            Reconciliation Ledger
-          </summary>
-          <div className="border-t border-neutral-200 p-4">
-            <div className="grid grid-cols-2 gap-4">
-              {ledgerItems.map(item => (
-                <div key={item.label} className="p-3 bg-neutral-50 rounded-lg border border-neutral-100">
+              <div className="rounded-lg border border-neutral-200 bg-white p-3">
+                <div className="mb-3 text-xs font-black uppercase tracking-widest text-neutral-600">Ledger</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {ledgerItems.map((item) => (
+                <div key={item.label} className="rounded-lg border border-neutral-100 bg-neutral-50 p-3">
                   <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
                   <div className="text-xl font-black text-neutral-900">{item.value}</div>
                 </div>
-              ))}
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <EncompassEvidenceSummary model={normalizedModel} truth={liveTruth} />
+                </div>
+              </div>
             </div>
-          </div>
-        </details>
-      </section>
-
-      {/* Direct Supplier Run Row */}
-      <section className="rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mr-2">Quick Run</span>
-          {SUPPLIERS.map((supplier) => (
-            <button
-              key={`quick-run-${supplier.id}`}
-              type="button"
-              onClick={() => runSupplierFromTerminal(supplier.id)}
-              disabled={!jobId || terminalBusy}
-              className="inline-flex h-8 items-center rounded-md border border-neutral-300 bg-white px-3 text-[10px] font-black uppercase tracking-wider text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
-            >
-              {supplier.label}
-            </button>
-          ))}
+          </details>
         </div>
-      </section>
+      </div>
     </CockpitLayout>
   );
 }

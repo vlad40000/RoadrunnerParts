@@ -18,7 +18,8 @@ import {
   Copy,
   FlaskConical,
   Terminal,
-  Cpu
+  Cpu,
+  Pencil
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -87,6 +88,17 @@ function broadcastAgentCode(jobId: string, code: string) {
     new CustomEvent("bom-workflow-agent-code", {
       detail: { jobId, code },
     }),
+  );
+}
+
+function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <span className="group/tooltip relative inline-flex">
+      {children}
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 text-[10px] font-bold text-white shadow-lg group-hover/tooltip:block group-focus-within/tooltip:block">
+        {label}
+      </span>
+    </span>
   );
 }
 
@@ -368,11 +380,11 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               "bg-neutral-200"
             }`} />
 
-            <details className="p-4" open={agent.id === "encompass-family"}>
+            <details className="p-3" open={agent.id === "encompass-family"}>
               <summary className="cursor-pointer list-none">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-3">
-                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-all shadow-sm ${
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-all shadow-sm ${
                     agent.status === "success" ? "bg-emerald-100 text-emerald-600" :
                     agent.status === "error" ? "bg-red-100 text-red-600" :
                     "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white"
@@ -382,24 +394,24 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                      <Search size={24} />}
                   </div>
                   <div className="min-w-0">
-                    <h4 className="break-words text-base font-black leading-tight text-neutral-900">{agent.name}</h4>
-                    <button 
-                      onClick={() => toggleTuning(agent.id)}
-                      className="mt-1 flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800 transition-colors"
-                    >
-                      <Settings2 size={10} />
-                      {agent.showTuning ? "Hide Tuning" : "Tune Agent"}
-                      {agent.showTuning ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-                    </button>
+                    <h4 className="truncate text-sm font-black leading-tight text-neutral-900">{agent.name}</h4>
+                    <Tooltip label={agent.showTuning ? "Hide tuning" : "Tune agent"}>
+                      <button
+                        type="button"
+                        onClick={() => toggleTuning(agent.id)}
+                        aria-label={agent.showTuning ? "Hide tuning" : "Tune agent"}
+                        className="mt-1 inline-flex h-7 w-16 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-white text-neutral-600 hover:border-blue-200 hover:text-blue-700"
+                      >
+                        <Settings2 size={13} />
+                        {agent.showTuning ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </button>
+                    </Tooltip>
                   </div>
-                </div>
-                <div className="shrink-0 text-[10px] font-black uppercase tracking-widest text-neutral-400">
-                  Open
                 </div>
               </div>
               </summary>
 
-              <div className="mt-4 space-y-4">
+              <div className="mt-3 space-y-3">
               {/* Tuning Panel */}
               <AnimatePresence>
                 {agent.showTuning && (
@@ -459,80 +471,83 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               </AnimatePresence>
 
               {/* URL Input */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between px-1">
-                  <label className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">
-                    Target Identity
-                  </label>
-                  <button 
-                    onClick={() => setEditingId(editingId === agent.id ? null : agent.id)}
-                    className="text-[10px] font-black text-blue-600 hover:underline uppercase"
-                  >
-                    {editingId === agent.id ? "[Lock]" : "[Override]"}
-                  </button>
-                </div>
+              <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={agent.url}
                   readOnly={editingId !== agent.id}
                   onChange={(e) => updateAgentUrl(agent.id, e.target.value)}
-                  className={`w-full truncate rounded-lg border px-3 py-2 font-mono text-xs transition-all ${
+                  aria-label={`${agent.name} target URL`}
+                  className={`min-w-0 flex-1 truncate rounded-lg border px-3 py-2 font-mono text-xs transition-all ${
                     editingId === agent.id 
                       ? "bg-white border-blue-400 ring-4 ring-blue-50 text-neutral-950" 
                       : "bg-neutral-50 border-neutral-100 text-neutral-600"
                   }`}
                 />
+                <Tooltip label={editingId === agent.id ? "Lock target URL" : "Edit target URL"}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(editingId === agent.id ? null : agent.id)}
+                    aria-label={editingId === agent.id ? "Lock target URL" : "Edit target URL"}
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-neutral-500 hover:text-blue-700 ${
+                      editingId === agent.id ? "border-blue-300 bg-blue-50 text-blue-700" : "border-neutral-200 bg-white"
+                    }`}
+                  >
+                    <Pencil size={14} />
+                  </button>
+                </Tooltip>
               </div>
 
               {/* Context Selection */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
-                  onClick={() => toggleAgentContext(agent.id, "sendDiagram")}
-                  className={`flex min-h-24 flex-col gap-2 rounded-lg border p-3 text-left transition-all ${
-                    agent.sendDiagram 
-                      ? "border-blue-200 bg-blue-50/50 text-blue-900 shadow-sm" 
-                      : "border-neutral-100 bg-neutral-50/30 text-neutral-400"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-[11px] font-black uppercase tracking-widest">Diagram</span>
-                    {agent.sendDiagram ? <CheckSquare size={16} /> : <Square size={16} />}
-                  </div>
-                  <span className="text-[9px] font-bold opacity-60">Send Visual Truth</span>
-                </button>
+              <div className="grid grid-cols-[44px_44px_1fr] gap-2">
+                <Tooltip label={agent.sendDiagram ? "Visual truth included" : "Visual truth excluded"}>
+                  <button
+                    type="button"
+                    onClick={() => toggleAgentContext(agent.id, "sendDiagram")}
+                    aria-label={agent.sendDiagram ? "Visual truth included" : "Visual truth excluded"}
+                    className={`flex h-11 w-11 items-center justify-center rounded-lg border transition-all ${
+                      agent.sendDiagram
+                        ? "border-blue-200 bg-blue-50 text-blue-900 shadow-sm"
+                        : "border-neutral-100 bg-neutral-50 text-neutral-400"
+                    }`}
+                  >
+                    {agent.sendDiagram ? <CheckSquare size={17} /> : <Square size={17} />}
+                  </button>
+                </Tooltip>
 
-                <button
-                  onClick={() => toggleAgentContext(agent.id, "sendExpectedCount")}
-                  className={`flex min-h-24 flex-col gap-2 rounded-lg border p-3 text-left transition-all ${
-                    agent.sendExpectedCount 
-                      ? "border-emerald-200 bg-emerald-50/50 text-emerald-900 shadow-sm" 
-                      : "border-neutral-100 bg-neutral-50/30 text-neutral-400"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-[11px] font-black uppercase tracking-widest">Evidence</span>
-                    {agent.sendExpectedCount ? <CheckSquare size={16} /> : <Square size={16} />}
-                  </div>
-                  <span className="text-[9px] font-bold opacity-60">
-                    Goal: {typeof truth?.expectedTotal === "number" ? truth.expectedTotal : "???"}
-                  </span>
-                </button>
+                <Tooltip label={agent.sendExpectedCount ? "Count evidence included" : "Count evidence excluded"}>
+                  <button
+                    type="button"
+                    onClick={() => toggleAgentContext(agent.id, "sendExpectedCount")}
+                    aria-label={agent.sendExpectedCount ? "Count evidence included" : "Count evidence excluded"}
+                    className={`flex h-11 w-11 items-center justify-center rounded-lg border transition-all ${
+                      agent.sendExpectedCount
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-900 shadow-sm"
+                        : "border-neutral-100 bg-neutral-50 text-neutral-400"
+                    }`}
+                  >
+                    {agent.sendExpectedCount ? <CheckCircle2 size={17} /> : <AlertCircle size={17} />}
+                  </button>
+                </Tooltip>
+
+                <Tooltip label="Review and run agent">
+                  <button
+                    type="button"
+                    onClick={() => openRunReview(agent)}
+                    disabled={agent.status === "running" || !model}
+                    aria-label="Review and run agent"
+                    className={`flex h-11 min-w-0 items-center justify-center gap-2 rounded-lg px-4 text-xs font-black uppercase tracking-wide transition-all shadow-lg ${
+                      agent.status === "running" ? "bg-neutral-100 text-neutral-400 cursor-not-allowed" :
+                      agent.status === "success" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
+                      agent.status === "error" ? "bg-red-600 text-white hover:bg-red-700" :
+                      "bg-neutral-950 text-white hover:bg-black"
+                    }`}
+                  >
+                    {agent.status === "running" ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
+                    <span>Run</span>
+                  </button>
+                </Tooltip>
               </div>
-
-              {/* Action Button */}
-              <button
-                onClick={() => openRunReview(agent)}
-                disabled={agent.status === "running" || !model}
-                className={`flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-xs font-black uppercase tracking-[0.16em] transition-all shadow-lg ${
-                  agent.status === "running" ? "bg-neutral-100 text-neutral-400 cursor-not-allowed" :
-                  agent.status === "success" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
-                  agent.status === "error" ? "bg-red-600 text-white hover:bg-red-700" :
-                  "bg-neutral-950 text-white hover:bg-black hover:-translate-y-1 active:translate-y-0"
-                }`}
-              >
-                {agent.status === "running" ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} fill="currentColor" />}
-                Execute Mission
-              </button>
               </div>
             </details>
           </motion.div>
