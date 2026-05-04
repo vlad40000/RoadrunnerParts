@@ -346,14 +346,14 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         {agents.map((agent) => (
           <motion.div
             key={agent.id}
             layout
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`group relative rounded-3xl border transition-all duration-300 ${
+            className={`group relative overflow-hidden rounded-lg border transition-all duration-300 ${
               agent.status === "running" ? "border-blue-300 bg-blue-50/20 ring-4 ring-blue-50/50 shadow-xl" :
               agent.status === "success" ? "border-emerald-200 bg-emerald-50/20" :
               agent.status === "error" ? "border-red-200 bg-red-50/20" :
@@ -368,11 +368,11 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               "bg-neutral-200"
             }`} />
 
-            <details className="p-5" open={agent.id === "encompass-family"}>
+            <details className="p-4" open={agent.id === "encompass-family"}>
               <summary className="cursor-pointer list-none">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-sm ${
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-all shadow-sm ${
                     agent.status === "success" ? "bg-emerald-100 text-emerald-600" :
                     agent.status === "error" ? "bg-red-100 text-red-600" :
                     "bg-neutral-100 text-neutral-500 group-hover:bg-neutral-900 group-hover:text-white"
@@ -381,11 +381,11 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                      agent.id === "ai-recovery" ? <Zap size={24} /> :
                      <Search size={24} />}
                   </div>
-                  <div>
-                    <h4 className="text-base font-black text-neutral-900 tracking-tight leading-none mb-1">{agent.name}</h4>
+                  <div className="min-w-0">
+                    <h4 className="break-words text-base font-black leading-tight text-neutral-900">{agent.name}</h4>
                     <button 
                       onClick={() => toggleTuning(agent.id)}
-                      className="flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800 transition-colors"
+                      className="mt-1 flex items-center gap-1 text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-800 transition-colors"
                     >
                       <Settings2 size={10} />
                       {agent.showTuning ? "Hide Tuning" : "Tune Agent"}
@@ -393,13 +393,13 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                     </button>
                   </div>
                 </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
+                <div className="shrink-0 text-[10px] font-black uppercase tracking-widest text-neutral-400">
                   Open
                 </div>
               </div>
               </summary>
 
-              <div className="mt-5 space-y-5">
+              <div className="mt-4 space-y-4">
               {/* Tuning Panel */}
               <AnimatePresence>
                 {agent.showTuning && (
@@ -409,7 +409,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-neutral-50 border border-neutral-100 mb-2">
+                    <div className="grid grid-cols-1 gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-3 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
                           <FlaskConical size={10} /> Temp: {agent.tuning.temperature.toFixed(1)}
@@ -435,7 +435,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                           <option value="high">High</option>
                         </select>
                       </div>
-                      <div className="flex items-center justify-between col-span-2 pt-2 border-t border-neutral-200">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200 pt-2 sm:col-span-2">
                          <button 
                           onClick={() => updateTuning(agent.id, { useSearch: !agent.tuning.useSearch })}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase border transition-all ${
@@ -476,7 +476,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                   value={agent.url}
                   readOnly={editingId !== agent.id}
                   onChange={(e) => updateAgentUrl(agent.id, e.target.value)}
-                  className={`w-full text-xs font-mono px-4 py-3 rounded-2xl border transition-all ${
+                  className={`w-full truncate rounded-lg border px-3 py-2 font-mono text-xs transition-all ${
                     editingId === agent.id 
                       ? "bg-white border-blue-400 ring-4 ring-blue-50 text-neutral-950" 
                       : "bg-neutral-50 border-neutral-100 text-neutral-600"
@@ -485,10 +485,10 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               </div>
 
               {/* Context Selection */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <button
                   onClick={() => toggleAgentContext(agent.id, "sendDiagram")}
-                  className={`flex flex-col gap-2 p-4 rounded-2xl border transition-all ${
+                  className={`flex min-h-24 flex-col gap-2 rounded-lg border p-3 text-left transition-all ${
                     agent.sendDiagram 
                       ? "border-blue-200 bg-blue-50/50 text-blue-900 shadow-sm" 
                       : "border-neutral-100 bg-neutral-50/30 text-neutral-400"
@@ -503,7 +503,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
 
                 <button
                   onClick={() => toggleAgentContext(agent.id, "sendExpectedCount")}
-                  className={`flex flex-col gap-2 p-4 rounded-2xl border transition-all ${
+                  className={`flex min-h-24 flex-col gap-2 rounded-lg border p-3 text-left transition-all ${
                     agent.sendExpectedCount 
                       ? "border-emerald-200 bg-emerald-50/50 text-emerald-900 shadow-sm" 
                       : "border-neutral-100 bg-neutral-50/30 text-neutral-400"
@@ -523,7 +523,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
               <button
                 onClick={() => openRunReview(agent)}
                 disabled={agent.status === "running" || !model}
-                className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.3em] flex items-center justify-center gap-3 transition-all shadow-lg ${
+                className={`flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-xs font-black uppercase tracking-[0.16em] transition-all shadow-lg ${
                   agent.status === "running" ? "bg-neutral-100 text-neutral-400 cursor-not-allowed" :
                   agent.status === "success" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
                   agent.status === "error" ? "bg-red-600 text-white hover:bg-red-700" :
