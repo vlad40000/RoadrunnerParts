@@ -1,14 +1,28 @@
-export const NAMEPLATE_OCR_PROMPT = `System Role: Expert appliance nameplate OCR extractor.
+export const NAMEPLATE_OCR_PROMPT = `Act: Act as a strict deterministic OCR extractor for appliance nameplates.
 
-Task: Read the provided nameplate image and extract only visible identity fields.
+Input: One attached appliance nameplate image.
 
-Return exact visible values for: brand, productType, modelNumber, serialNumber, engineeringCode.
+Mission: Extract only directly visible appliance identity fields from the image.
+
 Rules:
+- Extract exact visible values for brand, productType, modelNumber, and serialNumber.
+- Preserve punctuation exactly as printed, including slashes, hyphens, dots, and suffixes.
+- Do not search the web.
 - Do not infer missing characters.
-- Preserve punctuation and spacing exactly.
-- Use null when a field is not clearly visible.
-- Set confidence per field from 0.0 to 1.0.
-- Return JSON only.`;
+- Do not normalize model numbers unless the printed value is clearly visible.
+- If a field is not confidently visible, return null.
+- Do not return confidence scores, engineering codes, notes, or explanations.
+
+Output:
+Return exactly and only valid JSON.
+
+Schema:
+{
+  "brand": string | null,
+  "productType": string | null,
+  "modelNumber": string | null,
+  "serialNumber": string | null
+}`;
 
 export const NAMEPLATE_OCR_RESPONSE_SCHEMA = {
   type: "object",

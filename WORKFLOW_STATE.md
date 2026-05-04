@@ -17,17 +17,18 @@ We are transitioning the BOM extraction pipeline from legacy scraping to an agen
 - [x] **Cockpit Infrastructure Hardening**: Populated deterministic agent instructions, added Link Matrix for immediate URL access, and enabled direct instruction editing in preflight.
 - [x] **Supplier Expansion**: Integrated PartsDr as the 7th supported agent with auto-loading URLs and deterministic prompt fallbacks.
 - [x] **Reactive State**: Ensured supplier URLs and agent instructions auto-populate immediately upon model entry via reactive `useEffect` hooks.
+- [x] **Scraper Cockpit & Prompt Architecture**: Established a dedicated `/scraper` interface featuring a Floating Assistant, Browser Emulator, and Prompt Cockpit for agent steering.
+- [x] **Data Modeling**: Defined Zod schemas for "Captured Evidence" and "Agent Instructions" to ensure source-resolution compatibility.
 
 ## Current Status
 - **Standard Canon Enforced**: All supplier search URLs are now deterministic and centralized in `source-tier-policy.ts`. Parameters synchronized across Cockpit components.
-- **UI Sweep Complete**: Verbose labels replaced with industry-standard iconography and tooltips in both the Control Panel and Agent Matrix.
-- **Auto-population Restored**: Fixed state synchronization bugs in `SupplierAgentMatrix` that were preventing real-time instruction and URL updates.
-- **Encompass Hardening**: Integrated "Gold Truth" assembly lookup routes as primary fallback before search queries.
+- **Scraper Scaffold Active**: High-fidelity UI scaffold for scraping/parsing is live at `/scraper`. Compatible with future brand gates and source-resolution logic.
+- **Prompt Cockpit Operational**: Interface for designing system instructions and brand-specific presets (Encompass, Marcone, Sears) is fully implemented.
 
 ## Next Steps
-- Verify `PartsDr` and `APP` extraction success rates with the new `q=` parameter.
-- Monitor `telemetry` for any 403/429 regressions on standardized search routes.
-- Extend icon-driven pattern to the `OCR` and `Reconcile` workspace steps if needed.
+- Integrate the `/scraper` scaffold with the live `computer-use-agent.mjs` backend for real-time screenshot streaming.
+- Implement "Security Gate" detection logic to trigger the 403/429 visual bypass overlay.
+- Extend the "Extracted" data tab to visualize real-time part row capture.
 
 ### **Gold Truth Reference**
 - **Maytag MVWB300WQ2**:

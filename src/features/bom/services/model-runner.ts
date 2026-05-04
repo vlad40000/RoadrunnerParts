@@ -9,13 +9,14 @@ export type ModelRunInput = {
     | "lite"
     | "gemini-3-flash-preview"
     | "gemini-3-pro-preview"
+    | "gemini-3.1-flash-lite-preview"
     | "gemini-3.1-flash-preview"
     | "gemini-3.1-pro-preview";
   prompt: string;
   files?: Array<{
     mimeType: string;
     uri?: string;
-    data?: string; // Optinal base64 data
+    data?: string; // Optional base64 data
   }>;
   text?: string;
   enableSearch?: boolean;
@@ -27,6 +28,7 @@ export type ModelRunInput = {
 function resolveModelId(model: ModelRunInput["model"]) {
   if (model === "gemini-3-pro-preview" || model === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
   if (model === "gemini-3-flash-preview" || model === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
+  if (model === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
   if (model === "pro") return "gemini-3-pro-preview";
   if (model === "lite") return "gemini-3.1-flash-lite-preview";
   return "gemini-3-flash-preview";

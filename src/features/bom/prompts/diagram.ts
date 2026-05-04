@@ -1,3 +1,5 @@
+import { TECHNICAL_DIAGRAM_CALLOUT_CSV_PROMPT } from "./strict-scenarios";
+
 export const diagramPrompt = `
 You read exploded appliance parts diagrams.
 
@@ -20,3 +22,5 @@ Return:
   ]
 }
 `.trim();
+
+export const technicalDiagramCalloutCsvPrompt = TECHNICAL_DIAGRAM_CALLOUT_CSV_PROMPT;

@@ -1,3 +1,5 @@
+import { PLAINTEXT_IDENTITY_EXTRACTOR_PROMPT } from "./strict-scenarios";
+
 export const IDENTITY_EXTRACTION_PROMPT = `
 You extract appliance identity from images and prepared manual text.
 
@@ -21,3 +23,5 @@ Return:
   "confidence": 0
 }
 `.trim();
+
+export const PLAINTEXT_IDENTITY_EXTRACTION_PROMPT = PLAINTEXT_IDENTITY_EXTRACTOR_PROMPT;

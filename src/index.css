@@ -19,8 +19,26 @@
   --color-pro-slate-600: #475569;
   --color-pro-slate-900: #1E293B;
 
+  /* Prompt workspace shell */
+  --color-studio-bg: #F8F9FA;
+  --color-studio-sidebar: #F0F4F8;
+  --color-studio-border: #DAE1E9;
+  --color-studio-active: #E8F0FE;
+  --color-studio-text: #1F1F1F;
+  --color-studio-text-secondary: #5F6368;
+  --color-studio-blue: #1A73E8;
+  
+  /* Dark Mode Tokens */
+  --color-studio-dark-bg: #131314;
+  --color-studio-dark-sidebar: #1E1F20;
+  --color-studio-dark-border: #333537;
+  --color-studio-dark-active: #333537;
+  --color-studio-dark-text: #E3E3E3;
+  --color-studio-dark-text-secondary: #9E9E9E;
+
   --shadow-pro: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-pro-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-studio: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
 }
 
 @layer base {
@@ -69,6 +87,27 @@
   /* Minimial Forensic Tweak for Conflict Visualization */
   .conflict-pulse {
     @apply border-pro-amber bg-pro-amber/5 animate-pulse;
+  }
+
+  /* Studio-specific Utilities */
+  .studio-sidebar-item {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-r-full text-sm font-medium transition-colors cursor-pointer;
+  }
+  
+  .studio-sidebar-item-active {
+    @apply bg-studio-active text-studio-blue;
+  }
+
+  .studio-card {
+    @apply bg-white border border-studio-border rounded-xl shadow-sm overflow-hidden;
+  }
+
+  .studio-button {
+    @apply px-5 py-2 rounded-full font-medium text-sm transition-all flex items-center justify-center gap-2;
+  }
+  
+  .studio-header-btn {
+    @apply p-2 rounded-full hover:bg-black/5 transition-colors text-studio-text-secondary;
   }
 }
 

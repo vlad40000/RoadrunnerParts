@@ -64,6 +64,95 @@
   .pro-section-title {
     @apply text-[11px] font-bold uppercase tracking-[0.1em] text-pro-slate-400 mb-4;
   }
+
+  .bom-studio-light {
+    background: #eef2f7 !important;
+    color: #172033 !important;
+  }
+
+  .bom-studio-light .bom-left-rail,
+  .bom-studio-light .bom-topbar,
+  .bom-studio-light .bom-inspector {
+    background: #ffffff !important;
+    border-color: #d9e2ec !important;
+    color: #172033 !important;
+  }
+
+  .bom-studio-light .bom-work-area {
+    background: linear-gradient(180deg, #f4f7fb 0%, #e9eef5 100%) !important;
+  }
+
+  .bom-studio-light .bom-central-panel {
+    background: #f8fafc !important;
+    border-color: #d9e2ec !important;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.10);
+  }
+
+  .bom-studio-light .bom-panel,
+  .bom-studio-light .bg-\[\#17191d\],
+  .bom-studio-light .bg-\[\#111317\],
+  .bom-studio-light .bg-\[\#101216\] {
+    background: #ffffff !important;
+    border-color: #d9e2ec !important;
+    color: #172033 !important;
+  }
+
+  .bom-studio-light .bom-editor,
+  .bom-studio-light .bg-\[\#0f1115\] {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #172033 !important;
+  }
+
+  .bom-studio-light .bg-\[\#101113\],
+  .bom-studio-light .bg-\[\#15171a\],
+  .bom-studio-light .bg-\[\#0b0c0f\] {
+    background: #eef2f7 !important;
+  }
+
+  .bom-studio-light .text-white {
+    color: #172033 !important;
+  }
+
+  .bom-studio-light [class*="text-white/"] {
+    color: #64748b !important;
+  }
+
+  .bom-studio-light [class*="border-white/"] {
+    border-color: #d9e2ec !important;
+  }
+
+  .bom-studio-light [class*="bg-white/"] {
+    background-color: #eef3f8 !important;
+  }
+
+  .bom-studio-light [class*="hover:bg-white/"]:hover {
+    background-color: #e2e8f0 !important;
+  }
+
+  .bom-studio-light .bg-\[\#2f6fec\],
+  .bom-studio-light .bg-\[\#8ab4ff\] {
+    background: #2563eb !important;
+    color: #ffffff !important;
+  }
+
+  .bom-studio-light .text-\[\#07111f\] {
+    color: #ffffff !important;
+  }
+
+  .bom-studio-light .text-\[\#8ab4ff\] {
+    color: #2563eb !important;
+  }
+
+  .bom-studio-light input,
+  .bom-studio-light select,
+  .bom-studio-light textarea {
+    color: #172033 !important;
+  }
+
+  .bom-studio-light pre {
+    color: #243044 !important;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
