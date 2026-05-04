@@ -423,12 +423,35 @@ Sort the final JSON alphabetically by part_name before outputting.`;
   };
 
   const handleAILookup = async (modelToSearch?: string, serialToSearch?: string, isExhaustive = false) => {
-    const query = modelToSearch || searchTerm;
+    const query = (modelToSearch || searchTerm || "").trim();
     if (!query || query.length < 3) return;
 
-    // REDIRECT TO THE AWESOME DASHBOARD (Modern Engine)
-    const url = `/bom-workflow?model=${encodeURIComponent(query)}${serialToSearch || lookupSerial ? `&serial=${encodeURIComponent(serialToSearch || lookupSerial)}` : ""}`;
-    window.location.href = url;
+    const normalizedQuery = normalizeModelId(query);
+    const activeSerialValue = normalizeModelId(serialToSearch || lookupSerial || null) || null;
+    const passNumber = isExhaustive ? (bomPassCount > 0 ? bomPassCount + 1 : 1) : 1;
+    const existingParts = Array.isArray(aiParts) ? aiParts : [];
+    const knownPartNumbers = existingParts
+      .map((part) => normalizeModelId(part.partNumber))
+      .filter(Boolean) as string[];
+
+    const requestPayload = {
+      model: normalizedQuery,
+      normalizedQuery,
+      serial: activeSerialValue,
+      manufactureDate: manufactureInfo?.manufactureYear
+        ? `${manufactureInfo.manufactureYear}-${manufactureInfo.timeValue?.value || "01"}`
+        : null,
+      passNumber,
+      knownPartNumbers,
+      isExhaustive,
+      expectedPartCount,
+      existingParts,
+    };
+
+    const promptText = buildBomPrompt(normalizedQuery, isExhaustive, passNumber, knownPartNumbers);
+    setPendingBomRequest(requestPayload);
+    setPendingBomPrompt(promptText);
+    setIsPromptReviewOpen(true);
   };
 
   const runApprovedBomPrompt = async (requestPayload: any, promptText: string) => {

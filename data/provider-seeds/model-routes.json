@@ -42,5 +42,115 @@
     "providerAssemblyUrl": "https://encompass.com/Exploded-View-Assembly/MAY/9272/MVWB300WQ2",
     "sourceStatus": "route_seed",
     "sourceFile": "manual_verified_route"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC6400UC01",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990543",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990543",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC5440UC15",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990535",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990535",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC5301UC16",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990522",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990522",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC5301UC15",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990521",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990521",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC3301UC06",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990490",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990490",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC3301UC03",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990488",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990488",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC3200UC01",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990482",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990482",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC2201UC16",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990474",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990474",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC2201UC15",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990473",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990473",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
+  },
+  {
+    "provider": "repairclinic-family",
+    "brandCode": "BOS",
+    "targetBrand": "Bosch",
+    "model": "WFMC2100UC01",
+    "applianceTypeGuess": "washer",
+    "providerOptionValue": "990463",
+    "providerAssemblyUrl": "https://www.repairclinic.com/Shop-For-Parts?modelId=990463",
+    "sourceStatus": "route_seed",
+    "sourceFile": "repairclinic_model_records_146"
   }
 ]

@@ -77,9 +77,12 @@ export function inferEncompassPrefix(input: {
     return "HOT";
   }
 
+  if (brand.includes("maytag") || /^MVW/.test(model)) {
+    return "MAY";
+  }
+
   if (
     brand.includes("whirlpool") ||
-    brand.includes("maytag") ||
     brand.includes("kitchenaid") ||
     brand.includes("amana") ||
     /^(WTW|WED|WGD|WFW|WRS|WRF|MVW|MED|MGD|MDB|KUD|KUDE|KDT|AER|NTW)/.test(model)
@@ -138,7 +141,7 @@ export function buildCanonicalEncompassUrls(input: {
   };
 }
 
-export function buildKnownEncompassAssemblyUrl(model: string) {
+export function buildKnownEncompassAssemblyUrl(model: string, brand?: string | null) {
   const canonical = normalizeCanonicalModel(model);
   const seedRoute = modelRouteSeeds.find((route) => {
     return (
@@ -153,16 +156,17 @@ export function buildKnownEncompassAssemblyUrl(model: string) {
     return seedRoute.providerAssemblyUrl;
   }
 
-  const canonicalUrl = buildCanonicalEncompassUrls({ model: canonical }).explodedViewUrl;
-  if (canonicalUrl) return canonicalUrl;
-
-  if (canonical === "MAYMVWB300WQ2") {
+  // Hardcoded Gold Truth Canons
+  if (canonical === "MVWB300WQ2" || (brand && brand.toLowerCase().includes("maytag") && canonical === "MVWB300WQ2")) {
     return "https://encompass.com/Exploded-View-Assembly/MAY/9272/MVWB300WQ2";
   }
 
-  if (canonical === "MLE2000AYW") {
+  if (canonical === "MLE2000AYW" || (brand && brand.toLowerCase().includes("whirlpool") && canonical === "MLE2000AYW")) {
     return "https://encompass.com/Exploded-View-Assembly/WHI/12074/MLE2000AYW";
   }
+
+  const canonicalUrl = buildCanonicalEncompassUrls({ model: canonical, brand }).explodedViewUrl;
+  if (canonicalUrl) return canonicalUrl;
 
   const maytagMatch = canonical.match(/^MAY(.+)$/);
   if (maytagMatch?.[1]) {
@@ -219,6 +223,7 @@ export function buildSupplierSearchUrl(input: {
   supplier: string;
   formattedModel: string;
   canonicalModel: string;
+  brand?: string | null;
 }) {
   const supplier = normalizeSupplierId(input.supplier);
   const formatted = encodeURIComponent(input.formattedModel);
@@ -227,72 +232,31 @@ export function buildSupplierSearchUrl(input: {
   switch (supplier) {
     case "encompass-family":
       return (
-        buildKnownEncompassAssemblyUrl(input.canonicalModel) ||
-        buildKnownEncompassAssemblyUrl(input.formattedModel) ||
-        ""
+        buildKnownEncompassAssemblyUrl(input.canonicalModel, input.brand) ||
+        buildKnownEncompassAssemblyUrl(input.formattedModel, input.brand) ||
+        `https://encompass.com/search?searchTerm=${canonical}`
       );
-
     case "sears-partsdirect":
       return `https://www.searspartsdirect.com/search?q=${canonical}`;
-
     case "partsdr":
-      return `https://partsdr.com/search?query=${canonical}`;
-
+      return `https://partsdr.com/search?q=${canonical}`;
     case "appliancepartspros":
       return `https://www.appliancepartspros.com/search.aspx?q=${canonical}`;
-
     case "partselect.com":
       return `https://www.partselect.com/Search.aspx?SearchTerm=${canonical}`;
-
     case "fix.com":
       return `https://www.fix.com/search/?SearchTerm=${canonical}`;
-
     case "repairclinic-family":
-      return `https://www.repairclinic.com/Search?query=${canonical}`;
-
+      return `https://www.repairclinic.com/Shop-For-Parts?query=${canonical}`;
     case "partswarehouse":
       return `https://www.partswarehouse.com/search.asp?keyword=${canonical}`;
-
     case "ereplacementparts":
       return `https://www.ereplacementparts.com/search_result.php?q=${canonical}`;
-
     case "appliancefactoryparts":
       return `https://www.appliancefactoryparts.com/search/part/${canonical}/`;
-
     default:
-      return `https://www.google.com/search?q=${encodeURIComponent(
-        `${input.canonicalModel} appliance parts`,
-      )}`;
+      return `https://www.google.com/search?q=${canonical}+appliance+parts`;
   }
-}
-
-export function supplierDisplayName(supplier: string) {
-  switch (normalizeSupplierId(supplier)) {
-    case "encompass-family":
-      return "Encompass";
-    case "sears-partsdirect":
-      return "Sears PartsDirect";
-    case "partsdr":
-      return "PartsDr";
-    case "appliancepartspros":
-      return "AppliancePartsPros";
-    case "partselect.com":
-      return "PartSelect";
-    case "fix.com":
-      return "Fix.com";
-    case "repairclinic-family":
-      return "RepairClinic";
-    case "url-intake":
-      return "Manual URL Intake";
-    case "seeded-provider":
-      return "Saved / Seeded Source";
-    default:
-      return supplier;
-  }
-}
-
-export function supplierIndexKey(supplier: string, canonicalModel: string) {
-  return `${normalizeSupplierId(supplier)}:${normalizeCanonicalModel(canonicalModel)}`;
 }
 
 export function normalizeSupplierId(supplier: string) {
@@ -314,10 +278,17 @@ export function normalizeSupplierId(supplier: string) {
     case "encompass":
     case "encompass-family":
       return "encompass-family";
+    case "partsdr":
+    case "partsdr.com":
+      return "partsdr";
     case "partselect":
     case "partselect.com":
       return "partselect.com";
     default:
       return String(supplier || "").trim().toLowerCase();
   }
+}
+
+export function supplierIndexKey(supplier: string, canonicalModel: string) {
+  return `${normalizeSupplierId(supplier)}:${normalizeCanonicalModel(canonicalModel)}`;
 }

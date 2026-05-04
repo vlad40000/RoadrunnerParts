@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Globe, 
@@ -19,27 +19,41 @@ import {
   FlaskConical,
   Terminal,
   Cpu,
-  Pencil
+  Pencil,
+  Brain,
+  Wrench,
+  Info,
+  X,
+  Check,
+  ExternalLink,
+  Hash,
+  Image as ImageIcon,
+  FileText,
+  Package,
+  Activity,
+  History,
+  Database
 } from "lucide-react";
 import {
+  buildCanonicalEncompassUrls,
   buildKnownEncompassAssemblyUrl,
   normalizeCanonicalModel,
 } from "@/src/features/bom/services/source-tier-policy";
 
-const SUPPLIER_AGENT_INSTRUCTION_PREVIEW = `System Role: Deterministic supplier-run operator.
+export const SUPPLIER_AGENT_INSTRUCTION_PREVIEW = `System Role: Deterministic supplier-run operator.
 
 Task:
-- Use the provided supplier URL and model context to extract source-backed parts evidence.
+- Use the provided supplier URL and model context to extract source-backed parts source data.
 
 Rules:
 1. Use the supplied target URL first. Do not switch providers unless explicitly instructed.
 2. Use visual context only as guidance; do not invent rows from prompts.
 3. Return source-backed part rows only.
-4. Keep expected count evidence separate from extracted rows.
-5. Do not claim completeness unless evidence supports it.
+4. Keep expected count source data separate from extracted rows.
+5. Do not claim completeness unless source data supports it.
 6. Preserve model/part punctuation exactly.
-7. Treat missing/blocked evidence as partial, not complete.
-8. Honor the operator-selected tool policy. Direct fetch and structured output are mandatory; browser/computer-use evidence is a separate supervised path.`;
+7. Treat missing/blocked source data as partial, not complete.
+8. Honor the operator-selected tool policy. Direct fetch and structured output are mandatory; browser/computer-use source data is a separate supervised path.`;
 
 type GeminiModel = "gemini-3-flash-preview" | "gemini-3-pro-preview";
 
@@ -78,6 +92,7 @@ interface SupplierAgentMatrixProps {
   jobId?: string | null;
   model: string;
   truth: any;
+  supplierRuns?: Record<string, unknown> | null;
 }
 
 const DEFAULT_TOOL_CONFIG: AgentToolConfig = {
@@ -95,7 +110,7 @@ const DEFAULT_TUNING: AgentTuning = {
   model: "gemini-3-flash-preview",
   temperature: 1.0,
   thinkingLevel: "medium",
-  systemInstruction: "",
+  systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW,
   toolConfig: { ...DEFAULT_TOOL_CONFIG },
 };
 
@@ -123,7 +138,7 @@ const TOOL_ROWS: Array<{
   { key: "codeExecution", label: "Code", detail: "Runs operator-supplied code/preflight when present." },
   { key: "functionCalling", label: "Functions", detail: "Persisted for staged function agents; supplier route uses fixed functions." },
   { key: "googleMaps", label: "Maps", detail: "Persisted only; not used by appliance supplier extraction." },
-  { key: "computerUse", label: "Computer Use", detail: "Persisted handoff flag; supervised in Evidence workspace." },
+  { key: "computerUse", label: "Computer Use", detail: "Persisted handoff flag; supervised in source data workspace." },
 ];
 
 function agentCodeStorageKey(jobId: string) {
@@ -145,13 +160,29 @@ function broadcastAgentCode(jobId: string, code: string) {
 }
 
 function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
   return (
-    <span className="group/tooltip relative inline-flex">
+    <div 
+      className="relative flex items-center"
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
       {children}
-      <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-neutral-800 bg-neutral-950 px-2 py-1 text-[10px] font-bold text-white shadow-lg group-hover/tooltip:block group-focus-within/tooltip:block">
-        {label}
-      </span>
-    </span>
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            initial={{ opacity: 0, y: 5, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 5, scale: 0.95 }}
+            transition={{ duration: 0.1 }}
+            className="absolute bottom-full left-1/2 z-[100] mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-neutral-900 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-2xl"
+          >
+            {label}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -164,7 +195,9 @@ const INITIAL_AGENTS: AgentState[] = [
     sendExpectedCount: true,
     status: "idle",
     showTuning: true,
-    tuning: createDefaultTuning(),
+    tuning: createDefaultTuning({
+      systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+    }),
   },
   {
     id: "sears-partsdirect",
@@ -174,7 +207,9 @@ const INITIAL_AGENTS: AgentState[] = [
     sendExpectedCount: true,
     status: "idle",
     showTuning: true,
-    tuning: createDefaultTuning(),
+    tuning: createDefaultTuning({
+      systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+    }),
   },
   {
     id: "fix.com",
@@ -184,7 +219,9 @@ const INITIAL_AGENTS: AgentState[] = [
     sendExpectedCount: true,
     status: "idle",
     showTuning: true,
-    tuning: createDefaultTuning(),
+    tuning: createDefaultTuning({
+      systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+    }),
   },
   {
     id: "repairclinic-family",
@@ -194,7 +231,9 @@ const INITIAL_AGENTS: AgentState[] = [
     sendExpectedCount: false,
     status: "idle",
     showTuning: true,
-    tuning: createDefaultTuning(),
+    tuning: createDefaultTuning({
+      systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+    }),
   },
   {
     id: "appliancepartspros",
@@ -204,7 +243,21 @@ const INITIAL_AGENTS: AgentState[] = [
     sendExpectedCount: true,
     status: "idle",
     showTuning: true,
-    tuning: createDefaultTuning(),
+    tuning: createDefaultTuning({
+      systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+    }),
+  },
+  {
+    id: "partsdr",
+    name: "PartsDr Agent",
+    url: "",
+    sendDiagram: true,
+    sendExpectedCount: true,
+    status: "idle",
+    showTuning: true,
+    tuning: createDefaultTuning({
+      systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+    }),
   },
   {
     id: "ai-recovery",
@@ -214,12 +267,34 @@ const INITIAL_AGENTS: AgentState[] = [
     sendExpectedCount: true,
     status: "idle",
     showTuning: true,
-    tuning: createDefaultTuning({ thinkingLevel: "high" }),
+    tuning: createDefaultTuning({ 
+      thinkingLevel: "high",
+      systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+    }),
   },
 ];
 
-export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrixProps) {
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+function parseThinking(value: unknown): AgentTuning["thinkingLevel"] {
+  const normalized = String(value || "medium").trim().toLowerCase();
+  return normalized === "low" || normalized === "high" ? normalized : "medium";
+}
+
+function parseModel(value: unknown): GeminiModel {
+  return value === "gemini-3-pro-preview" ? "gemini-3-pro-preview" : "gemini-3-flash-preview";
+}
+
+function parseTemperature(value: unknown): number {
+  const parsed = typeof value === "number" ? value : Number(String(value || "").trim());
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(2, parsed)) : 1;
+}
+
+export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: SupplierAgentMatrixProps) {
   const [agents, setAgents] = useState<AgentState[]>(INITIAL_AGENTS);
+  const [activeAgentId, setActiveAgentId] = useState<string>(INITIAL_AGENTS[0].id);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [pendingAgentId, setPendingAgentId] = useState<string | null>(null);
@@ -227,20 +302,36 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
   const [pendingRunText, setPendingRunText] = useState("");
   const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
   const normalizedModel = normalizeCanonicalModel(model);
+  const lastJobIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (jobId !== lastJobIdRef.current) {
+      setAgents(INITIAL_AGENTS);
+      lastJobIdRef.current = jobId || null;
+    }
+  }, [jobId]);
 
   const buildSupplierUrl = (supplierId: string) => {
     const encoded = encodeURIComponent(normalizedModel);
     switch (supplierId) {
-      case "encompass-family":
-        return buildKnownEncompassAssemblyUrl(normalizedModel) || "";
+      case "encompass-family": {
+        const assemblyUrl = buildKnownEncompassAssemblyUrl(normalizedModel, truth?.brand);
+        if (assemblyUrl) return assemblyUrl;
+        const canonical = buildCanonicalEncompassUrls({ model: normalizedModel, brand: truth?.brand });
+        if (canonical.regularModelUrl) return canonical.regularModelUrl;
+        if (canonical.regularModelUrlAlt) return canonical.regularModelUrlAlt;
+        return `https://partstore.encompass.com/model/${encoded}`;
+      }
       case "fix.com":
         return `https://www.fix.com/search/?SearchTerm=${encoded}`;
       case "repairclinic-family":
-        return `https://www.repairclinic.com/Shop-For-Parts?SearchText=${encoded}`;
+        return `https://www.repairclinic.com/Shop-For-Parts?query=${encoded}`;
       case "appliancepartspros":
-        return `https://www.appliancepartspros.com/search.aspx?model=${encoded}`;
+        return `https://www.appliancepartspros.com/search.aspx?q=${encoded}`;
       case "sears-partsdirect":
         return `https://www.searspartsdirect.com/search?q=${encoded}`;
+      case "partsdr":
+        return `https://partsdr.com/search?q=${encoded}`;
       case "ai-recovery":
         return `https://www.google.com/search?q=${encoded}+appliance+parts+diagram`;
       default:
@@ -303,11 +394,66 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
   };
 
   useEffect(() => {
-    setAgents(prev => prev.map(agent => ({
-      ...agent,
-      url: agent.url || buildSupplierUrl(agent.id),
-    })));
-  }, [normalizedModel]);
+    const runs = asRecord(supplierRuns);
+    setAgents((prev) =>
+      prev.map((agent) => {
+        const run = asRecord(runs[agent.id]);
+        const input = asRecord(run.input);
+        const persistedAgentConfig = asRecord(input.agentConfig || input.modelConfig || run.agentConfig);
+        const persistedTuning = asRecord(persistedAgentConfig.tuning || input.tuning || run.tuning);
+        const persistedUrl = String(input.searchUrl || input.sourceUrl || persistedAgentConfig.url || "").trim();
+        
+        const persistedToolConfig = asRecord(
+          persistedAgentConfig.toolConfig || input.toolConfig || persistedTuning.toolConfig,
+        );
+
+        const nextToolConfig: AgentToolConfig = {
+          ...agent.tuning.toolConfig,
+          directFetch: true,
+          structuredOutput: true,
+          googleSearch: persistedToolConfig.googleSearch === true,
+          urlContext: persistedToolConfig.urlContext !== false,
+          codeExecution: persistedToolConfig.codeExecution === true,
+          functionCalling: persistedToolConfig.functionCalling === true,
+          googleMaps: persistedToolConfig.googleMaps === true,
+          computerUse: persistedToolConfig.computerUse === true,
+        };
+
+        const baselineUrl = buildSupplierUrl(agent.id);
+        const truthCanonUrl = String(truth?.canonUrl || "").trim();
+        const encompassCanonUrl =
+          agent.id === "encompass-family" && truthCanonUrl.includes("/Exploded-View-Assembly/")
+            ? truthCanonUrl
+            : "";
+
+        return {
+          ...agent,
+          url: persistedUrl || encompassCanonUrl || baselineUrl,
+          sendDiagram: input.includeDiagram !== false,
+          sendExpectedCount: input.includeExpectedCount !== false,
+          tuning: {
+            ...agent.tuning,
+            model: parseModel(persistedAgentConfig.model || input.model || persistedTuning.model || agent.tuning.model),
+            thinkingLevel: parseThinking(
+              persistedAgentConfig.thinkingLevel || input.thinkingLevel || persistedTuning.thinkingLevel || agent.tuning.thinkingLevel
+            ),
+            temperature: parseTemperature(
+              persistedAgentConfig.temperature ?? input.temperature ?? persistedTuning.temperature ?? agent.tuning.temperature
+            ),
+            systemInstruction: String(
+              persistedAgentConfig.systemInstruction ||
+                input.systemInstruction ||
+                persistedTuning.systemInstruction ||
+                truth?.operatorInstructions ||
+                agent.tuning.systemInstruction ||
+                SUPPLIER_AGENT_INSTRUCTION_PREVIEW
+            ).trim(),
+            toolConfig: nextToolConfig,
+          },
+        };
+      }),
+    );
+  }, [supplierRuns, truth, normalizedModel]);
 
   const buildRunPayload = (agent: AgentState) => {
     const sourceUrl = agent.url || buildSupplierUrl(agent.id);
@@ -420,6 +566,15 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
     window.setTimeout(() => setCopiedLabel(null), 1400);
   };
 
+  const pendingAgentConfig = asRecord(pendingPayload?.agentConfig);
+  const pendingTuning = asRecord(pendingPayload?.tuning);
+  const pendingSystemInstruction = String(
+    pendingAgentConfig.systemInstruction ||
+      pendingPayload?.systemInstruction ||
+      pendingTuning.systemInstruction ||
+      SUPPLIER_AGENT_INSTRUCTION_PREVIEW,
+  );
+
   const runAgent = async (agent: AgentState, payloadOverride?: Record<string, unknown>) => {
     setAgents(prev => prev.map(a => a.id === agent.id ? { ...a, status: "running", error: undefined } : a));
     
@@ -449,24 +604,74 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full min-h-0 flex-col gap-6">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-xs font-black text-neutral-500 uppercase tracking-[0.2em] flex items-center gap-2">
-          <Globe size={14} className="text-blue-600" /> Supplier Agent Matrix
+          <Activity size={14} className="text-blue-600" /> Orchestrator Matrix
         </h3>
-        <div className="text-[10px] font-black text-neutral-400 uppercase bg-neutral-100 px-3 py-1 rounded-full">
-          Model: {model || "NONE"}
-        </div>
+        <Tooltip label="Canonical Model Reference">
+          <div className="flex items-center gap-2 text-[10px] font-black text-neutral-400 uppercase bg-neutral-100 px-3 py-1 rounded-full">
+            <Package size={12} /> {model || "UNDEFINED"}
+          </div>
+        </Tooltip>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2 2xl:grid-cols-3">
-        {agents.map((agent) => (
+      {/* Supplier Link Matrix - Immediate visibility of "Useful URLs" */}
+      <div className="grid grid-cols-1 gap-2 rounded-xl border border-neutral-200 bg-neutral-50/50 p-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 flex-none">
+        {agents.map(agent => {
+          const targetUrl = agent.url || buildSupplierUrl(agent.id);
+          return (
+            <div key={`link-matrix-${agent.id}`} className="flex flex-col gap-1 min-w-0">
+              <div className="text-[8px] font-black uppercase tracking-widest text-neutral-400 truncate">{agent.name}</div>
+              {targetUrl ? (
+                <a 
+                  href={targetUrl} 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="truncate font-mono text-[9px] font-bold text-blue-600 hover:underline"
+                  title={targetUrl}
+                >
+                  {new URL(targetUrl).hostname.replace('www.', '')}
+                </a>
+              ) : (
+                <div className="text-[9px] font-bold text-neutral-300">NO URL</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid min-h-0 flex-1 gap-4 overflow-auto lg:grid-cols-[180px_1fr]">
+        <aside className="h-fit rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+          <div className="mb-2 flex items-center gap-2 px-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">
+            <Cpu size={12} /> Nodes
+          </div>
+          <div className="grid gap-2">
+            {agents.map((agent) => (
+              <button
+                key={`agent-tab-${agent.id}`}
+                type="button"
+                onClick={() => setActiveAgentId(agent.id)}
+                className={`w-full rounded-md border px-3 py-2 text-left text-[11px] font-black uppercase tracking-wide ${
+                  activeAgentId === agent.id
+                    ? "border-neutral-900 bg-neutral-900 text-white"
+                    : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400"
+                }`}
+              >
+                {agent.name}
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <div className="min-h-0">
+        {agents.filter((agent) => agent.id === activeAgentId).map((agent) => (
           <motion.div
             key={agent.id}
             layout
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`group relative overflow-hidden rounded-lg border transition-all duration-300 ${
+            className={`group relative overflow-visible rounded-lg border transition-all duration-300 ${
               agent.status === "running" ? "border-blue-300 bg-blue-50/20 ring-4 ring-blue-50/50 shadow-xl" :
               agent.status === "success" ? "border-emerald-200 bg-emerald-50/20" :
               agent.status === "error" ? "border-red-200 bg-red-50/20" :
@@ -496,17 +701,26 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                   </div>
                   <div className="min-w-0">
                     <h4 className="truncate text-sm font-black leading-tight text-neutral-900">{agent.name}</h4>
-                    <Tooltip label={agent.showTuning ? "Hide tuning" : "Tune agent"}>
-                      <button
-                        type="button"
-                        onClick={() => toggleTuning(agent.id)}
-                        aria-label={agent.showTuning ? "Hide tuning" : "Tune agent"}
-                        className="mt-1 inline-flex h-7 w-16 items-center justify-center gap-1 rounded-md border border-neutral-200 bg-white text-neutral-600 hover:border-blue-200 hover:text-blue-700"
-                      >
-                        <Settings2 size={13} />
-                        {agent.showTuning ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                      </button>
-                    </Tooltip>
+                    <div className="mt-1 flex items-center gap-1">
+                      <Tooltip label={agent.showTuning ? "Hide Configuration" : "Open Configuration"}>
+                        <button
+                          type="button"
+                          onClick={() => toggleTuning(agent.id)}
+                          className={`flex h-7 w-7 items-center justify-center rounded-md border transition-all ${
+                            agent.showTuning 
+                              ? "border-blue-200 bg-blue-50 text-blue-700" 
+                              : "border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400"
+                          }`}
+                        >
+                          <Settings2 size={13} />
+                        </button>
+                      </Tooltip>
+                      <Tooltip label="View Execution Logs">
+                        <button className="flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-400 hover:text-neutral-600">
+                          <History size={13} />
+                        </button>
+                      </Tooltip>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -524,9 +738,11 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                   >
                     <div className="grid grid-cols-1 gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-3 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
-                          <Cpu size={10} /> Model
-                        </label>
+                        <Tooltip label="Inference Model Selection">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-neutral-200 text-neutral-600">
+                            <Cpu size={12} />
+                          </div>
+                        </Tooltip>
                         <select
                           value={agent.tuning.model}
                           onChange={(e) => updateTuning(agent.id, { model: e.target.value as GeminiModel })}
@@ -537,9 +753,11 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
-                          <Cpu size={10} /> Thinking: {agent.tuning.thinkingLevel}
-                        </label>
+                        <Tooltip label={`Inference Depth: ${agent.tuning.thinkingLevel}`}>
+                          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-neutral-200 text-neutral-600">
+                            <Brain size={12} />
+                          </div>
+                        </Tooltip>
                         <select
                           value={agent.tuning.thinkingLevel}
                           onChange={(e) => updateTuning(agent.id, { thinkingLevel: e.target.value as AgentTuning["thinkingLevel"] })}
@@ -551,9 +769,11 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                         </select>
                       </div>
                       <div className="space-y-2 sm:col-span-2">
-                        <label className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
-                          <FlaskConical size={10} /> Temp: {agent.tuning.temperature.toFixed(1)}
-                        </label>
+                        <Tooltip label={`Inference Temperature: ${agent.tuning.temperature.toFixed(1)}`}>
+                          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-neutral-200 text-neutral-600">
+                            <FlaskConical size={12} />
+                          </div>
+                        </Tooltip>
                         <input
                           type="range"
                           min="0"
@@ -568,9 +788,11 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                         </div>
                       </div>
                       <label className="space-y-2 sm:col-span-2">
-                        <span className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
-                          <Terminal size={10} /> Agent instruction override
-                        </span>
+                        <Tooltip label="System Prompt Override (Deterministic Contract)">
+                          <div className="flex items-center gap-2 text-[9px] font-black uppercase text-neutral-500">
+                            <Terminal size={12} /> System Prompt
+                          </div>
+                        </Tooltip>
                         <textarea
                           value={agent.tuning.systemInstruction}
                           onChange={(e) => updateTuning(agent.id, { systemInstruction: e.target.value })}
@@ -580,10 +802,14 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                       </label>
                       <div className="sm:col-span-2">
                         <div className="mb-2 flex items-center justify-between text-[9px] font-black uppercase text-neutral-500">
-                          <span>Tool access</span>
-                          <span>Saved with run</span>
+                          <div className="flex items-center gap-2">
+                            <Wrench size={12} /> Capabilities
+                          </div>
+                          <Tooltip label="Settings are persisted per agent run">
+                            <Info size={12} className="text-neutral-400" />
+                          </Tooltip>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-2">
                           {TOOL_ROWS.map((tool) => {
                             const enabled = agent.tuning.toolConfig[tool.key];
                             return (
@@ -600,7 +826,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                                   }`}
                                 >
                                   <span className="truncate">{tool.label}</span>
-                                  <span>{enabled ? "ON" : "OFF"}</span>
+                                  {enabled ? <Check size={12} className="text-blue-600" /> : <X size={12} />}
                                 </button>
                               </Tooltip>
                             );
@@ -657,36 +883,34 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                   </button>
                 </Tooltip>
 
-                <Tooltip label={agent.sendExpectedCount ? "Count evidence included" : "Count evidence excluded"}>
+                <Tooltip label={agent.sendExpectedCount ? "Count source data included" : "Count source data excluded"}>
                   <button
                     type="button"
                     onClick={() => toggleAgentContext(agent.id, "sendExpectedCount")}
-                    aria-label={agent.sendExpectedCount ? "Count evidence included" : "Count evidence excluded"}
+                    aria-label={agent.sendExpectedCount ? "Count source data included" : "Count source data excluded"}
                     className={`flex h-11 w-11 items-center justify-center rounded-lg border transition-all ${
                       agent.sendExpectedCount
                         ? "border-emerald-200 bg-emerald-50 text-emerald-900 shadow-sm"
                         : "border-neutral-100 bg-neutral-50 text-neutral-400"
                     }`}
                   >
-                    {agent.sendExpectedCount ? <CheckCircle2 size={17} /> : <AlertCircle size={17} />}
+                    {agent.sendExpectedCount ? <Hash size={17} /> : <AlertCircle size={17} />}
                   </button>
                 </Tooltip>
 
-                <Tooltip label="Review and run agent">
+                <Tooltip label="Execute Extraction Run">
                   <button
                     type="button"
                     onClick={() => openRunReview(agent)}
                     disabled={agent.status === "running" || !model}
-                    aria-label="Review and run agent"
-                    className={`flex h-11 min-w-0 items-center justify-center gap-2 rounded-lg px-4 text-xs font-black uppercase tracking-wide transition-all shadow-lg ${
+                    className={`flex h-11 min-w-0 flex-1 items-center justify-center rounded-lg px-4 transition-all shadow-lg ${
                       agent.status === "running" ? "bg-neutral-100 text-neutral-400 cursor-not-allowed" :
                       agent.status === "success" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
                       agent.status === "error" ? "bg-red-600 text-white hover:bg-red-700" :
                       "bg-neutral-950 text-white hover:bg-black"
                     }`}
                   >
-                    {agent.status === "running" ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} fill="currentColor" />}
-                    <span>Run</span>
+                    {agent.status === "running" ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} fill="currentColor" />}
                   </button>
                 </Tooltip>
               </div>
@@ -694,6 +918,7 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
             </details>
           </motion.div>
         ))}
+        </div>
       </div>
 
       <AnimatePresence>
@@ -714,57 +939,83 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
             >
               <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
                 <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
-                    Agent Preflight Review
-                  </div>
-                  <h4 className="text-lg font-black text-neutral-900">
-                    Review instructions before run
+                  <Tooltip label="Agent Preflight Check">
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500 flex items-center gap-2">
+                      <Cpu size={14} className="text-neutral-400" /> PREFLIGHT
+                    </div>
+                  </Tooltip>
+                  <h4 className="text-lg font-black text-neutral-900 flex items-center gap-2">
+                    <Activity size={20} className="text-blue-600" /> Review Extraction Contract
                   </h4>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setReviewOpen(false)}
-                  className="rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-bold text-neutral-600 hover:bg-neutral-50"
-                >
-                  Close
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => setReviewOpen(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+                  >
+                    <X size={16} />
+                  </button>
               </div>
 
               <div className="grid gap-4 p-5 md:grid-cols-2">
                 <div>
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
-                      Instruction Contract
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard("contract", SUPPLIER_AGENT_INSTRUCTION_PREVIEW)}
-                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-neutral-600 hover:bg-neutral-50"
-                    >
-                      <Copy size={12} />
-                      {copiedLabel === "contract" ? "Copied" : "Copy"}
-                    </button>
+                  <div className="flex items-center justify-between mb-2">
+                    <Tooltip label="System/Agent Instructions (Locked to Preflight Preview)">
+                      <div className="text-[11px] font-black uppercase tracking-widest text-neutral-500 flex items-center gap-2">
+                        <Zap size={14} className="text-amber-500" /> INSTRUCTIONS
+                      </div>
+                    </Tooltip>
+                      <Tooltip label="Copy System Prompt">
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard("contract", SUPPLIER_AGENT_INSTRUCTION_PREVIEW)}
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                        >
+                          {copiedLabel === "contract" ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                        </button>
+                      </Tooltip>
                   </div>
                   <textarea
-                    readOnly
-                    value={SUPPLIER_AGENT_INSTRUCTION_PREVIEW}
-                    onFocus={(event) => event.currentTarget.select()}
-                    className="h-[360px] w-full resize-y rounded-lg border border-neutral-200 bg-neutral-50 p-3 font-mono text-xs leading-relaxed text-neutral-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    value={pendingSystemInstruction}
+                    onChange={(event) => {
+                      const next = event.target.value;
+                      setPendingPayload((prev) => {
+                        if (!prev) return prev;
+                        const nextAgentConfig = asRecord(prev.agentConfig);
+                        const nextTuning = asRecord(prev.tuning);
+                        return {
+                          ...prev,
+                          systemInstruction: next,
+                          agentConfig: {
+                            ...nextAgentConfig,
+                            systemInstruction: next,
+                          },
+                          tuning: {
+                            ...nextTuning,
+                            systemInstruction: next,
+                          },
+                        };
+                      });
+                    }}
+                    className="h-[360px] w-full resize-y rounded-lg border border-neutral-200 bg-white p-3 font-mono text-xs leading-relaxed text-neutral-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                   />
                 </div>
                 <div>
-                  <div className="mb-2 flex items-center justify-between gap-2">
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-500">
-                      Run Payload
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard("payload", pendingRunText)}
-                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-neutral-600 hover:bg-neutral-50"
-                    >
-                      <Copy size={12} />
-                      {copiedLabel === "payload" ? "Copied" : "Copy"}
-                    </button>
+                  <div className="flex items-center justify-between mb-2">
+                    <Tooltip label="Execution Payload (Truth Injection & Metadata)">
+                      <div className="text-[11px] font-black uppercase tracking-widest text-neutral-500 flex items-center gap-2">
+                        <Database size={14} className="text-blue-500" /> CONTEXT
+                      </div>
+                    </Tooltip>
+                      <Tooltip label="Copy Payload Data">
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard("payload", pendingRunText)}
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                        >
+                          {copiedLabel === "payload" ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                        </button>
+                      </Tooltip>
                   </div>
                   <textarea
                     value={pendingRunText}
@@ -794,9 +1045,9 @@ export function SupplierAgentMatrix({ jobId, model, truth }: SupplierAgentMatrix
                     setReviewOpen(false);
                     await runAgent(agent, runPayload);
                   }}
-                  className="rounded-md border border-neutral-900 bg-neutral-900 px-3 py-2 text-sm font-semibold text-white hover:bg-black"
+                  className="flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-4 py-2 text-xs font-black uppercase tracking-widest text-white hover:bg-black"
                 >
-                  Confirm Run
+                  <Play size={14} fill="currentColor" /> Execute
                 </button>
               </div>
             </motion.div>

@@ -14,6 +14,20 @@ We are transitioning the BOM extraction pipeline from legacy scraping to an agen
 - [x] **Truth Score Persistence**: Reconciliation reports now persist to `bom_jobs.diagramParse`.
 - [x] **Cockpit Integration**: "Reconcile" workspace now displays truth score match %, source comparison, and discrepancy logs.
 - [x] **HITL Gate Hardening**: Verified `approvalStatus` and `requiresApproval` state transitions in `ComputerUseSupervisor` and PATCH route.
+- [x] **Cockpit Infrastructure Hardening**: Populated deterministic agent instructions, added Link Matrix for immediate URL access, and enabled direct instruction editing in preflight.
+- [x] **Supplier Expansion**: Integrated PartsDr as the 7th supported agent with auto-loading URLs and deterministic prompt fallbacks.
+- [x] **Reactive State**: Ensured supplier URLs and agent instructions auto-populate immediately upon model entry via reactive `useEffect` hooks.
+
+## Current Status
+- **Standard Canon Enforced**: All supplier search URLs are now deterministic and centralized in `source-tier-policy.ts`. Parameters synchronized across Cockpit components.
+- **UI Sweep Complete**: Verbose labels replaced with industry-standard iconography and tooltips in both the Control Panel and Agent Matrix.
+- **Auto-population Restored**: Fixed state synchronization bugs in `SupplierAgentMatrix` that were preventing real-time instruction and URL updates.
+- **Encompass Hardening**: Integrated "Gold Truth" assembly lookup routes as primary fallback before search queries.
+
+## Next Steps
+- Verify `PartsDr` and `APP` extraction success rates with the new `q=` parameter.
+- Monitor `telemetry` for any 403/429 regressions on standardized search routes.
+- Extend icon-driven pattern to the `OCR` and `Reconcile` workspace steps if needed.
 
 ### **Gold Truth Reference**
 - **Maytag MVWB300WQ2**:
@@ -67,6 +81,9 @@ We are transitioning the BOM extraction pipeline from legacy scraping to an agen
 ### Agent 2 Handover Summary
 - **Reconciliation API**: Fully integrated and persisted to `diagramParse`.
 - **Cockpit UI**: "Reconcile" workspace now functional with Truth Score and discrepancy logs.
+- **Agent Matrix**: Hardened with Link Matrix, editable instructions, and synchronized supplier suite (7 agents).
 - **Type Safety**: Resolved all TS2322, TS2345, TS2339 regressions. `npm run typecheck` passes.
 - **Build**: `npm run build` verified.
-- **Next Concrete Action**: Final browser-based validation and telemetry cleanup.
+- **Next Concrete Action**: Monitor agentic visual loops in the cockpit for high-integrity BOM extraction.
+why are the prompts not auto loading? why are the URLs not loading? 
+- **REACTIVE FIX**: Resolved auto-population failure for URLs and Prompts. All 7 agents (including PartsDr) now initialize immediately upon model entry.

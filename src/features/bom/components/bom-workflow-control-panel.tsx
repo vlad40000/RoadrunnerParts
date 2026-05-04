@@ -21,6 +21,7 @@ import {
   Maximize2,
   Pencil,
   RotateCcw,
+  RefreshCcw,
   Save,
   Briefcase,
   Search,
@@ -32,13 +33,15 @@ import {
   MoreHorizontal,
   Activity,
   User,
+  FileText,
+  Hash,
 } from "lucide-react";
 import { EncompassEvidenceSummary } from "./encompass-supervisor-panel";
 import { ComputerUseSupervisor } from "./computer-use-supervisor";
-
-import { SupplierAgentMatrix } from "./supplier-agent-matrix";
+import { SupplierAgentMatrix, SUPPLIER_AGENT_INSTRUCTION_PREVIEW } from "./supplier-agent-matrix";
 import {
   buildKnownEncompassAssemblyUrl,
+  buildSupplierSearchUrl,
   normalizeCanonicalModel,
 } from "../services/source-tier-policy";
 import { NAMEPLATE_OCR_PROMPT } from "@/src/lib/nameplate-ocr-contract";
@@ -89,7 +92,7 @@ type StepStatus = "waiting" | "active" | "filled" | "complete";
 type BomWorkspaceMode =
   | "job"
   | "ocr"
-  | "evidence"
+  | "source"
   | "suppliers"
   | "rows"
   | "reconcile"
@@ -98,15 +101,19 @@ type BomWorkspaceMode =
   | "console";
 
 const SUPPLIERS = [
+  { id: "encompass-family", label: "Encompass" },
   { id: "fix.com", label: "Fix.com" },
   { id: "repairclinic-family", label: "RepairClinic" },
+  { id: "partsdr", label: "PartsDr" },
   { id: "appliancepartspros", label: "AppliancePartsPros" },
   { id: "sears-partsdirect", label: "Sears PartsDirect" },
+  { id: "ai-recovery", label: "AI Recovery" },
 ] as const;
 
 const TERMINAL_HELP = [
   "help",
   "status",
+  "run encompass-family",
   "run fix.com",
   "run repairclinic-family",
   "run appliancepartspros",
@@ -206,21 +213,27 @@ function usableVisualTruthUrl(value: unknown) {
 }
 
 function buildSupplierUrl(supplierId: string, model: string) {
-  const encoded = encodeURIComponent(normalizeCanonicalModel(model));
-
-  switch (supplierId) {
-    case "fix.com":
-      return `https://www.fix.com/search/?SearchTerm=${encoded}`;
-    case "repairclinic-family":
-      return `https://www.repairclinic.com/Shop-For-Parts?SearchText=${encoded}`;
-    case "appliancepartspros":
-      return `https://www.appliancepartspros.com/search.aspx?model=${encoded}`;
-    case "sears-partsdirect":
-      return `https://www.searspartsdirect.com/search?q=${encoded}`;
-    default:
-      return "";
-  }
+  return buildSupplierSearchUrl({
+    supplier: supplierId,
+    canonicalModel: normalizeCanonicalModel(model),
+    formattedModel: model
+  });
 }
+
+const Tooltip = ({ content, children }: { content: string; children: React.ReactNode }) => {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative flex items-center" onMouseEnter={() => setVisible(true)} onMouseLeave={() => setVisible(false)}>
+      {children}
+      {visible && (
+        <div className="absolute bottom-full left-1/2 z-[999] mb-2 -translate-x-1/2 px-2 py-1 bg-neutral-900 border border-white/10 rounded text-[9px] font-black uppercase tracking-widest text-white whitespace-nowrap shadow-xl">
+          {content}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-neutral-900" />
+        </div>
+      )}
+    </div>
+  );
+};
 
 function stepClasses(status: StepStatus) {
   if (status === "complete") return "border-emerald-200 bg-emerald-50 text-emerald-900";
@@ -295,7 +308,7 @@ function AutoField({
               className="rounded-md border border-neutral-200 p-1.5 text-neutral-500 hover:bg-neutral-50"
               title="Return to auto"
             >
-              <RotateCcw size={14} />
+              <RefreshCcw size={14} />
             </button>
           ) : (
             <button
@@ -304,7 +317,7 @@ function AutoField({
               className="rounded-md border border-neutral-200 p-1.5 text-neutral-500 hover:bg-neutral-50"
               title="Edit manually"
             >
-              <Pencil size={14} />
+              <FileText size={14} />
             </button>
           )}
           {manual && onSave ? (
@@ -422,7 +435,12 @@ export function BomWorkflowControlPanel({
       const truthRes = await fetch(`/api/bom/jobs/${data.job.id}/visual-truth`, { cache: "no-store" });
       const truthData = await truthRes.json().catch(() => null);
       if (refreshUnmountedRef.current) return;
-      setTruth(truthData?.visualTruth || null);
+      const persistedTruth = truthData?.visualTruth || null;
+      setTruth(persistedTruth);
+      const persistedPrompt = firstText(asRecord(persistedTruth).ocrPrompt);
+      if (persistedPrompt) setOcrPrompt(persistedPrompt);
+      const persistedIdentity = asRecord(asRecord(persistedTruth).ocrIdentity);
+      if (Object.keys(persistedIdentity).length > 0) setOcrResult(persistedIdentity);
       setLastRefreshAt(new Date().toLocaleTimeString());
     } finally {
       isRefreshInFlightRef.current = false;
@@ -600,6 +618,17 @@ export function BomWorkflowControlPanel({
     };
   }, [jobId, refresh]);
 
+  useEffect(() => {
+    const persistedPrompt = firstText(liveTruth?.ocrPrompt);
+    if (persistedPrompt && persistedPrompt !== ocrPrompt) {
+      setOcrPrompt(persistedPrompt);
+    }
+    const persistedIdentity = asRecord(liveTruth?.ocrIdentity);
+    if (Object.keys(persistedIdentity).length > 0) {
+      setOcrResult(persistedIdentity);
+    }
+  }, [liveTruth?.ocrPrompt, liveTruth?.ocrIdentity]);
+
   const stepStatus: Record<string, StepStatus> = {
     identity: job?.model ? "complete" : model ? "filled" : "active",
     encompass_url: truthUrl ? "complete" : job?.model ? "active" : "waiting",
@@ -626,16 +655,16 @@ export function BomWorkflowControlPanel({
   ];
 
   const ledgerItems = [
-    { label: "Provider rows", value: rawRows.length || job?.rawRowCount || 0 },
-    { label: "Reconciled rows", value: finalRows.length || job?.uniqueRowCount || 0 },
-    { label: "Supplier inputs", value: supplierInputCount },
-    { label: "Supplier complete", value: supplierCompleteCount },
-    { label: "Issues", value: (job?.issues || []).length + (job?.errorText ? 1 : 0) },
-    { label: "Last job update", value: updatedAtText || "none" },
+    { label: "Provider rows", value: rawRows.length || job?.rawRowCount || 0, icon: <Hash size={10} />, tooltip: "Raw rows found by provider agents" },
+    { label: "Reconciled rows", value: finalRows.length || job?.uniqueRowCount || 0, icon: <CheckCircle2 size={10} />, tooltip: "Unique part numbers after reconciliation" },
+    { label: "Supplier inputs", value: supplierInputCount, icon: <Briefcase size={10} />, tooltip: "Inputs ready for supplier extraction" },
+    { label: "Supplier complete", value: supplierCompleteCount, icon: <Activity size={10} />, tooltip: "Successful supplier agent runs" },
+    { label: "Issues", value: (job?.issues || []).length + (job?.errorText ? 1 : 0), icon: <Table size={10} />, tooltip: "Active validation issues or errors" },
+    { label: "Update", value: updatedAtText || "none", icon: <RefreshCw size={10} />, tooltip: "Timestamp of last job persistence" },
   ];
 
   function appendTerminal(line: string) {
-    setTerminalLines((prev) => [...prev.slice(-120), line]);
+    setTerminalLines((prev) => [...prev.slice(-199), line]);
   }
 
   async function handleOcrImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -700,6 +729,7 @@ export function BomWorkflowControlPanel({
         serial: extractedSerial || undefined,
         productType: identity.productType || undefined,
         visualTruth: {
+          ocrPrompt: ocrPrompt,
           screenshotBase64: dataUrl,
           ocrImageDataUrl: dataUrl,
           ocrImageName: file.name,
@@ -794,22 +824,19 @@ export function BomWorkflowControlPanel({
     status: StepStatus;
   }> = [
     { mode: "job", dockLabel: "Job", title: "Job Identity", goal: "Set model, serial, job, OCR prompt.", status: stepStatus.identity },
-    { mode: "ocr", dockLabel: "OCR", title: "OCR Review", goal: "Edit prompt, then capture or upload nameplate evidence.", status: ocrResult ? "complete" : model ? "active" : "waiting" },
+    { mode: "ocr", dockLabel: "OCR", title: "OCR Review", goal: "Edit prompt, then capture or upload nameplate source.", status: ocrResult ? "complete" : model ? "active" : "waiting" },
     { mode: "suppliers", dockLabel: "SUP", title: "Supplier Agents", goal: "Tune each agent, edit URL, review payload, run.", status: stepStatus.supplier_runs },
-    { mode: "evidence", dockLabel: "EV", title: "Evidence", goal: "Capture visual proof, source URL, and agent output.", status: stepStatus.visual_capture },
+    { mode: "source", dockLabel: "EV", title: "source", goal: "Capture visual proof, source URL, and agent output.", status: stepStatus.visual_capture },
     { mode: "rows", dockLabel: "ROW", title: "Rows", goal: "Inspect raw and final row previews.", status: stepStatus.row_evidence },
     { mode: "reconcile", dockLabel: "REC", title: "Reconcile", goal: "Check counts, coverage, and issues.", status: stepStatus.reconcile },
     { mode: "pricing", dockLabel: "PRICE", title: "Pricing", goal: "Check priced, required, and missing prices.", status: stepStatus.pricing },
-    { mode: "approve", dockLabel: "OK", title: "Approval", goal: "Review evidence state and solidify.", status: stepStatus.export },
+    { mode: "approve", dockLabel: "OK", title: "Approval", goal: "Review source state and solidify.", status: stepStatus.export },
     { mode: "console", dockLabel: "CLI", title: "Console", goal: "Run terminal commands only when needed.", status: terminalBusy ? "active" : "waiting" },
   ];
 
-  const supplierActions = [
-    { id: "fix.com", label: "FIX" },
-    { id: "repairclinic-family", label: "RC" },
-    { id: "appliancepartspros", label: "APP" },
-    { id: "sears-partsdirect", label: "SEARS" },
-  ] as const;
+  // Suppressing redundant supplierActions as we use the dynamic SUPPLIERS list
+  const supplierActions = SUPPLIERS;
+
 
   const rawCount = rawRows.length || job?.rawRowCount || 0;
   const finalCount = finalRows.length || job?.uniqueRowCount || 0;
@@ -844,7 +871,7 @@ export function BomWorkflowControlPanel({
         return <Camera size={16} />;
       case "suppliers":
         return <Globe size={16} />;
-      case "evidence":
+      case "source":
         return <ImageIcon size={16} />;
       case "rows":
         return <List size={16} />;
@@ -993,7 +1020,7 @@ export function BomWorkflowControlPanel({
             <div className="grid min-h-0 gap-4">
               <AutoField
                 label="Build Instructions"
-                sourceValue={liveTruth?.operatorInstructions}
+                sourceValue={liveTruth?.operatorInstructions || SUPPLIER_AGENT_INSTRUCTION_PREVIEW}
                 sourceLabel="operator instructions"
                 placeholder="Instructions for the agent..."
                 multiline
@@ -1033,7 +1060,12 @@ export function BomWorkflowControlPanel({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)}
+                  onClick={() => {
+                    setOcrPrompt(NAMEPLATE_OCR_PROMPT);
+                    if (jobId) {
+                      savePatch({ visualTruth: { ocrPrompt: NAMEPLATE_OCR_PROMPT } }).catch(() => undefined);
+                    }
+                  }}
                   className="inline-flex h-9 items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 text-[10px] font-black uppercase tracking-widest text-neutral-700 hover:bg-neutral-50"
                 >
                   <RotateCcw size={12} />
@@ -1043,6 +1075,10 @@ export function BomWorkflowControlPanel({
               <textarea
                 value={ocrPrompt}
                 onChange={(event) => setOcrPrompt(event.target.value)}
+                onBlur={() => {
+                  if (!jobId) return;
+                  savePatch({ visualTruth: { ocrPrompt } }).catch(() => undefined);
+                }}
                 className="min-h-0 flex-1 resize-none rounded-xl border border-neutral-300 bg-neutral-50 p-4 font-mono text-xs leading-relaxed text-neutral-900 outline-none focus:border-neutral-900"
               />
             </div>
@@ -1086,7 +1122,7 @@ export function BomWorkflowControlPanel({
           </div>
         );
 
-      case "evidence":
+      case "source":
         return (
           <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="min-h-0 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
@@ -1094,7 +1130,7 @@ export function BomWorkflowControlPanel({
                 <ComputerUseSupervisor jobId={jobId} model={normalizedModel} sourceUrl={agentSourceUrl} />
               ) : (
                 <div className="flex h-full items-center justify-center text-[11px] font-black uppercase tracking-widest text-neutral-400">
-                  Load a job to start evidence
+                  Load a job to start source
                 </div>
               )}
             </div>
@@ -1115,7 +1151,7 @@ export function BomWorkflowControlPanel({
             <div className="flex flex-none items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
               <div className="min-w-0">
                 <div className="text-xs font-black uppercase tracking-widest text-neutral-500">Agent Models</div>
-                <div className="truncate text-sm font-bold text-neutral-700">Tune model settings, edit target URLs, select evidence, review payload, then run from each card.</div>
+                <div className="truncate text-sm font-bold text-neutral-700">Tune model settings, edit target URLs, select source, review payload, then run from each card.</div>
               </div>
               <button
                 type="button"
@@ -1126,7 +1162,12 @@ export function BomWorkflowControlPanel({
               </button>
             </div>
             <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-neutral-200 bg-white p-3 shadow-sm">
-              <SupplierAgentMatrix jobId={jobId || null} model={normalizedModel} truth={liveTruth} />
+              <SupplierAgentMatrix
+                jobId={jobId || null}
+                model={normalizedModel}
+                truth={liveTruth}
+                supplierRuns={supplierRuns}
+              />
             </div>
           </div>
         );
@@ -1153,10 +1194,12 @@ export function BomWorkflowControlPanel({
               <div className="grid content-start gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
                 <div className="mb-2 text-[10px] font-black uppercase tracking-widest text-neutral-500">Global Ledger</div>
                 {ledgerItems.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between rounded-lg border border-neutral-100 bg-neutral-50 px-3 py-2">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{item.label}</div>
-                    <div className="font-mono text-sm font-black text-neutral-950">{item.value}</div>
-                  </div>
+                  <Tooltip key={item.label} content={item.tooltip}>
+                    <div className="flex items-center gap-2 rounded-lg border border-neutral-100 bg-neutral-50 px-2.5 py-1.5 transition-colors hover:bg-neutral-100">
+                      <div className="text-neutral-400">{item.icon}</div>
+                      <div className="font-mono text-[11px] font-black text-neutral-950">{item.value}</div>
+                    </div>
+                  </Tooltip>
                 ))}
               </div>
 
@@ -1394,7 +1437,12 @@ export function BomWorkflowControlPanel({
             <div className="min-w-0 flex-1 truncate text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
               Prompt is editable in the active card
             </div>
-            <button type="button" onClick={() => setOcrPrompt(NAMEPLATE_OCR_PROMPT)} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white">
+            <button type="button" onClick={() => {
+              setOcrPrompt(NAMEPLATE_OCR_PROMPT);
+              if (jobId) {
+                savePatch({ visualTruth: { ocrPrompt: NAMEPLATE_OCR_PROMPT } }).catch(() => undefined);
+              }
+            }} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white">
               Reset
             </button>
             <button type="button" onClick={() => ocrCameraInputRef.current?.click()} disabled={ocrBusy || !ocrPrompt.trim()} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white disabled:opacity-50">
@@ -1426,12 +1474,12 @@ export function BomWorkflowControlPanel({
           </>
         );
 
-      case "evidence":
+      case "source":
         return (
           <>
             <div className="min-w-0 flex-1 truncate font-mono text-xs text-neutral-400">{truthUrl || "No source URL yet"}</div>
             <button type="button" onClick={manualRefresh} disabled={!jobId || refreshing} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white disabled:opacity-50">
-              Refresh Evidence
+              Refresh source
             </button>
             {truthUrl ? (
               <a href={truthUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black">
@@ -1464,7 +1512,7 @@ export function BomWorkflowControlPanel({
               <span>Issues {issuesCount}</span>
             </div>
             <button type="button" onClick={() => setActiveWorkspace("suppliers")} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white">
-              Needs More Evidence
+              Needs More source
             </button>
             <button type="button" onClick={() => setActiveWorkspace("pricing")} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black">
               Continue Price
@@ -1490,10 +1538,10 @@ export function BomWorkflowControlPanel({
         return (
           <>
             <div className="min-w-0 flex-1 truncate text-[11px] font-black uppercase tracking-[0.18em] text-neutral-400">
-              Identity {job?.model ? "OK" : "-"} / Evidence {truthUrl || screenshotUrl ? "OK" : "-"} / Rows {finalCount} / Price {pricedCount}
+              Identity {job?.model ? "OK" : "-"} / source {truthUrl || screenshotUrl ? "OK" : "-"} / Rows {finalCount} / Price {pricedCount}
             </div>
             <button type="button" onClick={() => setActiveWorkspace("suppliers")} className="h-10 rounded-xl border border-white/10 bg-white/10 px-4 text-[11px] font-black uppercase tracking-[0.18em] text-white">
-              Reject / More Evidence
+              Reject / More source
             </button>
             <button type="button" onClick={solidifyCurrentState} disabled={!jobId || !job?.model || !finalCount} className="h-10 rounded-xl bg-yellow-400 px-5 text-[11px] font-black uppercase tracking-[0.2em] text-black disabled:opacity-50">
               Approve BOM
@@ -1572,35 +1620,46 @@ export function BomWorkflowControlPanel({
           </div>
 
           {/* Phase Navigation */}
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5">
             {workspaceSteps.map((step) => {
               const isActive = activeWorkspace === step.mode;
-              const label = step.dockLabel.toUpperCase();
+              const iconMap: Record<string, React.ReactNode> = {
+                job: <Briefcase size={14} />,
+                ocr: <Camera size={14} />,
+                suppliers: <Activity size={14} />,
+                source: <Search size={14} />,
+                rows: <Database size={14} />,
+                reconcile: <Layers size={14} />,
+                pricing: <DollarSign size={14} />,
+                approve: <CheckCircle2 size={14} />,
+                console: <Terminal size={14} />,
+              };
               
               return (
-                <button
-                  key={`top-nav-${step.mode}-${step.dockLabel}`}
-                  onClick={() => {
-                    setActiveWorkspace(step.mode);
-                    if (step.dockLabel === "OCR") setOcrSourceMenuOpen(true);
-                    else if (step.mode === "job") setOcrSourceMenuOpen(false);
-                  }}
-                  className={`relative flex items-center px-3 py-1 text-[10px] font-black uppercase tracking-widest transition-all ${
-                    isActive ? "text-white" : "text-white/30 hover:text-white/60"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div 
-                      layoutId="top-pill"
-                      className="absolute inset-0 rounded-full bg-white/10" 
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1.5">
-                    <span className={`h-1 w-1 rounded-full ${statusDotClass(step.status)}`} />
-                    {label}
-                  </span>
-                </button>
+                <Tooltip key={`top-nav-${step.mode}`} content={step.dockLabel}>
+                  <button
+                    onClick={() => {
+                      setActiveWorkspace(step.mode);
+                      if (step.dockLabel === "OCR") setOcrSourceMenuOpen(true);
+                      else if (step.mode === "job") setOcrSourceMenuOpen(false);
+                    }}
+                    className={`relative flex items-center px-3 py-2 transition-all ${
+                      isActive ? "text-white" : "text-white/20 hover:text-white/50"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div 
+                        layoutId="top-pill"
+                        className="absolute inset-0 rounded-lg bg-white/5" 
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex flex-col items-center gap-1">
+                      {iconMap[step.mode]}
+                      <span className={`h-0.5 w-0.5 rounded-full ${statusDotClass(step.status)}`} />
+                    </span>
+                  </button>
+                </Tooltip>
               );
             })}
           </nav>
@@ -1645,7 +1704,7 @@ export function BomWorkflowControlPanel({
                 { icon: Briefcase, mode: "job", label: "Job", ocr: false },
                 { icon: Camera, mode: "job", label: "OCR", ocr: true },
                 { icon: Layers, mode: "suppliers", label: "Suppliers" },
-                { icon: Search, mode: "evidence", label: "Evidence" },
+                { icon: Search, mode: "source", label: "source" },
                 { icon: Table, mode: "rows", label: "Rows" },
                 { icon: GitMerge, mode: "reconcile", label: "Reconcile" },
                 { icon: DollarSign, mode: "pricing", label: "Price" },
@@ -1749,7 +1808,7 @@ export function BomWorkflowControlPanel({
               </div>
             )}
 
-            {activeWorkspace === "evidence" && (
+            {activeWorkspace === "source" && (
               <div className="flex items-center gap-6">
                 <div className="flex flex-col">
                   <span className="text-[8px] font-black uppercase tracking-widest text-white/30">SOURCE URL</span>
@@ -1836,7 +1895,7 @@ export function BomWorkflowControlPanel({
                 <button 
                   className="flex h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-6 text-[11px] font-black uppercase tracking-[0.2em] text-white/40 hover:bg-white/10 hover:text-white"
                 >
-                  NEEDS EVIDENCE
+                  NEEDS source
                 </button>
               </div>
             )}
@@ -1889,3 +1948,4 @@ export function BomWorkflowControlPanel({
     </main>
   );
 }
+
