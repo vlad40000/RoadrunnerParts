@@ -285,12 +285,13 @@ export async function runSourceActionAgent(input: SourceActionInput) {
     if (!payload) throw new Error("No Sears CATALOG_API_RESPONSE found.");
 
     const diagrams = parseSearsCatalogDiagrams(payload);
+    const catalogModel = parseSearsCatalogModel(payload);
     const supplierIndex: SupplierAssemblyIndex = {
       supplier: "sears-partsdirect",
       canonicalModel: input.canonicalModel,
       formattedModel: input.formattedModel || input.canonicalModel,
       sourceUrl: resolvedSearchUrl,
-      totalCount: payload.model?.partCount || null,
+      totalCount: catalogModel?.partCount || null,
       totalCountEvidence: "CATALOG_API_RESPONSE",
       totalCountSourceUrl: fetched.finalUrl,
       loadedAt: new Date().toISOString(),
@@ -326,7 +327,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
 
     const catalogParts = parseSearsCatalogParts(payload);
     const extractedRows = catalogParts.map(p => ({
-      section: "All Model Parts",
+      section: p.sectionName || "All Model Parts",
       diagramNumber: p.diagramNumber,
       description: p.description,
       originalPartNumber: p.originalPartNumber,

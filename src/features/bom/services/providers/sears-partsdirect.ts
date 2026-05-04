@@ -504,7 +504,7 @@ async function fetchAndParseSearsPage(url: string, modelNumber: string) {
       const catalogModel = parseSearsCatalogModel(payload);
 
       const rows: (SearsParsedRow & { price?: number | null })[] = catalogParts.map(p => ({
-        sectionName: "All Model Parts",
+        sectionName: p.sectionName || "All Model Parts",
         diagramNumber: p.diagramNumber,
         description: p.description,
         originalPartNumber: p.originalPartNumber,
