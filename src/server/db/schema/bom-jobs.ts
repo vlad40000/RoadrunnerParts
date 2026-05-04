@@ -101,6 +101,9 @@ export const bomJobs = pgTable("bom_jobs", {
     .default(sql`'[]'::jsonb`),
 
   errorText: text("error_text"),
+  
+  requiresApproval: boolean("requires_approval").default(false),
+  approvalStatus: text("approval_status"), // 'pending', 'approved', 'rejected'
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

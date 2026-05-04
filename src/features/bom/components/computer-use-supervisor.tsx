@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { 
@@ -104,6 +104,16 @@ config = types.GenerateContentConfig(
     tools=tools,
 )
 
+config = types.GenerateContentConfig(
+    temperature=${config.temperature},
+    top_p=${config.topP},
+    max_output_tokens=${config.outputLength},
+    thinking_config=types.ThinkingConfig(
+        thinking_level="${config.thinkingLevel}",
+    ),
+    tools=tools,
+)
+
 response = client.models.generate_content_stream(
     model="${config.model}",
     contents=${JSON.stringify(contents)},
@@ -187,6 +197,8 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
   const [pendingConfirmation, setPendingConfirmation] = useState<ReconTelemetry | null>(null);
   const [telemetry, setTelemetry] = useState<ReconTelemetry[]>([]);
   const [isAgentRunning, setIsAgentRunning] = useState(false);
+  const [job, setJob] = useState<any>(null);
+  const [isApproving, setIsApproving] = useState(false);
   const [config, setConfig] = useState<AgentConfig>(DEFAULT_AGENT_CONFIG);
   const [panelMode, setPanelMode] = useState<"configure" | "evidence">("configure");
   const [agentCode, setAgentCode] = useState("");
@@ -277,6 +289,29 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
     setPendingConfirmation(null);
   }
 
+  async function handleJobApproval(approved: boolean) {
+    if (!jobId || isApproving) return;
+    setIsApproving(true);
+    try {
+      const res = await fetch(`/api/bom/jobs/${jobId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requiresApproval: false,
+          approvalStatus: approved ? "approved" : "rejected",
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setJob(data.job);
+      }
+    } catch (err) {
+      console.error("Job approval failed", err);
+    } finally {
+      setIsApproving(false);
+    }
+  }
+
   useEffect(() => {
     if (!jobId) return;
 
@@ -302,6 +337,11 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
         const res = await fetch(`/api/bom/jobs/${jobId}/telemetry?limit=10`);
         const data = await res.json();
         
+        // Also fetch job status for HITL gates
+        const jobRes = await fetch(`/api/bom/jobs/${jobId}`);
+        const jobData = await jobRes.json();
+        if (jobData.ok) setJob(jobData.job);
+
         const events: ReconTelemetry[] = Array.isArray(data.telemetry) ? data.telemetry : [];
         setTelemetry(events);
         setIsAgentRunning(events.some((event) => event.status === "running" || event.status === "executing"));
@@ -605,6 +645,41 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
                   >
                     <CheckCircle2 size={16} />
                     Approve Action
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {job?.requiresApproval && job?.approvalStatus !== 'approved' && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-8 z-50">
+              <div className="max-w-md w-full bg-neutral-800 border border-white/10 rounded-2xl shadow-2xl p-6 space-y-4">
+                <div className="flex items-center gap-3 text-emerald-500">
+                  <CheckCircle2 size={24} />
+                  <h3 className="font-black uppercase tracking-widest text-lg">Manual Gate Active</h3>
+                </div>
+                <p className="text-sm text-neutral-300 leading-relaxed">
+                  The agent has encountered a block or reached a sensitive stage and is waiting for your signal to proceed.
+                </p>
+                <div className="bg-black/20 rounded-lg p-3 font-mono text-xs text-blue-400">
+                  STATUS: WAITING_FOR_OPERATOR_APPROVAL
+                </div>
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button 
+                    disabled={isApproving}
+                    onClick={() => handleJobApproval(false)}
+                    className="flex items-center justify-center gap-2 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50"
+                  >
+                    <XCircle size={16} />
+                    Reject
+                  </button>
+                  <button 
+                    disabled={isApproving}
+                    onClick={() => handleJobApproval(true)}
+                    className="flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-900/40 disabled:opacity-50"
+                  >
+                    {isApproving ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
+                    Grant Approval
                   </button>
                 </div>
               </div>

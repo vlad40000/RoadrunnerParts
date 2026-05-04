@@ -215,6 +215,8 @@ export async function updateBomJobSummary(
     trustedTotalCountSourceUrl?: string | null;
     trustedTotalCountCheckedAt?: Date | string | null;
     errorText?: string | null;
+    requiresApproval?: boolean | null;
+    approvalStatus?: string | null;
   },
 ) {
   const job = await getBomJob(jobId);
@@ -255,6 +257,8 @@ export async function updateBomJobSummary(
         ? new Date(partial.trustedTotalCountCheckedAt) 
         : job.trustedTotalCountCheckedAt,
       errorText: partial.errorText ?? job.errorText,
+      requiresApproval: partial.requiresApproval ?? job.requiresApproval,
+      approvalStatus: partial.approvalStatus ?? job.approvalStatus,
       updatedAt: new Date(),
     })
     .where(eq(bomJobs.id, jobId));
@@ -401,7 +405,7 @@ export async function saveBomVisualTruth(
     diagramParse: finalDiagramParse,
   });
 
-  // ✅ DISCOVERY FEEDBACK: Update the master appliance_model with the discovered sections
+  // ✅ DISCOVERY FEEDBACK: Update the master appliance_models with the discovered sections
   if (job.model) {
     const normalized = normalizeCanonicalModel(job.model);
     await db

@@ -20,16 +20,17 @@ We are transitioning the BOM extraction pipeline from legacy scraping to an agen
 1. [x] Telemetry Migration: `bom_telemetry` table active.
 2. [x] Direct Route Hardening: `encompass_brand_routes` integrated.
 3. [x] Computer Use Integration: `ComputerUseSupervisor` component added to `BomWorkflowControlPanel`.
-4. [x] Ingest Maytag Gold Truth into `appliance_models`.
-5. [x] Implement `resolveEncompassModelUrl` in `EncompassRouteService`.
-6. [x] Update `encompass-universal.ts` to use `resolveEncompassModelUrl`.
-7. [/] Verify `ComputerUseSupervisor` visual loop with Maytag model.
+4. [x] Normalized database schema nomenclature (singular `appliance_model` -> plural `appliance_models`).
+5. [x] Hardened `nameplate_extractions` pipeline with strict `raw_result` constraints.
+6. [x] Audited and fixed legacy SQL migrations (0006, 0007) for schema consistency.
+7. [x] Verified `ComputerUseSupervisor` telemetry and data flow stability.
 
 ### In Progress
+- [/] Implementing the Human-in-the-Loop (HITL) approval flow (Blocker resolution).
 - [x] Finalizing the visual loop implementation in `computer-use-agent.mjs`.
-- [x] Testing the agentic bypass against real Encompass 403 triggers.
-- [x] Automated Reconciliation Service integration for high-integrity Truth Scores.
+- [x] Testing the agentic bypass against real Encompass 403 triggers (Confirmed block).
+- [ ] Automated Reconciliation Service integration for high-integrity Truth Scores.
 
 ### Blockers
 - [ ] Verifying visual capture stability in high-latency environments.
-- [ ] Finalizing the HITL (Human-in-the-Loop) approval flow for high-consequence agent actions.
+- [/] Finalizing the HITL (Human-in-the-Loop) approval flow for high-consequence agent actions.

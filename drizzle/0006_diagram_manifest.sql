@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS bom_part_mapping (
   CONSTRAINT unique_manifest_bom_mapping UNIQUE (manifest_row_id, bom_part_id, mapping_status)
 );
 
-ALTER TABLE appliance_model
+ALTER TABLE appliance_models
 ADD COLUMN trusted_total_part_count integer,
 ADD COLUMN trusted_total_count_source text,
 ADD COLUMN trusted_total_count_source_url text,
@@ -71,10 +71,10 @@ ADD COLUMN mapped_required_manifest_row_count integer DEFAULT 0,
 ADD COLUMN unresolved_required_manifest_row_count integer DEFAULT 0,
 ADD COLUMN actual_canonical_part_count integer DEFAULT 0;
 
-ALTER TABLE appliance_model
+ALTER TABLE appliance_models
 DROP CONSTRAINT IF EXISTS bom_complete_requires_parts_and_prices;
 
-ALTER TABLE appliance_model
+ALTER TABLE appliance_models
 ADD CONSTRAINT bom_complete_requires_manifest_parts_and_prices
 CHECK (
   bom_complete = false OR (

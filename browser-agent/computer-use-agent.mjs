@@ -78,6 +78,52 @@ class ComputerUseAgent {
     return 'timeout';
   }
 
+  async requestManualGate() {
+    if (!this.jobId || !this.appUrl) return;
+    console.log('[CU Agent] Requesting Manual Gate (HITL)...');
+    try {
+      await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requiresApproval: true,
+          approvalStatus: 'pending_operator',
+        }),
+      });
+    } catch (err) {
+      console.warn('[CU Agent] Failed to request manual gate:', err.message);
+    }
+  }
+
+  async waitForManualApproval(timeoutMs = 3600000) { // 1 hour default for human
+    if (!this.jobId || !this.appUrl) return 'approved';
+
+    console.log('[CU Agent] Entering Manual Gate wait loop...');
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      try {
+        const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}`);
+        const data = await res.json().catch(() => null);
+        const job = data?.job;
+        
+        if (!job?.requiresApproval) {
+          if (job?.approvalStatus === 'approved') {
+            console.log('[CU Agent] Manual Gate: APPROVED');
+            return 'approved';
+          }
+          if (job?.approvalStatus === 'rejected') {
+            console.log('[CU Agent] Manual Gate: REJECTED');
+            return 'rejected';
+          }
+        }
+      } catch (err) {
+        console.warn('[CU Agent] Manual approval poll failed:', err.message);
+      }
+    }
+    return 'timeout';
+  }
+
   // 2. Coordinate Translation
   denormalizeX(x) { return Math.round((x / 1000) * SCREEN_WIDTH); }
   denormalizeY(y) { return Math.round((y / 1000) * SCREEN_HEIGHT); }
@@ -166,6 +212,33 @@ class ComputerUseAgent {
     for (let i = 0; i < turnLimit; i++) {
       console.log(`\n--- [CU Agent] Turn ${i + 1} ---`);
       
+      // 1. HITL Gate Check
+      try {
+        const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}`);
+        const data = await res.json().catch(() => null);
+        if (data?.job?.requiresApproval) {
+          const decision = await this.waitForManualApproval();
+          if (decision === 'rejected') {
+            console.log('[CU Agent] Job rejected by operator. Terminating.');
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn('[CU Agent] Pre-turn gate check failed:', err.message);
+      }
+
+      // 2. Automated Block Detection
+      const currentUrl = this.page.url();
+      const pageTitle = await this.page.title();
+      const isBlocked = pageTitle.includes('403') || pageTitle.includes('Access Denied') || pageTitle.includes('Forbidden');
+      
+      if (isBlocked) {
+        console.log(`[CU Agent] Block detected on ${currentUrl}. Triggering Manual Gate.`);
+        await this.requestManualGate();
+        const decision = await this.waitForManualApproval();
+        if (decision !== 'approved') break;
+        // Continue if approved (operator might have solved the captcha/block)
+      }
       const state = await this.captureState();
       await this.telemetry('cu_screenshot', 'running', {
         turn: i + 1,
