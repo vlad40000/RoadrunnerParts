@@ -66,7 +66,7 @@ export async function runAndPersistBomExtraction(input: {
     const { findCachedModelParts } = await import('../services/model-parts-cache');
     const cached = await findCachedModelParts(targetModel);
     
-    if (cached) {
+    if (cached && !(cached as any).isProviderSeed) {
       console.log(`[ModelPartsCache] Serving ${cached.parts.length} parts from cache for ${targetModel}`);
       
       await saveBomArtifacts(input.jobId, {

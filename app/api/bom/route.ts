@@ -159,16 +159,16 @@ export async function POST(req: Request) {
 
     // ✅ CACHE CHECK — return instantly if we've seen this model before
     const isFirstPass = !knownPartNumbers || knownPartNumbers.length === 0;
-    if (isFirstPass && !hasPromptOverride) {
+    if (isFirstPass) {
       const cached = await findCachedModelParts(model);
       if (cached) {
         const cachedIsExhaustive = cached.isExhaustive === 'true';
         if (hasInvalidMarketPrices(cached.parts)) {
-          console.log(`[BOM Route] Cache STALE for ${normalizeModelKey(model)}: contains missing or unapproved market prices, regenerating`);
+          console.log(`[BOM Route] Cache/seed HIT for ${normalizeModelKey(model)} but pricing is incomplete or unapproved; continuing retrieval`);
           cached.parts = null;
         }
         if (!cached.parts) {
-          console.log(`[BOM Route] Cache MISS for ${normalizeModelKey(model)} after stale pricing check`);
+          console.log(`[BOM Route] Cache MISS for ${normalizeModelKey(model)} after pricing validation`);
         } else {
         console.log(`[BOM Route] Cache HIT for ${normalizeModelKey(model)} (Exhaustive: ${cachedIsExhaustive}) — returning stored data`);
         
@@ -180,6 +180,7 @@ export async function POST(req: Request) {
         });
         }
       }
+      if (!hasPromptOverride) {
       console.log(`[BOM Route] Cache MISS for ${normalizeModelKey(model)} — checking deterministic sources`);
       try {
         const result = await orchestrateBomRetrieval({
@@ -211,10 +212,11 @@ export async function POST(req: Request) {
         console.error('[BOM Route] Deterministic extraction failed:', detError);
       }
       console.log(`[BOM Route] Deterministic path yielded no results — calling Gemini`);
+      }
     }
 
     if (hasPromptOverride) {
-      console.log(`[BOM Route] Prompt override supplied for ${normalizeModelKey(model)} — bypassing cache and deterministic routing`);
+      console.log(`[BOM Route] Prompt override supplied for ${normalizeModelKey(model)} after DB cache check`);
     }
 
     const generativeModel = genAI.getGenerativeModel({

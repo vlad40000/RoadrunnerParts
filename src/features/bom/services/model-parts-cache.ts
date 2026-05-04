@@ -1,6 +1,7 @@
 import { db } from '../../../server/db';
 import { modelPartsCache } from '../../../server/db/schema/model-parts-cache';
-import { eq } from 'drizzle-orm';
+import { providerPartSeedRows } from '../../../server/db/schema/provider-seeds';
+import { eq, sql } from 'drizzle-orm';
 
 /**
  * Normalizes a model number for consistent cache lookup.
@@ -8,6 +9,86 @@ import { eq } from 'drizzle-orm';
  */
 export function normalizeModelKey(model: string): string {
   return model.toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+function toSeedPart(row: typeof providerPartSeedRows.$inferSelect) {
+  return {
+    section: row.sectionNameClean || row.sectionLabelRaw || row.normalizedSection || 'Uncategorized',
+    diagramNumber: row.diagramNumber || '',
+    originalPartNumber: row.originalPartNumber || null,
+    currentServicePartNumber: row.currentServicePartNumber || row.originalPartNumber || null,
+    partNumber: row.currentServicePartNumber || row.originalPartNumber || null,
+    description: row.description || 'Appliance Part',
+    nlaStatus: Boolean(row.nlaStatus),
+    replacementNote: row.replacementNote || null,
+    sourceUrl: row.diagramUrl || row.providerAssemblyUrl || row.providerModelUrl || '',
+    sourceType: 'provider_seed',
+    sourceProvider: row.provider,
+    sourceStatus: row.sourceStatus,
+    sourceFile: row.sourceFile,
+    retailPrice: null,
+    retailPriceText: null,
+    retailAvailability: null,
+    retailPriceSource: null,
+    retailPriceVerified: false,
+    confidence: 0.95,
+  };
+}
+
+async function findProviderSeedModelParts(model: string) {
+  const normalizedModel = normalizeModelKey(model);
+  if (!normalizedModel) return null;
+
+  const rows = await db
+    .select()
+    .from(providerPartSeedRows)
+    .where(sql`upper(regexp_replace(${providerPartSeedRows.model}, '[^A-Z0-9]', '', 'g')) = ${normalizedModel}`)
+    .limit(500);
+
+  if (!rows.length) return null;
+
+  console.log(`[ModelPartsCache] SEED HIT: Found ${rows.length} provider seed rows for ${normalizedModel}`);
+  const first = rows[0];
+
+  return {
+    id: `provider-seed:${normalizedModel}`,
+    normalizedModel,
+    brand: first.brand,
+    category: first.applianceType,
+    applianceType: first.applianceType,
+    fuelType: first.fuelType,
+    parts: rows.map(toSeedPart),
+    isExhaustive: 'false',
+    msrp: null,
+    retrievalState: 'parts_seeded_pricing_needed',
+    expectedPartsTotal: null,
+    expectedPartsSource: first.provider,
+    trustedTotalPartCount: null,
+    trustedTotalCountSource: first.provider,
+    trustedTotalCountSourceUrl: first.providerModelUrl,
+    trustedTotalCountCheckedAt: null,
+    actualCanonicalPartCount: rows.length,
+    partsComplete: false,
+    actualUniqueParts: rows.length,
+    coveragePct: null,
+    truthSource: first.providerModelUrl || first.providerAssemblyUrl || first.diagramUrl,
+    sourceStrategy: 'provider-seed-db',
+    fallbackSources: [],
+    sourceSummary: [
+      {
+        source: first.provider,
+        sourceStatus: first.sourceStatus,
+        sourceFile: first.sourceFile,
+        rowCount: rows.length,
+      },
+    ],
+    rejectedParts: [],
+    validationVersion: CURRENT_VALIDATION_VERSION,
+    lastVerifiedAt: null,
+    updatedAt: first.createdAt,
+    createdAt: first.createdAt,
+    isProviderSeed: true,
+  };
 }
 
 export async function findCachedModelParts(model: string) {
@@ -29,10 +110,15 @@ export async function findCachedModelParts(model: string) {
     }
 
     console.log(`[ModelPartsCache] MISS: No cached parts for ${normalizedModel}`);
-    return null;
+    return await findProviderSeedModelParts(model);
   } catch (error) {
     console.error(`[ModelPartsCache] Error reading cache for ${normalizedModel}:`, error);
-    return null;
+    try {
+      return await findProviderSeedModelParts(model);
+    } catch (seedError) {
+      console.error(`[ModelPartsCache] Error reading provider seed rows for ${normalizedModel}:`, seedError);
+      return null;
+    }
   }
 }
 
