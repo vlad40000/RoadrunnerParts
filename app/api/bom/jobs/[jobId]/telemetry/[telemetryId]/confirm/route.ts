@@ -30,7 +30,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   const body = await req.json().catch(() => ({}));
   const confirmed: boolean = body.confirmed === true;
 
-  const nextStatus = confirmed ? "confirmed" : "rejected";
+  const nextStatus = confirmed ? "approved" : "rejected";
 
   await db
     .update(bomTelemetry)

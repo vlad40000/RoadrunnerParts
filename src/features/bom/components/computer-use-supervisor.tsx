@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Monitor, 
   MousePointer2, 
@@ -155,6 +155,18 @@ function agentCodeStorageKey(jobId: string) {
   return `bom-workflow-agent-code:${jobId}`;
 }
 
+function normalizeApprovalStatus(value: unknown) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function hasActiveManualGate(job: Record<string, unknown> | null) {
+  if (!job) return false;
+  const status = normalizeApprovalStatus(job.approvalStatus);
+  if (status === "approved" || status === "rejected") return false;
+  if (status === "pending" || status === "pending_operator") return true;
+  return Boolean(job.requiresApproval);
+}
+
 function broadcastAgentCode(jobId: string, code: string) {
   window.localStorage.setItem(agentCodeStorageKey(jobId), code);
   window.dispatchEvent(
@@ -205,11 +217,34 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
   const [isLaunching, setIsLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
   const [launchPid, setLaunchPid] = useState<number | null>(null);
+  const isPollingRef = useRef(false);
+  const unmountedRef = useRef(false);
+  const pollTickRef = useRef(0);
   const [display, setDisplay] = useState({
     modelSelector: true,
     codePreview: false,
     sidePanel: true,
   });
+
+  const manualGateActive = hasActiveManualGate(job);
+  const approvalStatus = normalizeApprovalStatus(job?.approvalStatus);
+
+  async function patchJob(patch: Record<string, unknown>) {
+    if (!jobId) return null;
+    const res = await fetch(`/api/bom/jobs/${jobId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data?.ok) {
+      throw new Error(data?.error || "Job patch failed");
+    }
+    if (data.job && !unmountedRef.current) {
+      setJob(data.job);
+    }
+    return data?.job ?? null;
+  }
 
   function patchConfig(patch: Partial<AgentConfig>) {
     const next = { ...config, ...patch };
@@ -248,21 +283,39 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
     setLaunchError(null);
 
     try {
-      const res = await fetch(`/api/bom/jobs/${jobId}/agent-launch`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          sourceUrl,
-          goal,
-          config,
-        }),
+      const payload = JSON.stringify({
+        model,
+        sourceUrl,
+        goal,
+        config,
       });
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || "Computer-use launch failed.");
+
+      let data: any = null;
+      let launchErrorMessage: string | null = null;
+
+      for (const endpoint of [
+        `/api/bom/jobs/${jobId}/computer-use/launch`,
+        `/api/bom/jobs/${jobId}/agent-launch`,
+      ]) {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: payload,
+        });
+        data = await res.json().catch(() => null);
+        if (res.ok && data?.ok) {
+          launchErrorMessage = null;
+          break;
+        }
+        launchErrorMessage = data?.error || "Computer-use launch failed.";
+        if (res.status !== 404) break;
       }
-      setLaunchPid(typeof data.pid === "number" ? data.pid : null);
+
+      if (launchErrorMessage) {
+        throw new Error(launchErrorMessage);
+      }
+
+      setLaunchPid(typeof data?.pid === "number" ? data.pid : null);
       setIsAgentRunning(data?.status !== "complete");
       setPanelMode("evidence");
     } catch (err) {
@@ -275,36 +328,34 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
   async function confirmAction(actionId: string | undefined, confirmed: boolean) {
     if (!actionId) return;
 
-    await fetch(`/api/bom/jobs/${jobId}/telemetry/${actionId}/confirm`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        confirmed,
-      }),
-    }).catch((err) => {
-      console.error("Confirmation telemetry failed", err);
-    });
+    try {
+      const res = await fetch(`/api/bom/jobs/${jobId}/telemetry/${actionId}/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          confirmed,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || "Confirmation failed");
+      }
 
-    onActionConfirmed?.(actionId, confirmed);
-    setPendingConfirmation(null);
+      onActionConfirmed?.(actionId, confirmed);
+      setPendingConfirmation(null);
+    } catch (err) {
+      console.error("Confirmation telemetry failed", err);
+    }
   }
 
   async function handleJobApproval(approved: boolean) {
     if (!jobId || isApproving) return;
     setIsApproving(true);
     try {
-      const res = await fetch(`/api/bom/jobs/${jobId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          requiresApproval: false,
-          approvalStatus: approved ? "approved" : "rejected",
-        }),
+      await patchJob({
+        requiresApproval: false,
+        approvalStatus: approved ? "approved" : "rejected",
       });
-      if (res.ok) {
-        const data = await res.json();
-        setJob(data.job);
-      }
     } catch (err) {
       console.error("Job approval failed", err);
     } finally {
@@ -314,6 +365,8 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
 
   useEffect(() => {
     if (!jobId) return;
+    unmountedRef.current = false;
+    isPollingRef.current = false;
 
     const defaultContents = buildDefaultContents({ model, sourceUrl });
     const defaultCode = buildPythonPreview(config, defaultContents);
@@ -332,50 +385,60 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
     };
     window.addEventListener("bom-workflow-agent-code", onSharedCode);
 
-    const interval = setInterval(async () => {
+    async function refreshSupervisorState() {
+      if (!jobId || isPollingRef.current || unmountedRef.current) return;
+      isPollingRef.current = true;
       try {
-        const res = await fetch(`/api/bom/jobs/${jobId}/telemetry?limit=10`);
-        const data = await res.json();
-        
-        // Also fetch job status for HITL gates
-        const jobRes = await fetch(`/api/bom/jobs/${jobId}`);
-        const jobData = await jobRes.json();
-        if (jobData.ok) setJob(jobData.job);
+        pollTickRef.current += 1;
+        const shouldFetchJob = pollTickRef.current % 2 === 1;
+        const [telemetryRes, jobRes] = await Promise.all([
+          fetch(`/api/bom/jobs/${jobId}/telemetry?limit=15`, { cache: "no-store" }),
+          shouldFetchJob ? fetch(`/api/bom/jobs/${jobId}`, { cache: "no-store" }) : Promise.resolve(null),
+        ]);
+        const telemetryData = await telemetryRes.json().catch(() => null);
+        const jobData = jobRes ? await jobRes.json().catch(() => null) : null;
+        if (unmountedRef.current) return;
 
-        const events: ReconTelemetry[] = Array.isArray(data.telemetry) ? data.telemetry : [];
+        if (jobData?.ok) {
+          setJob(jobData.job);
+        }
+
+        const events: ReconTelemetry[] = Array.isArray(telemetryData?.telemetry) ? telemetryData.telemetry : [];
         setTelemetry(events);
         setIsAgentRunning(events.some((event) => event.status === "running" || event.status === "executing"));
 
-        if (events.length) {
-          const screenEvent = events.find((e) => e.event === "url_context_frame" || e.event === "grounding_recon_frame" || e.event === "cu_screenshot");
-          if (screenEvent && screenEvent.payload?.screenshot) {
-            setActiveScreen(screenEvent.payload.screenshot);
-            setCurrentUrl(screenEvent.payload.url || "");
-          }
-
-          const safetyEvent = events.find((e) => e.status === "require_confirmation");
-          if (safetyEvent) {
-            setPendingConfirmation(safetyEvent);
-          } else {
-            setPendingConfirmation(null);
-          }
-
-          const actionEvents = events
-            .filter((e) => e.event === "url_context_action" || e.event === "grounding_recon_action" || e.event === "cu_action")
-            .map((e) => ({
-              name: e.payload?.name || e.event,
-              args: e.payload?.args || e.payload || {},
-              timestamp: e.createdAt || e.created_at || new Date().toISOString(),
-              status: e.status as ComputerUseAction["status"],
-            }));
-          setActions(actionEvents);
+        const screenEvent = events.find((e) => e.event === "url_context_frame" || e.event === "grounding_recon_frame" || e.event === "cu_screenshot");
+        if (screenEvent && screenEvent.payload?.screenshot) {
+          setActiveScreen(screenEvent.payload.screenshot);
+          setCurrentUrl(String(screenEvent.payload.url || ""));
         }
+
+        const safetyEvent = events.find((e) => e.status === "require_confirmation");
+        setPendingConfirmation(safetyEvent || null);
+
+        const actionEvents = events
+          .filter((e) => e.event === "url_context_action" || e.event === "grounding_recon_action" || e.event === "cu_action")
+          .map((e) => ({
+            name: e.payload?.name || e.event,
+            args: e.payload?.args || e.payload || {},
+            timestamp: e.createdAt || e.created_at || new Date().toISOString(),
+            status: e.status as ComputerUseAction["status"],
+          }));
+        setActions(actionEvents);
       } catch (err) {
         console.error("Telemetry poll failed", err);
+      } finally {
+        isPollingRef.current = false;
       }
-    }, 2000);
+    }
+
+    void refreshSupervisorState();
+    const interval = window.setInterval(() => {
+      void refreshSupervisorState();
+    }, 2500);
 
     return () => {
+      unmountedRef.current = true;
       window.removeEventListener("bom-workflow-agent-code", onSharedCode);
       clearInterval(interval);
     };
@@ -405,6 +468,12 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
               Operator Confirmation Required
             </div>
           )}
+          {!pendingConfirmation && manualGateActive ? (
+            <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase text-emerald-400">
+              <CheckCircle2 size={12} />
+              Manual Gate Pending
+            </div>
+          ) : null}
           <div className="text-[10px] font-bold text-neutral-500 bg-white/5 px-2 py-1 rounded">
             JOB: {jobId}
           </div>
@@ -651,7 +720,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
             </div>
           )}
 
-          {job?.requiresApproval && job?.approvalStatus !== 'approved' && (
+          {manualGateActive && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-8 z-50">
               <div className="max-w-md w-full bg-neutral-800 border border-white/10 rounded-2xl shadow-2xl p-6 space-y-4">
                 <div className="flex items-center gap-3 text-emerald-500">
@@ -662,7 +731,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
                   The agent has encountered a block or reached a sensitive stage and is waiting for your signal to proceed.
                 </p>
                 <div className="bg-black/20 rounded-lg p-3 font-mono text-xs text-blue-400">
-                  STATUS: WAITING_FOR_OPERATOR_APPROVAL
+                  STATUS: {approvalStatus ? approvalStatus.toUpperCase() : "WAITING_FOR_OPERATOR_APPROVAL"}
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-2">
                   <button 

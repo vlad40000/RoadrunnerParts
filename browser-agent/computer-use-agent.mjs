@@ -19,6 +19,31 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCREEN_WIDTH = 1440;
 const SCREEN_HEIGHT = 900;
 
+const GENERIC_BLOCK_RE = /(403|429|forbidden|access denied|request blocked|unusual traffic|verify you are human|captcha|temporarily unavailable|rate limit|too many requests)/i;
+
+const PROVIDER_BLOCK_RULES = [
+  {
+    provider: 'encompass',
+    host: /(^|\.)encompass\.com$/i,
+    indicators: /(403|forbidden|access denied|request blocked|verify you are human|captcha|cloudflare|temporarily unavailable|too many requests)/i,
+  },
+  {
+    provider: 'sears-partsdirect',
+    host: /(^|\.)searspartsdirect\.com$/i,
+    indicators: /(403|forbidden|access denied|robot|verify|captcha|too many requests|request blocked)/i,
+  },
+  {
+    provider: 'appliancepartspros',
+    host: /(^|\.)appliancepartspros\.com$/i,
+    indicators: /(403|forbidden|access denied|captcha|request blocked|temporarily unavailable|too many requests)/i,
+  },
+  {
+    provider: 'fix.com',
+    host: /(^|\.)fix\.com$/i,
+    indicators: /(403|forbidden|access denied|captcha|request blocked|too many requests)/i,
+  },
+];
+
 class ComputerUseAgent {
   constructor(apiKey, options = {}) {
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -64,11 +89,16 @@ class ComputerUseAgent {
         const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry?limit=50`);
         const data = await res.json().catch(() => null);
         const events = Array.isArray(data?.telemetry) ? data.telemetry : [];
-        const decision = events.find((event) =>
-          event.event === 'cu_confirmation' &&
-          event.payload?.targetTelemetryId === targetTelemetryId
+        const updatedTarget = events.find((event) => event.id === targetTelemetryId);
+        if (updatedTarget?.status === 'approved' || updatedTarget?.status === 'confirmed') return 'approved';
+        if (updatedTarget?.status === 'rejected') return 'rejected';
+
+        const decision = events.find(
+          (event) =>
+            event.event === 'operator_decision' &&
+            event.payload?.targetTelemetryId === targetTelemetryId,
         );
-        if (decision?.status === 'approved') return 'approved';
+        if (decision?.status === 'approved' || decision?.status === 'confirmed') return 'approved';
         if (decision?.status === 'rejected') return 'rejected';
       } catch (err) {
         console.warn('[CU Agent] Confirmation poll failed:', err.message);
@@ -78,16 +108,52 @@ class ComputerUseAgent {
     return 'timeout';
   }
 
-  async requestManualGate() {
+  detectProviderBlock(url, pageTitle, pageText = '') {
+    const safeUrl = String(url || '');
+    let host = '';
+    try {
+      host = new URL(safeUrl).hostname.toLowerCase();
+    } catch {
+      host = '';
+    }
+
+    const haystack = `${pageTitle || ''}\n${pageText || ''}`;
+    const providerRule = PROVIDER_BLOCK_RULES.find((rule) => rule.host.test(host));
+    const providerHit = providerRule ? providerRule.indicators.test(haystack) : false;
+    const genericHit =
+      GENERIC_BLOCK_RE.test(pageTitle || '') ||
+      GENERIC_BLOCK_RE.test(pageText || '') ||
+      /\/(403|forbidden|access-denied|blocked)(\/|$|\?)/i.test(safeUrl);
+
+    if (!providerHit && !genericHit) {
+      return null;
+    }
+
+    return {
+      provider: providerRule?.provider || host || 'unknown_provider',
+      host: host || null,
+      url: safeUrl,
+      reason: providerHit ? 'provider_block_signature' : 'generic_block_signature',
+      title: String(pageTitle || '').slice(0, 220),
+      textSnippet: String(pageText || '').replace(/\s+/g, ' ').slice(0, 500),
+    };
+  }
+
+  async requestManualGate(context = {}) {
     if (!this.jobId || !this.appUrl) return;
     console.log('[CU Agent] Requesting Manual Gate (HITL)...');
     try {
+      await this.telemetry('cu_manual_gate', 'pending_operator', {
+        requestedAt: new Date().toISOString(),
+        ...context,
+      });
       await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           requiresApproval: true,
           approvalStatus: 'pending_operator',
+          ...context,
         }),
       });
     } catch (err) {
@@ -101,21 +167,22 @@ class ComputerUseAgent {
     console.log('[CU Agent] Entering Manual Gate wait loop...');
     const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       try {
         const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}`);
         const data = await res.json().catch(() => null);
         const job = data?.job;
-        
-        if (!job?.requiresApproval) {
-          if (job?.approvalStatus === 'approved') {
-            console.log('[CU Agent] Manual Gate: APPROVED');
-            return 'approved';
-          }
-          if (job?.approvalStatus === 'rejected') {
-            console.log('[CU Agent] Manual Gate: REJECTED');
-            return 'rejected';
-          }
+        const approvalStatus = String(job?.approvalStatus || '').trim().toLowerCase();
+
+        if (approvalStatus === 'approved' || approvalStatus === 'rejected') {
+          console.log(`[CU Agent] Manual Gate: ${approvalStatus.toUpperCase()}`);
+          return approvalStatus;
+        }
+
+        if (job?.requiresApproval === false && !approvalStatus) {
+          // Backward compatibility for early rows where only requiresApproval was toggled.
+          console.log('[CU Agent] Manual Gate cleared without explicit status. Continuing.');
+          return 'approved';
         }
       } catch (err) {
         console.warn('[CU Agent] Manual approval poll failed:', err.message);
@@ -216,7 +283,8 @@ class ComputerUseAgent {
       try {
         const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}`);
         const data = await res.json().catch(() => null);
-        if (data?.job?.requiresApproval) {
+        const approvalStatus = String(data?.job?.approvalStatus || '').trim().toLowerCase();
+        if (data?.job?.requiresApproval || approvalStatus === 'pending' || approvalStatus === 'pending_operator') {
           const decision = await this.waitForManualApproval();
           if (decision === 'rejected') {
             console.log('[CU Agent] Job rejected by operator. Terminating.');
@@ -230,11 +298,22 @@ class ComputerUseAgent {
       // 2. Automated Block Detection
       const currentUrl = this.page.url();
       const pageTitle = await this.page.title();
-      const isBlocked = pageTitle.includes('403') || pageTitle.includes('Access Denied') || pageTitle.includes('Forbidden');
-      
-      if (isBlocked) {
-        console.log(`[CU Agent] Block detected on ${currentUrl}. Triggering Manual Gate.`);
-        await this.requestManualGate();
+      const pageText = await this.page
+        .evaluate(() => (document?.body?.innerText || '').slice(0, 4000))
+        .catch(() => '');
+      const blockInfo = this.detectProviderBlock(currentUrl, pageTitle, pageText);
+
+      if (blockInfo) {
+        console.log(`[CU Agent] Provider block detected on ${currentUrl}. Triggering Manual Gate.`);
+        await this.telemetry('cu_provider_block', 'blocked', {
+          turn: i + 1,
+          ...blockInfo,
+        });
+        await this.requestManualGate({
+          blockProvider: blockInfo.provider,
+          blockReason: blockInfo.reason,
+          blockUrl: blockInfo.url,
+        });
         const decision = await this.waitForManualApproval();
         if (decision !== 'approved') break;
         // Continue if approved (operator might have solved the captcha/block)

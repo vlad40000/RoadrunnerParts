@@ -75,7 +75,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       cwd: process.cwd(),
       detached: true,
       stdio: "ignore",
-      windowsHide: false,
+      windowsHide: true,
       env: {
         ...process.env,
         ROADRUNNER_APP_URL: appUrl,

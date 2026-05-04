@@ -31,6 +31,14 @@ We are transitioning the BOM extraction pipeline from legacy scraping to an agen
 - [x] Testing the agentic bypass against real Encompass 403 triggers (Confirmed block).
 - [ ] Automated Reconciliation Service integration for high-integrity Truth Scores.
 
+### Parallel Lanes (Active)
+- **Agent A — Layout Shell Lane**
+  - Target: `src/features/bom/components/cockpit/cockpit-layout.tsx` (new extraction boundary)
+  - Scope: 4K shell, 460px right rail, cockpit visual composition only.
+- **Agent B — HITL Logic Lane**
+  - Targets: `src/features/bom/components/computer-use-supervisor.tsx`, `browser-agent/computer-use-agent.mjs`, job PATCH/telemetry confirm routes.
+  - Scope: manual gate state transitions, confirmation/poll responsiveness, provider 403 handling, no global layout/CSS edits.
+
 ### Blockers
 - [ ] Verifying visual capture stability in high-latency environments.
 - [/] Finalizing the HITL (Human-in-the-Loop) approval flow for high-consequence agent actions.

@@ -47,6 +47,25 @@ function positiveInteger(value: unknown) {
   return Number.isFinite(parsed) && parsed > 0 ? Math.round(parsed) : undefined;
 }
 
+function booleanValue(value: unknown) {
+  if (typeof value === "boolean") return value;
+  return undefined;
+}
+
+function approvalStatusValue(value: unknown) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return undefined;
+  if (
+    normalized === "pending" ||
+    normalized === "pending_operator" ||
+    normalized === "approved" ||
+    normalized === "rejected"
+  ) {
+    return normalized;
+  }
+  return undefined;
+}
+
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { jobId } = await params;
   const job = await getBomJob(jobId);
@@ -67,6 +86,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const productType = nonEmptyString(body.productType);
   const truthSource = nonEmptyString(body.truthSource);
   const expectedPartsSource = nonEmptyString(body.expectedPartsSource);
+  const requiresApproval = booleanValue(body.requiresApproval);
+  const approvalStatus = approvalStatusValue(body.approvalStatus);
 
   if (brand) summaryPatch.brand = brand;
   if (serial) summaryPatch.serial = serial;
@@ -80,6 +101,20 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     summaryPatch.trustedTotalCountSource = expectedPartsSource || "operator_override";
     if (truthSource) summaryPatch.trustedTotalCountSourceUrl = truthSource;
     summaryPatch.trustedTotalCountCheckedAt = new Date();
+  }
+
+  if (requiresApproval !== undefined) {
+    summaryPatch.requiresApproval = requiresApproval;
+    if (requiresApproval && !approvalStatus) {
+      summaryPatch.approvalStatus = "pending_operator";
+    }
+  }
+
+  if (approvalStatus) {
+    summaryPatch.approvalStatus = approvalStatus;
+    if ((approvalStatus === "approved" || approvalStatus === "rejected") && requiresApproval === undefined) {
+      summaryPatch.requiresApproval = false;
+    }
   }
 
   if (Object.keys(summaryPatch).length > 0) {
