@@ -64,7 +64,7 @@ type SourceActionInput = {
   agentConfig?: {
     model?: "gemini-3-flash-preview" | "gemini-3-pro-preview";
     temperature?: number;
-    thinkingLevel?: "low" | "medium" | "high";
+    thinkingLevel?: "minimal" | "low" | "medium" | "high";
     systemInstruction?: string | null;
     toolConfig?: {
       directFetch?: boolean;

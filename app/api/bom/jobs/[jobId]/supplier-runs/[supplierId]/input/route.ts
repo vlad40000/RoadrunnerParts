@@ -30,7 +30,7 @@ function normalizeTemperature(value: unknown) {
 
 function normalizeThinking(value: unknown) {
   const normalized = String(value || "medium").trim().toLowerCase();
-  return normalized === "low" || normalized === "high" ? normalized : "medium";
+  return normalized === "minimal" || normalized === "low" || normalized === "high" ? normalized : "medium";
 }
 
 function normalizeToolConfig(value: unknown) {

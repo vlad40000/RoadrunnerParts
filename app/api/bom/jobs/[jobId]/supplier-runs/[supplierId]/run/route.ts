@@ -15,7 +15,7 @@ import {
 
 type Params = { params: Promise<{ jobId: string; supplierId: string }> };
 type GeminiModel = "gemini-3-flash-preview" | "gemini-3-pro-preview";
-type ThinkingLevel = "low" | "medium" | "high";
+type ThinkingLevel = "minimal" | "low" | "medium" | "high";
 
 function positiveNumber(value: unknown) {
   const parsed =
@@ -39,7 +39,7 @@ function normalizeTemperature(value: unknown) {
 
 function normalizeThinking(value: unknown): ThinkingLevel {
   const normalized = String(value || "medium").trim().toLowerCase();
-  return normalized === "low" || normalized === "high" ? normalized : "medium";
+  return normalized === "minimal" || normalized === "low" || normalized === "high" ? normalized : "medium";
 }
 
 function normalizeToolConfig(value: unknown) {

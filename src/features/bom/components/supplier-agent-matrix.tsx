@@ -71,7 +71,7 @@ interface AgentToolConfig {
 interface AgentTuning {
   model: GeminiModel;
   temperature: number;
-  thinkingLevel: "low" | "medium" | "high";
+  thinkingLevel: "minimal" | "low" | "medium" | "high";
   systemInstruction: string;
   toolConfig: AgentToolConfig;
 }
@@ -280,7 +280,7 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function parseThinking(value: unknown): AgentTuning["thinkingLevel"] {
   const normalized = String(value || "medium").trim().toLowerCase();
-  return normalized === "low" || normalized === "high" ? normalized : "medium";
+  return normalized === "minimal" || normalized === "low" || normalized === "high" ? normalized : "medium";
 }
 
 function parseModel(value: unknown): GeminiModel {
@@ -290,6 +290,30 @@ function parseModel(value: unknown): GeminiModel {
 function parseTemperature(value: unknown): number {
   const parsed = typeof value === "number" ? value : Number(String(value || "").trim());
   return Number.isFinite(parsed) ? Math.max(0, Math.min(2, parsed)) : 1;
+}
+
+function positiveNumber(value: unknown): number | null {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value.trim())
+        : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizeToolConfigForPreview(value: unknown): AgentToolConfig {
+  const input = asRecord(value);
+  return {
+    directFetch: true,
+    structuredOutput: true,
+    googleSearch: input.googleSearch === true || input.useSearch === true,
+    urlContext: input.urlContext !== false,
+    codeExecution: input.codeExecution === true || input.usePython === true,
+    functionCalling: input.functionCalling === true,
+    googleMaps: input.googleMaps === true,
+    computerUse: input.computerUse === true,
+  };
 }
 
 export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: SupplierAgentMatrixProps) {
@@ -575,6 +599,68 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
       SUPPLIER_AGENT_INSTRUCTION_PREVIEW,
   );
 
+  const adjustedPayloadPreview = (() => {
+    const payload = buildPayloadFromRunText();
+    if (!payload) return "";
+
+    const input = asRecord(payload);
+    const tuning = asRecord(input.tuning);
+    const toolConfig = normalizeToolConfigForPreview(input.toolConfig || tuning.toolConfig || tuning.tools || tuning);
+    const supplierId = String(input.supplierId || input.supplier || pendingAgentId || "").trim();
+    const supplier = String(input.supplier || supplierId).trim();
+    const expectedTotal = positiveNumber(input.expectedTotal);
+    const modelName = parseModel(input.model || tuning.model);
+    const temperature = parseTemperature(input.temperature ?? tuning.temperature);
+    const thinkingLevel = parseThinking(input.thinkingLevel || tuning.thinkingLevel);
+    const systemInstruction = String(input.systemInstruction || tuning.systemInstruction || "").trim();
+
+    const adjusted = {
+      task: String(input.task || "run_supplier_agent"),
+      tierKey: String(input.tierKey || "tier0"),
+      supplierId,
+      supplier,
+      sourceUrl: String(input.sourceUrl || input.searchUrl || "").trim(),
+      searchUrl: String(input.searchUrl || input.sourceUrl || "").trim(),
+      includeDiagram: input.includeDiagram !== false,
+      includeExpectedCount: input.includeExpectedCount !== false,
+      canonUrlUsed: input.canonUrl || null,
+      diagramImageUrlUsed: input.diagramImageUrl || null,
+      expectedTotalUsed: expectedTotal,
+      expectedTotalSource: expectedTotal ? String(input.expectedTotalSource || "operator") : null,
+      assemblyNamesUsed: Array.isArray(input.assemblyNames) ? input.assemblyNames : [],
+      operatorInstructions: String(input.operatorInstructions || "").trim(),
+      operatorInstructionName: String(input.operatorInstructionName || "").trim(),
+      agentCode: String(input.agentCode || "").trim(),
+      agentCodeLanguage: String(input.agentCodeLanguage || "").trim(),
+      agentConfig: {
+        model: modelName,
+        temperature,
+        thinkingLevel,
+        systemInstruction,
+        toolConfig,
+      },
+      modelConfig: {
+        model: modelName,
+        temperature,
+        thinkingLevel,
+        systemInstruction,
+        toolConfig,
+      },
+      toolConfig,
+      tuning: {
+        model: modelName,
+        temperature,
+        thinkingLevel,
+        toolConfig,
+      },
+      normalizedModel: String(input.normalizedModel || normalizedModel || "").trim(),
+      promptVersion: input.promptVersion || "supplier-agent-matrix-v1",
+      functionVersion: input.functionVersion || "supplier-run-route-v2",
+    };
+
+    return JSON.stringify(adjusted, null, 2);
+  })();
+
   const runAgent = async (agent: AgentState, payloadOverride?: Record<string, unknown>) => {
     setAgents(prev => prev.map(a => a.id === agent.id ? { ...a, status: "running", error: undefined } : a));
     
@@ -763,6 +849,7 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
                           onChange={(e) => updateTuning(agent.id, { thinkingLevel: e.target.value as AgentTuning["thinkingLevel"] })}
                           className="w-full rounded border bg-white p-1 text-[10px] font-bold"
                         >
+                          <option value="minimal">Minimal</option>
                           <option value="low">Low</option>
                           <option value="medium">Medium</option>
                           <option value="high">High</option>
@@ -868,11 +955,11 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
 
               {/* Context Selection */}
               <div className="grid grid-cols-[44px_44px_1fr] gap-2">
-                <Tooltip label={agent.sendDiagram ? "Visual truth included" : "Visual truth excluded"}>
+                <Tooltip label={agent.sendDiagram ? "Diagram context enabled" : "Diagram context disabled"}>
                   <button
                     type="button"
                     onClick={() => toggleAgentContext(agent.id, "sendDiagram")}
-                    aria-label={agent.sendDiagram ? "Visual truth included" : "Visual truth excluded"}
+                    aria-label={agent.sendDiagram ? "Diagram context enabled" : "Diagram context disabled"}
                     className={`flex h-11 w-11 items-center justify-center rounded-lg border transition-all ${
                       agent.sendDiagram
                         ? "border-blue-200 bg-blue-50 text-blue-900 shadow-sm"
@@ -883,11 +970,11 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
                   </button>
                 </Tooltip>
 
-                <Tooltip label={agent.sendExpectedCount ? "Count source data included" : "Count source data excluded"}>
+                <Tooltip label={agent.sendExpectedCount ? "Expected count context enabled" : "Expected count context disabled"}>
                   <button
                     type="button"
                     onClick={() => toggleAgentContext(agent.id, "sendExpectedCount")}
-                    aria-label={agent.sendExpectedCount ? "Count source data included" : "Count source data excluded"}
+                    aria-label={agent.sendExpectedCount ? "Expected count context enabled" : "Expected count context disabled"}
                     className={`flex h-11 w-11 items-center justify-center rounded-lg border transition-all ${
                       agent.sendExpectedCount
                         ? "border-emerald-200 bg-emerald-50 text-emerald-900 shadow-sm"
@@ -1022,7 +1109,16 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
                     onChange={(event) => updatePendingRunText(event.target.value)}
                     onFocus={(event) => event.currentTarget.select()}
                     spellCheck={false}
-                    className="h-[360px] w-full resize-y rounded-lg border border-neutral-200 bg-neutral-50 p-3 font-mono text-xs leading-relaxed text-neutral-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                    className="h-[168px] w-full resize-y rounded-lg border border-neutral-200 bg-neutral-50 p-3 font-mono text-xs leading-relaxed text-neutral-800 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  />
+                  <div className="mt-3 mb-2 text-[11px] font-black uppercase tracking-widest text-neutral-500">
+                    ADJUSTED JSON (SERVER-NORMALIZED)
+                  </div>
+                  <textarea
+                    value={adjustedPayloadPreview}
+                    readOnly
+                    spellCheck={false}
+                    className="h-[168px] w-full resize-y rounded-lg border border-neutral-200 bg-neutral-100 p-3 font-mono text-xs leading-relaxed text-neutral-700 outline-none"
                   />
                 </div>
               </div>

@@ -14,6 +14,7 @@ export type ModelRunInput = {
   enableSearch?: boolean;
   systemInstruction?: string;
   temperature?: number;
+  schema?: any;
 };
 
 function resolveModelId(model: ModelRunInput["model"]) {
@@ -51,6 +52,10 @@ export async function runStructuredJson<T>(
     },
     systemInstruction: input.systemInstruction,
   };
+
+  if (input.schema) {
+    modelConfig.generationConfig.responseSchema = input.schema;
+  }
 
   const tools = buildModelTools(input);
   if (tools.length) modelConfig.tools = tools;
