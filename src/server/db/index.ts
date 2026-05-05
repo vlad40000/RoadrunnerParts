@@ -23,7 +23,11 @@ function getDb() {
   return dbInstance;
 }
 
-export const sql = new Proxy({} as ReturnType<typeof neon>, {
+const sqlProxyTarget = ((strings: TemplateStringsArray, ...values: unknown[]) => {
+  return (getSql() as any)(strings, ...values);
+}) as ReturnType<typeof neon>;
+
+export const sql = new Proxy(sqlProxyTarget, {
   apply(_target, thisArg, argArray) {
     return (getSql() as any).apply(thisArg, argArray);
   },
