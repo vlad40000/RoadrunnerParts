@@ -1196,6 +1196,8 @@ export function BomPromptWorkspace({
               savedPromptStatus={savedPromptStatus}
               toolsPopoverSlot={toolsPopoverSlot}
               activeSlot={modelSlots.find((slot) => slot.id === toolsPopoverSlot) || activeSlots[0] || modelSlots[0]}
+              instructionChips={instructionChips}
+              instructionWarnings={instructionWarnings}
               setPromptText={setComposerPrompt}
               runScenario={runScenario}
               updateSlot={updateSlot}
@@ -1208,6 +1210,8 @@ export function BomPromptWorkspace({
               slot={activeSlots[0]}
               systemPrompt={systemPrompt}
               setSystemPrompt={setSystemPrompt}
+              instructionChips={instructionChips}
+              instructionWarnings={instructionWarnings}
               onOpenModelDrawer={() => setModelDrawerSlot(activeSlots[0].id)}
               onPatch={(patch) => updateSlot(activeSlots[0].id, patch)}
             />
@@ -1223,6 +1227,8 @@ export function BomPromptWorkspace({
             userPromptTemplate={userPromptTemplate}
             inputPayloadText={inputPayloadText}
             inputError={inputPayload.error}
+            compiledRunPreview={runPreviewText}
+            instructionWarnings={instructionWarnings}
             runBusy={runBusy}
             runError={runError}
             lastRun={lastRun}
@@ -1254,6 +1260,7 @@ export function BomPromptWorkspace({
         isOpen={isInstructionsDrawerOpen}
         onClose={() => setIsInstructionsDrawerOpen(false)}
         currentInstruction={systemPrompt}
+        baseInstruction={selectedScenario?.systemPrompt || ""}
         onSelect={(content) => setSystemPrompt(content)}
       />
     </main>
@@ -1417,6 +1424,8 @@ function PromptComposer({
   savedPromptStatus,
   toolsPopoverSlot,
   activeSlot,
+  instructionChips,
+  instructionWarnings,
   setPromptText,
   runScenario,
   updateSlot,
@@ -1430,6 +1439,8 @@ function PromptComposer({
   savedPromptStatus: string | null;
   toolsPopoverSlot: ModelSlot["id"] | null;
   activeSlot: ModelSlot;
+  instructionChips: string[];
+  instructionWarnings: string[];
   setPromptText: (value: string) => void;
   runScenario: () => void;
   updateSlot: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
@@ -1455,6 +1466,7 @@ function PromptComposer({
             <Wrench size={14} />
             Tools
           </button>
+          <InstructionStackChips chips={instructionChips} warnings={instructionWarnings} />
           <span>{inputError ? `JSON: ${inputError}` : runError || savedPromptStatus || selectedScenario?.type || "Ready"}</span>
           <button type="button" className="ai-icon-button" title="Voice input">
             <Bot size={14} />
@@ -1467,6 +1479,35 @@ function PromptComposer({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function InstructionStackChips({
+  chips,
+  warnings = [],
+  compact = false,
+}: {
+  chips: string[];
+  warnings?: string[];
+  compact?: boolean;
+}) {
+  if (!chips.length && !warnings.length) {
+    return <span className={`instruction-chip muted ${compact ? "compact" : ""}`}>Base only</span>;
+  }
+
+  return (
+    <div className={`instruction-chip-row ${compact ? "compact" : ""}`}>
+      {chips.map((chip, index) => (
+        <span key={`${chip}-${index}`} className="instruction-chip" title={`Preset priority ${index + 1}`}>
+          {index + 1}. {chip}
+        </span>
+      ))}
+      {warnings.map((warning) => (
+        <span key={warning} className="instruction-chip warning" title={warning}>
+          Conflict
+        </span>
+      ))}
     </div>
   );
 }
@@ -1513,12 +1554,16 @@ function RunSettingsSidebar({
   slot,
   systemPrompt,
   setSystemPrompt,
+  instructionChips,
+  instructionWarnings,
   onOpenModelDrawer,
   onPatch,
 }: {
   slot: ModelSlot;
   systemPrompt: string;
   setSystemPrompt: (value: string) => void;
+  instructionChips: string[];
+  instructionWarnings: string[];
   onOpenModelDrawer: () => void;
   onPatch: (patch: Partial<ModelSlot>) => void;
 }) {
@@ -1544,6 +1589,7 @@ function RunSettingsSidebar({
           <Settings2 size={14} />
           MANAGE INSTRUCTIONS
         </button>
+        <InstructionStackChips chips={instructionChips} warnings={instructionWarnings} compact />
       </div>
       <AiTuningSlider label="Temperature" value={slot.temperature ?? 1} min={0} max={2} step={0.1} onChange={(value) => onPatch({ temperature: value })} />
       <label className="ai-select-setting">
