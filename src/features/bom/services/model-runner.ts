@@ -7,6 +7,7 @@ export type ModelRunInput = {
     | "fast"
     | "pro"
     | "lite"
+    | "gemini-2.5-flash-lite"
     | "gemini-3-flash-preview"
     | "gemini-3-pro-preview"
     | "gemini-3.1-flash-lite-preview"
@@ -20,23 +21,29 @@ export type ModelRunInput = {
   }>;
   text?: string;
   enableSearch?: boolean;
+  enableUrlContext?: boolean;
   systemInstruction?: string;
   temperature?: number;
+  topP?: number;
+  maxOutputTokens?: number;
+  responseMimeType?: "application/json" | "text/plain";
   schema?: any;
 };
 
 function resolveModelId(model: ModelRunInput["model"]) {
   if (model === "gemini-3-pro-preview" || model === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
   if (model === "gemini-3-flash-preview" || model === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
+  if (model === "gemini-2.5-flash-lite") return "gemini-2.5-flash-lite";
   if (model === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
   if (model === "pro") return "gemini-3-pro-preview";
   if (model === "lite") return "gemini-3.1-flash-lite-preview";
   return "gemini-3-flash-preview";
 }
 
-function buildModelTools(input: Pick<ModelRunInput, "enableSearch">) {
+function buildModelTools(input: Pick<ModelRunInput, "enableSearch" | "enableUrlContext">) {
   const tools: Array<Record<string, unknown>> = [];
   if (input.enableSearch) tools.push({ googleSearch: {} });
+  if (input.enableUrlContext) tools.push({ urlContext: {} });
   return tools;
 }
 
@@ -134,9 +141,15 @@ export async function runText(input: ModelRunInput): Promise<string> {
     model: modelId,
     generationConfig: {
       temperature: input.temperature ?? 1,
+      topP: input.topP,
+      maxOutputTokens: input.maxOutputTokens,
     },
     systemInstruction: input.systemInstruction,
   };
+
+  if (input.responseMimeType) {
+    modelConfig.generationConfig.responseMimeType = input.responseMimeType;
+  }
 
   const tools = buildModelTools(input);
   if (tools.length) modelConfig.tools = tools;

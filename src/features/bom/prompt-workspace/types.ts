@@ -11,14 +11,39 @@ export type BomWorkspaceMode =
 
 export type ModelProvider = "gemini" | "manual" | "mock";
 
+export type ModelToolSettings = {
+  structuredOutputs: boolean;
+  codeExecution: boolean;
+  functionCalling: boolean;
+  googleSearchGrounding: boolean;
+  googleMapsGrounding: boolean;
+  urlContext: boolean;
+  thinkingLevel: "low" | "medium" | "high";
+  mediaResolution: "default" | "low" | "high";
+  stopSequence?: string;
+};
+
+export const DEFAULT_MODEL_TOOLS: ModelToolSettings = {
+  structuredOutputs: false,
+  codeExecution: false,
+  functionCalling: false,
+  googleSearchGrounding: false,
+  googleMapsGrounding: false,
+  urlContext: false,
+  thinkingLevel: "high",
+  mediaResolution: "default",
+  stopSequence: "",
+};
+
 export type ModelSlot = {
   id: "slot_a" | "slot_b";
-  modelName: "gemini-3-flash-preview" | "gemini-3-pro-preview";
+  modelName: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-2.5-flash-lite";
   provider: ModelProvider;
   enabled: boolean;
   temperature?: number;
   topP?: number;
   maxOutputTokens?: number;
+  tools?: ModelToolSettings;
 };
 
 export const DEFAULT_MODEL_SLOTS: ModelSlot[] = [
@@ -30,6 +55,7 @@ export const DEFAULT_MODEL_SLOTS: ModelSlot[] = [
     temperature: 1,
     topP: 0.8,
     maxOutputTokens: 8192,
+    tools: { ...DEFAULT_MODEL_TOOLS },
   },
   {
     id: "slot_b",
@@ -39,6 +65,7 @@ export const DEFAULT_MODEL_SLOTS: ModelSlot[] = [
     temperature: 1,
     topP: 0.8,
     maxOutputTokens: 8192,
+    tools: { ...DEFAULT_MODEL_TOOLS },
   },
 ];
 

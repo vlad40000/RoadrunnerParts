@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runText } from "@/src/features/bom/services/model-runner";
 import {
+  DEFAULT_MODEL_TOOLS,
   DEFAULT_MODEL_SLOTS,
   type ModelSlot,
+  type ModelToolSettings,
   type PromptRun,
   type PromptRunOutput,
   type PromptScenario,
@@ -28,15 +30,37 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
   const input = asRecord(value);
+  const toolInput = asRecord(input.tools);
   const modelName =
     input.modelName === "gemini-3-pro-preview"
       ? "gemini-3-pro-preview"
+      : input.modelName === "gemini-2.5-flash-lite"
+        ? "gemini-2.5-flash-lite"
       : "gemini-3-flash-preview";
   const provider =
     input.provider === "manual" || input.provider === "mock" ? input.provider : "gemini";
   const temperature = Number(input.temperature);
   const topP = Number(input.topP);
   const maxOutputTokens = Number(input.maxOutputTokens);
+  const thinkingLevel =
+    toolInput.thinkingLevel === "low" || toolInput.thinkingLevel === "medium" || toolInput.thinkingLevel === "high"
+      ? toolInput.thinkingLevel
+      : DEFAULT_MODEL_TOOLS.thinkingLevel;
+  const mediaResolution =
+    toolInput.mediaResolution === "low" || toolInput.mediaResolution === "high" || toolInput.mediaResolution === "default"
+      ? toolInput.mediaResolution
+      : DEFAULT_MODEL_TOOLS.mediaResolution;
+  const tools: ModelToolSettings = {
+    structuredOutputs: toolInput.structuredOutputs === true,
+    codeExecution: toolInput.codeExecution === true,
+    functionCalling: toolInput.functionCalling === true,
+    googleSearchGrounding: toolInput.googleSearchGrounding === true,
+    googleMapsGrounding: toolInput.googleMapsGrounding === true,
+    urlContext: toolInput.urlContext === true,
+    thinkingLevel,
+    mediaResolution,
+    stopSequence: typeof toolInput.stopSequence === "string" ? toolInput.stopSequence : "",
+  };
 
   return {
     id: fallback.id,
@@ -46,6 +70,7 @@ function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
     temperature: Number.isFinite(temperature) ? temperature : 1,
     topP: Number.isFinite(topP) ? topP : 0.8,
     maxOutputTokens: Number.isFinite(maxOutputTokens) ? maxOutputTokens : 8192,
+    tools,
   };
 }
 
@@ -96,6 +121,11 @@ async function runSlot(input: {
         systemInstruction: input.scenario.systemPrompt,
         prompt: renderUserPrompt(input.scenario.userPromptTemplate, input.inputPayload),
         temperature: input.slot.temperature ?? 1,
+        topP: input.slot.topP,
+        maxOutputTokens: input.slot.maxOutputTokens,
+        enableSearch: input.slot.tools?.googleSearchGrounding,
+        enableUrlContext: input.slot.tools?.urlContext,
+        responseMimeType: input.slot.tools?.structuredOutputs ? "application/json" : undefined,
       });
 
   const normalized = normalizeModelOutput(rawOutput);

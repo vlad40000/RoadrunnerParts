@@ -26,21 +26,27 @@ import {
   Package,
   PanelRight,
   Play,
+  Plus,
   RefreshCw,
   Save,
   Search,
   Settings2,
   ShieldCheck,
+  SlidersHorizontal,
   Table2,
   Upload,
   UserCircle,
+  Wrench,
+  X,
   XCircle,
 } from "lucide-react";
 import {
   DEFAULT_MODEL_SLOTS,
+  DEFAULT_MODEL_TOOLS,
   type BomWorkspaceMode,
   type BrowserSourceCapture,
   type ModelSlot,
+  type ModelToolSettings,
   type PromptRun,
   type PromptScenario,
   type PromptScenarioType,
@@ -89,6 +95,149 @@ const SUPPLIERS: SupplierCard[] = [
   { id: "samsung", label: "Samsung", domain: "samsung.com" },
   { id: "manual-pdf", label: "Manual/PDF", domain: "operator upload" },
   { id: "diagram-upload", label: "Diagram Upload", domain: "operator upload" },
+];
+
+type ModelCatalogItem = {
+  id: ModelSlot["modelName"] | string;
+  name: string;
+  alias: string;
+  category: "Featured" | "Gemini" | "Agents" | "Images" | "Video" | "Audio" | "Live";
+  description: string;
+  context: string;
+  cost: string;
+  cutoff: string;
+  releaseDate: string;
+  selectable: boolean;
+};
+
+const MODEL_CATALOG: ModelCatalogItem[] = [
+  {
+    id: "gemini-3-pro-preview",
+    name: "Gemini 3 Pro Preview",
+    alias: "gemini-3-pro-preview",
+    category: "Featured",
+    description: "Most intelligent Gemini model for multimodal understanding, agentic workflows, reasoning, and coding.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Text output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: November 2025",
+    selectable: true,
+  },
+  {
+    id: "gemini-3-flash-preview",
+    name: "Gemini 3 Flash Preview",
+    alias: "gemini-3-flash-preview",
+    category: "Gemini",
+    description: "Balanced Gemini 3 model built for speed, scale, and frontier intelligence.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Text output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: December 2025",
+    selectable: true,
+  },
+  {
+    id: "gemini-3-pro-image-preview",
+    name: "Gemini 3 Pro Image Preview",
+    alias: "gemini-3-pro-image-preview",
+    category: "Images",
+    description: "Gemini 3 image model for image and text input with image and text output.",
+    context: "Input: 65,536 / Output: 32,768",
+    cost: "Image output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: November 2025",
+    selectable: false,
+  },
+  {
+    id: "gemini-2.5-pro",
+    name: "Gemini 2.5 Pro",
+    alias: "gemini-2.5-pro",
+    category: "Gemini",
+    description: "Stable thinking model for complex reasoning, coding, STEM, large datasets, and long-context documents.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Stable text output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: June 2025",
+    selectable: false,
+  },
+  {
+    id: "gemini-2.5-flash",
+    name: "Gemini 2.5 Flash",
+    alias: "gemini-2.5-flash",
+    category: "Gemini",
+    description: "Stable price-performance model for low-latency, high-volume, thinking, and agentic use cases.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Stable text output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: June 2025",
+    selectable: false,
+  },
+  {
+    id: "gemini-2.5-flash-lite",
+    name: "Gemini 2.5 Flash-Lite",
+    alias: "gemini-2.5-flash-lite",
+    category: "Gemini",
+    description: "Fastest Flash model optimized for cost efficiency and high throughput.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Stable text output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: July 2025",
+    selectable: true,
+  },
+  {
+    id: "gemini-2.5-flash-image",
+    name: "Gemini 2.5 Flash Image",
+    alias: "gemini-2.5-flash-image",
+    category: "Images",
+    description: "Image and text model for image generation workflows.",
+    context: "Input: 65,536 / Output: 32,768",
+    cost: "Stable image output model",
+    cutoff: "June 2025",
+    releaseDate: "Latest update: October 2025",
+    selectable: false,
+  },
+  {
+    id: "gemini-2.5-flash-native-audio-preview-12-2025",
+    name: "Gemini 2.5 Flash Live",
+    alias: "gemini-2.5-flash-native-audio-preview-12-2025",
+    category: "Live",
+    description: "Live API model for audio, video, and text input with audio and text output.",
+    context: "Input: 131,072 / Output: 8,192",
+    cost: "Live audio/text model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: September 2025",
+    selectable: false,
+  },
+  {
+    id: "gemini-2.5-flash-preview-tts",
+    name: "Gemini 2.5 Flash TTS",
+    alias: "gemini-2.5-flash-preview-tts",
+    category: "Audio",
+    description: "Text-to-speech model for text input and audio output.",
+    context: "Input: 8,192 / Output: 16,384",
+    cost: "Audio output model",
+    cutoff: "N/A",
+    releaseDate: "Latest update: December 2025",
+    selectable: false,
+  },
+];
+
+const MODEL_FILTERS = ["All", "Featured", "Gemini", "Agents", "Images", "Video", "Audio", "Live"] as const;
+
+type ModelToolToggleKey =
+  | "structuredOutputs"
+  | "codeExecution"
+  | "functionCalling"
+  | "googleSearchGrounding"
+  | "googleMapsGrounding"
+  | "urlContext";
+
+const TOOL_LABELS: Array<{ key: ModelToolToggleKey; label: string; editable?: boolean }> = [
+  { key: "structuredOutputs", label: "Structured outputs", editable: true },
+  { key: "codeExecution", label: "Code execution" },
+  { key: "functionCalling", label: "Function calling", editable: true },
+  { key: "googleSearchGrounding", label: "Grounding with Google Search" },
+  { key: "googleMapsGrounding", label: "Grounding with Google Maps" },
+  { key: "urlContext", label: "URL context" },
 ];
 
 const MODES: Array<{
@@ -221,6 +370,7 @@ export function BomPromptWorkspace({
   const [selectedScenarioId, setSelectedScenarioId] = useState(PROMPT_SCENARIOS[0]?.id || "");
   const [systemPrompt, setSystemPrompt] = useState(PROMPT_SCENARIOS[0]?.systemPrompt || "");
   const [userPromptTemplate, setUserPromptTemplate] = useState(PROMPT_SCENARIOS[0]?.userPromptTemplate || "");
+  const [composerPrompt, setComposerPrompt] = useState("");
   const [inputPayloadText, setInputPayloadText] = useState(() =>
     jsonText(
       buildDefaultInputPayload({
@@ -242,8 +392,12 @@ export function BomPromptWorkspace({
   const [browserFrameUrl, setBrowserFrameUrl] = useState("");
   const [browserSupplier, setBrowserSupplier] = useState<SupplierId>("encompass");
   const [captures, setCaptures] = useState<BrowserSourceCapture[]>([]);
-  const [promptDrawerOpen, setPromptDrawerOpen] = useState(true);
+  const [promptDrawerOpen, setPromptDrawerOpen] = useState(false);
   const [railExpanded, setRailExpanded] = useState(false);
+  const [modelDrawerSlot, setModelDrawerSlot] = useState<ModelSlot["id"] | null>(null);
+  const [modelSearch, setModelSearch] = useState("");
+  const [modelFilter, setModelFilter] = useState<(typeof MODEL_FILTERS)[number]>("All");
+  const [toolsPopoverSlot, setToolsPopoverSlot] = useState<ModelSlot["id"] | null>(null);
 
   const selectedScenario = useMemo(
     () => scenarios.find((scenario) => scenario.id === selectedScenarioId) || scenarios[0],
@@ -263,9 +417,9 @@ export function BomPromptWorkspace({
     return {
       ...selectedScenario,
       systemPrompt,
-      userPromptTemplate,
+      userPromptTemplate: composerPrompt.trim() || userPromptTemplate,
     };
-  }, [selectedScenario, systemPrompt, userPromptTemplate]);
+  }, [composerPrompt, selectedScenario, systemPrompt, userPromptTemplate]);
 
   const loadScenario = useCallback(
     (scenario: PromptScenario, patch?: Record<string, unknown>) => {
@@ -384,11 +538,15 @@ export function BomPromptWorkspace({
         .map((slot) =>
           slot.id === slotId
             ? {
-                ...slot,
-                ...patch,
-                provider:
-                  patch.provider === "manual" || patch.provider === "mock" || patch.provider === "gemini"
-                    ? patch.provider
+              ...slot,
+              ...patch,
+              tools: {
+                ...(slot.tools || DEFAULT_MODEL_TOOLS),
+                ...(patch.tools || {}),
+              },
+              provider:
+                patch.provider === "manual" || patch.provider === "mock" || patch.provider === "gemini"
+                  ? patch.provider
                     : slot.provider,
                 temperature:
                   patch.temperature !== undefined && Number.isFinite(Number(patch.temperature))
@@ -508,111 +666,86 @@ export function BomPromptWorkspace({
   }
 
   return (
-    <main className="bom-cockpit fixed inset-0 overflow-hidden">
-      <div className="bom-cockpit-super">
-        <div className="flex-1" />
-        <button className="bom-cockpit-copy" type="button" onClick={() => copyText(inputPayloadText)}>
-          Copy
-        </button>
-        <button className="bom-cockpit-publish" type="button" onClick={saveWinningPrompt}>
-          Publish
-        </button>
-      </div>
+    <main className={`ai-studio-shell ${modelDrawerSlot ? "drawer-open" : ""}`}>
+      <AIStudioLeftNav activeMode={activeMode} setActiveMode={setActiveMode} />
 
-      <div className="bom-cockpit-top">
-        <div className="bom-cockpit-brand">
-          <Link href="/" className="bom-cockpit-home" aria-label="Home">
-            <Home size={13} />
-          </Link>
-          <span className="bom-cockpit-logo">
-            BOM<span>Studio</span>
-          </span>
-          <span className="bom-cockpit-job">{jobId || model || "JOB"}</span>
-        </div>
-        <nav className="bom-cockpit-tabs">
-          {[
-            ["identity", "Job"],
-            ["prompt_scenarios", "Evidence"],
-            ["supplier_runs", "Suppliers"],
-            ["bom_extraction", "Rows"],
-            ["validation", "Reconcile"],
-            ["export_review", "Approve"],
-            ["pricing", "Pricing"],
-            ["browser_tool", "Console"],
-          ].map(([mode, label]) => (
-            <button
-              key={mode}
-              type="button"
-              onClick={() => setActiveMode(mode as BomWorkspaceMode)}
-              className={`bom-cockpit-tab ${activeMode === mode ? "active" : ""}`}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
-        <div className="bom-cockpit-top-actions">
-          <span className="bom-cockpit-pulse" title="ready" />
-          <button className="bom-cockpit-icon-button" type="button" title="Inspector">
-            <PanelRight size={13} />
-          </button>
+      <section className="ai-studio-main">
+        <header className="ai-studio-topbar">
           <button
-            className={`bom-cockpit-icon-button ${promptDrawerOpen ? "on" : ""}`}
             type="button"
-            title="Prompt Cockpit"
-            onClick={() => setPromptDrawerOpen((open) => !open)}
+            className="ai-icon-button"
+            onClick={() => setRailExpanded((expanded) => !expanded)}
+            title="Toggle navigation"
           >
-            <FileCode2 size={13} />
+            {railExpanded ? <ChevronLeft size={15} /> : <ChevronRight size={15} />}
           </button>
+          <strong>Playground</strong>
+          <div className="ai-topbar-actions">
+            <button type="button" className="ai-icon-button" title="Copy prompt" onClick={() => copyText(inputPayloadText)}>
+              <Copy size={15} />
+            </button>
+            <button type="button" className="ai-icon-button" title="Add model" onClick={() => updateSlot("slot_b", { enabled: true })}>
+              <Plus size={15} />
+            </button>
+            <button type="button" className="ai-icon-button" title="Prompt cockpit" onClick={() => setPromptDrawerOpen((open) => !open)}>
+              <FileCode2 size={15} />
+            </button>
+          </div>
+        </header>
+
+        <div className={`ai-workspace ${activeSlots.length > 1 ? "two-model" : "one-model"}`}>
+          <div className="ai-project-stage">
+            <div className="ai-model-panes">
+              {modelSlots.filter((slot) => slot.enabled).map((slot) => (
+                <ModelPane
+                  key={slot.id}
+                  slot={slot}
+                  output={lastRun?.outputs.find((output) => output.slotId === slot.id) || null}
+                  scenario={selectedScenario}
+                  model={model}
+                  jobId={jobId}
+                  captures={captures}
+                  canClose={activeSlots.length > 1}
+                  onOpenModelDrawer={() => setModelDrawerSlot(slot.id)}
+                  onOpenTools={() => setToolsPopoverSlot((current) => (current === slot.id ? null : slot.id))}
+                  onClose={() => {
+                    if (activeSlots.length > 1) updateSlot(slot.id, { enabled: false });
+                  }}
+                  onPatch={(patch) => updateSlot(slot.id, patch)}
+                />
+              ))}
+            </div>
+
+            <PromptComposer
+              selectedScenario={selectedScenario}
+              promptText={composerPrompt}
+              inputError={inputPayload.error}
+              runBusy={runBusy}
+              runError={runError}
+              savedPromptStatus={savedPromptStatus}
+              toolsPopoverSlot={toolsPopoverSlot}
+              activeSlot={modelSlots.find((slot) => slot.id === toolsPopoverSlot) || activeSlots[0] || modelSlots[0]}
+              setPromptText={setComposerPrompt}
+              runScenario={runScenario}
+              updateSlot={updateSlot}
+              setToolsPopoverSlot={setToolsPopoverSlot}
+            />
+          </div>
+
+          {activeSlots.length === 1 ? (
+            <RunSettingsSidebar
+              slot={activeSlots[0]}
+              systemPrompt={systemPrompt}
+              setSystemPrompt={setSystemPrompt}
+              onOpenModelDrawer={() => setModelDrawerSlot(activeSlots[0].id)}
+              onPatch={(patch) => updateSlot(activeSlots[0].id, patch)}
+            />
+          ) : null}
         </div>
-      </div>
 
-      <div className="bom-cockpit-body">
-        <CockpitRail
-          activeMode={activeMode}
-          expanded={railExpanded}
-          setActiveMode={setActiveMode}
-          setExpanded={setRailExpanded}
-        />
-
-        <WorkspaceDrawer
-          activeMode={activeMode}
-          model={model}
-          serial={serial}
-          job={job}
-          jobIdInput={jobIdInput}
-          jobBusy={jobBusy}
-          jobError={jobError}
-          scenarios={scenarios}
-          selectedScenario={selectedScenario}
-          lastRun={lastRun}
-          lastValidation={lastValidation}
-          runHistory={runHistory}
-          finalRows={finalRows}
-          rawRows={rawRows}
-          captures={captures}
-          suppliers={SUPPLIERS}
-          setModel={setModel}
-          setSerial={setSerial}
-          setJobIdInput={setJobIdInput}
-          createOrLoadJob={createOrLoadJob}
-          loadScenario={loadScenario}
-          selectSupplierAction={selectSupplierAction}
-          validateLatestRun={validateLatestRun}
-          setActiveMode={setActiveMode}
-        />
-
-        <section className="bom-cockpit-center">
-          <BrowserCanvas
-            browserFrameUrl={browserFrameUrl}
-            browserUrl={browserUrl}
-            browserSupplier={browserSupplier}
-            model={model}
-            lastRun={lastRun}
-            captures={captures}
-          />
-
+        {promptDrawerOpen ? (
           <PromptCockpitDrawer
-            open={promptDrawerOpen || activeMode === "prompt_scenarios"}
+            open={promptDrawerOpen}
             scenarios={scenarios}
             selectedScenario={selectedScenario}
             systemPrompt={systemPrompt}
@@ -630,55 +763,549 @@ export function BomPromptWorkspace({
             runScenario={runScenario}
             saveWinningPrompt={saveWinningPrompt}
           />
+        ) : null}
+      </section>
 
-          <footer className="bom-cockpit-bottom">
-            <span className="bom-cockpit-bottom-label">Actions</span>
-            <button type="button" className="bom-cockpit-action" onClick={createOrLoadJob}>
-              DB
-            </button>
-            <button type="button" className="bom-cockpit-action" onClick={() => setPromptDrawerOpen((open) => !open)}>
-              Prompt
-            </button>
-            <button type="button" className="bom-cockpit-action" onClick={() => setActiveMode("browser_tool")}>
-              Browser
-            </button>
-            <span className="bom-cockpit-sep" />
-            <span className="bom-cockpit-bottom-label">Suppliers</span>
-            {SUPPLIERS.slice(0, 4).map((supplier) => (
-              <button
-                key={`bottom-${supplier.id}`}
-                type="button"
-                className="bom-cockpit-run"
-                onClick={() => selectSupplierAction(supplier, "bom")}
-              >
-                <Play size={10} />
-                {supplier.label.replace(" PartsDirect", "").replace("RepairClinic", "RC")}
-              </button>
-            ))}
-            <span className="bom-cockpit-sep" />
-            <button type="button" className="bom-cockpit-ok" onClick={validateLatestRun}>
-              OK
-            </button>
-          </footer>
-        </section>
-
-        <RightInspector
-          modelSlots={modelSlots}
-          activeMode={activeMode}
-          selectedScenario={selectedScenario}
-          inputPayload={inputPayload.value}
-          job={job}
-          jobId={jobId}
-          model={model}
-          browserFrameUrl={browserFrameUrl}
-          lastRun={lastRun}
-          lastValidation={lastValidation}
-          updateSlot={updateSlot}
-          saveWinningPrompt={saveWinningPrompt}
+      {modelDrawerSlot ? (
+        <ModelSelectionDrawer
+          slot={modelSlots.find((item) => item.id === modelDrawerSlot) || modelSlots[0]}
+          search={modelSearch}
+          filter={modelFilter}
+          setSearch={setModelSearch}
+          setFilter={setModelFilter}
+          onClose={() => setModelDrawerSlot(null)}
+          onSelect={(modelName) => {
+            updateSlot(modelDrawerSlot, { modelName });
+            setModelDrawerSlot(null);
+          }}
         />
-      </div>
+      ) : null}
     </main>
   );
+}
+
+function AIStudioLeftNav({
+  activeMode,
+  setActiveMode,
+}: {
+  activeMode: BomWorkspaceMode;
+  setActiveMode: (mode: BomWorkspaceMode) => void;
+}) {
+  const items: Array<{ label: string; mode: BomWorkspaceMode; icon: React.ReactNode; indent?: boolean }> = [
+    { label: "Playground", mode: "prompt_scenarios", icon: <FileCode2 size={14} /> },
+    { label: "History", mode: "export_review", icon: <History size={14} />, indent: true },
+    { label: "Build", mode: "supplier_runs", icon: <Wrench size={14} /> },
+    { label: "Apps", mode: "browser_tool", icon: <Boxes size={14} />, indent: true },
+    { label: "Gallery", mode: "diagram_context", icon: <ImageIcon size={14} />, indent: true },
+    { label: "Dashboard", mode: "bom_extraction", icon: <Database size={14} /> },
+    { label: "Documentation", mode: "validation", icon: <BookOpen size={14} /> },
+  ];
+
+  return (
+    <aside className="ai-left-nav">
+      <Link href="/" className="ai-brand">
+        <span>Roadrunner Studio</span>
+        <ChevronRight size={13} />
+      </Link>
+      <nav className="ai-nav-list">
+        {items.map((item) => (
+          <button
+            key={item.label}
+            type="button"
+            className={`${activeMode === item.mode ? "active" : ""} ${item.indent ? "indent" : ""}`}
+            onClick={() => setActiveMode(item.mode)}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
+      <div className="ai-left-bottom">
+        {[
+          ["Search", <Search key="search" size={14} />],
+          ["What's new", <CircleDot key="news" size={14} />],
+          ["Get API key", <ExternalLink key="key" size={14} />],
+          ["Settings", <Settings2 key="settings" size={14} />],
+        ].map(([label, icon]) => (
+          <button key={String(label)} type="button">
+            {icon}
+            <span>{label}</span>
+          </button>
+        ))}
+        <div className="ai-user-chip">
+          <UserCircle size={20} />
+          <span>operator</span>
+          <b>PRO</b>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function ModelPane({
+  slot,
+  output,
+  scenario,
+  model,
+  jobId,
+  captures,
+  canClose,
+  onOpenModelDrawer,
+  onOpenTools,
+  onClose,
+  onPatch,
+}: {
+  slot: ModelSlot;
+  output: PromptRun["outputs"][number] | null;
+  scenario: PromptScenario | undefined;
+  model: string;
+  jobId: string;
+  captures: BrowserSourceCapture[];
+  canClose: boolean;
+  onOpenModelDrawer: () => void;
+  onOpenTools: () => void;
+  onClose: () => void;
+  onPatch: (patch: Partial<ModelSlot>) => void;
+}) {
+  const modelLabel = modelNameFor(slot.modelName);
+  const enabledTools = TOOL_LABELS.filter((tool) => Boolean(slot.tools?.[tool.key])).map((tool) => tool.label);
+
+  return (
+    <article className="ai-model-pane">
+      <header className="ai-pane-header">
+        <button type="button" className="ai-model-selector" onClick={onOpenModelDrawer}>
+          {modelLabel}
+        </button>
+        <div className="ai-pane-actions">
+          <button type="button" className="ai-icon-button" title="Code view">
+            <FileCode2 size={14} />
+          </button>
+          <button type="button" className="ai-icon-button" title="Tools and settings" onClick={onOpenTools}>
+            <SlidersHorizontal size={14} />
+          </button>
+          <button type="button" className="ai-icon-button" title="Remove model" onClick={onClose} disabled={!canClose}>
+            <X size={14} />
+          </button>
+        </div>
+      </header>
+      <div className="ai-pane-project-screen">
+        {output ? (
+          <ModelOutputView output={output} />
+        ) : (
+          <div className="ai-project-empty">
+            <Bot size={34} />
+            <h2>{scenario?.name || "Project workspace"}</h2>
+            <p>{model || jobId ? `${model || "No model"}${jobId ? ` · ${jobId.slice(0, 8)}` : ""}` : "Use this screen for model runs, browser captures, BOM review, and other projects."}</p>
+            <div className="ai-project-status-grid">
+              <span>{slot.id === "slot_a" ? "Model A" : "Model B"}</span>
+              <span>{enabledTools.length ? enabledTools.join(", ") : "No tools enabled"}</span>
+              <span>{captures.length} captures</span>
+            </div>
+          </div>
+        )}
+      </div>
+      <footer className="ai-pane-footer">
+        <label>
+          <span>Temp</span>
+          <input
+            type="number"
+            min={0}
+            max={2}
+            step={0.1}
+            value={slot.temperature ?? 1}
+            onChange={(event) => onPatch({ temperature: Number(event.target.value) })}
+          />
+        </label>
+        <label>
+          <span>Top P</span>
+          <input
+            type="number"
+            min={0}
+            max={1}
+            step={0.05}
+            value={slot.topP ?? 0.8}
+            onChange={(event) => onPatch({ topP: Number(event.target.value) })}
+          />
+        </label>
+      </footer>
+    </article>
+  );
+}
+
+function PromptComposer({
+  selectedScenario,
+  promptText,
+  inputError,
+  runBusy,
+  runError,
+  savedPromptStatus,
+  toolsPopoverSlot,
+  activeSlot,
+  setPromptText,
+  runScenario,
+  updateSlot,
+  setToolsPopoverSlot,
+}: {
+  selectedScenario: PromptScenario | undefined;
+  promptText: string;
+  inputError: string | null;
+  runBusy: boolean;
+  runError: string | null;
+  savedPromptStatus: string | null;
+  toolsPopoverSlot: ModelSlot["id"] | null;
+  activeSlot: ModelSlot;
+  setPromptText: (value: string) => void;
+  runScenario: () => void;
+  updateSlot: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
+  setToolsPopoverSlot: (slotId: ModelSlot["id"] | null) => void;
+}) {
+  return (
+    <div className="ai-composer-wrap">
+      {toolsPopoverSlot ? (
+        <ToolsPopover
+          slot={activeSlot}
+          onPatch={(patch) => updateSlot(activeSlot.id, patch)}
+          onClose={() => setToolsPopoverSlot(null)}
+        />
+      ) : null}
+      <div className="ai-composer">
+        <textarea
+          value={promptText}
+          onChange={(event) => setPromptText(event.target.value)}
+          placeholder={`Start typing a prompt for ${selectedScenario?.name || "this project"}`}
+        />
+        <div className="ai-composer-actions">
+          <button type="button" className="ai-icon-pill" onClick={() => setToolsPopoverSlot(activeSlot.id)}>
+            <Wrench size={14} />
+            Tools
+          </button>
+          <span>{inputError ? `JSON: ${inputError}` : runError || savedPromptStatus || selectedScenario?.type || "Ready"}</span>
+          <button type="button" className="ai-icon-button" title="Voice input">
+            <Bot size={14} />
+          </button>
+          <button type="button" className="ai-icon-button" title="Add context">
+            <Plus size={14} />
+          </button>
+          <button type="button" className="ai-run-button" onClick={runScenario} disabled={runBusy || Boolean(inputError)}>
+            {runBusy ? "Running" : "Run Ctrl ↵"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ToolsPopover({
+  slot,
+  onPatch,
+  onClose,
+}: {
+  slot: ModelSlot;
+  onPatch: (patch: Partial<ModelSlot>) => void;
+  onClose: () => void;
+}) {
+  const tools = slot.tools || DEFAULT_MODEL_TOOLS;
+  return (
+    <div className="ai-tools-popover">
+      <div className="ai-tools-head">
+        <strong>Tools</strong>
+        <button type="button" className="ai-icon-button" onClick={onClose} title="Close tools">
+          <X size={13} />
+        </button>
+      </div>
+      {TOOL_LABELS.map((tool) => (
+        <ToolToggle
+          key={tool.key}
+          label={tool.label}
+          editable={tool.editable}
+          enabled={Boolean(tools[tool.key])}
+          onToggle={() =>
+            onPatch({
+              tools: {
+                ...tools,
+                [tool.key]: !tools[tool.key],
+              },
+            })
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+function RunSettingsSidebar({
+  slot,
+  systemPrompt,
+  setSystemPrompt,
+  onOpenModelDrawer,
+  onPatch,
+}: {
+  slot: ModelSlot;
+  systemPrompt: string;
+  setSystemPrompt: (value: string) => void;
+  onOpenModelDrawer: () => void;
+  onPatch: (patch: Partial<ModelSlot>) => void;
+}) {
+  const tools = slot.tools || DEFAULT_MODEL_TOOLS;
+  return (
+    <aside className="ai-run-settings">
+      <div className="ai-settings-title">
+        <strong>Run settings</strong>
+        <span>{"<>"} Get code</span>
+      </div>
+      <button type="button" className="ai-selected-model-card" onClick={onOpenModelDrawer}>
+        <strong>{modelNameFor(slot.modelName)}</strong>
+        <span>{slot.modelName}</span>
+        <small>{modelDescriptionFor(slot.modelName)}</small>
+      </button>
+      <label className="ai-setting-block">
+        <span>System instructions</span>
+        <textarea value={systemPrompt} onChange={(event) => setSystemPrompt(event.target.value)} />
+      </label>
+      <AiTuningSlider label="Temperature" value={slot.temperature ?? 1} min={0} max={2} step={0.1} onChange={(value) => onPatch({ temperature: value })} />
+      <label className="ai-select-setting">
+        <span>Thinking level</span>
+        <select
+          value={tools.thinkingLevel}
+          onChange={(event) =>
+            onPatch({
+              tools: {
+                ...tools,
+                thinkingLevel: event.target.value as ModelToolSettings["thinkingLevel"],
+              },
+            })
+          }
+        >
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </label>
+      <div className="ai-settings-section">
+        <div className="ai-settings-section-head">Tools</div>
+        {TOOL_LABELS.map((tool) => (
+          <ToolToggle
+            key={tool.key}
+            label={tool.label}
+            editable={tool.editable}
+            enabled={Boolean(tools[tool.key])}
+            onToggle={() =>
+              onPatch({
+                tools: {
+                  ...tools,
+                  [tool.key]: !tools[tool.key],
+                },
+              })
+            }
+          />
+        ))}
+      </div>
+      <div className="ai-settings-section">
+        <div className="ai-settings-section-head">Advanced settings</div>
+        <label className="ai-select-setting">
+          <span>Media resolution</span>
+          <select
+            value={tools.mediaResolution}
+            onChange={(event) =>
+              onPatch({
+                tools: {
+                  ...tools,
+                  mediaResolution: event.target.value as ModelToolSettings["mediaResolution"],
+                },
+              })
+            }
+          >
+            <option value="default">Default</option>
+            <option value="low">Low</option>
+            <option value="high">High</option>
+          </select>
+        </label>
+        <label className="ai-inline-input">
+          <span>Add stop sequence</span>
+          <input
+            value={tools.stopSequence || ""}
+            onChange={(event) =>
+              onPatch({
+                tools: {
+                  ...tools,
+                  stopSequence: event.target.value,
+                },
+              })
+            }
+            placeholder="Add stop..."
+          />
+        </label>
+        <label className="ai-inline-input">
+          <span>Output length</span>
+          <input
+            value={String(slot.maxOutputTokens ?? 8192)}
+            onChange={(event) => onPatch({ maxOutputTokens: Number(event.target.value) })}
+          />
+        </label>
+        <AiTuningSlider label="Top P" value={slot.topP ?? 0.8} min={0} max={1} step={0.05} onChange={(value) => onPatch({ topP: value })} />
+      </div>
+    </aside>
+  );
+}
+
+function ModelSelectionDrawer({
+  slot,
+  search,
+  filter,
+  setSearch,
+  setFilter,
+  onClose,
+  onSelect,
+}: {
+  slot: ModelSlot;
+  search: string;
+  filter: (typeof MODEL_FILTERS)[number];
+  setSearch: (value: string) => void;
+  setFilter: (value: (typeof MODEL_FILTERS)[number]) => void;
+  onClose: () => void;
+  onSelect: (modelName: ModelSlot["modelName"]) => void;
+}) {
+  const query = search.trim().toLowerCase();
+  const filteredModels = MODEL_CATALOG.filter((item) => {
+    const matchesFilter = filter === "All" || item.category === filter;
+    const matchesSearch =
+      !query ||
+      item.name.toLowerCase().includes(query) ||
+      item.alias.toLowerCase().includes(query) ||
+      item.id.toLowerCase().includes(query);
+    return matchesFilter && matchesSearch;
+  });
+
+  return (
+    <aside className="ai-model-drawer">
+      <header>
+        <strong>Model selection</strong>
+        <button type="button" className="ai-icon-button" onClick={onClose} title="Close model selection">
+          <X size={14} />
+        </button>
+      </header>
+      <label className="ai-model-search">
+        <Search size={15} />
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search for a model or agent" />
+      </label>
+      <div className="ai-model-filters">
+        {MODEL_FILTERS.map((item) => (
+          <button key={item} type="button" className={filter === item ? "active" : ""} onClick={() => setFilter(item)}>
+            {item}
+          </button>
+        ))}
+      </div>
+      <div className="ai-model-list">
+        {filteredModels.map((item) => {
+          const selected = item.id === slot.modelName;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              className={`ai-model-row ${selected ? "selected" : ""} ${item.selectable ? "" : "disabled"}`}
+              onClick={() => {
+                if (item.selectable) onSelect(item.id as ModelSlot["modelName"]);
+              }}
+            >
+              <div className="ai-model-mark">{item.selectable ? "✦" : "◇"}</div>
+              <div className="ai-model-meta">
+                <div>
+                  <strong>{item.name}</strong>
+                  {!item.selectable ? <span>Not wired</span> : null}
+                </div>
+                <code>{item.alias}</code>
+                <p>{item.description}</p>
+                <small>{item.context} · {item.cost}</small>
+                <small>Knowledge cut off: {item.cutoff}</small>
+                <small>Release date: {item.releaseDate}</small>
+              </div>
+              <div className="ai-model-row-icons">
+                <span>☆</span>
+                <span>□</span>
+                <span>↗</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </aside>
+  );
+}
+
+function ToolToggle({
+  label,
+  enabled,
+  editable,
+  onToggle,
+}: {
+  label: string;
+  enabled: boolean;
+  editable?: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="ai-tool-row">
+      <span>{label}</span>
+      {editable ? <button type="button" className="ai-edit-link">Edit</button> : null}
+      <button type="button" className={`ai-toggle ${enabled ? "on" : ""}`} onClick={onToggle} aria-pressed={enabled}>
+        <span />
+      </button>
+    </div>
+  );
+}
+
+function AiTuningSlider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <label className="ai-range-setting">
+      <span>
+        {label}
+        <b>{value}</b>
+      </span>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(event) => onChange(Number(event.target.value))} />
+    </label>
+  );
+}
+
+function ModelOutputView({ output }: { output: PromptRun["outputs"][number] }) {
+  return (
+    <div className="ai-output-view">
+      <div className="ai-output-head">
+        <strong>{output.validationStatus}</strong>
+        <span>{output.latencyMs}ms</span>
+      </div>
+      <pre>{output.rawOutput}</pre>
+    </div>
+  );
+}
+
+function modelNameFor(modelName: ModelSlot["modelName"]) {
+  if (modelName === "gemini-3-pro-preview") return "Gemini 3 Pro Preview";
+  if (modelName === "gemini-2.5-flash-lite") return "Gemini 2.5 Flash-Lite";
+  return "Gemini 3 Flash Preview";
+}
+
+function modelDescriptionFor(modelName: ModelSlot["modelName"]) {
+  if (modelName === "gemini-3-pro-preview") {
+    return "Gemini 3 Pro Preview: strongest multimodal reasoning and agentic model.";
+  }
+  if (modelName === "gemini-2.5-flash-lite") {
+    return "Gemini 2.5 Flash-Lite: fastest Flash model for cost-efficient high throughput.";
+  }
+  return "Gemini 3 Flash Preview: balanced speed, scale, and frontier intelligence.";
 }
 
 function WorkspaceDrawer(props: {
