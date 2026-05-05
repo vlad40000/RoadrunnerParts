@@ -56,10 +56,7 @@ Rules:
 8. Honor the operator-selected tool policy. Direct fetch and structured output are mandatory; browser/computer-use source data is a separate supervised path.`;
 
 type GeminiModel =
-  | "gemini-3-flash-preview"
-  | "gemini-3-pro-preview"
-  | "gemini-3.1-flash-preview"
-  | "gemini-3.1-pro-preview";
+  | "gemini-3.1-flash-lite-preview";
 
 interface AgentToolConfig {
   directFetch: boolean;
@@ -102,16 +99,16 @@ interface SupplierAgentMatrixProps {
 const DEFAULT_TOOL_CONFIG: AgentToolConfig = {
   directFetch: true,
   structuredOutput: true,
-  googleSearch: false,
+  googleSearch: true,
   urlContext: true,
   codeExecution: true,
-  functionCalling: false,
-  googleMaps: false,
+  functionCalling: true,
+  googleMaps: true,
   computerUse: false,
 };
 
 const DEFAULT_TUNING: AgentTuning = {
-  model: "gemini-3-flash-preview",
+  model: "gemini-3.1-flash-lite-preview",
   temperature: 1.0,
   thinkingLevel: "medium",
   systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW,
@@ -288,9 +285,17 @@ function parseThinking(value: unknown): AgentTuning["thinkingLevel"] {
 }
 
 function parseModel(value: unknown): GeminiModel {
-  if (value === "gemini-3-pro-preview" || value === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
-  if (value === "gemini-3-flash-preview" || value === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
-  return "gemini-3-flash-preview";
+  if (
+    value === "gemini-3-flash-preview" ||
+    value === "gemini-3.1-flash-preview" ||
+    value === "gemini-2.5-flash-lite" ||
+    value === "gemini-3.1-flash-lite-preview" ||
+    value === "gemini-3-pro-preview" ||
+    value === "gemini-3.1-pro-preview"
+  ) {
+    return "gemini-3.1-flash-lite-preview";
+  }
+  return "gemini-3.1-flash-lite-preview";
 }
 
 function parseTemperature(value: unknown): number {
@@ -313,11 +318,11 @@ function normalizeToolConfigForPreview(value: unknown): AgentToolConfig {
   return {
     directFetch: true,
     structuredOutput: true,
-    googleSearch: input.googleSearch === true || input.useSearch === true,
+    googleSearch: input.googleSearch !== false && input.useSearch !== false,
     urlContext: input.urlContext !== false,
-    codeExecution: input.codeExecution === true || input.usePython === true,
-    functionCalling: input.functionCalling === true,
-    googleMaps: input.googleMaps === true,
+    codeExecution: input.codeExecution !== false && input.usePython !== false,
+    functionCalling: input.functionCalling !== false,
+    googleMaps: input.googleMaps !== false,
     computerUse: input.computerUse === true,
   };
 }
@@ -441,11 +446,11 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
           ...agent.tuning.toolConfig,
           directFetch: true,
           structuredOutput: true,
-          googleSearch: persistedToolConfig.googleSearch === true,
+          googleSearch: persistedToolConfig.googleSearch !== false,
           urlContext: persistedToolConfig.urlContext !== false,
-          codeExecution: persistedToolConfig.codeExecution === true,
-          functionCalling: persistedToolConfig.functionCalling === true,
-          googleMaps: persistedToolConfig.googleMaps === true,
+          codeExecution: persistedToolConfig.codeExecution !== false,
+          functionCalling: persistedToolConfig.functionCalling !== false,
+          googleMaps: persistedToolConfig.googleMaps !== false,
           computerUse: persistedToolConfig.computerUse === true,
         };
 
@@ -840,8 +845,7 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
                           onChange={(e) => updateTuning(agent.id, { model: e.target.value as GeminiModel })}
                           className="w-full rounded border bg-white p-1 text-[10px] font-bold"
                         >
-                          <option value="gemini-3-flash-preview">Gemini 3 Flash</option>
-                          <option value="gemini-3-pro-preview">Gemini 3 Pro</option>
+                          <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite</option>
                         </select>
                       </div>
                       <div className="space-y-2">

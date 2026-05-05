@@ -220,7 +220,7 @@ export async function POST(req: Request) {
     }
 
     const generativeModel = genAI.getGenerativeModel({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.1-flash-lite-preview',
       generationConfig: {
         temperature: 1.0,          // Gemini 3 default — never go below 1.0
         maxOutputTokens: 32000,    // Enough headroom for 150+ part BOMs as JSON
@@ -318,7 +318,7 @@ If a part does not fit any section, use the closest match — never omit a part 
     // DB-FIRST: Log the raw AI output before parsing
     await db.insert(modelSources).values({
       normalizedModel: normalizeModelKey(model),
-      source: 'gemini-3-flash-preview',
+      source: 'gemini-3.1-flash-lite-preview',
       sourceUrl: 'ai-generation',
       raw: { prompt, output: rawText },
       status: 'completed'

@@ -65,7 +65,7 @@ export async function runCoveReviewer({
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   const reviewerModel = genAI.getGenerativeModel({
-    model: process.env.BROWSER_AGENT_REVIEWER_MODEL || 'gemini-3-flash-preview',
+    model: process.env.BROWSER_AGENT_REVIEWER_MODEL || 'gemini-3.1-flash-lite-preview',
   });
 
   const prompt = buildCoveReviewerPrompt({

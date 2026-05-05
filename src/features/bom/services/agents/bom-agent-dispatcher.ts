@@ -14,6 +14,8 @@ import { agentAssetStore } from "./asset-store";
 import { calculateMachinePriority } from "../priority-scoring";
 import { CORE_BOM_TOOLS } from "./tool-definitions";
 import { EBAY_MARKET_TOOLS } from "./ebay-tool-definitions";
+import { runApplianceAgeWorker } from "@/features/identity/workers/appliance-age-worker";
+import { runOriginalMsrpWorker } from "@/features/identity/workers/original-msrp-worker";
 import {
   acceptTrustedPartCount,
   determineRetrievalState,
@@ -80,14 +82,27 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
     }
 
     case "decode_machine_serial_date":
-      // Implementation: Brand-specific serial decoding
-      return {
-        candidates: [{ year: 2019, month: 3, confidence: 0.9 }],
-        selectedYear: 2019,
-        selectedMonth: 3,
-        confidence: 0.9,
-        rulesApplied: "Whirlpool standard date code"
-      };
+      return runApplianceAgeWorker({
+        machineId: String(args.machineId || args.id || ""),
+        brand: String(args.brand || args.brandRaw || args.brandFamily || ""),
+        model: String(args.model || args.modelRaw || ""),
+        serial: String(args.serial || args.serialRaw || ""),
+        observedFeatures: Array.isArray(args.observedFeatures) ? args.observedFeatures : [],
+        refrigerantLabel: args.refrigerantLabel || null,
+        hardLowerBoundYear: typeof args.hardLowerBoundYear === "number" ? args.hardLowerBoundYear : null,
+      });
+
+    case "find_original_manufacturer_msrp":
+      return runOriginalMsrpWorker({
+        machineId: String(args.machineId || args.id || ""),
+        brand: args.brand ? String(args.brand) : null,
+        model: String(args.model || ""),
+        targetDate: args.targetDate ? String(args.targetDate) : null,
+        ageBand: args.ageBand || "unknown",
+        condition: args.condition ? String(args.condition) : null,
+        manufacturerDomains: Array.isArray(args.manufacturerDomains) ? args.manufacturerDomains : [],
+        manufacturerProductUrls: Array.isArray(args.manufacturerProductUrls) ? args.manufacturerProductUrls : [],
+      });
 
     /**
      * 2. DB / Cache Functions

@@ -82,7 +82,9 @@ export async function runPartsExtractor(input: {
   visualTruth?: any;
   agentConfig?: {
     model?:
+      | "gemini-2.5-flash-lite"
       | "gemini-3-flash-preview"
+      | "gemini-3.1-flash-lite-preview"
       | "gemini-3-pro-preview"
       | "gemini-3.1-flash-preview"
       | "gemini-3.1-pro-preview";

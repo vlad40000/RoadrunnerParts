@@ -3,8 +3,7 @@
 ## Model Configuration (STRICT LOCK)
 You MUST use these specific Gemini models. **DO NOT change these identifiers under any circumstances unless explicitly instructed by the USER.**
 
-- **Gemini 3 Pro Preview (`gemini-3-pro-preview`)**: Use for complex planning, system architecture, and exhaustive search-grounded BOM queries.
-- **Gemini 3 Flash Preview (`gemini-3-flash-preview`)**: Use for high-velocity code generation, nameplate OCR, and identity review.
+- **Gemini 3.1 Flash Lite Preview (`gemini-3.1-flash-lite-preview`)**: Use for Roadrunner AI stages, including planning, source review, nameplate OCR, identity review, prompt runs, and BOM support tasks.
 
 > [!IMPORTANT]
 > **NO UNAUTHORIZED MODEL CHANGES**: Changing the model strings in `lib/gemini.js` or elsewhere to any older versions (1.5, 2.0, etc.) is STRICTLY PROHIBITED.

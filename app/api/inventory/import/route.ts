@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as xlsx from "xlsx";
+import { sql } from "@/src/server/db";
 
 export const runtime = "nodejs";
 
@@ -62,6 +63,11 @@ function parseNumber(value: string): number {
   if (!value) return 0;
   const parsed = Number(value.replace(/[$,]/g, "").trim());
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function nullable(value: string): string | null {
+  const trimmed = String(value || "").trim();
+  return trimmed ? trimmed : null;
 }
 
 export async function POST(request: NextRequest) {
@@ -127,6 +133,55 @@ export async function POST(request: NextRequest) {
 
     if (rawRows.length > MAX_IMPORT_ROWS) {
       warnings.push(`Imported the first ${MAX_IMPORT_ROWS.toLocaleString()} rows only.`);
+    }
+
+    for (const machine of machines) {
+      await sql`
+        INSERT INTO machine_inventory (
+          machine_code,
+          brand,
+          model,
+          serial,
+          appliance_type,
+          condition,
+          location,
+          disposition_recommendation,
+          priority_score,
+          original_msrp,
+          whole_machine_status,
+          raw,
+          updated_at
+        )
+        VALUES (
+          ${machine.id},
+          ${nullable(machine.brand)},
+          ${machine.model},
+          ${nullable(machine.serial || "")},
+          ${nullable(machine.type)},
+          ${nullable(machine.condition || "")},
+          ${nullable(machine.location || "")},
+          ${nullable(machine.action)},
+          ${machine.score},
+          ${machine.value},
+          ${nullable(machine.status)},
+          ${JSON.stringify(machine.raw)}::jsonb,
+          now()
+        )
+        ON CONFLICT (machine_code) WHERE machine_code IS NOT NULL
+        DO UPDATE SET
+          brand = EXCLUDED.brand,
+          model = EXCLUDED.model,
+          serial = EXCLUDED.serial,
+          appliance_type = EXCLUDED.appliance_type,
+          condition = EXCLUDED.condition,
+          location = EXCLUDED.location,
+          disposition_recommendation = EXCLUDED.disposition_recommendation,
+          priority_score = EXCLUDED.priority_score,
+          original_msrp = EXCLUDED.original_msrp,
+          whole_machine_status = EXCLUDED.whole_machine_status,
+          raw = EXCLUDED.raw,
+          updated_at = now()
+      `;
     }
 
     return NextResponse.json({

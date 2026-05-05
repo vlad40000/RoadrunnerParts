@@ -40,6 +40,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { SystemInstructionsDrawer } from "./system-instructions-drawer";
 import {
   DEFAULT_MODEL_SLOTS,
   DEFAULT_MODEL_TOOLS,
@@ -112,28 +113,28 @@ type ModelCatalogItem = {
 
 const MODEL_CATALOG: ModelCatalogItem[] = [
   {
-    id: "gemini-3-pro-preview",
-    name: "Gemini 3 Pro Preview",
-    alias: "gemini-3-pro-preview",
+    id: "gemini-3.1-flash-lite-preview",
+    name: "Gemini 3.1 Flash Lite Preview",
+    alias: "gemini-3.1-flash-lite-preview",
     category: "Featured",
-    description: "Most intelligent Gemini model for multimodal understanding, agentic workflows, reasoning, and coding.",
-    context: "Input: 1,048,576 / Output: 65,536",
-    cost: "Text output model",
-    cutoff: "January 2025",
-    releaseDate: "Latest update: November 2025",
-    selectable: true,
-  },
-  {
-    id: "gemini-3-flash-preview",
-    name: "Gemini 3 Flash Preview",
-    alias: "gemini-3-flash-preview",
-    category: "Gemini",
-    description: "Balanced Gemini 3 model built for speed, scale, and frontier intelligence.",
+    description: "Roadrunner default Gemini model for prompt runs, OCR, source review, and BOM support tasks.",
     context: "Input: 1,048,576 / Output: 65,536",
     cost: "Text output model",
     cutoff: "January 2025",
     releaseDate: "Latest update: December 2025",
     selectable: true,
+  },
+  {
+    id: "gemini-3-pro-preview",
+    name: "Gemini 3 Pro Preview",
+    alias: "gemini-3-pro-preview",
+    category: "Gemini",
+    description: "Legacy stronger-model fallback entry retained for reference; Roadrunner prompt runs normalize to Lite.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Text output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: November 2025",
+    selectable: false,
   },
   {
     id: "gemini-3-pro-image-preview",
@@ -181,7 +182,7 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     cost: "Stable text output model",
     cutoff: "January 2025",
     releaseDate: "Latest update: July 2025",
-    selectable: true,
+    selectable: false,
   },
   {
     id: "gemini-2.5-flash-image",
@@ -398,6 +399,14 @@ export function BomPromptWorkspace({
   const [modelSearch, setModelSearch] = useState("");
   const [modelFilter, setModelFilter] = useState<(typeof MODEL_FILTERS)[number]>("All");
   const [toolsPopoverSlot, setToolsPopoverSlot] = useState<ModelSlot["id"] | null>(null);
+  const [isInstructionsDrawerOpen, setIsInstructionsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    (window as any).openInstructionsDrawer = () => setIsInstructionsDrawerOpen(true);
+    return () => {
+      delete (window as any).openInstructionsDrawer;
+    };
+  }, []);
 
   const selectedScenario = useMemo(
     () => scenarios.find((scenario) => scenario.id === selectedScenarioId) || scenarios[0],
@@ -780,6 +789,13 @@ export function BomPromptWorkspace({
           }}
         />
       ) : null}
+
+      <SystemInstructionsDrawer 
+        isOpen={isInstructionsDrawerOpen}
+        onClose={() => setIsInstructionsDrawerOpen(false)}
+        currentInstruction={systemPrompt}
+        onSelect={(content) => setSystemPrompt(content)}
+      />
     </main>
   );
 }
@@ -1058,10 +1074,17 @@ function RunSettingsSidebar({
         <span>{slot.modelName}</span>
         <small>{modelDescriptionFor(slot.modelName)}</small>
       </button>
-      <label className="ai-setting-block">
+      <div className="ai-setting-block">
         <span>System instructions</span>
-        <textarea value={systemPrompt} onChange={(event) => setSystemPrompt(event.target.value)} />
-      </label>
+        <button 
+          type="button" 
+          className="ai-drawer-trigger-button"
+          onClick={() => (window as any).openInstructionsDrawer?.()}
+        >
+          <Settings2 size={14} />
+          MANAGE INSTRUCTIONS
+        </button>
+      </div>
       <AiTuningSlider label="Temperature" value={slot.temperature ?? 1} min={0} max={2} step={0.1} onChange={(value) => onPatch({ temperature: value })} />
       <label className="ai-select-setting">
         <span>Thinking level</span>
@@ -1293,19 +1316,11 @@ function ModelOutputView({ output }: { output: PromptRun["outputs"][number] }) {
 }
 
 function modelNameFor(modelName: ModelSlot["modelName"]) {
-  if (modelName === "gemini-3-pro-preview") return "Gemini 3 Pro Preview";
-  if (modelName === "gemini-2.5-flash-lite") return "Gemini 2.5 Flash-Lite";
-  return "Gemini 3 Flash Preview";
+  return "Gemini 3.1 Flash Lite Preview";
 }
 
 function modelDescriptionFor(modelName: ModelSlot["modelName"]) {
-  if (modelName === "gemini-3-pro-preview") {
-    return "Gemini 3 Pro Preview: strongest multimodal reasoning and agentic model.";
-  }
-  if (modelName === "gemini-2.5-flash-lite") {
-    return "Gemini 2.5 Flash-Lite: fastest Flash model for cost-efficient high throughput.";
-  }
-  return "Gemini 3 Flash Preview: balanced speed, scale, and frontier intelligence.";
+  return "Gemini 3.1 Flash Lite Preview: Roadrunner default for prompt runs and BOM support tasks.";
 }
 
 function WorkspaceDrawer(props: {
@@ -2472,8 +2487,7 @@ function RightInspector(props: {
                       }
                       className="h-9 w-full rounded-md border border-white/10 bg-[#17191d] px-2 text-xs text-white outline-none"
                     >
-                      <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
-                      <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
+                      <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite Preview</option>
                     </select>
                   </label>
                   <label className="mb-2 grid gap-1">

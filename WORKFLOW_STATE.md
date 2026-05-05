@@ -96,3 +96,25 @@ why are the prompts not auto loading? why are the URLs not loading?
 - [x] **Bulk Data Ingestion**: Created `scripts/ingest-merged-parts.ts` and successfully ingested all 106 records from `part_infos_merged.json` as a "Hotpoint Dryer" model import, grouped by diagram.
 - [x] **Extension Scaffold**: Created `encompass-extension` with `pushToDb.ts` logic and `manifest.json`.
 
+### **Inventory Age-Banding & eBay Listing Automation**
+- [x] **Schema Alignment**: Added `decoded_manufacture_date`, `age_band`, `decode_reason`, `rules_applied`, and `manual_review` to `machine_inventory`.
+- [x] **New Tables**: Created `part_market_signal`, `part_inventory`, and `channel_listing` for eBay listing orchestration.
+- [x] **Workflow Automation**:
+  - `appliance_decoder_jsonl.py`: JSONL wrapper for serial decoding.
+  - `msrp_finder_jsonl.py`: JSONL wrapper for MSRP lookup.
+- [x] **Batch Workers**:
+  - `run-appliance-age-band-batch.mjs`: Automates 6,000-unit serial decoding.
+  - `run-msrp-enrichment-batch.mjs`: Automates MSRP enrichment via Wayback Machine.
+  - `run-ebay-market-survey-batch.mjs`: Scrapes eBay for real-time resale signals.
+  - `run-ebay-listing-prep-batch.mjs`: Generates net profit forecasts and draft listings.
+
+## Current Status
+- **Age-Banding Operational**: Serial decoding pipeline is live. High-confidence decodes automatically assign age bands.
+- **MSRP Pipeline Live**: Deterministic MSRP enrichment is functional.
+- **eBay Pipeline Ready**: Market survey and listing preparation workers are implemented and ready for large-scale execution.
+
+## Next Steps
+- [ ] Run end-to-end integration test on a 20-unit sample.
+- [ ] Implement "Production Decision" dashboard to review high-margin draft listings.
+- [ ] Automate eBay draft creation via the official eBay API (using BOM Dispatcher).
+

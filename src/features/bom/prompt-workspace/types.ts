@@ -24,12 +24,12 @@ export type ModelToolSettings = {
 };
 
 export const DEFAULT_MODEL_TOOLS: ModelToolSettings = {
-  structuredOutputs: false,
-  codeExecution: false,
-  functionCalling: false,
-  googleSearchGrounding: false,
-  googleMapsGrounding: false,
-  urlContext: false,
+  structuredOutputs: true,
+  codeExecution: true,
+  functionCalling: true,
+  googleSearchGrounding: true,
+  googleMapsGrounding: true,
+  urlContext: true,
   thinkingLevel: "high",
   mediaResolution: "default",
   stopSequence: "",
@@ -37,7 +37,7 @@ export const DEFAULT_MODEL_TOOLS: ModelToolSettings = {
 
 export type ModelSlot = {
   id: "slot_a" | "slot_b";
-  modelName: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-2.5-flash-lite";
+  modelName: "gemini-3.1-flash-lite-preview";
   provider: ModelProvider;
   enabled: boolean;
   temperature?: number;
@@ -49,7 +49,7 @@ export type ModelSlot = {
 export const DEFAULT_MODEL_SLOTS: ModelSlot[] = [
   {
     id: "slot_a",
-    modelName: "gemini-3-flash-preview",
+    modelName: "gemini-3.1-flash-lite-preview",
     provider: "gemini",
     enabled: true,
     temperature: 1,
@@ -59,7 +59,7 @@ export const DEFAULT_MODEL_SLOTS: ModelSlot[] = [
   },
   {
     id: "slot_b",
-    modelName: "gemini-3-pro-preview",
+    modelName: "gemini-3.1-flash-lite-preview",
     provider: "gemini",
     enabled: true,
     temperature: 1,

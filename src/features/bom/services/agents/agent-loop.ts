@@ -26,10 +26,10 @@ export async function runAgentLoop(input: {
   if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  // Default to pro for complex orchestration, otherwise follow policy
+  // Roadrunner standardizes Gemini stages on Flash Lite unless an environment override is set.
   const modelId = input.config.stage === "cache_check" || input.config.stage === "ocr_ingest" 
-    ? (process.env.GEMINI_MODEL_FAST || "gemini-3-flash-preview")
-    : (process.env.GEMINI_MODEL_PRO || "gemini-3-pro-preview");
+    ? (process.env.GEMINI_MODEL_FAST || "gemini-3.1-flash-lite-preview")
+    : (process.env.GEMINI_MODEL_PRO || "gemini-3.1-flash-lite-preview");
 
   const model = genAI.getGenerativeModel({
     model: modelId,

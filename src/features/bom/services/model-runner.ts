@@ -31,13 +31,19 @@ export type ModelRunInput = {
 };
 
 function resolveModelId(model: ModelRunInput["model"]) {
-  if (model === "gemini-3-pro-preview" || model === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
-  if (model === "gemini-3-flash-preview" || model === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
-  if (model === "gemini-2.5-flash-lite") return "gemini-2.5-flash-lite";
-  if (model === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
-  if (model === "pro") return "gemini-3-pro-preview";
+  if (
+    model === "gemini-3-flash-preview" ||
+    model === "gemini-3.1-flash-preview" ||
+    model === "gemini-2.5-flash-lite" ||
+    model === "gemini-3.1-flash-lite-preview" ||
+    model === "gemini-3-pro-preview" ||
+    model === "gemini-3.1-pro-preview"
+  ) {
+    return "gemini-3.1-flash-lite-preview";
+  }
+  if (model === "pro") return "gemini-3.1-flash-lite-preview";
   if (model === "lite") return "gemini-3.1-flash-lite-preview";
-  return "gemini-3-flash-preview";
+  return "gemini-3.1-flash-lite-preview";
 }
 
 function buildModelTools(input: Pick<ModelRunInput, "enableSearch" | "enableUrlContext">) {
@@ -170,7 +176,13 @@ export async function runText(input: ModelRunInput): Promise<string> {
 
 export async function runGeminiCodeExecution(input: {
   code: string;
-  model?: "gemini-3-flash-preview" | "gemini-3-pro-preview" | "gemini-3.1-flash-preview" | "gemini-3.1-pro-preview";
+  model?:
+    | "gemini-2.5-flash-lite"
+    | "gemini-3-flash-preview"
+    | "gemini-3-pro-preview"
+    | "gemini-3.1-flash-lite-preview"
+    | "gemini-3.1-flash-preview"
+    | "gemini-3.1-pro-preview";
   context?: Record<string, unknown>;
 }) {
   const apiKey = process.env.GEMINI_API_KEY;

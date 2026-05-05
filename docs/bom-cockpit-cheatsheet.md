@@ -131,10 +131,25 @@ No OpenAI provider is exposed.
 
 | Slot | Default model | Provider | Temperature | Top P | Max output |
 | --- | --- | --- | --- | --- | --- |
-| Model A | `gemini-3-flash-preview` | `gemini` | `1.0` | `0.8` | `8192` |
-| Model B | `gemini-3-pro-preview` | `gemini` | `1.0` | `0.8` | `8192` |
+| Model A | `gemini-3.1-flash-lite-preview` | `gemini` | `1.0` | `0.8` | `8192` |
+| Model B | `gemini-3.1-flash-lite-preview` | `gemini` | `1.0` | `0.8` | `8192` |
 
 There is no third model button. The UI and run payload are capped at two slots.
+
+## Tools Policy
+
+The Tools drawer follows the Google AI Studio-style defaults:
+
+| Tool | Default | Notes |
+| --- | --- | --- |
+| Structured outputs | On | Shows `Edit`; prompt runs request JSON output. |
+| Code execution | On | Stored in the run configuration for code/preflight paths. |
+| Function calling | On | Shows `Edit`; stored for staged function agents. |
+| Grounding with Google Search | On | Prompt runs may pass Google Search grounding. |
+| Grounding with Google Maps | On | Stored in the run configuration. |
+| URL context | On | Prompt runs may pass URL context. |
+
+Supplier runs keep Direct URL and Schema locked on. Search, Code, Functions, Maps, and URL Context default on unless the operator explicitly turns them off. Computer Use remains a separate supervised path and is not default-enabled from the generic Tools drawer.
 
 ## Prompt Run Flow
 
@@ -164,4 +179,3 @@ Not allowed as final BOM evidence:
 - Empty runs
 - Generic supplier search pages
 - Prompt-inferred part rows or prices without source evidence
-

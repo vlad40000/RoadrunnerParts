@@ -96,7 +96,7 @@ export const searchExistingGroundingLayer: SearchAdapter = async (input) => {
   const settled = await Promise.allSettled(
     queries.slice(0, 5).map(async (query) => {
       const result = await generateText({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-flash-lite-preview",
         role: "analyzer",
         // Send the raw query into grounded search instead of wrapping it in an extra prompt.
         contents: query,

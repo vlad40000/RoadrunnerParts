@@ -71,14 +71,47 @@ export const normalize_appliance_identity: FunctionDeclaration = {
 
 export const decode_machine_serial_date: FunctionDeclaration = {
   name: "decode_machine_serial_date",
-  description: "Decode manufacture date from serial number using deterministic brand-family rules. Return candidates, selected year, month/week, confidence, and rules applied.",
+  description: "Worker 1: decode appliance serial to manufacture date and age band. Must run before original MSRP lookup.",
   parameters: {
     type: SchemaType.OBJECT,
     properties: {
-      brandFamily: { type: SchemaType.STRING },
+      machineId: { type: SchemaType.STRING },
+      brand: { type: SchemaType.STRING },
+      model: { type: SchemaType.STRING },
       serial: { type: SchemaType.STRING },
+      observedFeatures: {
+        type: SchemaType.ARRAY,
+        items: { type: SchemaType.STRING },
+      },
+      refrigerantLabel: { type: SchemaType.STRING },
+      hardLowerBoundYear: { type: SchemaType.NUMBER },
     },
-    required: ["brandFamily", "serial"],
+    required: ["machineId", "brand", "model", "serial"],
+  },
+};
+
+export const find_original_manufacturer_msrp: FunctionDeclaration = {
+  name: "find_original_manufacturer_msrp",
+  description: "Worker 2: find original manufacturer MSRP from manufacturer-domain evidence only. Must run after age-band decode and requires decodedManufactureDate as targetDate. Retailer prices are ignored.",
+  parameters: {
+    type: SchemaType.OBJECT,
+    properties: {
+      machineId: { type: SchemaType.STRING },
+      brand: { type: SchemaType.STRING },
+      model: { type: SchemaType.STRING },
+      targetDate: { type: SchemaType.STRING },
+      ageBand: { type: SchemaType.STRING },
+      condition: { type: SchemaType.STRING },
+      manufacturerDomains: {
+        type: SchemaType.ARRAY,
+        items: { type: SchemaType.STRING },
+      },
+      manufacturerProductUrls: {
+        type: SchemaType.ARRAY,
+        items: { type: SchemaType.STRING },
+      },
+    },
+    required: ["machineId", "brand", "model", "targetDate", "ageBand"],
   },
 };
 
@@ -497,6 +530,7 @@ export const CORE_BOM_TOOLS = [
   ocr_extract_nameplate,
   normalize_appliance_identity,
   decode_machine_serial_date,
+  find_original_manufacturer_msrp,
   db_get_model_record,
   db_get_model_part_count,
   db_get_parts_for_model,

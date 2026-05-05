@@ -31,12 +31,7 @@ function asRecord(value: unknown): Record<string, unknown> {
 function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
   const input = asRecord(value);
   const toolInput = asRecord(input.tools);
-  const modelName =
-    input.modelName === "gemini-3-pro-preview"
-      ? "gemini-3-pro-preview"
-      : input.modelName === "gemini-2.5-flash-lite"
-        ? "gemini-2.5-flash-lite"
-      : "gemini-3-flash-preview";
+  const modelName = "gemini-3.1-flash-lite-preview";
   const provider =
     input.provider === "manual" || input.provider === "mock" ? input.provider : "gemini";
   const temperature = Number(input.temperature);
@@ -51,12 +46,12 @@ function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
       ? toolInput.mediaResolution
       : DEFAULT_MODEL_TOOLS.mediaResolution;
   const tools: ModelToolSettings = {
-    structuredOutputs: toolInput.structuredOutputs === true,
-    codeExecution: toolInput.codeExecution === true,
-    functionCalling: toolInput.functionCalling === true,
-    googleSearchGrounding: toolInput.googleSearchGrounding === true,
-    googleMapsGrounding: toolInput.googleMapsGrounding === true,
-    urlContext: toolInput.urlContext === true,
+    structuredOutputs: toolInput.structuredOutputs !== false,
+    codeExecution: toolInput.codeExecution !== false,
+    functionCalling: toolInput.functionCalling !== false,
+    googleSearchGrounding: toolInput.googleSearchGrounding !== false,
+    googleMapsGrounding: toolInput.googleMapsGrounding !== false,
+    urlContext: toolInput.urlContext !== false,
     thinkingLevel,
     mediaResolution,
     stopSequence: typeof toolInput.stopSequence === "string" ? toolInput.stopSequence : "",

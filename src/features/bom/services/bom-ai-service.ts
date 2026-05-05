@@ -43,7 +43,7 @@ export async function generateAiBom(input: {
   // This ensures the King's "Visual Truth" is always preserved.
   await db.insert(modelSources).values({
     normalizedModel,
-    source: 'gemini-3-flash-preview',
+    source: 'gemini-3.1-flash-lite-preview',
     sourceUrl: 'ai-generation',
     urlType: 'ai',
     raw: { 

@@ -22,7 +22,7 @@ The BOM (Bill of Materials) extraction pipeline is responsible for identifying a
 - **Resolver**: `src/features/bom/services/encompass-route-service.ts`
 
 ### 4. Parts Extraction
-- **Model**: `gemini-3.1-flash`
+- **Model**: `gemini-3.1-flash-lite-preview`
 - **Output**: Structured JSON following the `bomRowSchema`.
 - **Validation**: Strict reconciliation against expected part counts derived from Encompass or Sears catalog metadata.
 

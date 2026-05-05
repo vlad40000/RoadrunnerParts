@@ -15,10 +15,7 @@ import {
 
 type Params = { params: Promise<{ jobId: string; supplierId: string }> };
 type GeminiModel =
-  | "gemini-3-flash-preview"
-  | "gemini-3-pro-preview"
-  | "gemini-3.1-flash-preview"
-  | "gemini-3.1-pro-preview";
+  | "gemini-3.1-flash-lite-preview";
 type ThinkingLevel = "minimal" | "low" | "medium" | "high";
 
 function positiveNumber(value: unknown) {
@@ -33,9 +30,17 @@ function positiveNumber(value: unknown) {
 }
 
 function normalizeModel(value: unknown): GeminiModel {
-  if (value === "gemini-3-pro-preview" || value === "gemini-3.1-pro-preview") return "gemini-3-pro-preview";
-  if (value === "gemini-3-flash-preview" || value === "gemini-3.1-flash-preview") return "gemini-3-flash-preview";
-  return "gemini-3-flash-preview";
+  if (
+    value === "gemini-3-flash-preview" ||
+    value === "gemini-3.1-flash-preview" ||
+    value === "gemini-2.5-flash-lite" ||
+    value === "gemini-3.1-flash-lite-preview" ||
+    value === "gemini-3-pro-preview" ||
+    value === "gemini-3.1-pro-preview"
+  ) {
+    return "gemini-3.1-flash-lite-preview";
+  }
+  return "gemini-3.1-flash-lite-preview";
 }
 
 function normalizeTemperature(value: unknown) {
@@ -53,11 +58,11 @@ function normalizeToolConfig(value: unknown) {
   return {
     directFetch: true,
     structuredOutput: true,
-    googleSearch: input.googleSearch === true || input.useSearch === true,
+    googleSearch: input.googleSearch !== false && input.useSearch !== false,
     urlContext: input.urlContext !== false,
-    codeExecution: input.codeExecution === true || input.usePython === true,
-    functionCalling: input.functionCalling === true,
-    googleMaps: input.googleMaps === true,
+    codeExecution: input.codeExecution !== false && input.usePython !== false,
+    functionCalling: input.functionCalling !== false,
+    googleMaps: input.googleMaps !== false,
     computerUse: input.computerUse === true,
   };
 }
