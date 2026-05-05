@@ -112,6 +112,7 @@ type SupplierCard = {
 
 const RUN_HISTORY_KEY = "bom-prompt-workspace:runs";
 const MAX_PROMPT_ATTACHMENT_BYTES = 2_000_000;
+const MAX_URL_CONTEXT_URLS = 20;
 
 const SUPPLIERS: SupplierCard[] = [
   { id: "sears-partsdirect", label: "Sears PartsDirect", domain: "searspartsdirect.com" },
@@ -408,31 +409,95 @@ function supplierUrl(supplier: SupplierCard, model: string) {
   return "";
 }
 
-async function resolveSupplierUrl(input: {
+function uniqueUrls(urls: Array<string | null | undefined>) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of urls) {
+    const clean = String(url || "").trim();
+    if (!clean || seen.has(clean)) continue;
+    seen.add(clean);
+    out.push(clean);
+    if (out.length >= MAX_URL_CONTEXT_URLS) break;
+  }
+  return out;
+}
+
+function urlOf(value: unknown) {
+  if (typeof value === "string") return value.trim();
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+  const record = value as Record<string, unknown>;
+  return String(record.url || record.sourceUrl || record.href || "").trim();
+}
+
+function urlsFromPayload(inputPayload: Record<string, unknown>) {
+  return uniqueUrls([
+    ...normalizeUrlList(inputPayload.sourceUrls),
+    ...normalizeUrlList(inputPayload.candidateUrls),
+    ...normalizeUrlList(inputPayload.sourceUrl),
+  ]);
+}
+
+function normalizeUrlList(value: unknown) {
+  const items = Array.isArray(value) ? value : value ? [value] : [];
+  return items.map(urlOf).filter(Boolean);
+}
+
+function buildWorkspaceToolContext(inputPayload: Record<string, unknown>) {
+  const urls = urlsFromPayload(inputPayload);
+  return {
+    urlContext: {
+      enabled: urls.length > 0,
+      maxUrls: MAX_URL_CONTEXT_URLS,
+      urls,
+    },
+    googleSearch: {
+      enabled: true,
+    },
+    functionCalling: {
+      enabled: true,
+      callLimit: null,
+      mode: "AUTO",
+      allowedFunctionNames: [],
+      functionDeclarations: [],
+    },
+  };
+}
+
+async function resolveSupplierUrls(input: {
   supplier: SupplierCard;
   model: string;
   brand?: string | null;
 }) {
   const canonical = normalizeCanonicalModel(input.model);
   if (input.supplier.id !== "encompass" || !canonical) {
-    return supplierUrl(input.supplier, canonical || input.model);
+    const url = supplierUrl(input.supplier, canonical || input.model);
+    return { primaryUrl: url, urls: uniqueUrls([url]) };
   }
 
   const localFallback =
     buildKnownEncompassAssemblyUrl(canonical, input.brand) ||
     buildCanonicalEncompassUrls({ model: canonical, brand: input.brand }).explodedViewUrl ||
     supplierUrl(input.supplier, canonical);
+  const canonicalUrl = buildCanonicalEncompassUrls({ model: canonical, brand: input.brand }).explodedViewUrl;
 
   try {
     const params = new URLSearchParams({ model: canonical });
     if (input.brand) params.set("brand", input.brand);
     const res = await fetch(`/api/bom/encompass-index?${params.toString()}`);
     const data = await res.json().catch(() => null);
-    if (!res.ok || !data) return localFallback;
+    if (!res.ok || !data) return { primaryUrl: localFallback, urls: uniqueUrls([localFallback, canonicalUrl]) };
     const selectedUrl = data.selected?.url || data.url || data.fallbackUrl;
-    return typeof selectedUrl === "string" && selectedUrl.trim() ? selectedUrl.trim() : localFallback;
+    const candidateUrls = Array.isArray(data.candidates) ? data.candidates.map(urlOf) : [];
+    const urls = uniqueUrls([
+      typeof selectedUrl === "string" ? selectedUrl : "",
+      data.fallbackUrl,
+      localFallback,
+      canonicalUrl,
+      ...candidateUrls,
+    ]);
+    return { primaryUrl: urls[0] || localFallback, urls };
   } catch {
-    return localFallback;
+    return { primaryUrl: localFallback, urls: uniqueUrls([localFallback, canonicalUrl]) };
   }
 }
 
@@ -483,8 +548,52 @@ function buildCompiledRunPreview(input: {
   systemPrompt: string;
   userPromptTemplate: string;
   inputPayload: Record<string, unknown>;
+  modelSlots: ModelSlot[];
 }) {
+  const toolContext = buildWorkspaceToolContext(input.inputPayload);
+  const runConfig = input.modelSlots
+    .filter((slot) => slot.enabled)
+    .map((slot) => ({
+      slotId: slot.id,
+      model: slot.modelName,
+      provider: slot.provider,
+      temperature: slot.temperature ?? 1,
+      topP: slot.topP ?? null,
+      maxOutputTokens: slot.maxOutputTokens ?? null,
+      tools: {
+        sdkTools: [
+          slot.tools?.googleSearchGrounding ? { googleSearch: {} } : null,
+          slot.tools?.urlContext ? { urlContext: {} } : null,
+          slot.tools?.functionCalling && toolContext.functionCalling.functionDeclarations.length
+            ? { functionDeclarations: toolContext.functionCalling.functionDeclarations }
+            : null,
+        ].filter(Boolean),
+        structuredOutputs: slot.tools?.structuredOutputs ?? null,
+        codeExecution: slot.tools?.codeExecution ?? null,
+        functionCalling: {
+          enabled: slot.tools?.functionCalling ?? null,
+          callLimit: slot.tools?.functionCalling ? null : "disabled",
+          mode: toolContext.functionCalling.mode,
+          allowedFunctionNames: toolContext.functionCalling.allowedFunctionNames,
+          functionDeclarations: toolContext.functionCalling.functionDeclarations,
+        },
+        googleSearchGrounding: slot.tools?.googleSearchGrounding ?? null,
+        googleMapsGrounding: slot.tools?.googleMapsGrounding ?? null,
+        urlContext: {
+          enabled: slot.tools?.urlContext ?? null,
+          maxUrls: slot.tools?.urlContext ? MAX_URL_CONTEXT_URLS : 0,
+          urls: slot.tools?.urlContext ? toolContext.urlContext.urls : [],
+        },
+        thinkingLevel: slot.tools?.thinkingLevel ?? null,
+        mediaResolution: slot.tools?.mediaResolution ?? null,
+        stopSequence: slot.tools?.stopSequence || null,
+      },
+    }));
+
   return [
+    "[RUN CONFIG AND TOOLS - SENT WITH REQUEST]",
+    JSON.stringify(runConfig, null, 2),
+    "",
     "[BASE SYSTEM INSTRUCTION AND SELECTED PRESETS - SENT AS SYSTEM]",
     input.systemPrompt.trim() || "(none)",
     "",
@@ -609,8 +718,9 @@ export function BomPromptWorkspace({
         systemPrompt,
         userPromptTemplate: composerPrompt.trim() || userPromptTemplate,
         inputPayload: inputPayload.value,
+        modelSlots,
       }),
-    [composerPrompt, inputPayload.value, systemPrompt, userPromptTemplate],
+    [composerPrompt, inputPayload.value, modelSlots, systemPrompt, userPromptTemplate],
   );
 
   const loadScenario = useCallback(
@@ -772,19 +882,22 @@ export function BomPromptWorkspace({
 
     try {
       const attachmentPayloads = promptAttachments.map(promptAttachmentPayload);
+      const runInputPayload = promptAttachments.length
+        ? {
+            ...inputPayload.value,
+            promptAttachments: attachmentPayloads,
+            attachments: attachmentPayloads,
+          }
+        : inputPayload.value;
+      const toolContext = buildWorkspaceToolContext(runInputPayload);
       const res = await fetch("/api/prompt-runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scenarioId: scenario.id,
           scenario,
-          inputPayload: promptAttachments.length
-            ? {
-                ...inputPayload.value,
-                promptAttachments: attachmentPayloads,
-                attachments: attachmentPayloads,
-              }
-            : inputPayload.value,
+          inputPayload: runInputPayload,
+          toolContext,
           attachments: attachmentPayloads,
           modelSlots,
           jobContext: {
@@ -841,11 +954,12 @@ export function BomPromptWorkspace({
 
   async function selectSupplierAction(supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") {
     const activeModel = model || job?.model || "";
-    const url = await resolveSupplierUrl({
+    const resolvedUrls = await resolveSupplierUrls({
       supplier,
       model: activeModel,
       brand: job?.brand || null,
     });
+    const url = resolvedUrls.primaryUrl;
     setBrowserSupplier(supplier.id);
     setBrowserUrl(url);
     setBrowserFrameUrl("");
@@ -854,10 +968,16 @@ export function BomPromptWorkspace({
       supplierId: supplier.id,
       modelNumber: activeModel || null,
       sourceUrl: url || null,
+      sourceUrls: resolvedUrls.urls,
+      candidateUrls: resolvedUrls.urls.map((candidateUrl, index) => ({
+        url: candidateUrl,
+        priority: index + 1,
+        role: index === 0 ? "primary" : "candidate",
+      })),
       browserCapture: null,
       sourceEvidence: null,
       stagedOnly: true,
-      runPolicy: "Do not navigate, search, extract, or execute until the operator presses Run.",
+      runPolicy: `Do not navigate, search, extract, or execute until the operator presses Run. URL Context may include up to ${MAX_URL_CONTEXT_URLS} source URLs. Function calling is not capped by call count; obey stage-specific allowed-tool policy.`,
     });
     setActiveMode(TASK_TO_MODE[task]);
   }

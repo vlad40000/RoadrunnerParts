@@ -3,7 +3,7 @@ import { normalizeSerialNumber } from "./normalize";
 import { SerialProfile } from "./decoder";
 import type { BomRow } from "../bom/schemas/bom";
 
-export type SerialConstraint = 
+export type SerialConstraint =
   | { type: "range"; start: string; end: string }
   | { type: "before"; value: string }
   | { type: "after"; value: string }
@@ -17,13 +17,13 @@ export function parseSerialNote(note: string | null | undefined): SerialConstrai
   if (!note) return null;
   const n = String(note).toLowerCase().trim();
 
-  const rangeMatch = n.match(/(?:serial\s+range|serials?\s+)([a-z0-9]+)\s*(?:-|to|through)\s*([a-z0-9]+)/i);
+  const rangeMatch = n.match(/(?:serial\s+range|serials?\s+)([a-z0-9.\-]+)\s*(?:-|to|through)\s*([a-z0-9.\-]+)/i);
   if (rangeMatch) return { type: "range", start: normalizeSerialNumber(rangeMatch[1]), end: normalizeSerialNumber(rangeMatch[2]) };
 
-  const beforeMatch = n.match(/(?:before|prior to|up to|through)\s+(?:serial\s*)?([a-z0-9]+)/i);
+  const beforeMatch = n.match(/(?:before|prior to|up to|through)\s+(?:serial\s*)?([a-z0-9.\-]+)/i);
   if (beforeMatch) return { type: "before", value: normalizeSerialNumber(beforeMatch[1]) };
 
-  const afterMatch = n.match(/(?:after|from|starting with|starting at|since)\s+(?:serial\s*)?([a-z0-9]+)/i);
+  const afterMatch = n.match(/(?:after|from|starting with|starting at|since)\s+(?:serial\s*)?([a-z0-9.\-]+)/i);
   if (afterMatch) return { type: "after", value: normalizeSerialNumber(afterMatch[1]) };
 
   const yearAfterMatch = n.match(/(?:manufactured|made|built)\s+(?:after|since)\s+(\d{4})/i);
@@ -37,7 +37,7 @@ export function parseSerialNote(note: string | null | undefined): SerialConstrai
 
 function evaluateConstraint(serial: string, profile: SerialProfile | null, constraint: SerialConstraint): boolean {
   const normSerial = normalizeSerialNumber(serial);
-  
+
   switch (constraint.type) {
     case "before":
       return normSerial < constraint.value;
@@ -63,7 +63,7 @@ export function evaluateSerialApplicability(input: {
   note: string;
 }) {
   const { serialNumber, serialProfile, note } = input;
-  
+
   if (!serialNumber && (!serialProfile || !serialProfile.selectedYear)) {
     return { isApplicable: true, confidence: "none", reason: "no serial provided" };
   }
@@ -74,7 +74,7 @@ export function evaluateSerialApplicability(input: {
   }
 
   const isApplicable = evaluateConstraint(serialNumber, serialProfile, constraint);
-  
+
   const confidence = serialProfile?.confidence || "medium";
   const canExclude = confidence === "high" || constraint.type === "range";
 
@@ -90,14 +90,14 @@ export function evaluateSerialApplicability(input: {
  * Filters a list of parts based on serial applicability notes.
  */
 export function filterPartsBySerialApplicability(
-  parts: BomRow[], 
+  parts: BomRow[],
   context: { serialNumber: string; serialProfile: SerialProfile | null }
 ) {
   const { serialNumber, serialProfile } = context;
   const applicableParts: BomRow[] = [];
   const filteredOutParts: BomRow[] = [];
   const reviewParts: BomRow[] = [];
-  
+
   if (!serialNumber && !serialProfile?.selectedYear) {
     return {
       applicableParts: parts,
@@ -109,8 +109,8 @@ export function filterPartsBySerialApplicability(
   }
 
   for (const part of parts) {
-    const notes = Array.isArray(part.serialApplicability) 
-      ? part.serialApplicability 
+    const notes = Array.isArray(part.serialApplicability)
+      ? part.serialApplicability
       : [part.serialNote].filter(Boolean);
 
     if (notes.length === 0) {

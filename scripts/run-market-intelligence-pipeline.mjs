@@ -40,7 +40,9 @@ async function runPipeline() {
     FROM bom_part b
     JOIN machine_inventory m ON b.normalized_model = m.normalized_model
     JOIN appliance_inventory_queue q ON m.id::text = q.machine_id
-    LEFT JOIN part_market_signal s ON b.part_number = s.part_number
+    LEFT JOIN part_market_signal s
+      ON b.part_number = s.part_number
+     AND b.normalized_model = s.normalized_model
     WHERE q.rank_score >= 650
       AND (s.checked_at IS NULL OR s.checked_at < now() - interval '7 days')
     LIMIT $1
@@ -75,7 +77,7 @@ async function runPipeline() {
             sell_through_rate, median_sold_price, net_expected, checked_at, raw
           )
           VALUES ($1, $2, $3, $4, $5, $6, $7, now(), $8)
-          ON CONFLICT (part_number) DO UPDATE SET
+          ON CONFLICT (part_number, normalized_model) DO UPDATE SET
             ebay_active_count = EXCLUDED.ebay_active_count,
             ebay_sold_count = EXCLUDED.ebay_sold_count,
             sell_through_rate = EXCLUDED.sell_through_rate,

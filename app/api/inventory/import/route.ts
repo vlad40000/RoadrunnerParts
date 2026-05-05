@@ -50,7 +50,7 @@ function getField(row: Record<string, any>, targetKey: keyof typeof HEADER_ALIAS
   for (const alias of aliases) {
     const normalizedAlias = normalizeHeader(alias);
     const matchingKey = rowKeys.find(k => normalizeHeader(k) === normalizedAlias);
-    
+
     if (matchingKey !== undefined) {
       const val = row[matchingKey];
       return val !== undefined && val !== null ? String(val).trim() : "";
@@ -135,38 +135,45 @@ export async function POST(request: NextRequest) {
       warnings.push(`Imported the first ${MAX_IMPORT_ROWS.toLocaleString()} rows only.`);
     }
 
-    for (const machine of machines) {
-      await sql`
-        INSERT INTO machine_inventory (
-          machine_code,
-          brand,
-          model,
-          serial,
-          appliance_type,
-          condition,
-          location,
-          disposition_recommendation,
-          priority_score,
-          original_msrp,
-          whole_machine_status,
-          raw,
-          updated_at
-        )
-        VALUES (
-          ${machine.id},
-          ${nullable(machine.brand)},
-          ${machine.model},
-          ${nullable(machine.serial || "")},
-          ${nullable(machine.type)},
-          ${nullable(machine.condition || "")},
-          ${nullable(machine.location || "")},
-          ${nullable(machine.action)},
-          ${machine.score},
-          ${machine.value},
-          ${nullable(machine.status)},
-          ${JSON.stringify(machine.raw)}::jsonb,
-          now()
-        )
+    // Process in batches of 200 to balance speed and payload size
+    const BATCH_SIZE = 200;
+    for (let i = 0; i < machines.length; i += BATCH_SIZE) {
+      const batch = machines.slice(i, i + BATCH_SIZE);
+
+      // Note: Assuming a bulk helper or using individual calls within a transaction.
+      // For the most robust Neon performance, use a transaction:
+      await Promise.all(batch.map(machine =>
+        sql`
+          INSERT INTO machine_inventory (
+            machine_code,
+            brand,
+            model,
+            serial,
+            appliance_type,
+            condition,
+            location,
+            disposition_recommendation,
+            priority_score,
+            original_msrp,
+            whole_machine_status,
+            raw,
+            updated_at
+          )
+          VALUES (
+            ${machine.id},
+            ${nullable(machine.brand)},
+            ${machine.model},
+            ${nullable(machine.serial || "")},
+            ${nullable(machine.type)},
+            ${nullable(machine.condition || "")},
+            ${nullable(machine.location || "")},
+            ${nullable(machine.action)},
+            ${machine.score},
+            ${machine.value},
+            ${nullable(machine.status)},
+            ${JSON.stringify(machine.raw)}::jsonb,
+            now()
+          )
         ON CONFLICT (machine_code) WHERE machine_code IS NOT NULL
         DO UPDATE SET
           brand = EXCLUDED.brand,
@@ -181,7 +188,8 @@ export async function POST(request: NextRequest) {
           whole_machine_status = EXCLUDED.whole_machine_status,
           raw = EXCLUDED.raw,
           updated_at = now()
-      `;
+        `
+      ));
     }
 
     return NextResponse.json({

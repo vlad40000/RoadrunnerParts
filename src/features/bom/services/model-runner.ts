@@ -1,6 +1,11 @@
 import "server-only";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, type FunctionDeclaration } from "@google/generative-ai";
 import { GoogleGenAI } from "@google/genai";
+
+export type ModelRunToolConfig = {
+  functionCallingMode?: "AUTO" | "ANY" | "NONE" | "VALIDATED";
+  allowedFunctionNames?: string[];
+};
 
 export type ModelRunInput = {
   model?:
@@ -22,12 +27,23 @@ export type ModelRunInput = {
   text?: string;
   enableSearch?: boolean;
   enableUrlContext?: boolean;
+  enableFunctionCalling?: boolean;
+  urlContextUrls?: string[];
+  functionDeclarations?: FunctionDeclaration[];
+  toolConfig?: ModelRunToolConfig;
   systemInstruction?: string;
   temperature?: number;
   topP?: number;
   maxOutputTokens?: number;
   responseMimeType?: "application/json" | "text/plain";
   schema?: any;
+};
+
+export type TextRunResult = {
+  text: string;
+  functionCalls?: unknown[];
+  urlContextMetadata?: unknown;
+  usageMetadata?: unknown;
 };
 
 function resolveModelId(model: ModelRunInput["model"]) {
@@ -46,11 +62,50 @@ function resolveModelId(model: ModelRunInput["model"]) {
   return "gemini-3.1-flash-lite-preview";
 }
 
-function buildModelTools(input: Pick<ModelRunInput, "enableSearch" | "enableUrlContext">) {
+function buildModelTools(
+  input: Pick<ModelRunInput, "enableSearch" | "enableUrlContext" | "enableFunctionCalling" | "functionDeclarations">,
+) {
   const tools: Array<Record<string, unknown>> = [];
   if (input.enableSearch) tools.push({ googleSearch: {} });
   if (input.enableUrlContext) tools.push({ urlContext: {} });
+  if (input.enableFunctionCalling && input.functionDeclarations?.length) {
+    tools.push({ functionDeclarations: input.functionDeclarations });
+  }
   return tools;
+}
+
+function buildToolConfig(input: Pick<ModelRunInput, "toolConfig" | "functionDeclarations">) {
+  if (!input.toolConfig || !input.functionDeclarations?.length) return undefined;
+
+  const config: Record<string, unknown> = {};
+  if (input.toolConfig.functionCallingMode) {
+    config.functionCallingConfig = {
+      mode: input.toolConfig.functionCallingMode,
+      allowedFunctionNames: input.toolConfig.allowedFunctionNames?.length
+        ? input.toolConfig.allowedFunctionNames
+        : undefined,
+    };
+  }
+
+  return Object.keys(config).length ? config : undefined;
+}
+
+function urlContextText(urls: string[] | undefined) {
+  const cleanUrls = Array.from(
+    new Set(
+      (urls || [])
+        .map((url) => String(url || "").trim())
+        .filter(Boolean),
+    ),
+  ).slice(0, 20);
+
+  if (!cleanUrls.length) return "";
+
+  return [
+    "[URL CONTEXT TOOL INPUT]",
+    "Use the enabled URL Context tool on these ordered URLs. Preserve order and report URL Context metadata when available.",
+    ...cleanUrls.map((url, index) => `${index + 1}. ${url}`),
+  ].join("\n");
 }
 
 export async function runStructuredJson<T>(
@@ -80,6 +135,8 @@ export async function runStructuredJson<T>(
 
   const tools = buildModelTools(input);
   if (tools.length) modelConfig.tools = tools;
+  const toolConfig = buildToolConfig(input);
+  if (toolConfig) modelConfig.toolConfig = toolConfig;
 
   const model = genAI.getGenerativeModel(modelConfig);
 
@@ -87,6 +144,11 @@ export async function runStructuredJson<T>(
 
   if (input.text) {
     parts.push({ text: input.text });
+  }
+
+  const urlText = input.enableUrlContext ? urlContextText(input.urlContextUrls) : "";
+  if (urlText) {
+    parts.push({ text: urlText });
   }
 
   if (input.files && input.files.length > 0) {
@@ -134,7 +196,7 @@ export async function runStructuredJson<T>(
   }
 }
 
-export async function runText(input: ModelRunInput): Promise<string> {
+export async function runTextDetailed(input: ModelRunInput): Promise<TextRunResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("Missing GEMINI_API_KEY");
@@ -159,12 +221,19 @@ export async function runText(input: ModelRunInput): Promise<string> {
 
   const tools = buildModelTools(input);
   if (tools.length) modelConfig.tools = tools;
+  const toolConfig = buildToolConfig(input);
+  if (toolConfig) modelConfig.toolConfig = toolConfig;
 
   const model = genAI.getGenerativeModel(modelConfig);
   const parts: any[] = [{ text: input.prompt }];
 
   if (input.text) {
     parts.push({ text: input.text });
+  }
+
+  const urlText = input.enableUrlContext ? urlContextText(input.urlContextUrls) : "";
+  if (urlText) {
+    parts.push({ text: urlText });
   }
 
   if (input.files && input.files.length > 0) {
@@ -201,7 +270,18 @@ export async function runText(input: ModelRunInput): Promise<string> {
     contents: [{ role: "user", parts }],
   });
 
-  return result.response.text();
+  const response = result.response as any;
+  return {
+    text: response.text(),
+    functionCalls: typeof response.functionCalls === "function" ? response.functionCalls() : undefined,
+    urlContextMetadata: response.candidates?.[0]?.urlContextMetadata || null,
+    usageMetadata: response.usageMetadata || null,
+  };
+}
+
+export async function runText(input: ModelRunInput): Promise<string> {
+  const result = await runTextDetailed(input);
+  return result.text;
 }
 
 export async function runGeminiCodeExecution(input: {

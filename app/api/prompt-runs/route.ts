@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runText } from "@/src/features/bom/services/model-runner";
+import { runTextDetailed } from "@/src/features/bom/services/model-runner";
 import {
   DEFAULT_MODEL_TOOLS,
   DEFAULT_MODEL_SLOTS,
@@ -23,6 +23,9 @@ import { logTelemetry } from "@/src/features/bom/services/telemetry";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const MAX_URL_CONTEXT_URLS = 20;
+type FunctionCallingMode = "AUTO" | "ANY" | "NONE" | "VALIDATED";
+
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -39,6 +42,71 @@ function normalizeAttachments(value: unknown) {
       data: String(item.data || item.dataBase64 || ""),
     }))
     .filter((item) => item.data && item.mimeType);
+}
+
+function normalizeUrlItems(value: unknown) {
+  const items = Array.isArray(value) ? value : value ? [value] : [];
+  return items
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      const record = asRecord(item);
+      return String(record.url || record.sourceUrl || record.href || "").trim();
+    })
+    .filter(Boolean);
+}
+
+function uniqueUrls(urls: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of urls) {
+    const clean = String(url || "").trim();
+    if (!clean || seen.has(clean)) continue;
+    seen.add(clean);
+    out.push(clean);
+    if (out.length >= MAX_URL_CONTEXT_URLS) break;
+  }
+  return out;
+}
+
+function normalizeToolContext(value: unknown, inputPayload: Record<string, unknown>) {
+  const input = asRecord(value);
+  const urlContext = asRecord(input.urlContext);
+  const functionCalling = asRecord(input.functionCalling);
+  const urls = uniqueUrls([
+    ...normalizeUrlItems(urlContext.urls),
+    ...normalizeUrlItems(inputPayload.sourceUrls),
+    ...normalizeUrlItems(inputPayload.candidateUrls),
+    ...normalizeUrlItems(inputPayload.sourceUrl),
+  ]);
+  const functionDeclarations = Array.isArray(functionCalling.functionDeclarations)
+    ? functionCalling.functionDeclarations.map((item) => asRecord(item)).filter((item) => item.name)
+    : [];
+  const allowedFunctionNames = Array.isArray(functionCalling.allowedFunctionNames)
+    ? functionCalling.allowedFunctionNames.map((item) => String(item || "").trim()).filter(Boolean)
+    : functionDeclarations.map((item) => String(item.name || "")).filter(Boolean);
+  const requestedMode = String(functionCalling.mode || "AUTO").toUpperCase();
+  const mode: FunctionCallingMode =
+    requestedMode === "ANY" || requestedMode === "NONE" || requestedMode === "VALIDATED" || requestedMode === "AUTO"
+      ? requestedMode
+      : "AUTO";
+
+  return {
+    urlContext: {
+      enabled: urlContext.enabled !== false && urls.length > 0,
+      maxUrls: MAX_URL_CONTEXT_URLS,
+      urls,
+    },
+    googleSearch: {
+      enabled: asRecord(input.googleSearch).enabled !== false,
+    },
+    functionCalling: {
+      enabled: functionCalling.enabled !== false,
+      callLimit: null,
+      mode,
+      allowedFunctionNames,
+      functionDeclarations,
+    },
+  };
 }
 
 function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
@@ -114,18 +182,19 @@ async function runSlot(input: {
   scenario: PromptScenario;
   slot: ModelSlot;
   inputPayload: Record<string, unknown>;
+  toolContext: ReturnType<typeof normalizeToolContext>;
   attachments: Array<{ name: string; mimeType: string; data: string }>;
 }): Promise<PromptRunOutput> {
   const startedAt = Date.now();
   const shouldMock = input.slot.provider !== "gemini" || !process.env.GEMINI_API_KEY;
-  const rawOutput = shouldMock
+  const result = shouldMock
     ? mockOutputFor({
         scenario: input.scenario,
         slot: input.slot,
         inputPayload: input.inputPayload,
         reason: input.slot.provider !== "gemini" ? `${input.slot.provider} provider selected` : "GEMINI_API_KEY is not configured",
       })
-    : await runText({
+    : await runTextDetailed({
         model: input.slot.modelName,
         systemInstruction: input.scenario.systemPrompt,
         prompt: renderUserPrompt(input.scenario.userPromptTemplate, input.inputPayload),
@@ -134,12 +203,27 @@ async function runSlot(input: {
         maxOutputTokens: input.slot.maxOutputTokens,
         enableSearch: input.slot.tools?.googleSearchGrounding,
         enableUrlContext: input.slot.tools?.urlContext,
+        enableFunctionCalling: input.slot.tools?.functionCalling,
+        urlContextUrls: input.toolContext.urlContext.urls,
+        functionDeclarations: input.toolContext.functionCalling.functionDeclarations as any,
+        toolConfig: input.toolContext.functionCalling.functionDeclarations.length
+          ? {
+              functionCallingMode: input.toolContext.functionCalling.mode,
+              allowedFunctionNames: input.toolContext.functionCalling.allowedFunctionNames,
+            }
+          : undefined,
         responseMimeType: input.slot.tools?.structuredOutputs ? "application/json" : undefined,
         files: input.attachments.map((attachment) => ({
           mimeType: attachment.mimeType,
           data: attachment.data,
         })),
       });
+  const runResult = typeof result === "string" ? { text: result } : result;
+  const rawOutput =
+    runResult.text ||
+    (runResult.functionCalls?.length
+      ? JSON.stringify({ functionCalls: runResult.functionCalls }, null, 2)
+      : "");
 
   const normalized = normalizeModelOutput(rawOutput);
   const validation = validatePromptOutput({
@@ -170,6 +254,9 @@ async function runSlot(input: {
     latencyMs: Date.now() - startedAt,
     createdAt: new Date().toISOString(),
     mock: shouldMock,
+    functionCalls: runResult.functionCalls,
+    urlContextMetadata: runResult.urlContextMetadata,
+    usageMetadata: runResult.usageMetadata,
   };
 }
 
@@ -193,6 +280,7 @@ export async function POST(req: NextRequest) {
     }
 
     const inputPayload = asRecord(body.inputPayload);
+    const toolContext = normalizeToolContext(body.toolContext, inputPayload);
     const attachments = normalizeAttachments(body.attachments);
     const slotInputs = Array.isArray(body.modelSlots) ? body.modelSlots : DEFAULT_MODEL_SLOTS;
     const requestedEnabledSlots = slotInputs.filter((slot) => asRecord(slot).enabled !== false);
@@ -215,6 +303,7 @@ export async function POST(req: NextRequest) {
           scenario,
           slot,
           inputPayload,
+          toolContext,
           attachments,
         }),
       ),
@@ -226,6 +315,7 @@ export async function POST(req: NextRequest) {
       scenarioType: scenario.type,
       scenarioName: scenario.name,
       inputPayload,
+      toolContext,
       modelSlots: slots,
       outputs,
       status: "complete",
@@ -247,10 +337,13 @@ export async function POST(req: NextRequest) {
         runId: run.id,
         scenarioId: scenario.id,
         inputPayload,
+        toolContext,
         outputs: run.outputs.map(o => ({
           slotId: o.slotId,
           latencyMs: o.latencyMs,
-          validationStatus: o.validationStatus
+          validationStatus: o.validationStatus,
+          functionCalls: o.functionCalls,
+          urlContextMetadata: o.urlContextMetadata,
         }))
       }
     });

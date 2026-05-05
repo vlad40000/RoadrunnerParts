@@ -136,22 +136,28 @@ export const PROMPT_SCENARIOS: PromptScenario[] = [
     name: "Diagram Discovery",
     type: "diagram_discovery",
     description: "Plan diagram section discovery from source context without extracting final parts.",
-    requiredInputs: ["modelNumber", "supplier", "sourceUrl", "browserCapture"],
+    requiredInputs: ["modelNumber", "supplier", "sourceUrl", "sourceUrls", "candidateUrls", "browserCapture"],
     enabled: true,
     systemPrompt: [
       "You are a diagram discovery reviewer.",
       "Return only valid JSON.",
       "Use only supplied source context.",
+      "Accept multiple source URLs. Treat sourceUrl as the primary candidate and sourceUrls/candidateUrls as the ordered discovery queue.",
+      "URL Context may include up to 20 URLs. Preserve the queue order and do not collapse it to one URL unless only one URL was supplied.",
+      "Function calling is not capped by call count; obey the selected tool policy and stage contract.",
+      "Do not discard secondary URLs unless source evidence proves they are the wrong model or wrong supplier.",
       "Do not create final BOM rows or part-number claims.",
     ].join("\n"),
     userPromptTemplate: [
       "Find diagram sections and source URLs from the supplied evidence.",
+      "If multiple URLs are provided, review them in priority order and return every usable diagram URL with its originating source URL.",
       "Input payload:",
       "{{input_payload_json}}",
     ].join("\n\n"),
     expectedJsonShape: {
       modelNumber: null,
       supplier: null,
+      sourceUrlsReviewed: [],
       diagrams: [
         {
           sectionName: null,

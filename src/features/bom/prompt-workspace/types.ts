@@ -141,6 +141,9 @@ export type PromptRunOutput = {
   latencyMs: number;
   createdAt: string;
   mock: boolean;
+  functionCalls?: unknown[];
+  urlContextMetadata?: unknown;
+  usageMetadata?: unknown;
 };
 
 export type PromptRun = {
@@ -149,6 +152,7 @@ export type PromptRun = {
   scenarioType: PromptScenarioType;
   scenarioName: string;
   inputPayload: Record<string, unknown>;
+  toolContext?: unknown;
   modelSlots: ModelSlot[];
   outputs: PromptRunOutput[];
   status: PromptRunStatus;
