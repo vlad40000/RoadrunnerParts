@@ -117,14 +117,18 @@ why are the prompts not auto loading? why are the URLs not loading?
   - Updated `logTelemetry` service to capture prompt variations per run.
   - Integrated telemetry into the `/api/prompt-runs` playground API for auditability.
 
+- [x] **Gemini 3 Cookbook**: Created `GEMINI_3_COOKBOOK.md` detailing advanced agentic recipes (Visual Loop, Market-Signal Intelligence, CoVe Delta-Scan).
+
 ## Current Status
 - **Age-Banding Operational**: Serial decoding pipeline is live. High-confidence decodes automatically assign age bands.
 - **MSRP Pipeline Live**: Deterministic MSRP enrichment is functional.
 - **eBay Pipeline Ready**: Market survey and listing preparation workers are implemented and ready for large-scale execution.
 - **Prompt Architecture Persistent**: AI agent instructions are now cloud-persisted, reviewable, and version-tracked via telemetry logs.
+- **Agentic Recipes Defined**: High-performance combinations of Gemini 3 features (Thinking, Computer Use, Parallel Calls) are documented and ready for implementation.
 
 ## Next Steps
-- [ ] Run end-to-end integration test on a 20-unit sample.
-- [ ] Implement "Production Decision" dashboard to review high-margin draft listings.
+- [ ] Implement the "Visual Loop" recovery logic in `browser-agent/computer-use-agent.mjs` using the defined recipe.
+- [ ] Orchestrate the "Market-Signal Intelligence" pipeline as a single batch worker.
+- [ ] Run end-to-end integration test on a 20-unit sample using the new agentic recipes.
 - [ ] Automate eBay draft creation via the official eBay API (using BOM Dispatcher).
 
