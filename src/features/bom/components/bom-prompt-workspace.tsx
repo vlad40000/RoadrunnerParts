@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  AlertTriangle,
   BadgeCheck,
   BookOpen,
   Bot,
@@ -1980,6 +1981,8 @@ function MissionPromptComposer(props: {
   activeSlot: ModelSlot;
   attachments: PromptAttachment[];
   suppliers: SupplierCard[];
+  instructionChips: string[];
+  instructionWarnings: string[];
   setPromptText: React.Dispatch<React.SetStateAction<string>>;
   runScenario: () => void;
   updateSlot: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
@@ -2105,6 +2108,7 @@ function MissionPromptComposer(props: {
             <Wrench size={16} />
             Tools
           </button>
+          <InstructionStackChips chips={props.instructionChips} warnings={props.instructionWarnings} compact />
           {activeChips.map((tool) => (
             <button
               key={tool.key}
@@ -2537,6 +2541,8 @@ function PromptCockpitDrawer(props: {
   userPromptTemplate: string;
   inputPayloadText: string;
   inputError: string | null;
+  compiledRunPreview: string;
+  instructionWarnings: string[];
   runBusy: boolean;
   runError: string | null;
   lastRun: PromptRun | null;
@@ -2561,6 +2567,12 @@ function PromptCockpitDrawer(props: {
         </button>
       </div>
       <div className="bom-prompt-body">
+        {props.instructionWarnings.length ? (
+          <div className="bom-prompt-warning">
+            <AlertTriangle size={14} />
+            <span>{props.instructionWarnings.join(" ")}</span>
+          </div>
+        ) : null}
         <label>
           <span>System</span>
           <textarea value={props.systemPrompt} onChange={(event) => props.setSystemPrompt(event.target.value)} />
@@ -2572,6 +2584,10 @@ function PromptCockpitDrawer(props: {
         <label>
           <span>Input Payload</span>
           <textarea value={props.inputPayloadText} onChange={(event) => props.setInputPayloadText(event.target.value)} />
+        </label>
+        <label>
+          <span>Compiled Preview</span>
+          <textarea readOnly value={props.compiledRunPreview} />
         </label>
       </div>
       <div className="bom-prompt-foot">

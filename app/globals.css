@@ -1873,6 +1873,55 @@
     font-weight: 900;
   }
 
+  .instruction-chip-row {
+    display: inline-flex;
+    min-width: 0;
+    max-width: min(520px, 42vw);
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .instruction-chip-row.compact {
+    display: flex;
+    max-width: 100%;
+    flex-wrap: wrap;
+    padding-top: 8px;
+  }
+
+  .instruction-chip {
+    display: inline-flex;
+    min-width: 0;
+    max-width: 180px;
+    height: 24px;
+    align-items: center;
+    border: 1px solid #c7d7ee;
+    border-radius: 999px;
+    background: #eef4ff;
+    padding: 0 9px;
+    color: #174ea6;
+    font-size: 10px;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .instruction-chip-row .instruction-chip {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .instruction-chip.muted {
+    border-color: #e5e7eb;
+    background: #f6f7f9;
+    color: #7b828c;
+  }
+
+  .instruction-chip.warning {
+    border-color: #f4c76b;
+    background: #fff7df;
+    color: #8a5a00;
+  }
+
   .mission-icon-pill {
     width: 34px;
     padding: 0;
@@ -2206,7 +2255,7 @@
     display: grid;
     min-height: 0;
     flex: 1;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .bom-prompt-body label {
@@ -2218,6 +2267,29 @@
 
   .bom-prompt-body label:last-child {
     border-right: 0;
+  }
+
+  .bom-prompt-warning {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f4c76b;
+    background: #fff7df;
+    padding: 7px 10px;
+    color: #7a4d00;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.35;
+  }
+
+  .bom-prompt-warning span {
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   .bom-prompt-body span {
