@@ -48,6 +48,11 @@ import {
 import { SystemInstructionsDrawer, getInstructionStackNames } from "./system-instructions-drawer";
 import { ComputerUseSupervisor } from "./computer-use-supervisor";
 import {
+  buildCanonicalEncompassUrls,
+  buildKnownEncompassAssemblyUrl,
+  normalizeCanonicalModel,
+} from "@/src/features/bom/services/source-tier-policy";
+import {
   DEFAULT_MODEL_SLOTS,
   DEFAULT_MODEL_TOOLS,
   type BomWorkspaceMode,
@@ -384,9 +389,16 @@ function firstRowText(row: Record<string, unknown>, keys: string[]) {
 }
 
 function supplierUrl(supplier: SupplierCard, model: string) {
-  const encoded = encodeURIComponent(model || "");
+  const canonical = normalizeCanonicalModel(model);
+  const encoded = encodeURIComponent(canonical || model || "");
   if (supplier.id === "manual-pdf" || supplier.id === "diagram-upload") return "";
-  if (supplier.id === "encompass") return `https://encompass.com/search?searchTerm=${encoded}`;
+  if (supplier.id === "encompass") {
+    return (
+      buildKnownEncompassAssemblyUrl(canonical) ||
+      buildCanonicalEncompassUrls({ model: canonical }).explodedViewUrl ||
+      `https://encompass.com/Exploded-View-Search?searchTerm=${encoded}`
+    );
+  }
   if (supplier.id === "sears-partsdirect") return `https://www.searspartsdirect.com/search?q=${encoded}`;
   if (supplier.id === "repairclinic") return `https://www.repairclinic.com/Shop-For-Parts?query=${encoded}`;
   if (supplier.id === "ge") return `https://www.geapplianceparts.com/store/parts/search?q=${encoded}`;
@@ -394,6 +406,34 @@ function supplierUrl(supplier: SupplierCard, model: string) {
   if (supplier.id === "lg") return `https://lgparts.com/search?q=${encoded}`;
   if (supplier.id === "samsung") return `https://samsungparts.com/search?q=${encoded}`;
   return "";
+}
+
+async function resolveSupplierUrl(input: {
+  supplier: SupplierCard;
+  model: string;
+  brand?: string | null;
+}) {
+  const canonical = normalizeCanonicalModel(input.model);
+  if (input.supplier.id !== "encompass" || !canonical) {
+    return supplierUrl(input.supplier, canonical || input.model);
+  }
+
+  const localFallback =
+    buildKnownEncompassAssemblyUrl(canonical, input.brand) ||
+    buildCanonicalEncompassUrls({ model: canonical, brand: input.brand }).explodedViewUrl ||
+    supplierUrl(input.supplier, canonical);
+
+  try {
+    const params = new URLSearchParams({ model: canonical });
+    if (input.brand) params.set("brand", input.brand);
+    const res = await fetch(`/api/bom/encompass-index?${params.toString()}`);
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data) return localFallback;
+    const selectedUrl = data.selected?.url || data.url || data.fallbackUrl;
+    return typeof selectedUrl === "string" && selectedUrl.trim() ? selectedUrl.trim() : localFallback;
+  } catch {
+    return localFallback;
+  }
 }
 
 function buildDefaultInputPayload(input: {
@@ -799,18 +839,25 @@ export function BomPromptWorkspace({
     setSavedPromptStatus("Saved in local prompt workspace");
   }
 
-  function selectSupplierAction(supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") {
-    const url = supplierUrl(supplier, model);
+  async function selectSupplierAction(supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") {
+    const activeModel = model || job?.model || "";
+    const url = await resolveSupplierUrl({
+      supplier,
+      model: activeModel,
+      brand: job?.brand || null,
+    });
     setBrowserSupplier(supplier.id);
     setBrowserUrl(url);
-    if (url) setBrowserFrameUrl(url);
+    setBrowserFrameUrl("");
     loadScenarioByType(TASK_TO_SCENARIO[task], {
       supplier: supplier.label,
       supplierId: supplier.id,
-      modelNumber: model || job?.model || null,
+      modelNumber: activeModel || null,
       sourceUrl: url || null,
       browserCapture: null,
       sourceEvidence: null,
+      stagedOnly: true,
+      runPolicy: "Do not navigate, search, extract, or execute until the operator presses Run.",
     });
     setActiveMode(TASK_TO_MODE[task]);
   }

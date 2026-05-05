@@ -73,7 +73,7 @@ export function inferEncompassPrefix(input: {
   const model = normalizeCanonicalModel(input.model);
   const brand = String(input.brand || "").toLowerCase();
 
-  if (brand.includes("hotpoint") || /^(HTW|HTX)/.test(model)) {
+  if (brand.includes("hotpoint") || /^(HTD|HTW|HTX)/.test(model)) {
     return "HOT";
   }
 
