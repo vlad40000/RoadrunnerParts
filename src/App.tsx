@@ -1047,6 +1047,150 @@ Sort the final JSON alphabetically by part_name before outputting.`;
         throw new Error(errorData.error || 'Field AI Chat failed');
       }
 
+  const stats = useMemo(() => {
+    const dataSource = aiParts.length > 0 ? aiParts : partsData;
+    return {
+      total: dataSource.length,
+      filtered: filteredParts.length,
+      sections: dynamicSections.length,
+      isAI: aiParts.length > 0
+    };
+  }, [filteredParts, aiParts]);
+
+  const isBomComplete = expectedPartCount !== null && aiParts.length >= expectedPartCount;
+  const completeBomLabel = isBomComplete
+    ? `All ${expectedPartCount} Parts Found`
+    : expectedPartCount !== null && aiParts.length > 0
+      ? `Exhaustive Pass ${bomPassCount + 1} (${aiParts.length}/${expectedPartCount})`
+      : aiParts.length > 0
+        ? `Exhaustive Pass ${bomPassCount + 1}`
+        : 'Complete BOM';
+
+  const handleCheckCompatibility = (modelOverride?: string) => {
+    const modelToUse = modelOverride || checkModel;
+    if (!selectedPart || !modelToUse) return;
+
+    const normalizedModel = modelToUse.trim().toUpperCase();
+    const isCompatible = selectedPart.compatibleModels.some(m =>
+      m === normalizedModel || m === 'Universal'
+    );
+
+    let suggestions: Part[] = [];
+    if (!isCompatible) {
+      suggestions = partsData.filter(p =>
+        p.section === selectedPart.section &&
+        p.partNumber !== selectedPart.partNumber &&
+        p.compatibleModels.includes(normalizedModel)
+      ).slice(0, 3);
+    }
+
+    setCompatibilityResult({ isCompatible, suggestions });
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const newRecorder = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+
+      newRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      newRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        setIsFieldChatLoading(true);
+        try {
+          // Convert binary to base64
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = async () => {
+            const base64Audio = (reader.result as string).split(',')[1];
+            await processAudioNote(base64Audio);
+          };
+        } catch (err) {
+          console.error("Audio processing failed", err);
+        } finally {
+          setIsFieldChatLoading(false);
+          // Cleanup stream
+          stream.getTracks().forEach(track => track.stop());
+        }
+      };
+
+      newRecorder.start();
+      setRecorder(newRecorder);
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Microphone access denied", err);
+      alert("Microphone access is required for voice notes. Please enable permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (recorder) {
+      recorder.stop();
+      setIsRecording(false);
+      setRecorder(null);
+    }
+  };
+
+  const processAudioNote = async (base64Data: string) => {
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'audio',
+          audioData: base64Data,
+          mimeType: 'audio/webm'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Transcription failed');
+      }
+
+      const transcript = await response.json();
+      if (transcript) {
+
+        setFieldChatMessages(prev => [...prev,
+        { role: 'user', text: "[Voice Log Recorded]" },
+        { role: 'assistant', text: `Captured Note: "${transcript}". I've added this to your technical log.` }
+        ]);
+      }
+    } catch (error) {
+      console.error("Transcription error", error);
+    }
+  };
+
+  const handleFieldAIChat = async (message: string) => {
+    if (!message.trim()) return;
+
+    const userMsg = { role: 'user' as const, text: message };
+    setFieldChatMessages(prev => [...prev, userMsg]);
+    setIsFieldChatLoading(true);
+
+    try {
+      const response = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          task: 'chat',
+          message,
+          context: {
+            part: selectedPart,
+            model: checkModel || lookupModel
+          },
+          history: fieldChatMessages
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Field AI Chat failed');
+      }
+
       const result = await response.json();
       setFieldChatMessages(prev => [...prev, { role: 'assistant', text: result || "System error. Please retry." }]);
     } catch (error) {
@@ -1079,7 +1223,6 @@ Sort the final JSON alphabetically by part_name before outputting.`;
         {/* Professional Sidebar */}
         <aside className="hidden lg:block space-y-8 border-r border-pro-slate-200 pr-6 min-h-[calc(100vh-7rem)]">
           <section>
-
             <nav className="flex flex-col gap-3">
               <a
                 href={`/bom-workflow?${new URLSearchParams({
@@ -1090,6 +1233,17 @@ Sort the final JSON alphabetically by part_name before outputting.`;
               >
                 <Zap size={18} className="fill-emerald-600" />
                 COMMAND CONSOLE
+              </a>
+              <a
+                href={`/bom-workflow?${new URLSearchParams({
+                  action: 'market_intel',
+                  ...(lookupModel || searchTerm ? { model: lookupModel || searchTerm } : {}),
+                  ...(lookupSerial ? { serial: lookupSerial } : {}),
+                }).toString()}`}
+                className="w-full flex items-center gap-3 px-6 py-4 text-sm font-black uppercase tracking-widest text-pro-blue bg-blue-50 hover:bg-blue-100 transition-all rounded-lg border border-blue-200 mb-4 shadow-sm"
+              >
+                <Database size={18} className="fill-pro-blue" />
+                MARKET INTELLIGENCE
               </a>
               <button
                 onClick={() => setSelectedSections([])}
@@ -1114,14 +1268,11 @@ Sort the final JSON alphabetically by part_name before outputting.`;
               ))}
             </nav>
           </section>
-
-
         </aside>
 
         {/* Parts Explorer */}
         <section className="space-y-4 overflow-hidden">
           <div className="flex flex-col gap-6">
-            {/* High-Level Stats Bar */}
             <h1 className="lg:hidden text-2xl font-semibold text-[#435572]">{selectedSectionLabel}</h1>
 
             <div className="grid grid-cols-2 gap-5 lg:grid-cols-[minmax(260px,1fr)_minmax(260px,1fr)_240px_82px]">

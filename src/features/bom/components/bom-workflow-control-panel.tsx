@@ -6,6 +6,7 @@ type BomWorkflowControlPanelProps = {
   initialModel?: string;
   initialSerial?: string;
   initialJobId?: string;
+  initialAction?: string;
 };
 
 export function BomWorkflowControlPanel(props: BomWorkflowControlPanelProps) {

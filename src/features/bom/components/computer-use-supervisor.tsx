@@ -223,7 +223,9 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
   const [job, setJob] = useState<any>(null);
   const [isApproving, setIsApproving] = useState(false);
   const [config, setConfig] = useState<AgentConfig>(DEFAULT_AGENT_CONFIG);
-  const [panelMode, setPanelMode] = useState<"configure" | "evidence">("configure");
+  const [panelMode, setPanelMode] = useState<"configure" | "evidence" | "mission">("mission");
+  const [instruction, setInstruction] = useState("");
+  const [isSendingInstruction, setIsSendingInstruction] = useState(false);
   const [agentCode, setAgentCode] = useState("");
   const [isLaunching, setIsLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
@@ -371,6 +373,28 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
       console.error("Job approval failed", err);
     } finally {
       setIsApproving(false);
+    }
+  }
+
+  async function sendInstruction() {
+    if (!jobId || !instruction.trim() || isSendingInstruction) return;
+    setIsSendingInstruction(true);
+    try {
+      const res = await fetch(`/api/bom/jobs/${jobId}/telemetry`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "cu_instruction_update",
+          status: "new",
+          payload: { instruction: instruction.trim() }
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to send instruction");
+      setInstruction("");
+    } catch (err) {
+      console.error("Failed to send instruction", err);
+    } finally {
+      setIsSendingInstruction(false);
     }
   }
 
@@ -768,13 +792,13 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
 
         {display.sidePanel ? (
         <div className="w-full border-t border-white/5 bg-neutral-800/50 flex flex-col">
-          <div className="grid grid-cols-2 border-b border-white/5 p-2">
+          <div className="grid grid-cols-3 border-b border-white/5 p-2">
             <button
               type="button"
-              onClick={() => setPanelMode("configure")}
-              className={`rounded-md px-2 py-1.5 text-[10px] font-black uppercase tracking-widest ${panelMode === "configure" ? "bg-white text-neutral-900" : "text-neutral-500 hover:bg-white/5"}`}
+              onClick={() => setPanelMode("mission")}
+              className={`rounded-md px-2 py-1.5 text-[10px] font-black uppercase tracking-widest ${panelMode === "mission" ? "bg-white text-neutral-900" : "text-neutral-500 hover:bg-white/5"}`}
             >
-              Config
+              Mission
             </button>
             <button
               type="button"
@@ -783,9 +807,67 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
             >
               Evidence
             </button>
+            <button
+              type="button"
+              onClick={() => setPanelMode("configure")}
+              className={`rounded-md px-2 py-1.5 text-[10px] font-black uppercase tracking-widest ${panelMode === "configure" ? "bg-white text-neutral-900" : "text-neutral-500 hover:bg-white/5"}`}
+            >
+              Config
+            </button>
           </div>
           
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {panelMode === "mission" ? (
+              <div className="flex h-full flex-col p-2">
+                <div className="flex-1 space-y-4 overflow-y-auto rounded-lg border border-white/5 bg-black/20 p-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-blue-400">Current Goal</div>
+                    <div className="rounded-md border border-blue-500/30 bg-blue-500/5 p-3 text-xs text-neutral-200">
+                      {extractContentsFromCode(agentCode, buildDefaultContents({ model, sourceUrl }))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Operator Chat</div>
+                    {telemetry.filter(t => t.event === 'cu_instruction_update').map(t => (
+                      <div key={t.id} className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-bold text-neutral-500">OPERATOR</span>
+                          <span className="text-[9px] text-neutral-600">{new Date(t.createdAt || t.created_at || '').toLocaleTimeString()}</span>
+                        </div>
+                        <div className="rounded-lg bg-neutral-700/50 p-2 text-xs text-neutral-300">
+                          {t.payload?.instruction}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-2">
+                  <textarea
+                    value={instruction}
+                    onChange={(e) => setInstruction(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        void sendInstruction();
+                      }
+                    }}
+                    placeholder="Send new instructions to the agent..."
+                    className="min-h-[80px] w-full resize-none rounded-lg border border-white/10 bg-neutral-950 p-3 text-xs text-neutral-200 outline-none focus:border-blue-500/50"
+                  />
+                  <button
+                    onClick={sendInstruction}
+                    disabled={!instruction.trim() || isSendingInstruction}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-blue-500 disabled:opacity-50"
+                  >
+                    {isSendingInstruction ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+                    Update Instructions
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             {panelMode === "configure" ? (
               <div className="space-y-2 p-2">
                 <div className="rounded-lg border border-white/10 bg-white/5 p-3">

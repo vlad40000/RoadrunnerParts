@@ -19,6 +19,7 @@ export default async function BomWorkflowPage({ searchParams }: PageProps) {
       initialModel={firstParam(params.model)}
       initialSerial={firstParam(params.serial)}
       initialJobId={firstParam(params.jobId)}
+      initialAction={firstParam(params.action)}
     />
   );
 }

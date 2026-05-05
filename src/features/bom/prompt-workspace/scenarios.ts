@@ -420,6 +420,34 @@ export const PROMPT_SCENARIOS: PromptScenario[] = [
       },
     },
   },
+  {
+    id: "market-intelligence-survey",
+    name: "Market Intelligence Survey",
+    type: "market_intelligence_survey",
+    description: "Orchestrate an eBay market survey and listing preparation mission.",
+    requiredInputs: ["modelNumber", "brand", "targetMarket"],
+    enabled: true,
+    systemPrompt: [
+      "You are a Market Intelligence Agent.",
+      "Your mission is to survey the current market for appliance parts on eBay.",
+      "Analyze pricing trends, competitor listings, and sell-through rates.",
+      "Return structured market signals for listing optimization.",
+    ].join("\n"),
+    userPromptTemplate: [
+      "Perform a market survey for the specified model and brand.",
+      "Input payload:",
+      "{{input_payload_json}}",
+    ].join("\n\n"),
+    expectedJsonShape: {
+      marketSignals: {
+        averagePrice: null,
+        competitorCount: 0,
+        demandLevel: "unknown",
+        recommendedPrice: null,
+        listingStrategy: "",
+      },
+    },
+  },
 ];
 
 export function getPromptScenarioById(id: string) {

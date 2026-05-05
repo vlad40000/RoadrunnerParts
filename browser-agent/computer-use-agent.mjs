@@ -19,6 +19,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCREEN_WIDTH = 1440;
 const SCREEN_HEIGHT = 900;
 
+// Behavioral Jitter Config
+const MIN_JITTER = 500;
+const MAX_JITTER = 2000;
+
 const GENERIC_BLOCK_RE = /(403|429|forbidden|access denied|request blocked|unusual traffic|verify you are human|captcha|temporarily unavailable|rate limit|too many requests)/i;
 
 const PROVIDER_BLOCK_RULES = [
@@ -139,6 +143,31 @@ class ComputerUseAgent {
     };
   }
 
+  async jitter(min = MIN_JITTER, max = MAX_JITTER) {
+    const delay = Math.floor(Math.random() * (max - min + 1) + min);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+  }
+
+  async checkForInstructionUpdates() {
+    if (!this.jobId || !this.appUrl) return null;
+    try {
+      const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry?limit=20`);
+      const data = await res.json().catch(() => null);
+      const events = Array.isArray(data?.telemetry) ? data.telemetry : [];
+      
+      // Look for the latest instruction update that isn't processed
+      const update = events.find((t) => t.event === 'cu_instruction_update' && t.status === 'new');
+      if (update) {
+        console.log('[CU Agent] Received new instruction:', update.payload?.instruction);
+        await this.telemetry('cu_instruction_update', 'processed', { originalId: update.id });
+        return update.payload?.instruction;
+      }
+    } catch (err) {
+      console.warn('[CU Agent] Instruction poll failed:', err.message);
+    }
+    return null;
+  }
+
   async requestManualGate(context = {}) {
     if (!this.jobId || !this.appUrl) return;
     console.log('[CU Agent] Requesting Manual Gate (HITL)...');
@@ -218,6 +247,9 @@ class ComputerUseAgent {
     console.log(`[CU Agent] Executing: ${name}`, args);
 
     try {
+      // Apply behavioral jitter before every action
+      await this.jitter();
+
       switch (name) {
         case 'open_web_browser':
           // Already handled in init/goto
@@ -226,23 +258,42 @@ class ComputerUseAgent {
           await this.page.goto(args.url, { waitUntil: 'domcontentloaded' });
           break;
         case 'click_at':
-          await this.page.mouse.click(this.denormalizeX(args.x), this.denormalizeY(args.y));
+          const cx = this.denormalizeX(args.x);
+          const cy = this.denormalizeY(args.y);
+          // Human-like mouse movement
+          await this.page.mouse.move(cx, cy, { steps: 10 });
+          await this.page.mouse.click(cx, cy);
           break;
         case 'type_text_at':
-          const x = this.denormalizeX(args.x);
-          const y = this.denormalizeY(args.y);
-          await this.page.mouse.click(x, y);
-          // Clear field
+          const tx = this.denormalizeX(args.x);
+          const ty = this.denormalizeY(args.y);
+          await this.page.mouse.move(tx, ty, { steps: 10 });
+          await this.page.mouse.click(tx, ty);
+          
+          // Clear field with jitter
           await this.page.keyboard.press('Control+A');
+          await this.jitter(100, 300);
           await this.page.keyboard.press('Backspace');
-          await this.page.keyboard.type(args.text);
+          await this.jitter(100, 500);
+
+          // Type with individual key delays
+          for (const char of args.text) {
+            await this.page.keyboard.type(char, { delay: Math.random() * 80 + 20 });
+          }
+          
           if (args.press_enter !== false) {
+            await this.jitter(200, 600);
             await this.page.keyboard.press('Enter');
           }
           break;
         case 'scroll_document':
           const scrollMap = { 'up': -800, 'down': 800, 'left': -800, 'right': 800 };
-          await this.page.mouse.wheel(0, scrollMap[args.direction] || 800);
+          const dist = scrollMap[args.direction] || 800;
+          // Smooth scroll jitter
+          for (let s = 0; s < 5; s++) {
+            await this.page.mouse.wheel(0, dist / 5);
+            await this.jitter(50, 150);
+          }
           break;
         case 'wait_5_seconds':
           await new Promise(r => setTimeout(r, 5000));
@@ -278,6 +329,16 @@ class ComputerUseAgent {
     const turnLimit = 10;
     for (let i = 0; i < turnLimit; i++) {
       console.log(`\n--- [CU Agent] Turn ${i + 1} ---`);
+
+      // 0. Check for mid-session instruction updates
+      const newInstruction = await this.checkForInstructionUpdates();
+      if (newInstruction) {
+        history.push({
+          role: 'user',
+          parts: [{ text: `NEW OPERATOR INSTRUCTION: ${newInstruction}\nPlease adjust your plan according to this new information.` }]
+        });
+        // Reset turn limit if new instruction received? Or just continue.
+      }
       
       // 1. HITL Gate Check
       try {

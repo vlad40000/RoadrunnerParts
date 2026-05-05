@@ -41,6 +41,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { SystemInstructionsDrawer } from "./system-instructions-drawer";
+import { ComputerUseSupervisor } from "./computer-use-supervisor";
 import {
   DEFAULT_MODEL_SLOTS,
   DEFAULT_MODEL_TOOLS,
@@ -60,6 +61,7 @@ type BomPromptWorkspaceProps = {
   initialModel?: string;
   initialSerial?: string;
   initialJobId?: string;
+  initialAction?: string;
 };
 
 type BomJob = {
@@ -425,6 +427,8 @@ export function BomPromptWorkspace({
   const [promptDrawerOpen, setPromptDrawerOpen] = useState(false);
   const [railExpanded, setRailExpanded] = useState(false);
   const [modelDrawerSlot, setModelDrawerSlot] = useState<ModelSlot["id"] | null>(null);
+  const [missionSettingsOpen, setMissionSettingsOpen] = useState(true);
+  const [missionSettingsSlot, setMissionSettingsSlot] = useState<ModelSlot["id"]>("slot_a");
   const [modelSearch, setModelSearch] = useState("");
   const [modelFilter, setModelFilter] = useState<(typeof MODEL_FILTERS)[number]>("All");
   const [toolsPopoverSlot, setToolsPopoverSlot] = useState<ModelSlot["id"] | null>(null);
@@ -507,6 +511,14 @@ export function BomPromptWorkspace({
       setJobError(error instanceof Error ? error.message : "Job load failed");
     });
   }, [initialJobId]);
+
+  useEffect(() => {
+    if (initialAction === "market_intel") {
+      setWorkspaceView("mission");
+      setActiveMode("browser_tool");
+      loadScenarioByType("market_intelligence_survey");
+    }
+  }, [initialAction, loadScenarioByType]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -748,6 +760,14 @@ export function BomPromptWorkspace({
             <button type="button" className="bom-cockpit-icon-button" title="Prompt cockpit" onClick={() => setPromptDrawerOpen((open) => !open)}>
               <FileCode2 size={14} />
             </button>
+            <button
+              type="button"
+              className={`bom-cockpit-icon-button ${missionSettingsOpen ? "on" : ""}`}
+              title="Run settings"
+              onClick={() => setMissionSettingsOpen((open) => !open)}
+            >
+              <SlidersHorizontal size={14} />
+            </button>
             <button type="button" className="bom-cockpit-icon-button" title="Gemini AI Studio" onClick={() => setWorkspaceView("studio")}>
               <Bot size={14} />
             </button>
@@ -782,15 +802,21 @@ export function BomPromptWorkspace({
             setActiveMode={setActiveMode}
           />
           <section className="bom-cockpit-center">
-            <BrowserCanvas
-              browserFrameUrl={browserFrameUrl}
-              browserUrl={browserUrl}
-              browserSupplier={browserSupplier}
-              model={model}
-              lastRun={lastRun}
-              captures={captures}
-            />
-            <PromptCockpitDrawer
+            {activeMode === "browser_tool" ? (
+              <ComputerUseSupervisor jobId={jobId} model={model} />
+            ) : (
+              <BrowserCanvas
+                browserFrameUrl={browserFrameUrl}
+                browserUrl={browserUrl}
+                browserSupplier={browserSupplier}
+                model={model}
+                lastRun={lastRun}
+                captures={captures}
+                modelSlots={modelSlots}
+              />
+            )}
+          </section>
+          <PromptCockpitDrawer
               open={promptDrawerOpen}
               scenarios={scenarios}
               selectedScenario={selectedScenario}
@@ -815,22 +841,66 @@ export function BomPromptWorkspace({
               queueCapture={queueCapture}
               selectSupplierAction={selectSupplierAction}
               validateLatestRun={validateLatestRun}
+              runScenario={runScenario}
+              runBusy={runBusy}
+              activeSlotsCount={activeSlots.length}
             />
           </section>
-          <RightInspector
-            modelSlots={modelSlots}
-            activeMode={activeMode}
-            selectedScenario={selectedScenario}
-            inputPayload={(inputPayload.value || {}) as Record<string, unknown>}
-            job={job}
-            jobId={jobId}
-            model={model}
-            browserFrameUrl={browserFrameUrl}
-            lastRun={lastRun}
-            lastValidation={lastValidation}
-            updateSlot={updateSlot}
-            saveWinningPrompt={saveWinningPrompt}
+          {missionSettingsOpen ? (
+            <MissionRunSettingsRail
+              modelSlots={modelSlots}
+              activeSlotId={missionSettingsSlot}
+              setActiveSlotId={setMissionSettingsSlot}
+              systemPrompt={systemPrompt}
+              setSystemPrompt={setSystemPrompt}
+              onOpenModelDrawer={(slotId) => setModelDrawerSlot(slotId)}
+              onPatch={updateSlot}
+              onClose={() => setMissionSettingsOpen(false)}
+            />
+          ) : (
+            <button
+              type="button"
+              className="bom-settings-reopen"
+              title="Open run settings"
+              onClick={() => setMissionSettingsOpen(true)}
+            >
+              <SlidersHorizontal size={16} />
+            </button>
+          )}
+          <SystemInstructionsDrawer
+            isOpen={isInstructionsDrawerOpen}
+            onClose={() => setIsInstructionsDrawerOpen(false)}
+            currentInstruction={systemPrompt}
+            onSelect={(content) => setSystemPrompt(content)}
           />
+          <ModelSelectionPortal
+            slot={modelDrawerSlot ? modelSlots.find((item) => item.id === modelDrawerSlot) || modelSlots[0] : null}
+            search={modelSearch}
+            filter={modelFilter}
+            setSearch={setModelSearch}
+            setFilter={setModelFilter}
+            onClose={() => setModelDrawerSlot(null)}
+            onSelect={(modelName) => {
+              if (modelDrawerSlot) updateSlot(modelDrawerSlot, { modelName });
+              setModelDrawerSlot(null);
+            }}
+          />
+          {false ? (
+            <RightInspector
+              modelSlots={modelSlots}
+              activeMode={activeMode}
+              selectedScenario={selectedScenario}
+              inputPayload={(inputPayload.value || {}) as Record<string, unknown>}
+              job={job}
+              jobId={jobId}
+              model={model}
+              browserFrameUrl={browserFrameUrl}
+              lastRun={lastRun}
+              lastValidation={lastValidation}
+              updateSlot={updateSlot}
+              saveWinningPrompt={saveWinningPrompt}
+            />
+          ) : null}
         </div>
       </main>
     );
@@ -940,20 +1010,18 @@ export function BomPromptWorkspace({
         ) : null}
       </section>
 
-      {modelDrawerSlot ? (
-        <ModelSelectionDrawer
-          slot={modelSlots.find((item) => item.id === modelDrawerSlot) || modelSlots[0]}
-          search={modelSearch}
-          filter={modelFilter}
-          setSearch={setModelSearch}
-          setFilter={setModelFilter}
-          onClose={() => setModelDrawerSlot(null)}
-          onSelect={(modelName) => {
-            updateSlot(modelDrawerSlot, { modelName });
-            setModelDrawerSlot(null);
-          }}
-        />
-      ) : null}
+      <ModelSelectionPortal
+        slot={modelDrawerSlot ? modelSlots.find((item) => item.id === modelDrawerSlot) || modelSlots[0] : null}
+        search={modelSearch}
+        filter={modelFilter}
+        setSearch={setModelSearch}
+        setFilter={setModelFilter}
+        onClose={() => setModelDrawerSlot(null)}
+        onSelect={(modelName) => {
+          if (modelDrawerSlot) updateSlot(modelDrawerSlot, { modelName });
+          setModelDrawerSlot(null);
+        }}
+      />
 
       <SystemInstructionsDrawer 
         isOpen={isInstructionsDrawerOpen}
@@ -1775,50 +1843,84 @@ function BrowserCanvas(props: {
   model: string;
   lastRun: PromptRun | null;
   captures: BrowserSourceCapture[];
+  modelSlots: ModelSlot[];
 }) {
   const visibleUrl = props.browserFrameUrl || props.browserUrl || "about:blank";
+  const enabledSlots = props.modelSlots.filter((slot) => slot.enabled).slice(0, 2);
+  const visibleSlots = enabledSlots.length ? enabledSlots : [props.modelSlots[0]].filter(Boolean);
+
   return (
-    <div className="bom-browser-wrap">
-      <div className="bom-browser-canvas">
-        <div className="bom-browser-bar">
-          <span className="bom-browser-dot red" />
-          <span className="bom-browser-dot yellow" />
-          <span className="bom-browser-dot green" />
-          <div className="bom-browser-url">{visibleUrl}</div>
-          <div className="bom-browser-spinner" />
-        </div>
-        <div className="bom-browser-body">
-          {props.browserFrameUrl ? (
-            <iframe title="BOM browser preview" src={props.browserFrameUrl} sandbox="allow-same-origin allow-scripts" />
-          ) : (
-            <div className="bom-canvas-idle">
-              <Globe2 size={42} />
-              <span>Run a supplier to begin scanning</span>
-              <small>{props.model || "No model selected"} - {props.browserSupplier}</small>
-            </div>
-          )}
-          <div className="bom-scan-line" />
-          <div className={`bom-extraction-feed ${props.lastRun?.outputs.length || props.captures.length ? "show" : ""}`}>
-            <div className="bom-feed-head">
-              <span>Extraction Feed</span>
-              <b>{props.lastRun?.outputs.length || props.captures.length}</b>
-            </div>
-            <div className="bom-feed-body">
-              {props.lastRun?.outputs.slice(0, 5).map((output) => (
-                <div key={output.id} className="bom-feed-row">
-                  <span>{output.slotId}</span>
-                  <strong>{output.modelName}</strong>
-                  <small>{output.validationStatus}</small>
-                </div>
-              ))}
-              {!props.lastRun?.outputs.length && props.captures.map((capture) => (
-                <div key={capture.id} className="bom-feed-row">
-                  <span>{capture.captureKind}</span>
-                  <strong>{capture.label}</strong>
-                  <small>{capture.status}</small>
-                </div>
-              ))}
-            </div>
+    <div className={`bom-browser-wrap ${visibleSlots.length > 1 ? "split" : ""}`}>
+      <div className={`bom-browser-grid ${visibleSlots.length > 1 ? "two-up" : "single"}`}>
+        {visibleSlots.map((slot) => (
+          <BrowserBoardPane
+            key={slot.id}
+            slot={slot}
+            visibleUrl={visibleUrl}
+            browserFrameUrl={props.browserFrameUrl}
+            browserSupplier={props.browserSupplier}
+            model={props.model}
+            lastRun={props.lastRun}
+            captures={props.captures}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BrowserBoardPane(props: {
+  slot: ModelSlot;
+  visibleUrl: string;
+  browserFrameUrl: string;
+  browserSupplier: SupplierId;
+  model: string;
+  lastRun: PromptRun | null;
+  captures: BrowserSourceCapture[];
+}) {
+  const slotOutput = props.lastRun?.outputs.find((output) => output.slotId === props.slot.id) || null;
+  const outputs = slotOutput ? [slotOutput] : props.lastRun?.outputs.slice(0, 5) || [];
+
+  return (
+    <div className="bom-browser-canvas">
+      <div className="bom-browser-bar">
+        <span className="bom-browser-dot red" />
+        <span className="bom-browser-dot yellow" />
+        <span className="bom-browser-dot green" />
+        <div className="bom-browser-url">{props.slot.id === "slot_a" ? "Model A" : "Model B"} - {props.visibleUrl}</div>
+        <div className="bom-browser-spinner" />
+      </div>
+      <div className="bom-browser-body">
+        {props.browserFrameUrl ? (
+          <iframe title={`${props.slot.id} BOM browser preview`} src={props.browserFrameUrl} sandbox="allow-same-origin allow-scripts" />
+        ) : (
+          <div className="bom-canvas-idle">
+            <Globe2 size={42} />
+            <span>Run a supplier to begin scanning</span>
+            <small>{props.model || "No model selected"} - {props.browserSupplier}</small>
+          </div>
+        )}
+        <div className="bom-scan-line" />
+        <div className={`bom-extraction-feed ${outputs.length || props.captures.length ? "show" : ""}`}>
+          <div className="bom-feed-head">
+            <span>Extraction Feed</span>
+            <b>{outputs.length || props.captures.length}</b>
+          </div>
+          <div className="bom-feed-body">
+            {outputs.map((output) => (
+              <div key={output.id} className="bom-feed-row">
+                <span>{output.slotId}</span>
+                <strong>{output.modelName}</strong>
+                <small>{output.validationStatus}</small>
+              </div>
+            ))}
+            {!outputs.length && props.captures.map((capture) => (
+              <div key={capture.id} className="bom-feed-row">
+                <span>{capture.captureKind}</span>
+                <strong>{capture.label}</strong>
+                <small>{capture.status}</small>
+              </div>
+            ))}
           </div>
         </div>
       </div>
