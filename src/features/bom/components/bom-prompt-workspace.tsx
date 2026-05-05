@@ -1683,6 +1683,8 @@ function MissionRunSettingsRail({
   setActiveSlotId,
   systemPrompt,
   setSystemPrompt,
+  instructionChips,
+  instructionWarnings,
   onOpenModelDrawer,
   onPatch,
   onClose,
@@ -1692,6 +1694,8 @@ function MissionRunSettingsRail({
   setActiveSlotId: (slotId: ModelSlot["id"]) => void;
   systemPrompt: string;
   setSystemPrompt: (value: string) => void;
+  instructionChips: string[];
+  instructionWarnings: string[];
   onOpenModelDrawer: (slotId: ModelSlot["id"]) => void;
   onPatch: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
   onClose: () => void;
@@ -1733,6 +1737,8 @@ function MissionRunSettingsRail({
         slot={activeSlot}
         systemPrompt={systemPrompt}
         setSystemPrompt={setSystemPrompt}
+        instructionChips={instructionChips}
+        instructionWarnings={instructionWarnings}
         onOpenModelDrawer={() => onOpenModelDrawer(activeSlot.id)}
         onPatch={(patch) => onPatch(activeSlot.id, patch)}
       />
