@@ -87,7 +87,9 @@ async function loadPipelineSnapshot(limit: number) {
   ]);
 
   const stats = statsRows[0] || {};
-  const signals = signalRows.map((row: Record<string, unknown>) => {
+  const signalRecords = signalRows as Array<Record<string, unknown>>;
+  const draftRecords = draftRows as Array<Record<string, unknown>>;
+  const signals = signalRecords.map((row) => {
     const activeCount = rowNumber(row, "ebay_active_count");
     const soldCount = rowNumber(row, "ebay_sold_count");
     return {
@@ -114,7 +116,7 @@ async function loadPipelineSnapshot(limit: number) {
       draftListings: Number(stats.draft_listings || 0),
     },
     signals,
-    drafts: draftRows.map((row: Record<string, unknown>) => ({
+    drafts: draftRecords.map((row) => ({
       id: String(row.id || ""),
       partNumber: row.part_number || null,
       partName: row.part_name || null,
@@ -132,7 +134,7 @@ async function prepareDraftListings(input: {
   minNetExpected: number;
   dryRun: boolean;
 }) {
-  const rows = await sql.query(
+  const rows = (await sql.query(
     `
     SELECT DISTINCT ON (s.part_number, s.normalized_model, m.id)
       s.part_number,
@@ -156,7 +158,7 @@ async function prepareDraftListings(input: {
     LIMIT $2
   `,
     [input.minNetExpected, input.limit],
-  );
+  )) as Array<Record<string, unknown>>;
 
   const drafts = [];
 
@@ -194,7 +196,7 @@ async function prepareDraftListings(input: {
 
     if (input.dryRun) continue;
 
-    const [partInventory] = await sql.query(
+    const partInventoryRows = (await sql.query(
       `
       WITH inserted AS (
         INSERT INTO part_inventory (
@@ -212,7 +214,8 @@ async function prepareDraftListings(input: {
       LIMIT 1
     `,
       [draft.machineId, normalizedModel, partNumber, partName],
-    );
+    )) as Array<Record<string, unknown>>;
+    const partInventory = partInventoryRows[0];
 
     if (!partInventory?.id) continue;
 

@@ -3,15 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  BarChart3, 
   ShoppingCart, 
-  Search, 
   ExternalLink,
   ChevronRight,
   TrendingUp,
   DollarSign,
   ArrowRight,
-  History,
   Zap,
   Sparkles,
   ChevronLeft
@@ -263,9 +260,8 @@ export default function MarketPage() {
               <div className="flex justify-between items-center pt-2">
                 <span className="text-xs font-black uppercase text-slate-900 tracking-tight">Projected Yield</span>
                 <div className="text-right">
-                  <div className="text-emerald-600 font-black text-lg">+$12,450</div>
                   <div className="text-emerald-600 font-black text-lg">${yieldStats.projected.toFixed(2)}</div>
-                  <div className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest">Q2 Forecast</div>
+                  <div className="text-[8px] font-bold text-emerald-600/60 uppercase tracking-widest">Current Signals</div>
                 </div>
               </div>
             </div>
