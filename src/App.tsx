@@ -9,6 +9,8 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Search,
+  Database,
+  RotateCcw,
   ChevronRight,
   X,
   Package,
@@ -117,6 +119,7 @@ const HOME_DRAFT_STORAGE_KEY = 'roadrunner:home-draft';
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [modelEntry, setModelEntry] = useState('');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [bomPassCount, setBomPassCount] = useState(0);
@@ -136,6 +139,9 @@ export default function App() {
   const [scanType, setScanType] = useState<'search' | 'compatibility' | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [isDbChecking, setIsDbChecking] = useState(false);
+  const [dbCheckStatus, setDbCheckStatus] = useState<string | null>(null);
+  const [showUnpricedDbRows, setShowUnpricedDbRows] = useState(false);
   const [sortBy, setSortBy] = useState<'id' | 'rating' | 'popularity'>('id');
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(true);
 
@@ -259,11 +265,13 @@ export default function App() {
       if (!saved) return;
       const draft = JSON.parse(saved) as {
         searchTerm?: string;
+        modelEntry?: string;
         lookupModel?: string;
         lookupSerial?: string;
         checkModel?: string;
       };
       if (draft.searchTerm) setSearchTerm(draft.searchTerm);
+      if (draft.modelEntry) setModelEntry(draft.modelEntry);
       if (draft.lookupModel) setLookupModel(draft.lookupModel);
       if (draft.lookupSerial) setLookupSerial(draft.lookupSerial);
       if (draft.checkModel) setCheckModel(draft.checkModel);
@@ -278,6 +286,7 @@ export default function App() {
         HOME_DRAFT_STORAGE_KEY,
         JSON.stringify({
           searchTerm,
+          modelEntry,
           lookupModel,
           lookupSerial,
           checkModel,
@@ -286,7 +295,7 @@ export default function App() {
     } catch {
       // Draft persistence is best-effort only.
     }
-  }, [checkModel, lookupModel, lookupSerial, searchTerm]);
+  }, [checkModel, lookupModel, lookupSerial, modelEntry, searchTerm]);
 
 
   useEffect(() => {
@@ -423,7 +432,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
   };
 
   const handleAILookup = async (modelToSearch?: string, serialToSearch?: string, isExhaustive = false) => {
-    const query = (modelToSearch || searchTerm || "").trim();
+    const query = (modelToSearch || modelEntry || lookupModel || searchTerm || "").trim();
     if (!query || query.length < 3) return;
 
     const normalizedQuery = normalizeModelId(query);
@@ -473,6 +482,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
       const parsed = await response.json();
       const rawParts = Array.isArray(parsed.parts) ? parsed.parts : [];
+      setShowUnpricedDbRows(false);
 
       const processedParts = rawParts.map((p: any) => ({
         ...p,
@@ -537,6 +547,80 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     } finally {
       setIsAILoading(false);
     }
+  };
+
+  const handleDbCheck = async () => {
+    const model = normalizeModelId(modelEntry || lookupModel || '');
+    const partNumber = normalizeModelId(searchTerm);
+
+    if (!model && !partNumber) {
+      setDbCheckStatus('Enter a model number or part number.');
+      return;
+    }
+
+    setIsDbChecking(true);
+    setDbCheckStatus(null);
+
+    try {
+      const params = new URLSearchParams();
+      if (model) params.set('model', model);
+      if (partNumber) params.set('partNumber', partNumber);
+
+      const response = await fetch(`/api/bom/db-check?${params.toString()}`, {
+        cache: 'no-store',
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || `DB check failed (${response.status})`);
+      }
+
+      const rows = Array.isArray(payload.parts) ? payload.parts : [];
+      const normalizedRows = rows.map((part: any, index: number) => ({
+        ...part,
+        id: Number(part.id) || index + 1,
+        partNumber: normalizeModelId(part.partNumber),
+        description: part.description || 'Appliance Part',
+        section: part.section || 'Database Evidence',
+        compatibleModels: Array.isArray(part.compatibleModels)
+          ? part.compatibleModels.filter(Boolean)
+          : model
+            ? [model]
+            : [],
+        avgRating: Number(part.avgRating) || 0,
+        reviewCount: Number(part.reviewCount) || 0,
+      }));
+
+      if (model) {
+        setLookupModel(model);
+        setModelEntry(model);
+      }
+
+      setAIParts(normalizedRows);
+      setSelectedSections([]);
+      setShowUnpricedDbRows(true);
+      setDbCheckStatus(
+        normalizedRows.length
+          ? `DB match: ${normalizedRows.length} row${normalizedRows.length === 1 ? '' : 's'} from stored evidence.`
+          : 'No DB rows found for that model or part number.',
+      );
+    } catch (error) {
+      setDbCheckStatus(error instanceof Error ? error.message : 'DB check failed.');
+    } finally {
+      setIsDbChecking(false);
+    }
+  };
+
+  const handleResetIdentity = () => {
+    setModelEntry('');
+    setLookupModel(null);
+    setLookupSerial(null);
+    setManufactureInfo(null);
+    setModelMetadata(null);
+    setExpectedPartCount(null);
+    expectedCountLookupModelRef.current = null;
+    expectedCountRequestRef.current += 1;
+    setDbCheckStatus(null);
   };
 
   const handleApprovePrompt = async () => {
@@ -663,7 +747,8 @@ Sort the final JSON alphabetically by part_name before outputting.`;
           expectedCountRequestRef.current += 1;
           
           // STAGE 5: Lookup Cascade
-          setSearchTerm(model);
+          setModelEntry(model);
+          setSearchTerm('');
           setLookupModel(model);
           setLookupSerial(serial);
           
@@ -797,12 +882,16 @@ Sort the final JSON alphabetically by part_name before outputting.`;
   };
 
   const filteredParts = useMemo(() => {
-    const dataSource = aiParts.length > 0 ? aiParts.filter(hasApprovedPrice) : partsData;
+    const dataSource = aiParts.length > 0
+      ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
+      : partsData;
+    const normalizedSearch = searchTerm.toLowerCase();
     const filtered = dataSource.filter(part => {
       const matchesSearch =
-        part.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        part.partNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        part.compatibleModels.some(m => m.toLowerCase().includes(searchTerm.toLowerCase()));
+        !normalizedSearch ||
+        part.description.toLowerCase().includes(normalizedSearch) ||
+        part.partNumber.toLowerCase().includes(normalizedSearch) ||
+        (part.compatibleModels || []).some(m => m.toLowerCase().includes(normalizedSearch));
       const matchesSection =
         selectedSections.length === 0 || selectedSections.includes(part.section);
       return matchesSearch && matchesSection;
@@ -812,7 +901,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
       if (sortBy === 'popularity') return (b.reviewCount || 0) - (a.reviewCount || 0);
       return a.id - b.id;
     });
-  }, [searchTerm, selectedSections, aiParts, sortBy]);
+  }, [searchTerm, selectedSections, aiParts, sortBy, showUnpricedDbRows]);
 
   const stats = useMemo(() => {
     const dataSource = aiParts.length > 0 ? aiParts : partsData;
@@ -982,7 +1071,6 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                 v2.5
               </span>
             </div>
-
           </div>
         </div>
       </header>
@@ -1174,22 +1262,67 @@ Sort the final JSON alphabetically by part_name before outputting.`;
             </div>
 
             {/* Search and Action Bar */}
-            <div className="grid gap-4 lg:grid-cols-[minmax(260px,1fr)_minmax(260px,1fr)_240px_82px]">
-              <div className="relative lg:col-span-2">
+            <div className="grid gap-4 lg:grid-cols-[minmax(220px,0.95fr)_minmax(260px,1fr)_190px_82px]">
+              <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-pro-slate-400" size={19} />
                 <input
                   type="text"
-                  placeholder="EX: WTW5000DW1, DRAIN PUMP..."
+                  placeholder="MODEL #: HTDX100ED3WW"
                   className="pro-input h-[54px] pl-12 rounded-lg text-base font-medium placeholder:text-pro-slate-400"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={modelEntry}
+                  onChange={(e) => setModelEntry(e.target.value.toUpperCase())}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && searchTerm.trim().length >= 3) {
-                      handleAILookup(searchTerm.trim());
+                    if (e.key === 'Enter' && (modelEntry || lookupModel).trim().length >= 3) {
+                      handleDbCheck();
                     }
                   }}
                 />
               </div>
+
+              <div className="relative">
+                <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-pro-slate-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="PART #: WE03X29897 OR DRUM BELT"
+                  className="pro-input h-[54px] pl-12 rounded-lg text-base font-medium placeholder:text-pro-slate-400"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (searchTerm.trim().length >= 3 || modelEntry.trim().length >= 3)) {
+                      handleDbCheck();
+                    }
+                  }}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleDbCheck}
+                disabled={isDbChecking}
+                className="pro-button pro-button-primary h-[54px] rounded-lg px-5 text-sm"
+                title="Check stored model and part evidence in the database"
+              >
+                {isDbChecking ? (
+                  <>
+                    <Loader2 className="animate-spin" size={16} />
+                    <span>Checking</span>
+                  </>
+                ) : (
+                  <>
+                    <Database size={17} />
+                    <span>Check DB</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetIdentity}
+                className="pro-button pro-button-secondary h-[54px] w-[54px] justify-center rounded-full px-0 text-pro-slate-500 hover:text-pro-navy"
+                title="Reset model and serial"
+              >
+                <RotateCcw size={22} />
+              </button>
 
               <div className="grid grid-cols-[minmax(0,1fr)_84px] gap-4 lg:hidden">
                 <div className="flex gap-2 flex-1 lg:flex-initial">
@@ -1263,6 +1396,11 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                 </div>
               </div>
             </div>
+            {dbCheckStatus && (
+              <div className="rounded-lg border border-pro-slate-200 bg-white px-4 py-2 text-xs font-semibold text-pro-slate-600">
+                {dbCheckStatus}
+              </div>
+            )}
 
           </div>
 

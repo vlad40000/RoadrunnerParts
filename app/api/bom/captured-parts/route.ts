@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { sql } from "@/src/server/db/neon";
+import { sql } from "@/src/server/db";
 
 export const runtime = "nodejs";
 

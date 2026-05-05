@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
-  Braces,
   CheckCircle2,
   ChevronLeft,
   CircleDot,
@@ -504,13 +503,6 @@ export function BomPromptWorkspace({
   return (
     <main className="bom-cockpit fixed inset-0 overflow-hidden">
       <div className="bom-cockpit-super">
-        <button className="bom-cockpit-super-icon" type="button" title="Preview">
-          <Search size={12} />
-        </button>
-        <button className="bom-cockpit-super-icon" type="button" title="Code">
-          <Braces size={12} />
-        </button>
-        <span className="bom-cockpit-version">v4 - Latest</span>
         <div className="flex-1" />
         <button className="bom-cockpit-copy" type="button" onClick={() => copyText(inputPayloadText)}>
           Copy

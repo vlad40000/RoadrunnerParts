@@ -91,7 +91,8 @@ why are the prompts not auto loading? why are the URLs not loading?
 
 ### **Encompass OCR Extension Integration**
 - [x] **Database Schema**: Created `bom_capture_session` and `bom_captured_part` tables in Neon.
+- [x] **DB Refactoring**: Centralized Neon connection logic in `src/server/db/index.ts` and exported a raw `sql` client. Removed redundant `src/server/db/neon.ts`.
 - [x] **API Route**: Implemented `POST /api/bom/captured-parts` with Zod validation and CORS support.
-- [x] **Neon Client**: Created dedicated raw SQL client in `src/server/db/neon.ts`.
+- [x] **Bulk Data Ingestion**: Created `scripts/ingest-merged-parts.ts` and successfully ingested all 106 records from `part_infos_merged.json` as a "Hotpoint Dryer" model import, grouped by diagram.
 - [x] **Extension Scaffold**: Created `encompass-extension` with `pushToDb.ts` logic and `manifest.json`.
 
