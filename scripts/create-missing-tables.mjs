@@ -103,6 +103,22 @@ async function run() {
     `;
     console.log(' ✓ bom_part_mapping');
 
+    // 6) agent_preset
+    await sql`
+      CREATE TABLE IF NOT EXISTS agent_preset (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name TEXT NOT NULL,
+        content TEXT NOT NULL,
+        scenario_type TEXT,
+        is_default BOOLEAN DEFAULT false,
+        is_active BOOLEAN DEFAULT true,
+        metadata TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `;
+    console.log(' ✓ agent_preset');
+
     console.log('\n✅ All missing tables created successfully.');
   } catch (err) {
     console.error('❌ Table creation failed:', err);

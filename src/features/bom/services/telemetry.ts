@@ -9,6 +9,7 @@ export async function logTelemetry(input: {
   model?: string;
   brand?: string;
   payload?: Record<string, unknown>;
+  systemPrompt?: string;
 }) {
   try {
     await db.insert(bomTelemetry).values({
@@ -18,6 +19,7 @@ export async function logTelemetry(input: {
       model: input.model ?? null,
       brand: input.brand ?? null,
       payload: input.payload ?? {},
+      systemPrompt: input.systemPrompt ?? null,
     });
   } catch (err) {
     // Fail silently to avoid blocking main execution

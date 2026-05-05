@@ -78,6 +78,8 @@ type BomJob = {
   updatedAt: string | Date;
 };
 
+type WorkspaceView = "studio" | "mission";
+
 type SupplierCard = {
   id: SupplierId;
   label: string;
@@ -263,6 +265,32 @@ const TASK_TO_SCENARIO: Record<"diagrams" | "bom" | "pricing", PromptScenarioTyp
   pricing: "pricing_reconciliation",
 };
 
+const WORKFLOW_SCENARIO_GROUPS: Array<{
+  label: string;
+  types: PromptScenarioType[];
+}> = [
+  {
+    label: "Identity",
+    types: ["identity_extraction", "nameplate_ocr_identity_json", "plaintext_identity_extraction"],
+  },
+  {
+    label: "Source Discovery",
+    types: ["supplier_url_generation", "official_parts_source_search", "diagram_discovery", "computer_use_navigation"],
+  },
+  {
+    label: "Extraction",
+    types: ["technical_diagram_callouts_csv", "bom_extraction", "bom_row_extraction_json", "visual_qa_drift_json"],
+  },
+  {
+    label: "Validation & Pricing",
+    types: ["bom_validation", "pricing_reconciliation", "pricing_router", "retail_pricing_verification"],
+  },
+  {
+    label: "Marketplace",
+    types: ["ebay_listing_prep"],
+  },
+];
+
 const TASK_TO_MODE: Record<"diagrams" | "bom" | "pricing", BomWorkspaceMode> = {
   diagrams: "diagram_context",
   bom: "bom_extraction",
@@ -359,6 +387,7 @@ export function BomPromptWorkspace({
   initialSerial = "",
   initialJobId = "",
 }: BomPromptWorkspaceProps) {
+  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("studio");
   const [activeMode, setActiveMode] = useState<BomWorkspaceMode>("prompt_scenarios");
   const [model, setModel] = useState(initialModel.toUpperCase());
   const [serial, setSerial] = useState(initialSerial.toUpperCase());
@@ -674,6 +703,139 @@ export function BomPromptWorkspace({
     navigator.clipboard?.writeText(value).catch(() => undefined);
   }
 
+  if (workspaceView === "mission") {
+    return (
+      <main className="bom-cockpit h-screen overflow-hidden">
+        <div className="bom-cockpit-super">
+          <button type="button" className="bom-cockpit-super-icon" onClick={() => setWorkspaceView("studio")} title="Switch to Gemini AI Studio">
+            <Bot size={14} />
+          </button>
+          <span className="bom-cockpit-version">MISSION COCKPIT</span>
+          <span className="bom-cockpit-job">{model || job?.model || "no model"}</span>
+          <div className="ml-auto flex items-center gap-2">
+            <ScenarioWorkflowSelect scenarios={scenarios} selectedScenario={selectedScenario} loadScenario={loadScenario} />
+            <button type="button" className="bom-cockpit-copy" onClick={() => setPromptDrawerOpen((open) => !open)}>
+              Prompt Cockpit
+            </button>
+            <button type="button" className="bom-cockpit-publish" onClick={() => setWorkspaceView("studio")}>
+              Gemini Studio
+            </button>
+          </div>
+        </div>
+        <div className="bom-cockpit-top">
+          <div className="bom-cockpit-brand">
+            <Link href="/" className="bom-cockpit-home" title="Home">
+              <Home size={14} />
+            </Link>
+            <div className="bom-cockpit-logo">
+              Roadrunner <span>Mission</span>
+            </div>
+          </div>
+          <div className="bom-cockpit-tabs">
+            {MODES.map((item) => (
+              <button
+                key={item.mode}
+                type="button"
+                className={`bom-cockpit-tab ${activeMode === item.mode ? "active" : ""}`}
+                onClick={() => setActiveMode(item.mode)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <div className="bom-cockpit-top-actions">
+            <span className="bom-cockpit-pulse" />
+            <button type="button" className="bom-cockpit-icon-button" title="Prompt cockpit" onClick={() => setPromptDrawerOpen((open) => !open)}>
+              <FileCode2 size={14} />
+            </button>
+            <button type="button" className="bom-cockpit-icon-button" title="Gemini AI Studio" onClick={() => setWorkspaceView("studio")}>
+              <Bot size={14} />
+            </button>
+          </div>
+        </div>
+        <div className="bom-cockpit-body">
+          <CockpitRail activeMode={activeMode} expanded={railExpanded} setActiveMode={setActiveMode} setExpanded={setRailExpanded} />
+          <WorkspaceDrawer
+            activeMode={activeMode}
+            model={model}
+            serial={serial}
+            job={job}
+            jobIdInput={jobIdInput}
+            jobBusy={jobBusy}
+            jobError={jobError}
+            scenarios={scenarios}
+            selectedScenario={selectedScenario}
+            lastRun={lastRun}
+            lastValidation={lastValidation}
+            runHistory={runHistory}
+            finalRows={finalRows}
+            rawRows={rawRows}
+            captures={captures}
+            suppliers={SUPPLIERS}
+            setModel={setModel}
+            setSerial={setSerial}
+            setJobIdInput={setJobIdInput}
+            createOrLoadJob={createOrLoadJob}
+            loadScenario={loadScenario}
+            selectSupplierAction={selectSupplierAction}
+            validateLatestRun={validateLatestRun}
+            setActiveMode={setActiveMode}
+          />
+          <section className="bom-cockpit-center">
+            <BrowserCanvas
+              browserFrameUrl={browserFrameUrl}
+              browserUrl={browserUrl}
+              browserSupplier={browserSupplier}
+              model={model}
+              lastRun={lastRun}
+              captures={captures}
+            />
+            <PromptCockpitDrawer
+              open={promptDrawerOpen}
+              scenarios={scenarios}
+              selectedScenario={selectedScenario}
+              systemPrompt={systemPrompt}
+              userPromptTemplate={userPromptTemplate}
+              inputPayloadText={inputPayloadText}
+              inputError={inputPayload.error}
+              runBusy={runBusy}
+              runError={runError}
+              lastRun={lastRun}
+              savedPromptStatus={savedPromptStatus}
+              setInputPayloadText={setInputPayloadText}
+              setSystemPrompt={setSystemPrompt}
+              setUserPromptTemplate={setUserPromptTemplate}
+              loadScenario={loadScenario}
+              runScenario={runScenario}
+              saveWinningPrompt={saveWinningPrompt}
+            />
+            <MissionBottomBar
+              suppliers={SUPPLIERS}
+              createOrLoadJob={createOrLoadJob}
+              queueCapture={queueCapture}
+              selectSupplierAction={selectSupplierAction}
+              validateLatestRun={validateLatestRun}
+            />
+          </section>
+          <RightInspector
+            modelSlots={modelSlots}
+            activeMode={activeMode}
+            selectedScenario={selectedScenario}
+            inputPayload={(inputPayload.value || {}) as Record<string, unknown>}
+            job={job}
+            jobId={jobId}
+            model={model}
+            browserFrameUrl={browserFrameUrl}
+            lastRun={lastRun}
+            lastValidation={lastValidation}
+            updateSlot={updateSlot}
+            saveWinningPrompt={saveWinningPrompt}
+          />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className={`ai-studio-shell ${modelDrawerSlot ? "drawer-open" : ""}`}>
       <AIStudioLeftNav activeMode={activeMode} setActiveMode={setActiveMode} />
@@ -698,6 +860,9 @@ export function BomPromptWorkspace({
             </button>
             <button type="button" className="ai-icon-button" title="Prompt cockpit" onClick={() => setPromptDrawerOpen((open) => !open)}>
               <FileCode2 size={15} />
+            </button>
+            <button type="button" className="ai-icon-button" title="Mission cockpit" onClick={() => setWorkspaceView("mission")}>
+              <Globe2 size={15} />
             </button>
           </div>
         </header>
@@ -1323,6 +1488,84 @@ function modelDescriptionFor(modelName: ModelSlot["modelName"]) {
   return "Gemini 3.1 Flash Lite Preview: Roadrunner default for prompt runs and BOM support tasks.";
 }
 
+function groupedScenarios(scenarios: PromptScenario[]) {
+  const seen = new Set<string>();
+  const groups = WORKFLOW_SCENARIO_GROUPS.map((group) => {
+    const items = group.types
+      .map((type) => scenarios.find((scenario) => scenario.type === type))
+      .filter((scenario): scenario is PromptScenario => Boolean(scenario));
+    items.forEach((scenario) => seen.add(scenario.id));
+    return { ...group, items };
+  }).filter((group) => group.items.length);
+  const custom = scenarios.filter((scenario) => !seen.has(scenario.id));
+  return custom.length ? [...groups, { label: "Custom", types: [], items: custom }] : groups;
+}
+
+function ScenarioWorkflowSelect(props: {
+  scenarios: PromptScenario[];
+  selectedScenario: PromptScenario | undefined;
+  loadScenario: (scenario: PromptScenario, patch?: Record<string, unknown>) => void;
+}) {
+  return (
+    <select
+      className="bom-workflow-select"
+      value={props.selectedScenario?.id || ""}
+      onChange={(event) => {
+        const scenario = props.scenarios.find((item) => item.id === event.target.value);
+        if (scenario) props.loadScenario(scenario);
+      }}
+    >
+      {groupedScenarios(props.scenarios).map((group) => (
+        <optgroup key={group.label} label={group.label}>
+          {group.items.map((scenario) => (
+            <option key={scenario.id} value={scenario.id}>
+              {scenario.name}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
+  );
+}
+
+function MissionBottomBar(props: {
+  suppliers: SupplierCard[];
+  createOrLoadJob: () => void;
+  queueCapture: (kind: BrowserSourceCapture["captureKind"], label: string) => void;
+  selectSupplierAction: (supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") => void;
+  validateLatestRun: () => void;
+}) {
+  const supplierButtons = props.suppliers.filter((supplier) =>
+    ["sears-partsdirect", "repairclinic", "ge", "whirlpool", "manual-pdf"].includes(supplier.id),
+  );
+
+  return (
+    <div className="bom-cockpit-bottom">
+      <span className="bom-cockpit-bottom-label">Actions</span>
+      <button type="button" className="bom-cockpit-action" onClick={props.createOrLoadJob}>
+        DB
+      </button>
+      <button type="button" className="bom-cockpit-action" onClick={() => props.queueCapture("manual_note", "OCR review request")}>
+        OCR
+      </button>
+      <button type="button" className="bom-cockpit-action" onClick={() => props.queueCapture("dom", "Manual refresh capture")}>
+        RF
+      </button>
+      <div className="bom-cockpit-sep" />
+      <span className="bom-cockpit-bottom-label">Suppliers</span>
+      {supplierButtons.map((supplier) => (
+        <button key={supplier.id} type="button" className="bom-cockpit-run" onClick={() => props.selectSupplierAction(supplier, "bom")}>
+          {supplier.label.replace(" PartsDirect", "").replace("RepairClinic", "RC").replace("Manual/PDF", "PDF")}
+        </button>
+      ))}
+      <div className="bom-cockpit-sep" />
+      <button type="button" className="bom-cockpit-ok" onClick={props.validateLatestRun}>
+        OK
+      </button>
+    </div>
+  );
+}
+
 function WorkspaceDrawer(props: {
   activeMode: BomWorkspaceMode;
   model: string;
@@ -1606,19 +1849,7 @@ function PromptCockpitDrawer(props: {
     <div className={`bom-prompt-drawer ${props.open ? "open" : "closed"}`}>
       <div className="bom-prompt-head">
         <span>Prompt Cockpit</span>
-        <select
-          value={props.selectedScenario?.id || ""}
-          onChange={(event) => {
-            const scenario = props.scenarios.find((item) => item.id === event.target.value);
-            if (scenario) props.loadScenario(scenario);
-          }}
-        >
-          {props.scenarios.map((scenario) => (
-            <option key={scenario.id} value={scenario.id}>
-              {scenario.name}
-            </option>
-          ))}
-        </select>
+        <ScenarioWorkflowSelect scenarios={props.scenarios} selectedScenario={props.selectedScenario} loadScenario={props.loadScenario} />
         <button type="button" onClick={props.runScenario} disabled={props.runBusy}>
           {props.runBusy ? "Running" : "Run two models"}
         </button>

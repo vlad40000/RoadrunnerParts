@@ -15,6 +15,7 @@ export const bomTelemetry = pgTable("bom_telemetry", {
   model: text("model"),
   brand: text("brand"),
   payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+  systemPrompt: text("system_prompt"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

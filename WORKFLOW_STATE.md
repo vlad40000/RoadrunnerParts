@@ -108,10 +108,20 @@ why are the prompts not auto loading? why are the URLs not loading?
   - `run-ebay-market-survey-batch.mjs`: Scrapes eBay for real-time resale signals.
   - `run-ebay-listing-prep-batch.mjs`: Generates net profit forecasts and draft listings.
 
+- [x] **System Instructions Persistence**:
+  - Created `agent_preset` table for backend storage of prompt variations.
+  - Implemented `/api/agent-presets` (GET/POST/DELETE) for cloud-syncing.
+  - Updated `SystemInstructionsDrawer` with async backend reconciliation and loading states.
+- [x] **Telemetry Hardening**:
+  - Added `system_prompt` column to `bom_telemetry` table.
+  - Updated `logTelemetry` service to capture prompt variations per run.
+  - Integrated telemetry into the `/api/prompt-runs` playground API for auditability.
+
 ## Current Status
 - **Age-Banding Operational**: Serial decoding pipeline is live. High-confidence decodes automatically assign age bands.
 - **MSRP Pipeline Live**: Deterministic MSRP enrichment is functional.
 - **eBay Pipeline Ready**: Market survey and listing preparation workers are implemented and ready for large-scale execution.
+- **Prompt Architecture Persistent**: AI agent instructions are now cloud-persisted, reviewable, and version-tracked via telemetry logs.
 
 ## Next Steps
 - [ ] Run end-to-end integration test on a 20-unit sample.

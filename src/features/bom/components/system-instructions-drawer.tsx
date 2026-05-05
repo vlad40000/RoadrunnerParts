@@ -26,9 +26,28 @@ export function SystemInstructionsDrawer({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editContent, setEditContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchPresets = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/agent-presets");
+      const data = await res.json();
+      if (data.ok && data.presets?.length > 0) {
+        setInstructions(data.presets);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data.presets));
+      }
+    } catch (e) {
+      console.error("Failed to fetch presets from backend", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    
+    // Load from local storage first for immediate UI
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
@@ -36,17 +55,10 @@ export function SystemInstructionsDrawer({
       } catch (e) {
         console.error("Failed to parse system instructions", e);
       }
-    } else {
-      const initial = [
-        {
-          id: "default",
-          name: "Default Agent",
-          content: currentInstruction || "You are a helpful assistant.",
-        },
-      ];
-      setInstructions(initial);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
     }
+    
+    // Then sync from backend
+    fetchPresets();
   }, []);
 
   const saveToStorage = (list: SystemInstruction[]) => {
@@ -56,21 +68,28 @@ export function SystemInstructionsDrawer({
 
   const addInstruction = () => {
     const newItem: SystemInstruction = {
-      id: crypto.randomUUID(),
+      id: `temp-${crypto.randomUUID()}`,
       name: "New Instruction",
       content: "",
     };
-    const newList = [...instructions, newItem];
-    saveToStorage(newList);
+    setInstructions([...instructions, newItem]);
     setEditingId(newItem.id);
     setEditName(newItem.name);
     setEditContent(newItem.content);
   };
 
-  const deleteInstruction = (id: string, e: React.MouseEvent) => {
+  const deleteInstruction = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const newList = instructions.filter((i) => i.id !== id);
-    saveToStorage(newList);
+    setInstructions(newList);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+    
+    try {
+      await fetch(`/api/agent-presets?id=${id}`, { method: "DELETE" });
+    } catch (e) {
+      console.error("Failed to delete preset from backend", e);
+    }
+
     if (editingId === id) setEditingId(null);
   };
 
@@ -81,12 +100,40 @@ export function SystemInstructionsDrawer({
     setEditContent(item.content);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingId) return;
-    const updated = instructions.map((i) =>
-      i.id === editingId ? { ...i, name: editName, content: editContent } : i
-    );
-    saveToStorage(updated);
+    
+    const updatedItem = {
+      id: editingId.startsWith("temp-") ? undefined : editingId,
+      name: editName,
+      content: editContent
+    };
+
+    try {
+      const res = await fetch("/api/agent-presets", {
+        method: "POST",
+        body: JSON.stringify(updatedItem),
+      });
+      const data = await res.json();
+      
+      if (data.ok) {
+        const savedPreset = data.preset;
+        const newList = instructions.map((i) =>
+          i.id === editingId ? savedPreset : i
+        );
+        setInstructions(newList);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+      }
+    } catch (e) {
+      console.error("Failed to save preset to backend", e);
+      // Fallback: update locally anyway
+      const updated = instructions.map((i) =>
+        i.id === editingId ? { ...i, name: editName, content: editContent } : i
+      );
+      setInstructions(updated);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    }
+    
     setEditingId(null);
   };
 
@@ -101,7 +148,7 @@ export function SystemInstructionsDrawer({
       >
         <header className="flex h-14 items-center justify-between border-b border-white/10 px-6 bg-[#111317]">
           <div className="flex items-center gap-2">
-            <Settings2 size={16} className="text-amber-400" />
+            <Settings2 size={16} className={`text-amber-400 ${isLoading ? "animate-spin" : ""}`} />
             <h2 className="text-xs font-bold uppercase tracking-widest text-white/90">System Instructions</h2>
           </div>
           <button onClick={onClose} className="p-2 -mr-2 text-white/40 hover:text-white transition-colors">

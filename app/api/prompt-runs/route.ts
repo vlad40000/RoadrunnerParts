@@ -18,6 +18,7 @@ import {
   normalizeModelOutput,
   validatePromptOutput,
 } from "@/src/features/bom/prompt-workspace/validation";
+import { logTelemetry } from "@/src/features/bom/services/telemetry";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -214,6 +215,26 @@ export async function POST(req: NextRequest) {
     };
 
     savePromptRun(run);
+
+    // Persist to telemetry for backend review and testing
+    await logTelemetry({
+      jobId: String(body.jobContext ? (body.jobContext as any).jobId : "") || undefined,
+      event: `prompt_playground:${scenario.type}`,
+      status: "success",
+      model: String(body.jobContext ? (body.jobContext as any).model : "") || undefined,
+      brand: String(body.jobContext ? (body.jobContext as any).brand : "") || undefined,
+      systemPrompt: scenario.systemPrompt,
+      payload: {
+        runId: run.id,
+        scenarioId: scenario.id,
+        inputPayload,
+        outputs: run.outputs.map(o => ({
+          slotId: o.slotId,
+          latencyMs: o.latencyMs,
+          validationStatus: o.validationStatus
+        }))
+      }
+    });
 
     return NextResponse.json({ ok: true, run });
   } catch (error) {
