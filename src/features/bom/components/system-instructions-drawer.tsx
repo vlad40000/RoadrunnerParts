@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Plus, Trash2, Save, Check, Settings2, ArrowUp, ArrowDown } from "lucide-react";
+import { X, Plus, Trash2, Save, Check, Settings2, ArrowUp, ArrowDown, AlertTriangle } from "lucide-react";
 
-type SystemInstruction = {
+export type SystemInstruction = {
   id: string;
   name: string;
   content: string;
@@ -11,37 +11,100 @@ type SystemInstruction = {
 
 const STORAGE_KEY = "roadrunner:system-instructions";
 
-function compileInstructions(items: SystemInstruction[]) {
-  if (!items.length) return "";
+const IMMUTABLE_ROADRUNNER_BASE = [
+  "Identity, source-of-truth, output-format, and no-hallucinated-BOM-truth rules are hard guardrails.",
+  "Architecture or CoVe reviewer prompts can guide missing-system review only; they are not source evidence.",
+  "Final OEM part rows, part numbers, prices, and completeness claims must come from provider evidence, captured JSON, manuals, or existing database records.",
+  "Return valid JSON whenever the selected scenario requires JSON.",
+];
+
+export function compileInstructions(items: SystemInstruction[], baseInstruction = "") {
   const preamble = [
     "[SYSTEM INSTRUCTION HIERARCHY]",
-    "Apply the selected presets in priority order from top to bottom.",
-    "If any selected presets conflict, obey the higher-priority preset with the larger weight.",
-    "Do not merge conflicting requirements by compromise; yield to the higher placed instruction.",
+    "Read the stack in order, then resolve conflicts by explicit WEIGHT.",
+    "Higher WEIGHT wins over lower WEIGHT.",
+    "Operator override/user prompt is applied last and wins over presets unless it violates the immutable Roadrunner base.",
+    "Do not silently merge conflicting requirements by compromise.",
   ].join("\n");
+
+  const baseBlocks = [
+    [
+      "[BASE SYSTEM INSTRUCTION | WEIGHT 1000 | IMMUTABLE ROADRUNNER SOURCE-OF-TRUTH]",
+      ...IMMUTABLE_ROADRUNNER_BASE.map((rule) => `- ${rule}`),
+    ].join("\n"),
+    baseInstruction.trim()
+      ? ["[SCENARIO BASE INSTRUCTION | WEIGHT 900]", baseInstruction.trim()].join("\n")
+      : "",
+  ].filter(Boolean).join("\n\n");
 
   const blocks = items
     .map((item, index) => {
-      const weight = items.length - index;
+      const weight = 800 - index * 10;
       return [
-        `[PRESET PRIORITY ${index + 1} | WEIGHT ${weight}: ${item.name}]`,
+        `[PRESET: ${item.name} | PRIORITY ${index + 1} | WEIGHT ${weight}]`,
         item.content.trim(),
       ].filter(Boolean).join("\n");
     })
     .join("\n\n");
 
-  return `${preamble}\n\n${blocks}`;
+  return [preamble, baseBlocks, blocks].filter(Boolean).join("\n\n");
+}
+
+export function getInstructionStackNames(instructionText: string) {
+  return Array.from(instructionText.matchAll(/\[PRESET:\s*([^|\]]+)/g))
+    .map((match) => match[1]?.trim())
+    .filter(Boolean);
+}
+
+function presetClaimsComputerUseAllowed(content: string) {
+  return /(computer use|visual loop|browser)\b[\s\S]{0,80}\b(allow|allowed|enable|enabled|use|run)/i.test(content);
+}
+
+function presetClaimsComputerUseBlocked(content: string) {
+  return /\b(no|disable|disabled|exclude|excluded|forbid|forbidden|do not|don't)\b[\s\S]{0,80}\bcomputer use/i.test(content);
+}
+
+function presetClaimsMarketSignal(content: string, name: string) {
+  return /market[-\s]?signal|market intelligence|ebay|listing|pricing|price/i.test(`${name}\n${content}`);
+}
+
+function presetClaimsBomTruth(content: string, name: string) {
+  return /bom truth|bom extraction|oem part rows|source-backed|source evidence|part numbers/i.test(`${name}\n${content}`);
+}
+
+function detectConflicts(items: SystemInstruction[]) {
+  const computerUseAllowed = items.filter((item) => presetClaimsComputerUseAllowed(item.content));
+  const computerUseBlocked = items.filter((item) => presetClaimsComputerUseBlocked(item.content));
+  const marketSignal = items.filter((item) => presetClaimsMarketSignal(item.content, item.name));
+  const bomTruth = items.filter((item) => presetClaimsBomTruth(item.content, item.name));
+  const warnings: string[] = [];
+
+  if (computerUseAllowed.length && computerUseBlocked.length) {
+    warnings.push(
+      `Computer Use conflict: ${computerUseAllowed.map((item) => item.name).join(", ")} allows it while ${computerUseBlocked.map((item) => item.name).join(", ")} blocks it. Higher WEIGHT wins.`,
+    );
+  }
+
+  if (marketSignal.length && bomTruth.length) {
+    warnings.push(
+      `Market/pricing conflict: ${marketSignal.map((item) => item.name).join(", ")} should only be active for pricing/listing work, not BOM truth extraction.`,
+    );
+  }
+
+  return warnings;
 }
 
 export function SystemInstructionsDrawer({
   isOpen,
   onClose,
   currentInstruction,
+  baseInstruction = "",
   onSelect,
 }: {
   isOpen: boolean;
   onClose: () => void;
   currentInstruction: string;
+  baseInstruction?: string;
   onSelect: (content: string) => void;
 }) {
   const [instructions, setInstructions] = useState<SystemInstruction[]>([]);
@@ -108,7 +171,7 @@ export function SystemInstructionsDrawer({
       .filter((item): item is SystemInstruction => Boolean(item));
 
   const applySelected = (ids: string[]) => {
-    onSelect(compileInstructions(selectedItemsFor(ids)));
+    onSelect(compileInstructions(selectedItemsFor(ids), baseInstruction));
   };
 
   const toggleInstruction = (item: SystemInstruction) => {
@@ -150,7 +213,7 @@ export function SystemInstructionsDrawer({
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
     const nextSelectedIds = selectedIds.filter((selectedId) => selectedId !== id);
     setSelectedIds(nextSelectedIds);
-    onSelect(compileInstructions(selectedItemsFor(nextSelectedIds, newList)));
+    onSelect(compileInstructions(selectedItemsFor(nextSelectedIds, newList), baseInstruction));
     
     try {
       await fetch(`/api/agent-presets?id=${id}`, { method: "DELETE" });
@@ -205,6 +268,10 @@ export function SystemInstructionsDrawer({
     setEditingId(null);
   };
 
+  const selectedItems = selectedItemsFor(selectedIds);
+  const conflictWarnings = detectConflicts(selectedItems);
+  const compiledPreview = compileInstructions(selectedItems, baseInstruction);
+
   return (
     <div 
       className={`fixed inset-0 z-[100] flex justify-end bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
@@ -253,7 +320,7 @@ export function SystemInstructionsDrawer({
               type="button"
               onClick={() => {
                 setSelectedIds([]);
-                onSelect("");
+                onSelect(compileInstructions([], baseInstruction));
               }}
               className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/60 hover:bg-white/10"
             >
@@ -267,6 +334,20 @@ export function SystemInstructionsDrawer({
               Apply Selected
             </button>
           </div>
+
+          {conflictWarnings.length ? (
+            <div className="mb-4 grid gap-2">
+              {conflictWarnings.map((warning) => (
+                <div
+                  key={warning}
+                  className="flex items-start gap-2 rounded-lg border border-amber-400/25 bg-amber-400/10 p-3 text-[11px] leading-relaxed text-amber-100"
+                >
+                  <AlertTriangle size={14} className="mt-0.5 flex-shrink-0 text-amber-300" />
+                  <span>{warning}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
             {instructions.map((item) => {
@@ -400,6 +481,16 @@ export function SystemInstructionsDrawer({
                 <p className="text-[11px] text-white/20 mt-1 max-w-[200px]">Create your first system instruction set to streamline your workflow.</p>
               </div>
             )}
+          </div>
+
+          <div className="mt-4 border-t border-white/10 pt-4">
+            <div className="mb-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
+              <span>Compiled Preview</span>
+              <span>{selectedIds.length} presets</span>
+            </div>
+            <pre className="max-h-44 overflow-auto rounded-lg border border-white/10 bg-black/25 p-3 text-[10px] leading-relaxed text-white/55 custom-scrollbar">
+              {compiledPreview}
+            </pre>
           </div>
         </div>
       </div>

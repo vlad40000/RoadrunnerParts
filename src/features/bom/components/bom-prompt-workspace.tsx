@@ -44,7 +44,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { SystemInstructionsDrawer } from "./system-instructions-drawer";
+import { SystemInstructionsDrawer, getInstructionStackNames } from "./system-instructions-drawer";
 import { ComputerUseSupervisor } from "./computer-use-supervisor";
 import {
   DEFAULT_MODEL_SLOTS,
@@ -431,6 +431,48 @@ function normalizeRunForHistory(run: PromptRun) {
   };
 }
 
+function renderUserTemplatePreview(template: string, inputPayload: Record<string, unknown>) {
+  const inputJson = JSON.stringify(inputPayload, null, 2);
+  return String(template || "")
+    .replaceAll("{{input_payload_json}}", inputJson)
+    .replaceAll("{{inputPayloadJson}}", inputJson);
+}
+
+function buildCompiledRunPreview(input: {
+  systemPrompt: string;
+  userPromptTemplate: string;
+  inputPayload: Record<string, unknown>;
+}) {
+  return [
+    "[BASE SYSTEM INSTRUCTION AND SELECTED PRESETS - SENT AS SYSTEM]",
+    input.systemPrompt.trim() || "(none)",
+    "",
+    "[OPERATOR OVERRIDE - SENT LAST AS USER PROMPT]",
+    renderUserTemplatePreview(input.userPromptTemplate, input.inputPayload).trim() || "(none)",
+  ].join("\n");
+}
+
+function instructionConflictWarnings(systemPrompt: string, scenarioType?: PromptScenarioType) {
+  const warnings: string[] = [];
+  const allowsComputerUse = /(computer use|visual loop|browser)\b[\s\S]{0,120}\b(allow|allowed|enable|enabled|use|run)/i.test(systemPrompt);
+  const blocksComputerUse = /\b(no|disable|disabled|exclude|excluded|forbid|forbidden|do not|don't)\b[\s\S]{0,120}\bcomputer use/i.test(systemPrompt);
+  const marketSignal = /market[-\s]?signal|market intelligence|ebay|listing|pricing|price/i.test(systemPrompt);
+  const bomTruthScenario =
+    scenarioType === "bom_extraction" ||
+    scenarioType === "bom_row_extraction_json" ||
+    scenarioType === "technical_diagram_callouts_csv";
+
+  if (allowsComputerUse && blocksComputerUse) {
+    warnings.push("Computer Use is both allowed and blocked by the active stack. Resolve the preset order or edit the presets before running.");
+  }
+
+  if (marketSignal && bomTruthScenario) {
+    warnings.push("Market-signal/pricing instructions are active on a BOM truth extraction scenario.");
+  }
+
+  return warnings;
+}
+
 function scenarioByType(scenarios: PromptScenario[], type: PromptScenarioType) {
   return scenarios.find((scenario) => scenario.type === type) || null;
 }
@@ -506,6 +548,11 @@ export function BomPromptWorkspace({
       : [];
   const rawRows = Array.isArray(job?.extractedRowsRaw) ? job.extractedRowsRaw : [];
   const activeSlots = modelSlots.filter((slot) => slot.enabled);
+  const instructionChips = useMemo(() => getInstructionStackNames(systemPrompt), [systemPrompt]);
+  const instructionWarnings = useMemo(
+    () => instructionConflictWarnings(systemPrompt, selectedScenario?.type),
+    [selectedScenario?.type, systemPrompt],
+  );
 
   const draftScenario = useCallback((): PromptScenario | null => {
     if (!selectedScenario) return null;
@@ -515,6 +562,15 @@ export function BomPromptWorkspace({
       userPromptTemplate: composerPrompt.trim() || userPromptTemplate,
     };
   }, [composerPrompt, selectedScenario, systemPrompt, userPromptTemplate]);
+  const runPreviewText = useMemo(
+    () =>
+      buildCompiledRunPreview({
+        systemPrompt,
+        userPromptTemplate: composerPrompt.trim() || userPromptTemplate,
+        inputPayload: inputPayload.value,
+      }),
+    [composerPrompt, inputPayload.value, systemPrompt, userPromptTemplate],
+  );
 
   const loadScenario = useCallback(
     (scenario: PromptScenario, patch?: Record<string, unknown>) => {
@@ -975,6 +1031,8 @@ export function BomPromptWorkspace({
               userPromptTemplate={userPromptTemplate}
               inputPayloadText={inputPayloadText}
               inputError={inputPayload.error}
+              compiledRunPreview={runPreviewText}
+              instructionWarnings={instructionWarnings}
               runBusy={runBusy}
               runError={runError}
               lastRun={lastRun}
@@ -993,6 +1051,8 @@ export function BomPromptWorkspace({
               runBusy={runBusy}
               runError={runError}
               savedPromptStatus={savedPromptStatus}
+              instructionChips={instructionChips}
+              instructionWarnings={instructionWarnings}
               toolsPopoverSlot={toolsPopoverSlot}
               activeSlot={modelSlots.find((slot) => slot.id === toolsPopoverSlot) || activeSlots[0] || modelSlots[0]}
               attachments={promptAttachments}
@@ -1017,6 +1077,8 @@ export function BomPromptWorkspace({
               setActiveSlotId={setMissionSettingsSlot}
               systemPrompt={systemPrompt}
               setSystemPrompt={setSystemPrompt}
+              instructionChips={instructionChips}
+              instructionWarnings={instructionWarnings}
               onOpenModelDrawer={(slotId) => setModelDrawerSlot(slotId)}
               onPatch={updateSlot}
               onClose={() => setMissionSettingsOpen(false)}
@@ -1035,6 +1097,7 @@ export function BomPromptWorkspace({
             isOpen={isInstructionsDrawerOpen}
             onClose={() => setIsInstructionsDrawerOpen(false)}
             currentInstruction={systemPrompt}
+            baseInstruction={selectedScenario?.systemPrompt || ""}
             onSelect={(content) => setSystemPrompt(content)}
           />
           <ModelSelectionPortal
