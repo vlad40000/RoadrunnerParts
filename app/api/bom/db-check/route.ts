@@ -76,21 +76,22 @@ export async function GET(request: Request) {
   const partNumber = String(searchParams.get("partNumber") || "").trim();
   const normalizedModel = normalizeKey(model);
   const normalizedPart = normalizeKey(partNumber);
+  const effectiveNormalizedPart = normalizedPart === normalizedModel ? "" : normalizedPart;
 
-  if (!normalizedModel && !normalizedPart) {
+  if (!normalizedModel && !effectiveNormalizedPart) {
     return NextResponse.json(
       { ok: false, error: "Provide model or partNumber." },
       { status: 400 },
     );
   }
 
-  const providerRows = normalizedPart
+  const providerRows = effectiveNormalizedPart
     ? await sql`
         select *
         from provider_part_seed_rows
         where (
-          upper(regexp_replace(coalesce(current_service_part_number, original_part_number, ''), '[^A-Z0-9]', '', 'g')) = ${normalizedPart}
-          or upper(regexp_replace(coalesce(original_part_number, ''), '[^A-Z0-9]', '', 'g')) = ${normalizedPart}
+          upper(regexp_replace(coalesce(current_service_part_number, original_part_number, ''), '[^A-Z0-9]', '', 'g')) = ${effectiveNormalizedPart}
+          or upper(regexp_replace(coalesce(original_part_number, ''), '[^A-Z0-9]', '', 'g')) = ${effectiveNormalizedPart}
         )
         and (${normalizedModel} = '' or upper(regexp_replace(model, '[^A-Z0-9]', '', 'g')) = ${normalizedModel})
         order by created_at desc
@@ -104,7 +105,7 @@ export async function GET(request: Request) {
         limit 500
       `;
 
-  const cachedRows = normalizedPart
+  const cachedRows = effectiveNormalizedPart
     ? await sql`
         select
           normalized_model,
@@ -120,7 +121,7 @@ export async function GET(request: Request) {
           'model_parts_cache' as source_provider
         from model_parts_cache,
         lateral jsonb_array_elements(parts) as part
-        where upper(regexp_replace(coalesce(part ->> 'partNumber', part ->> 'currentServicePartNumber', part ->> 'oem_number', ''), '[^A-Z0-9]', '', 'g')) = ${normalizedPart}
+        where upper(regexp_replace(coalesce(part ->> 'partNumber', part ->> 'currentServicePartNumber', part ->> 'oem_number', ''), '[^A-Z0-9]', '', 'g')) = ${effectiveNormalizedPart}
           and (${normalizedModel} = '' or normalized_model = ${normalizedModel})
         limit 500
       `
@@ -188,7 +189,7 @@ export async function GET(request: Request) {
     model: model || null,
     partNumber: partNumber || null,
     normalizedModel: normalizedModel || null,
-    normalizedPartNumber: normalizedPart || null,
+    normalizedPartNumber: effectiveNormalizedPart || null,
     count: parts.length,
     sourceCounts: {
       providerSeedRows: providerResultRows.length,

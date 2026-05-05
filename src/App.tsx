@@ -551,7 +551,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
   const handleDbCheck = async () => {
     const model = normalizeModelId(modelEntry || lookupModel || '');
-    const partNumber = normalizeModelId(searchTerm);
+    const partNumber = model ? '' : normalizeModelId(searchTerm);
 
     if (!model && !partNumber) {
       setDbCheckStatus('Enter a model number or part number.');
@@ -613,8 +613,13 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
   const handleResetIdentity = () => {
     setModelEntry('');
+    setSearchTerm('');
     setLookupModel(null);
     setLookupSerial(null);
+    setCheckModel('');
+    setAIParts([]);
+    setSelectedSections([]);
+    setShowUnpricedDbRows(false);
     setManufactureInfo(null);
     setModelMetadata(null);
     setExpectedPartCount(null);
