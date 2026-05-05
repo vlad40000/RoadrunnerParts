@@ -4,8 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
+  BookOpen,
+  Bot,
+  Boxes,
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   CircleDot,
   Copy,
   Database,
@@ -14,6 +18,7 @@ import {
   FileCode2,
   Fingerprint,
   Globe2,
+  Hammer,
   History,
   Home,
   ImageIcon,
@@ -28,6 +33,7 @@ import {
   ShieldCheck,
   Table2,
   Upload,
+  UserCircle,
   XCircle,
 } from "lucide-react";
 import {
@@ -237,6 +243,7 @@ export function BomPromptWorkspace({
   const [browserSupplier, setBrowserSupplier] = useState<SupplierId>("encompass");
   const [captures, setCaptures] = useState<BrowserSourceCapture[]>([]);
   const [promptDrawerOpen, setPromptDrawerOpen] = useState(true);
+  const [railExpanded, setRailExpanded] = useState(false);
 
   const selectedScenario = useMemo(
     () => scenarios.find((scenario) => scenario.id === selectedScenarioId) || scenarios[0],
@@ -560,28 +567,12 @@ export function BomPromptWorkspace({
       </div>
 
       <div className="bom-cockpit-body">
-        <aside className="bom-cockpit-rail">
-          {[
-            ["S", "supplier_runs", "Supplier runs"],
-            ["R", "prompt_scenarios", "Reference evidence"],
-            ["L", "validation", "Review lock"],
-            ["B", "browser_tool", "Browser"],
-            ["P", "pricing", "Pricing"],
-          ].map(([label, mode, title], index) => (
-            <button
-              key={label}
-              type="button"
-              title={title}
-              onClick={() => setActiveMode(mode as BomWorkspaceMode)}
-              className={`bom-cockpit-rail-button ${activeMode === mode ? "on" : ""} ${index === 3 ? "spaced" : ""}`}
-            >
-              {label}
-            </button>
-          ))}
-          <button className="bom-cockpit-rail-button bottom" type="button" title="Settings">
-            <Settings2 size={12} />
-          </button>
-        </aside>
+        <CockpitRail
+          activeMode={activeMode}
+          expanded={railExpanded}
+          setActiveMode={setActiveMode}
+          setExpanded={setRailExpanded}
+        />
 
         <WorkspaceDrawer
           activeMode={activeMode}
@@ -1143,6 +1134,90 @@ function IdentityPanel(props: {
         </div>
       </Panel>
     </div>
+  );
+}
+
+function CockpitRail({
+  activeMode,
+  expanded,
+  setActiveMode,
+  setExpanded,
+}: {
+  activeMode: BomWorkspaceMode;
+  expanded: boolean;
+  setActiveMode: (mode: BomWorkspaceMode) => void;
+  setExpanded: (expanded: boolean) => void;
+}) {
+  const primaryItems: Array<{
+    mode: BomWorkspaceMode;
+    label: string;
+    title: string;
+    icon: React.ReactNode;
+  }> = [
+    { mode: "prompt_scenarios", label: "Playground", title: "Prompt playground", icon: <Bot size={18} /> },
+    { mode: "supplier_runs", label: "Suppliers", title: "Supplier runs", icon: <Boxes size={18} /> },
+    { mode: "validation", label: "Review", title: "Review lock", icon: <ShieldCheck size={18} /> },
+    { mode: "browser_tool", label: "Browser", title: "Browser tool", icon: <Globe2 size={18} /> },
+    { mode: "pricing", label: "Pricing", title: "Pricing", icon: <DollarSign size={18} /> },
+  ];
+
+  const externalItems = [
+    { label: "Dashboard", href: "/bom-jobs", icon: <Table2 size={18} /> },
+    { label: "Docs", href: "https://ai.google.dev/gemini-api/docs", icon: <BookOpen size={18} /> },
+  ];
+
+  return (
+    <aside className={`bom-cockpit-rail ${expanded ? "wide" : "slim"}`}>
+      <button
+        className="bom-cockpit-rail-toggle"
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        title={expanded ? "Collapse navigation" : "Expand navigation"}
+      >
+        {expanded ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+        <span>Menu</span>
+      </button>
+
+      <div className="bom-cockpit-rail-group">
+        {primaryItems.map((item) => (
+          <button
+            key={item.mode}
+            type="button"
+            title={item.title}
+            onClick={() => setActiveMode(item.mode)}
+            className={`bom-cockpit-rail-button ${activeMode === item.mode ? "on" : ""}`}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="bom-cockpit-rail-group external">
+        {externalItems.map((item) => (
+          <Link key={item.label} href={item.href} className="bom-cockpit-rail-button" title={item.label}>
+            {item.icon}
+            <span>{item.label}</span>
+            <ExternalLink className="external-mark" size={13} />
+          </Link>
+        ))}
+      </div>
+
+      <div className="bom-cockpit-rail-bottom">
+        <button className="bom-cockpit-rail-button" type="button" title="What's new">
+          <Hammer size={18} />
+          <span>What's new</span>
+        </button>
+        <button className="bom-cockpit-rail-button" type="button" title="Settings">
+          <Settings2 size={18} />
+          <span>Settings</span>
+        </button>
+        <button className="bom-cockpit-rail-button profile" type="button" title="Operator profile">
+          <UserCircle size={19} />
+          <span>Operator</span>
+        </button>
+      </div>
+    </aside>
   );
 }
 

@@ -465,46 +465,117 @@
 
   .bom-cockpit-rail {
     display: flex;
-    width: 38px;
+    width: 52px;
     flex-shrink: 0;
     flex-direction: column;
+    gap: 10px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background: #1e1e1e;
+    padding: 8px 6px;
+    color: rgba(255, 255, 255, 0.72);
+    transition: width 180ms ease;
+  }
+
+  .bom-cockpit-rail.wide {
+    width: 184px;
+  }
+
+  .bom-cockpit-rail-toggle,
+  .bom-cockpit-rail-button {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    height: 38px;
     align-items: center;
-    gap: 3px;
-    border-right: 1px solid var(--cockpit-border);
-    background: var(--cockpit-surface);
-    padding: 6px 0;
+    gap: 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .bom-cockpit-rail-toggle {
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.58);
+  }
+
+  .bom-cockpit-rail.wide .bom-cockpit-rail-toggle {
+    justify-content: flex-start;
+    padding: 0 10px;
+  }
+
+  .bom-cockpit-rail-group {
+    display: grid;
+    gap: 4px;
+  }
+
+  .bom-cockpit-rail-group.external {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 10px;
+  }
+
+  .bom-cockpit-rail-bottom {
+    display: grid;
+    gap: 4px;
+    margin-top: auto;
   }
 
   .bom-cockpit-rail-button {
-    display: flex;
-    width: 26px;
-    height: 26px;
-    align-items: center;
     justify-content: center;
-    border: 0;
-    border-radius: 5px;
-    background: transparent;
-    color: var(--cockpit-faint);
-    font-size: 11px;
-    font-weight: 900;
+    padding: 0 10px;
   }
 
-  .bom-cockpit-rail-button:hover {
-    background: var(--cockpit-surface-2);
-    color: var(--cockpit-text);
+  .bom-cockpit-rail.wide .bom-cockpit-rail-button {
+    justify-content: flex-start;
+  }
+
+  .bom-cockpit-rail-button:hover,
+  .bom-cockpit-rail-toggle:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #fff;
   }
 
   .bom-cockpit-rail-button.on {
-    background: var(--cockpit-amber);
-    color: #6a3e00;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
   }
 
-  .bom-cockpit-rail-button.spaced {
-    margin-top: 5px;
+  .bom-cockpit-rail-button.on::before {
+    position: absolute;
+    left: -6px;
+    width: 3px;
+    height: 20px;
+    border-radius: 999px;
+    background: #8ab4f8;
+    content: "";
   }
 
-  .bom-cockpit-rail-button.bottom {
-    margin-top: auto;
+  .bom-cockpit-rail-button span,
+  .bom-cockpit-rail-toggle span,
+  .bom-cockpit-rail-button .external-mark {
+    display: none;
+    white-space: nowrap;
+  }
+
+  .bom-cockpit-rail.wide .bom-cockpit-rail-button span,
+  .bom-cockpit-rail.wide .bom-cockpit-rail-toggle span,
+  .bom-cockpit-rail.wide .bom-cockpit-rail-button .external-mark {
+    display: inline-flex;
+  }
+
+  .bom-cockpit-rail-button .external-mark {
+    margin-left: auto;
+    color: rgba(255, 255, 255, 0.42);
+  }
+
+  .bom-cockpit-rail-button.profile {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
   }
 
   .bom-cockpit-drawer {
