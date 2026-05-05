@@ -85,6 +85,8 @@ export type PromptScenarioType =
   | "pricing_reconciliation"
   | "pricing_router"
   | "retail_pricing_verification"
+  | "market_intelligence_survey"
+  | "visual_loop_recovery"
   | "ebay_listing_prep";
 
 export type RetrievalStatus =

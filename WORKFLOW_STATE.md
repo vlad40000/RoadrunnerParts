@@ -126,7 +126,7 @@ why are the prompts not auto loading? why are the URLs not loading?
 - **Prompt Architecture Persistent**: AI agent instructions are now cloud-persisted, reviewable, and version-tracked via telemetry logs.
 - **Agentic Recipes Defined**: High-performance combinations of Gemini 3 features (Thinking, Computer Use, Parallel Calls) are documented and ready for implementation.
 
-## Next Steps
+- [x] **Cookbook Integration**: Seeded `agent_preset` table with Gemini 3 Cookbook recipes and registered `visual_loop_recovery` scenario.
 - [ ] Implement the "Visual Loop" recovery logic in `browser-agent/computer-use-agent.mjs` using the defined recipe.
 - [ ] Orchestrate the "Market-Signal Intelligence" pipeline as a single batch worker.
 - [ ] Run end-to-end integration test on a 20-unit sample using the new agentic recipes.

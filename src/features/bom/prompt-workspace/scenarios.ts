@@ -448,6 +448,32 @@ export const PROMPT_SCENARIOS: PromptScenario[] = [
       },
     },
   },
+  {
+    id: "visual-loop-recovery",
+    name: "Visual Loop Recovery",
+    type: "visual_loop_recovery",
+    description: "Automatically navigate past security gates or dynamic UI blocks using visual analysis.",
+    requiredInputs: ["browserViewport", "domState", "blockedReason"],
+    enabled: true,
+    systemPrompt: [
+      "Goal: Automatically navigate past security gates or dynamic UI blocks.",
+      "Detect 403/429 or \"Wait\" screens.",
+      "Analyze visually. If Captcha: Prompt HITL.",
+      "If UI Popup: Use Computer Use to click 'X'.",
+      "Self-correct via Instruction Patching.",
+    ].join("\n"),
+    userPromptTemplate: [
+      "Perform a visual loop recovery for the specified block context.",
+      "Input payload:",
+      "{{input_payload_json}}",
+    ].join("\n\n"),
+    expectedJsonShape: {
+      action: "click",
+      coordinates: { x: 0, y: 0 },
+      reason: "",
+      needsHITL: false,
+    },
+  },
 ];
 
 export function getPromptScenarioById(id: string) {

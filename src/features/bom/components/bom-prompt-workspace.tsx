@@ -388,8 +388,9 @@ export function BomPromptWorkspace({
   initialModel = "",
   initialSerial = "",
   initialJobId = "",
+  initialAction = "",
 }: BomPromptWorkspaceProps) {
-  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("studio");
+  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>("mission");
   const [activeMode, setActiveMode] = useState<BomWorkspaceMode>("prompt_scenarios");
   const [model, setModel] = useState(initialModel.toUpperCase());
   const [serial, setSerial] = useState(initialSerial.toUpperCase());
@@ -815,8 +816,7 @@ export function BomPromptWorkspace({
                 modelSlots={modelSlots}
               />
             )}
-          </section>
-          <PromptCockpitDrawer
+            <PromptCockpitDrawer
               open={promptDrawerOpen}
               scenarios={scenarios}
               selectedScenario={selectedScenario}
@@ -1404,6 +1404,100 @@ function RunSettingsSidebar({
   );
 }
 
+function MissionRunSettingsRail({
+  modelSlots,
+  activeSlotId,
+  setActiveSlotId,
+  systemPrompt,
+  setSystemPrompt,
+  onOpenModelDrawer,
+  onPatch,
+  onClose,
+}: {
+  modelSlots: ModelSlot[];
+  activeSlotId: ModelSlot["id"];
+  setActiveSlotId: (slotId: ModelSlot["id"]) => void;
+  systemPrompt: string;
+  setSystemPrompt: (value: string) => void;
+  onOpenModelDrawer: (slotId: ModelSlot["id"]) => void;
+  onPatch: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
+  onClose: () => void;
+}) {
+  const slots = modelSlots.slice(0, 2);
+  const activeSlot = slots.find((slot) => slot.id === activeSlotId) || slots[0];
+
+  if (!activeSlot) return null;
+
+  return (
+    <aside className="ai-run-settings mission-run-settings">
+      <div className="ai-settings-title mission-settings-title">
+        <strong>Run settings</strong>
+        <button type="button" className="ai-icon-button" title="Close run settings" onClick={onClose}>
+          <X size={15} />
+        </button>
+      </div>
+      <div className="mission-model-tabs">
+        {slots.map((slot) => (
+          <button
+            key={slot.id}
+            type="button"
+            className={slot.id === activeSlot.id ? "active" : ""}
+            onClick={() => setActiveSlotId(slot.id)}
+          >
+            <span>{slot.id === "slot_a" ? "Model A" : "Model B"}</span>
+            <label onClick={(event) => event.stopPropagation()}>
+              <input
+                type="checkbox"
+                checked={slot.enabled}
+                onChange={(event) => onPatch(slot.id, { enabled: event.target.checked })}
+              />
+              enabled
+            </label>
+          </button>
+        ))}
+      </div>
+      <RunSettingsSidebar
+        slot={activeSlot}
+        systemPrompt={systemPrompt}
+        setSystemPrompt={setSystemPrompt}
+        onOpenModelDrawer={() => onOpenModelDrawer(activeSlot.id)}
+        onPatch={(patch) => onPatch(activeSlot.id, patch)}
+      />
+    </aside>
+  );
+}
+
+function ModelSelectionPortal({
+  slot,
+  search,
+  filter,
+  setSearch,
+  setFilter,
+  onClose,
+  onSelect,
+}: {
+  slot: ModelSlot | null;
+  search: string;
+  filter: (typeof MODEL_FILTERS)[number];
+  setSearch: (value: string) => void;
+  setFilter: (value: (typeof MODEL_FILTERS)[number]) => void;
+  onClose: () => void;
+  onSelect: (modelName: ModelSlot["modelName"]) => void;
+}) {
+  if (!slot) return null;
+  return (
+    <ModelSelectionDrawer
+      slot={slot}
+      search={search}
+      filter={filter}
+      setSearch={setSearch}
+      setFilter={setFilter}
+      onClose={onClose}
+      onSelect={onSelect}
+    />
+  );
+}
+
 function ModelSelectionDrawer({
   slot,
   search,
@@ -1602,6 +1696,9 @@ function MissionBottomBar(props: {
   queueCapture: (kind: BrowserSourceCapture["captureKind"], label: string) => void;
   selectSupplierAction: (supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") => void;
   validateLatestRun: () => void;
+  runScenario: () => void;
+  runBusy: boolean;
+  activeSlotsCount: number;
 }) {
   const supplierButtons = props.suppliers.filter((supplier) =>
     ["sears-partsdirect", "repairclinic", "ge", "whirlpool", "manual-pdf"].includes(supplier.id),
@@ -1627,6 +1724,9 @@ function MissionBottomBar(props: {
         </button>
       ))}
       <div className="bom-cockpit-sep" />
+      <button type="button" className="bom-cockpit-run primary" onClick={props.runScenario} disabled={props.runBusy}>
+        {props.runBusy ? "RUNNING" : props.activeSlotsCount > 1 ? "RUN 2" : "RUN"}
+      </button>
       <button type="button" className="bom-cockpit-ok" onClick={props.validateLatestRun}>
         OK
       </button>

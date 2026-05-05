@@ -742,6 +742,76 @@
     padding: 18px 16px;
   }
 
+  .mission-run-settings {
+    width: 360px;
+    flex-shrink: 0;
+    border-left: 1px solid #d9e2ec;
+    background: #fff;
+  }
+
+  .mission-run-settings > .ai-run-settings {
+    min-height: 0;
+    flex: 1;
+    border-left: 0;
+    padding: 0;
+  }
+
+  .mission-settings-title {
+    flex-shrink: 0;
+  }
+
+  .mission-model-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .mission-model-tabs > button {
+    display: grid;
+    gap: 5px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 9px;
+    color: #30343b;
+    text-align: left;
+  }
+
+  .mission-model-tabs > button.active {
+    border-color: #8ab4f8;
+    background: #eef4ff;
+  }
+
+  .mission-model-tabs span {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mission-model-tabs label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #6b7280;
+    font-size: 11px;
+  }
+
+  .ai-drawer-trigger-button {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 0;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #111827;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
   .ai-settings-title strong {
     font-size: 13px;
   }
@@ -1660,6 +1730,23 @@
     padding: 16px;
   }
 
+  .bom-browser-grid {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    gap: 10px;
+  }
+
+  .bom-browser-grid.single {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bom-browser-grid.two-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .bom-browser-canvas {
     position: relative;
     display: flex;
@@ -2013,6 +2100,16 @@
     color: #6a3e00;
   }
 
+  .bom-cockpit-run.primary {
+    background: #111827;
+    color: #fff;
+  }
+
+  .bom-cockpit-run:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
   .bom-cockpit-ok {
     border: 0;
     background: var(--cockpit-text);
@@ -2067,6 +2164,25 @@
   .bom-cockpit .bom-inspector button.bg-white {
     background: var(--cockpit-text) !important;
     color: #fff !important;
+  }
+
+  .bom-settings-reopen {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    z-index: 25;
+    display: inline-flex;
+    width: 32px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+    border: 1px solid #d9e2ec;
+    border-right: 0;
+    border-radius: 8px 0 0 8px;
+    background: #fff;
+    color: #334155;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
   }
 }
 
