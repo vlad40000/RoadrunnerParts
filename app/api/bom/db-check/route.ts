@@ -7,6 +7,10 @@ function normalizeKey(value: string) {
   return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
+function stripLookupLabel(value: string) {
+  return value.replace(/^\s*(MODEL|PART)\s*#?\s*:?\s*/i, "").trim();
+}
+
 function firstValue(...values: Array<unknown>) {
   return values.find((value) => value !== undefined && value !== null && String(value).trim() !== "");
 }
@@ -72,8 +76,8 @@ function partKeys(row: any) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const model = String(searchParams.get("model") || "").trim();
-  const partNumber = String(searchParams.get("partNumber") || "").trim();
+  const model = stripLookupLabel(String(searchParams.get("model") || "").trim());
+  const partNumber = stripLookupLabel(String(searchParams.get("partNumber") || "").trim());
   const normalizedModel = normalizeKey(model);
   const normalizedPart = normalizeKey(partNumber);
   const effectiveNormalizedPart = normalizedPart === normalizedModel ? "" : normalizedPart;

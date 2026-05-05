@@ -114,6 +114,8 @@ const cropImage = async (base64: string, mimeType: string, factor = 0.8): Promis
 };
 
 const normalizeModelId = (value?: string | null) => (value || '').toUpperCase().trim();
+const stripLookupLabel = (value?: string | null) =>
+  (value || "").replace(/^\s*(MODEL|PART)\s*#?\s*:?\s*/i, "").trim();
 const HOME_DRAFT_STORAGE_KEY = 'roadrunner:home-draft';
 
 
@@ -550,8 +552,8 @@ Sort the final JSON alphabetically by part_name before outputting.`;
   };
 
   const handleDbCheck = async () => {
-    const model = normalizeModelId(modelEntry || lookupModel || '');
-    const partNumber = model ? '' : normalizeModelId(searchTerm);
+    const model = normalizeModelId(stripLookupLabel(modelEntry || lookupModel || ""));
+    const partNumber = model ? '' : normalizeModelId(stripLookupLabel(searchTerm));
 
     if (!model && !partNumber) {
       setDbCheckStatus('Enter a model number or part number.');

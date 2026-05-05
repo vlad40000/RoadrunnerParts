@@ -113,6 +113,7 @@ export function SystemInstructionsDrawer({
   const [editContent, setEditContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const fetchPresets = async () => {
     setIsLoading(true);
@@ -195,6 +196,7 @@ export function SystemInstructionsDrawer({
   };
 
   const addInstruction = () => {
+    setSaveError(null);
     const newItem: SystemInstruction = {
       id: `temp-${crypto.randomUUID()}`,
       name: "New Instruction",
@@ -226,6 +228,7 @@ export function SystemInstructionsDrawer({
 
   const startEditing = (item: SystemInstruction, e: React.MouseEvent) => {
     e.stopPropagation();
+    setSaveError(null);
     setEditingId(item.id);
     setEditName(item.name);
     setEditContent(item.content);
@@ -233,39 +236,47 @@ export function SystemInstructionsDrawer({
 
   const saveEdit = async () => {
     if (!editingId) return;
-    
+
+    const name = editName.trim();
+    const content = editContent.trim();
+    if (!name || !content) {
+      setSaveError("Preset name and instruction content are required.");
+      return;
+    }
+
     const updatedItem = {
       id: editingId.startsWith("temp-") ? undefined : editingId,
-      name: editName,
-      content: editContent
+      name,
+      content,
     };
 
     try {
       const res = await fetch("/api/agent-presets", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(updatedItem),
       });
       const data = await res.json();
-      
-      if (data.ok) {
-        const savedPreset = data.preset;
-        const newList = instructions.map((i) =>
-          i.id === editingId ? savedPreset : i
-        );
-        setInstructions(newList);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+
+      if (!res.ok || !data?.ok || !data?.preset) {
+        throw new Error(data?.error || `Preset save failed (${res.status})`);
       }
+
+      const savedPreset = data.preset as SystemInstruction;
+      const exists = instructions.some((i) => i.id === editingId);
+      const newList = exists
+        ? instructions.map((i) => (i.id === editingId ? savedPreset : i))
+        : [...instructions, savedPreset];
+      setInstructions(newList);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+      setSaveError(null);
+      setEditingId(null);
     } catch (e) {
       console.error("Failed to save preset to backend", e);
-      // Fallback: update locally anyway
-      const updated = instructions.map((i) =>
-        i.id === editingId ? { ...i, name: editName, content: editContent } : i
-      );
-      setInstructions(updated);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      setSaveError(e instanceof Error ? e.message : "Failed to save preset.");
     }
-    
-    setEditingId(null);
   };
 
   const selectedItems = selectedItemsFor(selectedIds);
@@ -389,8 +400,16 @@ export function SystemInstructionsDrawer({
                         />
                       </div>
                       <div className="flex justify-end gap-3 pt-2">
+                        {saveError ? (
+                          <div className="mr-auto rounded-md border border-red-400/30 bg-red-400/10 px-2 py-1 text-[10px] font-semibold text-red-200">
+                            {saveError}
+                          </div>
+                        ) : null}
                         <button 
-                          onClick={() => setEditingId(null)} 
+                          onClick={() => {
+                            setEditingId(null);
+                            setSaveError(null);
+                          }}
                           className="text-[10px] font-bold text-white/40 hover:text-white transition-colors"
                         >
                           CANCEL
