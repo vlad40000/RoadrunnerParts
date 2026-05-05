@@ -29,6 +29,18 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
+function normalizeAttachments(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => asRecord(item))
+    .map((item) => ({
+      name: String(item.name || "attachment").slice(0, 160),
+      mimeType: String(item.mimeType || "application/octet-stream"),
+      data: String(item.data || item.dataBase64 || ""),
+    }))
+    .filter((item) => item.data && item.mimeType);
+}
+
 function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
   const input = asRecord(value);
   const toolInput = asRecord(input.tools);
@@ -102,6 +114,7 @@ async function runSlot(input: {
   scenario: PromptScenario;
   slot: ModelSlot;
   inputPayload: Record<string, unknown>;
+  attachments: Array<{ name: string; mimeType: string; data: string }>;
 }): Promise<PromptRunOutput> {
   const startedAt = Date.now();
   const shouldMock = input.slot.provider !== "gemini" || !process.env.GEMINI_API_KEY;
@@ -122,6 +135,10 @@ async function runSlot(input: {
         enableSearch: input.slot.tools?.googleSearchGrounding,
         enableUrlContext: input.slot.tools?.urlContext,
         responseMimeType: input.slot.tools?.structuredOutputs ? "application/json" : undefined,
+        files: input.attachments.map((attachment) => ({
+          mimeType: attachment.mimeType,
+          data: attachment.data,
+        })),
       });
 
   const normalized = normalizeModelOutput(rawOutput);
@@ -176,6 +193,7 @@ export async function POST(req: NextRequest) {
     }
 
     const inputPayload = asRecord(body.inputPayload);
+    const attachments = normalizeAttachments(body.attachments);
     const slotInputs = Array.isArray(body.modelSlots) ? body.modelSlots : DEFAULT_MODEL_SLOTS;
     const requestedEnabledSlots = slotInputs.filter((slot) => asRecord(slot).enabled !== false);
     if (requestedEnabledSlots.length > 2) {
@@ -197,6 +215,7 @@ export async function POST(req: NextRequest) {
           scenario,
           slot,
           inputPayload,
+          attachments,
         }),
       ),
     );

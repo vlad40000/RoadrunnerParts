@@ -186,7 +186,7 @@ export type BrowserSourceCapture = {
   id: string;
   label: string;
   sourceUrl: string;
-  captureKind: "page" | "dom" | "xhr_json" | "diagram_image" | "manual_note";
+  captureKind: "page" | "dom" | "xhr_json" | "diagram_image" | "manual_note" | "image_upload" | "document_upload" | "file_upload";
   status: "planned" | "captured" | "blocked";
   rawPayload?: unknown;
   createdAt: string;

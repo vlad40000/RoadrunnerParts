@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Plus, Trash2, Save, Check, Settings2 } from "lucide-react";
+import { X, Plus, Trash2, Save, Check, Settings2, ArrowUp, ArrowDown } from "lucide-react";
 
 type SystemInstruction = {
   id: string;
@@ -10,6 +10,28 @@ type SystemInstruction = {
 };
 
 const STORAGE_KEY = "roadrunner:system-instructions";
+
+function compileInstructions(items: SystemInstruction[]) {
+  if (!items.length) return "";
+  const preamble = [
+    "[SYSTEM INSTRUCTION HIERARCHY]",
+    "Apply the selected presets in priority order from top to bottom.",
+    "If any selected presets conflict, obey the higher-priority preset with the larger weight.",
+    "Do not merge conflicting requirements by compromise; yield to the higher placed instruction.",
+  ].join("\n");
+
+  const blocks = items
+    .map((item, index) => {
+      const weight = items.length - index;
+      return [
+        `[PRESET PRIORITY ${index + 1} | WEIGHT ${weight}: ${item.name}]`,
+        item.content.trim(),
+      ].filter(Boolean).join("\n");
+    })
+    .join("\n\n");
+
+  return `${preamble}\n\n${blocks}`;
+}
 
 export function SystemInstructionsDrawer({
   isOpen,
@@ -27,6 +49,7 @@ export function SystemInstructionsDrawer({
   const [editName, setEditName] = useState("");
   const [editContent, setEditContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const fetchPresets = async () => {
     setIsLoading(true);
@@ -61,9 +84,51 @@ export function SystemInstructionsDrawer({
     fetchPresets();
   }, []);
 
+  useEffect(() => {
+    if (!instructions.length) {
+      setSelectedIds([]);
+      return;
+    }
+
+    const activeIds = instructions
+      .filter((item) => item.content && (currentInstruction === item.content || currentInstruction.includes(item.content)))
+      .sort((a, b) => currentInstruction.indexOf(a.content) - currentInstruction.indexOf(b.content))
+      .map((item) => item.id);
+    setSelectedIds(activeIds);
+  }, [currentInstruction, instructions]);
+
   const saveToStorage = (list: SystemInstruction[]) => {
     setInstructions(list);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  };
+
+  const selectedItemsFor = (ids: string[], source = instructions) =>
+    ids
+      .map((id) => source.find((item) => item.id === id))
+      .filter((item): item is SystemInstruction => Boolean(item));
+
+  const applySelected = (ids: string[]) => {
+    onSelect(compileInstructions(selectedItemsFor(ids)));
+  };
+
+  const toggleInstruction = (item: SystemInstruction) => {
+    const nextIds = selectedIds.includes(item.id)
+      ? selectedIds.filter((id) => id !== item.id)
+      : [...selectedIds, item.id];
+    setSelectedIds(nextIds);
+    applySelected(nextIds);
+  };
+
+  const moveSelected = (id: string, direction: -1 | 1, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const index = selectedIds.indexOf(id);
+    if (index < 0) return;
+    const nextIndex = index + direction;
+    if (nextIndex < 0 || nextIndex >= selectedIds.length) return;
+    const nextIds = [...selectedIds];
+    [nextIds[index], nextIds[nextIndex]] = [nextIds[nextIndex], nextIds[index]];
+    setSelectedIds(nextIds);
+    applySelected(nextIds);
   };
 
   const addInstruction = () => {
@@ -83,6 +148,9 @@ export function SystemInstructionsDrawer({
     const newList = instructions.filter((i) => i.id !== id);
     setInstructions(newList);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+    const nextSelectedIds = selectedIds.filter((selectedId) => selectedId !== id);
+    setSelectedIds(nextSelectedIds);
+    onSelect(compileInstructions(selectedItemsFor(nextSelectedIds, newList)));
     
     try {
       await fetch(`/api/agent-presets?id=${id}`, { method: "DELETE" });
@@ -158,7 +226,9 @@ export function SystemInstructionsDrawer({
 
         <div className="flex h-[calc(100%-3.5rem)] flex-col overflow-hidden p-6 bg-[#0f1115]">
           <div className="mb-6 flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">Instruction Presets</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
+              Instruction Presets {selectedIds.length ? `(${selectedIds.length} active)` : ""}
+            </span>
             <button 
               onClick={addInstruction}
               className="flex items-center gap-1.5 rounded-lg bg-white/5 border border-white/5 px-3 py-1.5 text-[10px] font-bold text-white/70 hover:bg-white/10 hover:border-white/10 transition-all active:scale-95"
@@ -167,9 +237,42 @@ export function SystemInstructionsDrawer({
             </button>
           </div>
 
+          <div className="mb-4 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                const allIds = instructions.map((item) => item.id);
+                setSelectedIds(allIds);
+                applySelected(allIds);
+              }}
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/60 hover:bg-white/10"
+            >
+              Select All
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedIds([]);
+                onSelect("");
+              }}
+              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/60 hover:bg-white/10"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="ml-auto rounded-lg bg-blue-500 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white hover:bg-blue-400"
+            >
+              Apply Selected
+            </button>
+          </div>
+
           <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
             {instructions.map((item) => {
-              const isActive = currentInstruction === item.content;
+              const isActive = selectedIds.includes(item.id);
+              const priorityIndex = selectedIds.indexOf(item.id);
+              const weight = priorityIndex >= 0 ? selectedIds.length - priorityIndex : 0;
               const isEditing = editingId === item.id;
 
               return (
@@ -224,10 +327,7 @@ export function SystemInstructionsDrawer({
                       <div className="flex items-start justify-between">
                         <div 
                           className="min-w-0 flex-1 cursor-pointer" 
-                          onClick={() => {
-                            onSelect(item.content);
-                            onClose();
-                          }}
+                          onClick={() => toggleInstruction(item)}
                         >
                           <div className="flex items-center gap-2">
                             <h3 className={`truncate text-sm font-bold ${isActive ? "text-blue-400" : "text-white/90"}`}>
@@ -242,6 +342,26 @@ export function SystemInstructionsDrawer({
                           </p>
                         </div>
                         <div className="flex gap-3 ml-4 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                          {isActive ? (
+                            <>
+                              <button
+                                onClick={(e) => moveSelected(item.id, -1, e)}
+                                disabled={priorityIndex <= 0}
+                                className="text-white/30 hover:text-blue-300 disabled:opacity-20 p-1 hover:bg-white/5 rounded transition-colors"
+                                title="Move higher priority"
+                              >
+                                <ArrowUp size={14} />
+                              </button>
+                              <button
+                                onClick={(e) => moveSelected(item.id, 1, e)}
+                                disabled={priorityIndex === selectedIds.length - 1}
+                                className="text-white/30 hover:text-blue-300 disabled:opacity-20 p-1 hover:bg-white/5 rounded transition-colors"
+                                title="Move lower priority"
+                              >
+                                <ArrowDown size={14} />
+                              </button>
+                            </>
+                          ) : null}
                           <button 
                             onClick={(e) => startEditing(item, e)} 
                             className="text-white/30 hover:text-white p-1 hover:bg-white/5 rounded transition-colors"
@@ -259,8 +379,10 @@ export function SystemInstructionsDrawer({
                         </div>
                       </div>
                       {isActive && (
-                        <div className="mt-4 flex items-center gap-1.5 text-[9px] font-bold tracking-[0.1em] text-blue-400/80">
-                          <Check size={12} strokeWidth={3} /> ACTIVE IN WORKSPACE
+                        <div className="mt-4 flex items-center gap-2 text-[9px] font-bold tracking-[0.1em] text-blue-400/80">
+                          <Check size={12} strokeWidth={3} />
+                          <span>PRIORITY {priorityIndex + 1}</span>
+                          <span className="rounded bg-blue-400/10 px-1.5 py-0.5">WEIGHT {weight}</span>
                         </div>
                       )}
                     </>

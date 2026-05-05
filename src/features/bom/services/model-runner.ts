@@ -167,6 +167,36 @@ export async function runText(input: ModelRunInput): Promise<string> {
     parts.push({ text: input.text });
   }
 
+  if (input.files && input.files.length > 0) {
+    const fileParts = await Promise.all(
+      input.files.map(async (file) => {
+        let base64Data = file.data;
+
+        if (!base64Data) {
+          if (!file.uri) {
+            throw new Error("File must have either a 'data' (base64) or 'uri' property");
+          }
+          const response = await fetch(file.uri);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file: ${file.uri}`);
+          }
+
+          const buffer = await response.arrayBuffer();
+          base64Data = Buffer.from(buffer).toString("base64");
+        }
+
+        return {
+          inlineData: {
+            mimeType: file.mimeType,
+            data: base64Data,
+          },
+        };
+      }),
+    );
+
+    parts.push(...fileParts);
+  }
+
   const result = await model.generateContent({
     contents: [{ role: "user", parts }],
   });

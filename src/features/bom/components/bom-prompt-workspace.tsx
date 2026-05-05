@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -23,10 +23,13 @@ import {
   Home,
   ImageIcon,
   Loader2,
+  Mic,
+  Monitor,
   Package,
   PanelRight,
   Play,
   Plus,
+  PlusCircle,
   RefreshCw,
   Save,
   Search,
@@ -36,6 +39,7 @@ import {
   Table2,
   Upload,
   UserCircle,
+  Video,
   Wrench,
   X,
   XCircle,
@@ -82,6 +86,18 @@ type BomJob = {
 
 type WorkspaceView = "studio" | "mission";
 
+type PromptAttachmentKind = "image" | "document" | "file";
+
+type PromptAttachment = {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  kind: PromptAttachmentKind;
+  data: string;
+  inline: boolean;
+};
+
 type SupplierCard = {
   id: SupplierId;
   label: string;
@@ -89,6 +105,7 @@ type SupplierCard = {
 };
 
 const RUN_HISTORY_KEY = "bom-prompt-workspace:runs";
+const MAX_PROMPT_ATTACHMENT_BYTES = 2_000_000;
 
 const SUPPLIERS: SupplierCard[] = [
   { id: "sears-partsdirect", label: "Sears PartsDirect", domain: "searspartsdirect.com" },
@@ -321,6 +338,40 @@ function jsonText(value: unknown) {
   return JSON.stringify(value ?? {}, null, 2);
 }
 
+function formatFileSize(bytes: number) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 KB";
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatCaptureKind(kind: BrowserSourceCapture["captureKind"]) {
+  return kind.replaceAll("_", " ");
+}
+
+function readFileData(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      resolve(result.includes(",") ? result.split(",")[1] || "" : result);
+    };
+    reader.onerror = () => reject(reader.error || new Error("File read failed"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function promptAttachmentPayload(attachment: PromptAttachment) {
+  return {
+    id: attachment.id,
+    kind: attachment.kind,
+    name: attachment.name,
+    mimeType: attachment.mimeType,
+    size: attachment.size,
+    inline: attachment.inline,
+    dataBase64: attachment.data,
+  };
+}
+
 function firstRowText(row: Record<string, unknown>, keys: string[]) {
   for (const key of keys) {
     const value = row[key];
@@ -404,6 +455,7 @@ export function BomPromptWorkspace({
   const [systemPrompt, setSystemPrompt] = useState(PROMPT_SCENARIOS[0]?.systemPrompt || "");
   const [userPromptTemplate, setUserPromptTemplate] = useState(PROMPT_SCENARIOS[0]?.userPromptTemplate || "");
   const [composerPrompt, setComposerPrompt] = useState("");
+  const [promptAttachments, setPromptAttachments] = useState<PromptAttachment[]>([]);
   const [inputPayloadText, setInputPayloadText] = useState(() =>
     jsonText(
       buildDefaultInputPayload({
@@ -622,13 +674,21 @@ export function BomPromptWorkspace({
     setLastValidation(null);
 
     try {
+      const attachmentPayloads = promptAttachments.map(promptAttachmentPayload);
       const res = await fetch("/api/prompt-runs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scenarioId: scenario.id,
           scenario,
-          inputPayload: inputPayload.value,
+          inputPayload: promptAttachments.length
+            ? {
+                ...inputPayload.value,
+                promptAttachments: attachmentPayloads,
+                attachments: attachmentPayloads,
+              }
+            : inputPayload.value,
+          attachments: attachmentPayloads,
           modelSlots,
           jobContext: {
             jobId,
@@ -710,6 +770,97 @@ export function BomPromptWorkspace({
       },
       ...items,
     ]);
+  }
+
+  async function addPromptAttachments(files: FileList | null, kind: PromptAttachmentKind) {
+    const selectedFiles = Array.from(files || []);
+    if (!selectedFiles.length) return;
+
+    try {
+      const attachments = await Promise.all(
+        selectedFiles.map(async (file) => {
+          const inline = file.size <= MAX_PROMPT_ATTACHMENT_BYTES;
+          return {
+            id: crypto.randomUUID(),
+            name: file.name,
+            mimeType: file.type || "application/octet-stream",
+            size: file.size,
+            kind,
+            data: inline ? await readFileData(file) : "",
+            inline,
+          };
+        }),
+      );
+
+      setPromptAttachments((items) => [...items, ...attachments]);
+      setInputPayloadText((current) => {
+        const parsed = safeJsonParse(current);
+        if (parsed.error) return current;
+        const existing = Array.isArray(parsed.value.promptAttachments)
+          ? parsed.value.promptAttachments
+          : Array.isArray(parsed.value.attachments)
+            ? parsed.value.attachments
+            : [];
+        const browserCapture = asRecord(parsed.value.browserCapture);
+        const operatorUploads = Array.isArray(browserCapture.operatorUploads)
+          ? browserCapture.operatorUploads
+          : [];
+        const attachmentPayloads = attachments.map(promptAttachmentPayload);
+        return jsonText({
+          ...parsed.value,
+          promptAttachments: [...existing, ...attachmentPayloads],
+          attachments: [...existing, ...attachmentPayloads],
+          browserCapture: {
+            ...browserCapture,
+            operatorUploads: [
+              ...operatorUploads,
+              ...attachmentPayloads.map(({ dataBase64, ...summary }) => summary),
+            ],
+          },
+        });
+      });
+      setComposerPrompt((current) => {
+        const attachmentLines = attachments
+          .map((attachment) =>
+            `Attached ${attachment.kind}: ${attachment.name} (${attachment.mimeType}, ${formatFileSize(attachment.size)}${attachment.inline ? "" : ", metadata only"})`,
+          )
+          .join("\n");
+        return current.trim() ? `${current.trimEnd()}\n\n${attachmentLines}` : attachmentLines;
+      });
+      setSavedPromptStatus(`${attachments.length} attachment${attachments.length === 1 ? "" : "s"} staged for next run`);
+      attachments.forEach((attachment) =>
+        queueCapture(
+          attachment.kind === "image" ? "image_upload" : attachment.kind === "document" ? "document_upload" : "file_upload",
+          `Attached ${attachment.name}`,
+        ),
+      );
+    } catch (error) {
+      setRunError(error instanceof Error ? error.message : "Attachment upload failed");
+    }
+  }
+
+  function removePromptAttachment(id: string) {
+    setPromptAttachments((items) => items.filter((attachment) => attachment.id !== id));
+    setInputPayloadText((current) => {
+      const parsed = safeJsonParse(current);
+      if (parsed.error) return current;
+      const browserCapture = asRecord(parsed.value.browserCapture);
+      return jsonText({
+        ...parsed.value,
+        promptAttachments: Array.isArray(parsed.value.promptAttachments)
+          ? parsed.value.promptAttachments.filter((attachment) => asRecord(attachment).id !== id)
+          : parsed.value.promptAttachments,
+        attachments: Array.isArray(parsed.value.attachments)
+          ? parsed.value.attachments.filter((attachment) => asRecord(attachment).id !== id)
+          : parsed.value.attachments,
+        browserCapture: {
+          ...browserCapture,
+          operatorUploads: Array.isArray(browserCapture.operatorUploads)
+            ? browserCapture.operatorUploads.filter((attachment) => asRecord(attachment).id !== id)
+            : browserCapture.operatorUploads,
+        },
+      });
+    });
   }
 
   function copyText(value: string) {
@@ -835,14 +986,27 @@ export function BomPromptWorkspace({
               runScenario={runScenario}
               saveWinningPrompt={saveWinningPrompt}
             />
-            <MissionBottomBar
+            <MissionPromptComposer
+              selectedScenario={selectedScenario}
+              promptText={composerPrompt}
+              inputError={inputPayload.error}
+              runBusy={runBusy}
+              runError={runError}
+              savedPromptStatus={savedPromptStatus}
+              toolsPopoverSlot={toolsPopoverSlot}
+              activeSlot={modelSlots.find((slot) => slot.id === toolsPopoverSlot) || activeSlots[0] || modelSlots[0]}
+              attachments={promptAttachments}
               suppliers={SUPPLIERS}
+              setPromptText={setComposerPrompt}
+              runScenario={runScenario}
+              updateSlot={updateSlot}
+              setToolsPopoverSlot={setToolsPopoverSlot}
+              addPromptAttachments={addPromptAttachments}
+              removePromptAttachment={removePromptAttachment}
               createOrLoadJob={createOrLoadJob}
               queueCapture={queueCapture}
               selectSupplierAction={selectSupplierAction}
               validateLatestRun={validateLatestRun}
-              runScenario={runScenario}
-              runBusy={runBusy}
               activeSlotsCount={activeSlots.length}
             />
           </section>
@@ -1236,7 +1400,7 @@ function PromptComposer({
             <Plus size={14} />
           </button>
           <button type="button" className="ai-run-button" onClick={runScenario} disabled={runBusy || Boolean(inputError)}>
-            {runBusy ? "Running" : "Run Ctrl ↵"}
+            {runBusy ? "Running" : "Run Ctrl Enter"}
           </button>
         </div>
       </div>
@@ -1690,6 +1854,228 @@ function ScenarioWorkflowSelect(props: {
   );
 }
 
+function MissionPromptComposer(props: {
+  selectedScenario: PromptScenario | undefined;
+  promptText: string;
+  inputError: string | null;
+  runBusy: boolean;
+  runError: string | null;
+  savedPromptStatus: string | null;
+  toolsPopoverSlot: ModelSlot["id"] | null;
+  activeSlot: ModelSlot;
+  attachments: PromptAttachment[];
+  suppliers: SupplierCard[];
+  setPromptText: React.Dispatch<React.SetStateAction<string>>;
+  runScenario: () => void;
+  updateSlot: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
+  setToolsPopoverSlot: (slotId: ModelSlot["id"] | null) => void;
+  addPromptAttachments: (files: FileList | null, kind: PromptAttachmentKind) => void;
+  removePromptAttachment: (id: string) => void;
+  createOrLoadJob: () => void;
+  queueCapture: (kind: BrowserSourceCapture["captureKind"], label: string) => void;
+  selectSupplierAction: (supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") => void;
+  validateLatestRun: () => void;
+  activeSlotsCount: number;
+}) {
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const documentInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const supplierButtons = props.suppliers.filter((supplier) =>
+    ["sears-partsdirect", "repairclinic", "ge", "whirlpool", "manual-pdf"].includes(supplier.id),
+  );
+  const tools = props.activeSlot.tools || DEFAULT_MODEL_TOOLS;
+  const activeChips = TOOL_LABELS.filter((tool) =>
+    tool.key === "functionCalling" || tool.key === "googleSearchGrounding"
+      ? Boolean(tools[tool.key])
+      : false,
+  );
+  const statusText = props.inputError
+    ? `JSON: ${props.inputError}`
+    : props.runError || props.savedPromptStatus || props.selectedScenario?.type || "Ready";
+
+  return (
+    <div className="mission-composer-wrap">
+      {props.toolsPopoverSlot ? (
+        <ToolsPopover
+          slot={props.activeSlot}
+          onPatch={(patch) => props.updateSlot(props.activeSlot.id, patch)}
+          onClose={() => props.setToolsPopoverSlot(null)}
+        />
+      ) : null}
+      <div className="mission-composer">
+        <input
+          ref={imageInputRef}
+          className="mission-file-input"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(event) => {
+            props.addPromptAttachments(event.currentTarget.files, "image");
+            event.currentTarget.value = "";
+          }}
+        />
+        <input
+          ref={documentInputRef}
+          className="mission-file-input"
+          type="file"
+          accept=".pdf,.txt,.md,.csv,.json,.tsv,.doc,.docx,.xls,.xlsx,application/pdf,text/*,application/json"
+          multiple
+          onChange={(event) => {
+            props.addPromptAttachments(event.currentTarget.files, "document");
+            event.currentTarget.value = "";
+          }}
+        />
+        <input
+          ref={fileInputRef}
+          className="mission-file-input"
+          type="file"
+          multiple
+          onChange={(event) => {
+            props.addPromptAttachments(event.currentTarget.files, "file");
+            event.currentTarget.value = "";
+          }}
+        />
+        <textarea
+          value={props.promptText}
+          onChange={(event) => props.setPromptText(event.target.value)}
+          placeholder="Start typing a prompt"
+        />
+        {props.attachments.length ? (
+          <div className="mission-attachment-tray">
+            {props.attachments.map((attachment) => (
+              <button
+                key={attachment.id}
+                type="button"
+                title={`Remove ${attachment.name}`}
+                onClick={() => props.removePromptAttachment(attachment.id)}
+              >
+                {attachment.kind === "image" ? <ImageIcon size={13} /> : attachment.kind === "document" ? <FileCode2 size={13} /> : <Upload size={13} />}
+                <span>{attachment.name}</span>
+                <small>{attachment.inline ? formatFileSize(attachment.size) : "metadata"}</small>
+                <X size={12} />
+              </button>
+            ))}
+          </div>
+        ) : null}
+        <div className="mission-composer-actions">
+          <button
+            type="button"
+            className="mission-icon-pill mute"
+            title="Disable live media"
+            onClick={() => props.queueCapture("manual_note", "Live media disabled")}
+          >
+            <XCircle size={16} />
+          </button>
+          <button
+            type="button"
+            className="mission-icon-pill"
+            title="Upload image"
+            onClick={() => imageInputRef.current?.click()}
+          >
+            <ImageIcon size={16} />
+          </button>
+          <button
+            type="button"
+            className="mission-icon-pill"
+            title="Upload document"
+            onClick={() => documentInputRef.current?.click()}
+          >
+            <FileCode2 size={16} />
+          </button>
+          <button
+            type="button"
+            className="mission-tool-button"
+            onClick={() => props.setToolsPopoverSlot(props.activeSlot.id)}
+          >
+            <Wrench size={16} />
+            Tools
+          </button>
+          {activeChips.map((tool) => (
+            <button
+              key={tool.key}
+              type="button"
+              className="mission-tool-chip"
+              onClick={() =>
+                props.updateSlot(props.activeSlot.id, {
+                  tools: {
+                    ...tools,
+                    [tool.key]: false,
+                  },
+                })
+              }
+              title={`Disable ${tool.label}`}
+            >
+              <span>{tool.key === "functionCalling" ? "fx" : "G"}</span>
+              {tool.label}
+              <X size={15} />
+            </button>
+          ))}
+          <span className="mission-composer-status">{statusText}</span>
+          <div className="mission-live-controls">
+            <button
+              type="button"
+              className="mission-icon-pill"
+              title="Start recording"
+              onClick={() => props.queueCapture("manual_note", "Live audio note requested")}
+            >
+              <Mic size={16} />
+            </button>
+            <button
+              type="button"
+              className="mission-icon-pill"
+              title="Upload camera/image"
+              onClick={() => imageInputRef.current?.click()}
+            >
+              <Video size={16} />
+            </button>
+            <button
+              type="button"
+              className="mission-icon-pill"
+              title="Start screen sharing"
+              onClick={() => props.queueCapture("dom", "Screen share requested")}
+            >
+              <Monitor size={16} />
+            </button>
+            <button
+              type="button"
+              className="mission-icon-pill"
+              title="Upload any file"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <PlusCircle size={16} />
+            </button>
+            <button type="button" className="mission-run-button" onClick={props.runScenario} disabled={props.runBusy || Boolean(props.inputError)}>
+              {props.runBusy ? "Running" : props.activeSlotsCount > 1 ? "Run 2 Ctrl Enter" : "Run Ctrl Enter"}
+            </button>
+          </div>
+        </div>
+        <div className="mission-composer-shortcuts">
+          <span>Actions</span>
+          <button type="button" onClick={props.createOrLoadJob}>DB</button>
+          <button type="button" onClick={() => props.queueCapture("manual_note", "OCR review request")}>OCR</button>
+          <button type="button" onClick={() => props.queueCapture("dom", "Manual refresh capture")}>RF</button>
+          <span>Suppliers</span>
+          {supplierButtons.map((supplier) => (
+            <button
+              key={supplier.id}
+              type="button"
+              onClick={() => {
+                props.selectSupplierAction(supplier, "bom");
+                if (supplier.id === "manual-pdf") documentInputRef.current?.click();
+              }}
+            >
+              {supplier.label.replace(" PartsDirect", "").replace("RepairClinic", "RC").replace("Manual/PDF", "PDF")}
+            </button>
+          ))}
+          <button type="button" className="ok" onClick={props.validateLatestRun}>
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MissionBottomBar(props: {
   suppliers: SupplierCard[];
   createOrLoadJob: () => void;
@@ -1895,7 +2281,7 @@ function WorkspaceDrawer(props: {
             <DrawerStat label="Run" value={props.lastRun?.id.slice(0, 8) || "idle"} />
             <div className="bom-console-mini">
               {props.captures.length
-                ? props.captures.slice(0, 5).map((capture) => `> capture ${capture.captureKind}: ${capture.status}`).join("\n")
+                ? props.captures.slice(0, 5).map((capture) => `> capture ${formatCaptureKind(capture.captureKind)}: ${capture.status}`).join("\n")
                 : "> ready\n> browser scaffold only"}
             </div>
           </div>
@@ -2016,7 +2402,7 @@ function BrowserBoardPane(props: {
             ))}
             {!outputs.length && props.captures.map((capture) => (
               <div key={capture.id} className="bom-feed-row">
-                <span>{capture.captureKind}</span>
+                <span>{formatCaptureKind(capture.captureKind)}</span>
                 <strong>{capture.label}</strong>
                 <small>{capture.status}</small>
               </div>

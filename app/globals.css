@@ -1747,6 +1747,221 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .mission-composer-wrap {
+    position: relative;
+    z-index: 8;
+    flex-shrink: 0;
+    margin-top: -76px;
+    border-top: 1px solid rgba(217, 226, 236, 0.72);
+    background: linear-gradient(180deg, transparent 0, rgba(244, 247, 251, 0.92) 44px, #f4f7fb 100%);
+    padding: 0 16px 12px;
+  }
+
+  .mission-composer-wrap .ai-tools-popover {
+    left: 24px;
+    bottom: 146px;
+  }
+
+  .mission-composer {
+    display: grid;
+    width: min(1320px, 100%);
+    margin: 0 auto;
+    border: 1px solid #dfe3ea;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 3px 12px rgba(16, 24, 40, 0.10);
+  }
+
+  .mission-composer textarea {
+    width: 100%;
+    min-height: 48px;
+    max-height: 120px;
+    box-sizing: border-box;
+    resize: vertical;
+    border: 0;
+    border-radius: 14px 14px 0 0;
+    padding: 14px 16px 18px;
+    color: #30343b;
+    font-size: 15px;
+    line-height: 1.35;
+    outline: none;
+    overflow-y: auto;
+  }
+
+  .mission-file-input {
+    display: none;
+  }
+
+  .mission-attachment-tray {
+    display: flex;
+    gap: 6px;
+    padding: 0 14px 8px;
+    overflow-x: auto;
+  }
+
+  .mission-attachment-tray button {
+    display: inline-flex;
+    height: 28px;
+    min-width: 0;
+    max-width: 260px;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #dfe3ea;
+    border-radius: 9px;
+    background: #f8fafc;
+    padding: 0 8px;
+    color: #263241;
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .mission-attachment-tray button span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mission-attachment-tray button small {
+    flex-shrink: 0;
+    color: #7a8493;
+    font-size: 9px;
+    font-weight: 750;
+  }
+
+  .mission-composer-actions {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 9px;
+    padding: 0 14px 10px;
+  }
+
+  .mission-tool-button,
+  .mission-tool-chip,
+  .mission-icon-pill,
+  .mission-run-button {
+    display: inline-flex;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid #dfe3ea;
+    border-radius: 13px;
+    background: #fff;
+    color: #1f2937;
+    font-size: 13px;
+    font-weight: 750;
+    white-space: nowrap;
+  }
+
+  .mission-tool-button {
+    padding: 0 14px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  }
+
+  .mission-tool-chip {
+    border-color: #d8e8ff;
+    background: #dcecff;
+    padding: 0 12px;
+    color: #111827;
+  }
+
+  .mission-tool-chip span {
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .mission-icon-pill {
+    width: 34px;
+    padding: 0;
+    border-radius: 13px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  }
+
+  .mission-icon-pill.mute {
+    color: #0f172a;
+  }
+
+  .mission-live-controls {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-left: auto;
+  }
+
+  .mission-run-button {
+    min-width: 118px;
+    padding: 0 15px;
+    color: #a8afb9;
+  }
+
+  .mission-run-button:not(:disabled) {
+    border-color: #dbeafe;
+    background: #eef4ff;
+    color: #185abc;
+  }
+
+  .mission-run-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.78;
+  }
+
+  .mission-composer-status {
+    min-width: 80px;
+    flex: 1;
+    overflow: hidden;
+    color: #8b95a1;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mission-composer-shortcuts {
+    display: flex;
+    min-height: 32px;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid #eef0f3;
+    padding: 5px 14px 8px;
+    overflow-x: auto;
+  }
+
+  .mission-composer-shortcuts span {
+    color: #8791a3;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .mission-composer-shortcuts button {
+    display: inline-flex;
+    height: 24px;
+    align-items: center;
+    border: 1px solid #dfe3ea;
+    border-radius: 7px;
+    background: #fff;
+    padding: 0 9px;
+    color: #334155;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .mission-composer-shortcuts button:nth-of-type(n+4):not(.ok) {
+    border-color: #f8be22;
+    background: #f8be22;
+    color: #3f2b00;
+  }
+
+  .mission-composer-shortcuts button.ok {
+    background: #111827;
+    color: #fff;
+  }
+
   .bom-browser-canvas {
     position: relative;
     display: flex;
