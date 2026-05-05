@@ -7,16 +7,33 @@ function normalizeKey(value: string) {
   return value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
+function firstValue(...values: Array<unknown>) {
+  return values.find((value) => value !== undefined && value !== null && String(value).trim() !== "");
+}
+
+function toNumber(value: unknown) {
+  if (value === undefined || value === null || value === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function toUiPart(row: any, index: number) {
   const partNumber = String(
-    row.current_service_part_number ||
-      row.original_part_number ||
-      row.part_number ||
-      row.oem_number ||
-      "",
+    firstValue(
+      row.current_service_part_number,
+      row.currentServicePartNumber,
+      row.part_number,
+      row.partNumber,
+      row.original_part_number,
+      row.originalPartNumber,
+      row.oem_number,
+    ) || "",
   )
     .trim()
     .toUpperCase();
+
+  const price = toNumber(firstValue(row.price, row.part_price, row.retailPrice, row.retail_price));
+  const priceSource = firstValue(row.price_source, row.priceSource, row.retail_price_source, row.retailPriceSource);
 
   return {
     id: index + 1,
@@ -26,14 +43,31 @@ function toUiPart(row: any, index: number) {
     compatibleModels: [row.model || row.normalized_model || row.raw_model].filter(Boolean),
     avgRating: 0,
     reviewCount: 0,
-    price: row.price ? Number(row.price) : undefined,
-    priceSource: row.price_source || row.retail_price_source || undefined,
+    price,
+    priceSource,
+    price_source: priceSource,
     sourceProvider: row.provider || row.source_provider || row.source || undefined,
     sourceUrl: row.diagram_url || row.provider_assembly_url || row.provider_model_url || row.source_url || undefined,
     sourceStatus: row.source_status || undefined,
     sourceFile: row.source_file || undefined,
     replacementNote: row.replacement_note || undefined,
+    originalPartNumber: firstValue(row.original_part_number, row.originalPartNumber),
+    currentServicePartNumber: firstValue(row.current_service_part_number, row.currentServicePartNumber),
   };
+}
+
+function partKeys(row: any) {
+  return [
+    row.partNumber,
+    row.part_number,
+    row.oem_number,
+    row.originalPartNumber,
+    row.original_part_number,
+    row.currentServicePartNumber,
+    row.current_service_part_number,
+  ]
+    .map((value) => normalizeKey(String(value || "")))
+    .filter(Boolean);
 }
 
 export async function GET(request: Request) {
@@ -76,10 +110,12 @@ export async function GET(request: Request) {
           normalized_model,
           null::text as raw_model,
           part ->> 'partNumber' as part_number,
+          coalesce(part ->> 'originalPartNumber', part ->> 'original_part_number') as original_part_number,
+          coalesce(part ->> 'currentServicePartNumber', part ->> 'current_service_part_number') as current_service_part_number,
           coalesce(part ->> 'description', part ->> 'part_name') as description,
           coalesce(part ->> 'section', part ->> 'category') as section,
-          part ->> 'price' as price,
-          coalesce(part ->> 'priceSource', part ->> 'retailPriceSource') as price_source,
+          coalesce(part ->> 'price', part ->> 'part_price', part ->> 'retailPrice') as price,
+          coalesce(part ->> 'priceSource', part ->> 'price_source', part ->> 'retailPriceSource') as price_source,
           coalesce(part ->> 'sourceUrl', part ->> 'retailPricingUrl') as source_url,
           'model_parts_cache' as source_provider
         from model_parts_cache,
@@ -93,10 +129,12 @@ export async function GET(request: Request) {
           normalized_model,
           null::text as raw_model,
           part ->> 'partNumber' as part_number,
+          coalesce(part ->> 'originalPartNumber', part ->> 'original_part_number') as original_part_number,
+          coalesce(part ->> 'currentServicePartNumber', part ->> 'current_service_part_number') as current_service_part_number,
           coalesce(part ->> 'description', part ->> 'part_name') as description,
           coalesce(part ->> 'section', part ->> 'category') as section,
-          part ->> 'price' as price,
-          coalesce(part ->> 'priceSource', part ->> 'retailPriceSource') as price_source,
+          coalesce(part ->> 'price', part ->> 'part_price', part ->> 'retailPrice') as price,
+          coalesce(part ->> 'priceSource', part ->> 'price_source', part ->> 'retailPriceSource') as price_source,
           coalesce(part ->> 'sourceUrl', part ->> 'retailPricingUrl') as source_url,
           'model_parts_cache' as source_provider
         from model_parts_cache,
@@ -107,7 +145,26 @@ export async function GET(request: Request) {
 
   const providerResultRows = Array.isArray(providerRows) ? (providerRows as any[]) : [];
   const cachedResultRows = Array.isArray(cachedRows) ? (cachedRows as any[]) : [];
-  const rows = [...providerResultRows, ...cachedResultRows];
+  const cachePriceByPart = new Map<string, any>();
+  for (const row of cachedResultRows) {
+    for (const key of partKeys(row)) {
+      if (!cachePriceByPart.has(key)) {
+        cachePriceByPart.set(key, row);
+      }
+    }
+  }
+
+  const rows = [...providerResultRows, ...cachedResultRows].map((row) => {
+    const pricedMatch = partKeys(row).map((key) => cachePriceByPart.get(key)).find(Boolean);
+    if (!pricedMatch || row.price) return row;
+    return {
+      ...pricedMatch,
+      ...row,
+      price: pricedMatch.price,
+      price_source: pricedMatch.price_source,
+      source_url: row.source_url || pricedMatch.source_url,
+    };
+  });
   const seen = new Set<string>();
   const parts = rows
     .map(toUiPart)
@@ -116,6 +173,14 @@ export async function GET(request: Request) {
       if (!part.partNumber || seen.has(key)) return false;
       seen.add(key);
       return true;
+    })
+    .sort((a, b) => {
+      const aPriced = typeof a.price === "number" && a.price > 0 && a.priceSource ? 1 : 0;
+      const bPriced = typeof b.price === "number" && b.price > 0 && b.priceSource ? 1 : 0;
+      if (aPriced !== bPriced) return bPriced - aPriced;
+      const sectionCompare = String(a.section || "").localeCompare(String(b.section || ""));
+      if (sectionCompare !== 0) return sectionCompare;
+      return String(a.partNumber || "").localeCompare(String(b.partNumber || ""));
     });
 
   return NextResponse.json({
