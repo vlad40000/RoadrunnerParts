@@ -70,6 +70,15 @@ function toUiPart(row: any, index: number) {
     row.sourceUrl,
     String(priceUrl || "").includes("/Exploded-View-Assembly/") ? priceUrl : undefined,
   );
+  const diagramRef = firstValue(
+    row.diagram_ref,
+    row.diagramRef,
+    row.diagram_number,
+    row.diagramNumber,
+    row.callout,
+    row.callout_number,
+    row.calloutNumber,
+  );
 
   return {
     id: index + 1,
@@ -92,8 +101,8 @@ function toUiPart(row: any, index: number) {
     ebay_price_url: ebayPriceUrl,
     diagramUrl,
     diagram_url: diagramUrl,
-    diagramRef: row.diagram_ref || row.diagramRef || undefined,
-    diagram_ref: row.diagram_ref || row.diagramRef || undefined,
+    diagramRef: diagramRef || undefined,
+    diagram_ref: diagramRef || undefined,
     sourceProvider: row.provider || row.source_provider || row.source || undefined,
     sourceUrl,
     source_url: sourceUrl,
@@ -168,7 +177,7 @@ export async function GET(request: Request) {
           coalesce(part ->> 'priceSource', part ->> 'price_source', part ->> 'retailPriceSource') as price_source,
           coalesce(part ->> 'priceUrl', part ->> 'price_url', part ->> 'retailPricingUrl', part ->> 'retail_price_url') as price_url,
           coalesce(part ->> 'diagramUrl', part ->> 'diagram_url') as diagram_url,
-          coalesce(part ->> 'diagramRef', part ->> 'diagram_ref') as diagram_ref,
+          coalesce(part ->> 'diagramRef', part ->> 'diagram_ref', part ->> 'diagramNumber', part ->> 'diagram_number', part ->> 'callout', part ->> 'callout_number') as diagram_ref,
           coalesce(part ->> 'sourceUrl', part ->> 'retailPricingUrl') as source_url,
           'model_parts_cache' as source_provider
         from model_parts_cache,
@@ -190,7 +199,7 @@ export async function GET(request: Request) {
           coalesce(part ->> 'priceSource', part ->> 'price_source', part ->> 'retailPriceSource') as price_source,
           coalesce(part ->> 'priceUrl', part ->> 'price_url', part ->> 'retailPricingUrl', part ->> 'retail_price_url') as price_url,
           coalesce(part ->> 'diagramUrl', part ->> 'diagram_url') as diagram_url,
-          coalesce(part ->> 'diagramRef', part ->> 'diagram_ref') as diagram_ref,
+          coalesce(part ->> 'diagramRef', part ->> 'diagram_ref', part ->> 'diagramNumber', part ->> 'diagram_number', part ->> 'callout', part ->> 'callout_number') as diagram_ref,
           coalesce(part ->> 'sourceUrl', part ->> 'retailPricingUrl') as source_url,
           'model_parts_cache' as source_provider
         from model_parts_cache,
@@ -309,7 +318,15 @@ export async function GET(request: Request) {
           substitute_part_number as current_service_part_number,
           raw_part_name as description,
           section_name as section,
-          diagram_ref,
+          coalesce(
+            diagram_ref,
+            raw_payload ->> 'diagram_ref',
+            raw_payload ->> 'diagramRef',
+            raw_payload ->> 'diagram_number',
+            raw_payload ->> 'diagramNumber',
+            raw_payload ->> 'callout',
+            raw_payload ->> 'callout_number'
+          ) as diagram_ref,
           source as source_provider,
           source,
           coalesce(raw_payload ->> 'parsed_price', raw_payload ->> 'price', raw_payload ->> 'part_price') as price,
@@ -332,7 +349,15 @@ export async function GET(request: Request) {
           substitute_part_number as current_service_part_number,
           raw_part_name as description,
           section_name as section,
-          diagram_ref,
+          coalesce(
+            diagram_ref,
+            raw_payload ->> 'diagram_ref',
+            raw_payload ->> 'diagramRef',
+            raw_payload ->> 'diagram_number',
+            raw_payload ->> 'diagramNumber',
+            raw_payload ->> 'callout',
+            raw_payload ->> 'callout_number'
+          ) as diagram_ref,
           source as source_provider,
           source,
           coalesce(raw_payload ->> 'parsed_price', raw_payload ->> 'price', raw_payload ->> 'part_price') as price,
