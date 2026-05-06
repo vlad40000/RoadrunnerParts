@@ -83,8 +83,128 @@ function toNullableUrl(value: string): string | null {
   return null;
 }
 
+async function resolveModelId(
+  modelIdCache: Map<string, string>,
+  normalizedModel: string,
+  rawModel: string,
+) {
+  const cached = modelIdCache.get(normalizedModel);
+  if (cached) return cached;
+
+  const existing = await sql`
+    select id::text as id
+    from appliance_models
+    where normalized_model = ${normalizedModel}
+    limit 1
+  `;
+  const existingRows = (Array.isArray(existing) ? existing : [existing]) as Array<{ id?: string }>;
+  if (existingRows[0]?.id) {
+    modelIdCache.set(normalizedModel, existingRows[0].id);
+    return existingRows[0].id;
+  }
+
+  const inserted = await sql`
+    insert into appliance_models (
+      normalized_model,
+      raw_model,
+      retrieval_state,
+      updated_at
+    ) values (
+      ${normalizedModel},
+      ${rawModel || normalizedModel},
+      'manual_ebay_pricing_imported',
+      now()
+    )
+    on conflict (normalized_model) do update set
+      updated_at = now()
+    returning id::text as id
+  `;
+  const insertedRows = (Array.isArray(inserted) ? inserted : [inserted]) as Array<{ id?: string }>;
+  const id = String(insertedRows[0]?.id || "");
+  if (!id) throw new Error(`Failed to resolve model id for ${normalizedModel}`);
+  modelIdCache.set(normalizedModel, id);
+  return id;
+}
+
+async function upsertEbayPricingRows(rows: EbayImportRow[]) {
+  const modelIdCache = new Map<string, string>();
+
+  for (const row of rows) {
+    const modelId = await resolveModelId(modelIdCache, row.model, row.rawModel);
+    await sql`
+      insert into part_pricing (
+        model_id,
+        source,
+        part_number,
+        price,
+        currency,
+        availability,
+        price_url,
+        captured_at
+      ) values (
+        ${modelId}::uuid,
+        'ebay.com',
+        ${row.partNumber},
+        ${row.price},
+        'USD',
+        'manual_upload',
+        ${row.priceUrl},
+        now()
+      )
+      on conflict (model_id, source, part_number) do update set
+        price = excluded.price,
+        currency = excluded.currency,
+        availability = excluded.availability,
+        price_url = excluded.price_url,
+        captured_at = now()
+    `;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
+    const contentType = String(request.headers.get("content-type") || "").toLowerCase();
+    if (contentType.includes("application/json")) {
+      const body = await request.json().catch(() => ({}));
+      const requestedModel = normalizeModel(String(body?.model || ""));
+      const partNumber = normalizePartNumber(String(body?.partNumber || ""));
+      const parsedPrice = parsePrice(String(body?.price ?? ""));
+      const rawPriceUrl = String(body?.priceUrl || "");
+      const priceUrl = toNullableUrl(rawPriceUrl);
+
+      if (!requestedModel) {
+        return NextResponse.json({ ok: false, error: "Model is required." }, { status: 400 });
+      }
+      if (!partNumber) {
+        return NextResponse.json({ ok: false, error: "Part number is required." }, { status: 400 });
+      }
+      if (parsedPrice === null) {
+        return NextResponse.json({ ok: false, error: "Valid eBay price is required." }, { status: 400 });
+      }
+      if (rawPriceUrl.trim() && !priceUrl) {
+        return NextResponse.json({ ok: false, error: "Listing URL must start with http:// or https://." }, { status: 400 });
+      }
+
+      await upsertEbayPricingRows([
+        {
+          model: requestedModel,
+          rawModel: requestedModel,
+          partNumber,
+          price: parsedPrice,
+          priceUrl,
+        },
+      ]);
+
+      return NextResponse.json({
+        ok: true,
+        importedRows: 1,
+        model: requestedModel,
+        partNumber,
+        price: parsedPrice,
+        priceUrl,
+      });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const requestedModel = normalizeModel(String(formData.get("model") || ""));
@@ -153,76 +273,7 @@ export async function POST(request: NextRequest) {
     }
     const rows = Array.from(dedupedMap.values());
 
-    const modelIdCache = new Map<string, string>();
-    const getModelId = async (normalizedModel: string, rawModel: string) => {
-      const cached = modelIdCache.get(normalizedModel);
-      if (cached) return cached;
-
-      const existing = await sql`
-        select id::text as id
-        from appliance_models
-        where normalized_model = ${normalizedModel}
-        limit 1
-      `;
-      const existingRows = (Array.isArray(existing) ? existing : [existing]) as Array<{ id?: string }>;
-      if (existingRows[0]?.id) {
-        modelIdCache.set(normalizedModel, existingRows[0].id);
-        return existingRows[0].id;
-      }
-
-      const inserted = await sql`
-        insert into appliance_models (
-          normalized_model,
-          raw_model,
-          retrieval_state,
-          updated_at
-        ) values (
-          ${normalizedModel},
-          ${rawModel || normalizedModel},
-          'manual_ebay_pricing_imported',
-          now()
-        )
-        on conflict (normalized_model) do update set
-          updated_at = now()
-        returning id::text as id
-      `;
-      const insertedRows = (Array.isArray(inserted) ? inserted : [inserted]) as Array<{ id?: string }>;
-      const id = String(insertedRows[0]?.id || "");
-      if (!id) throw new Error(`Failed to resolve model id for ${normalizedModel}`);
-      modelIdCache.set(normalizedModel, id);
-      return id;
-    };
-
-    for (const row of rows) {
-      const modelId = await getModelId(row.model, row.rawModel);
-      await sql`
-        insert into part_pricing (
-          model_id,
-          source,
-          part_number,
-          price,
-          currency,
-          availability,
-          price_url,
-          captured_at
-        ) values (
-          ${modelId}::uuid,
-          'ebay.com',
-          ${row.partNumber},
-          ${row.price},
-          'USD',
-          'manual_upload',
-          ${row.priceUrl},
-          now()
-        )
-        on conflict (model_id, source, part_number) do update set
-          price = excluded.price,
-          currency = excluded.currency,
-          availability = excluded.availability,
-          price_url = excluded.price_url,
-          captured_at = now()
-      `;
-    }
+    await upsertEbayPricingRows(rows);
 
     return NextResponse.json({
       ok: true,

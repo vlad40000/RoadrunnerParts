@@ -78,6 +78,17 @@ const ebayManualPriceValue = (part: Part) => {
   return null;
 };
 
+const parseManualEbayPrice = (value: string) => {
+  const text = String(value || '').trim();
+  if (!text) return null;
+  const parsed = Number(text.replace(/[$,]/g, ''));
+  if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  const match = text.match(/\$?([0-9]+(?:\.[0-9]{1,2})?)/);
+  if (!match) return null;
+  const fallback = Number(match[1]);
+  return Number.isFinite(fallback) && fallback > 0 ? fallback : null;
+};
+
 const getPartUrl = (part: Part, ...keys: Array<keyof Part>) => {
   for (const key of keys) {
     const value = String(part[key] || '').trim();
@@ -215,6 +226,11 @@ const stripLookupLabel = (value?: string | null) =>
   (value || "").replace(/^\s*(MODEL|PART)\s*#?\s*:?\s*/i, "").trim();
 const HOME_DRAFT_STORAGE_KEY = 'roadrunner:home-draft';
 
+type EbayManualDraft = {
+  price: string;
+  url: string;
+};
+
 
 export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -244,6 +260,8 @@ export default function App() {
   const [sortBy, setSortBy] = useState<'id' | 'price_asc' | 'price_desc'>('id');
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(true);
   const [isEbayUploadLoading, setIsEbayUploadLoading] = useState(false);
+  const [ebayManualDrafts, setEbayManualDrafts] = useState<Record<string, EbayManualDraft>>({});
+  const [ebayManualSaving, setEbayManualSaving] = useState<Record<string, boolean>>({});
 
   // Compatibility State
   const [checkModel, setCheckModel] = useState('');
@@ -1065,6 +1083,75 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     }
   };
 
+  const ebayDraftKey = (part: Part) => normalizeModelId(part.partNumber || `part-${part.id}`);
+
+  const getEbayManualDraft = (part: Part): EbayManualDraft => {
+    const key = ebayDraftKey(part);
+    return ebayManualDrafts[key] || { price: '', url: '' };
+  };
+
+  const updateEbayManualDraft = (part: Part, patch: Partial<EbayManualDraft>) => {
+    const key = ebayDraftKey(part);
+    setEbayManualDrafts((current) => ({
+      ...current,
+      [key]: {
+        price: current[key]?.price || '',
+        url: current[key]?.url || '',
+        ...patch,
+      },
+    }));
+  };
+
+  const handleManualEbaySave = async (part: Part) => {
+    const key = ebayDraftKey(part);
+    const draft = getEbayManualDraft(part);
+    const model = normalizeModelId(lookupModel || modelEntry || '');
+    if (!model) {
+      alert('Load a model before saving eBay pricing.');
+      return;
+    }
+
+    const parsedPrice = parseManualEbayPrice(draft.price);
+    if (parsedPrice === null) {
+      alert('Enter a valid eBay price.');
+      return;
+    }
+
+    setEbayManualSaving((current) => ({ ...current, [key]: true }));
+    try {
+      const response = await fetch('/api/bom/ebay-pricing/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          partNumber: part.partNumber,
+          price: parsedPrice,
+          priceUrl: draft.url.trim() || null,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result?.error || 'Failed to save eBay price.');
+      }
+
+      setEbayManualDrafts((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
+
+      await handleDbCheck();
+      setDbCheckStatus(`Saved manual eBay price for ${part.partNumber}.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save eBay price.';
+      setDbCheckStatus(`eBay manual save failed: ${message}`);
+      alert(message);
+    } finally {
+      setEbayManualSaving((current) => ({ ...current, [key]: false }));
+    }
+  };
+
   const filteredParts = useMemo(() => {
     const dataSource = aiParts.length > 0
       ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
@@ -1846,6 +1933,8 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                       const manualEbayPrice = ebayManualPriceValue(part);
                       const manualEbaySource = String(part.ebayPriceSource || part.ebay_price_source || '').trim();
                       const manualEbayPriceUrl = getPartUrl(part, 'ebayPriceUrl', 'ebay_price_url');
+                      const manualDraft = getEbayManualDraft(part);
+                      const isManualSaving = ebayManualSaving[ebayDraftKey(part)] === true;
 
                       return (
                         <tr
@@ -1897,9 +1986,34 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                                 )}
                               </>
                             ) : (
-                              <span className="text-[10px] font-bold uppercase tracking-tight text-pro-slate-300">
-                                -
-                              </span>
+                              <div
+                                className="flex w-full min-w-[11rem] flex-col gap-2"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                <input
+                                  type="text"
+                                  value={manualDraft.price}
+                                  onChange={(event) => updateEbayManualDraft(part, { price: event.target.value })}
+                                  placeholder="Enter eBay price"
+                                  className="h-8 rounded-md border border-pro-slate-200 bg-white px-2 text-[11px] font-semibold text-pro-slate-700 outline-none transition-colors focus:border-pro-blue"
+                                />
+                                <input
+                                  type="text"
+                                  value={manualDraft.url}
+                                  onChange={(event) => updateEbayManualDraft(part, { url: event.target.value })}
+                                  placeholder="Paste eBay listing URL"
+                                  className="h-8 rounded-md border border-pro-slate-200 bg-white px-2 text-[11px] font-medium text-pro-slate-700 outline-none transition-colors focus:border-pro-blue"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleManualEbaySave(part)}
+                                  disabled={isManualSaving}
+                                  className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-pro-blue bg-white px-2 text-[10px] font-bold uppercase tracking-wider text-pro-blue transition-colors hover:bg-blue-50 disabled:opacity-60"
+                                >
+                                  {isManualSaving ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                                  Save eBay
+                                </button>
+                              </div>
                             )}
                           </div>
                         </td>
