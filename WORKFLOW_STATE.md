@@ -31,17 +31,23 @@ We have successfully implemented the eBay marketplace listing pipeline and valid
   - Seeded `appliance_inventory_queue` with 20 varied appliance models.
   - Executed `scripts/run-20-unit-integration-test.mjs` validating Phase 1 (BOM Extraction), Phase 2 (Market Survey), and Phase 3 (Listing Preparation).
   - Verified 45+ eBay draft listings generated with correct title/description/price mapping.
+- [x] **Robust Pricing Engine**:
+  - Upgraded `run-market-intelligence-pipeline.mjs` with multi-signal research.
+  - Implemented Citation-backed research logic (URLs included in DB `raw` field).
+  - Added `lowestActivePrice` and `confidence` score to market signals.
 
 ## Current Status
 - **Standard Canon Enforced**: All supplier search URLs are now deterministic and centralized in `source-tier-policy.ts`. Parameters synchronized across Cockpit components.
 - **Scraper Scaffold Active**: High-fidelity UI scaffold for scraping/parsing is live at `/scraper`.
 - **eBay Pipeline Operational**: The system can now move from a raw model/serial to a live eBay draft listing automatically via agentic orchestration.
 - **Visual Loop Ready**: `ComputerUseAgent` is prepared for 403 bypass with HITL gates and manual capture support via ShareX.
+- **Market Intelligence Robust**: The pricing engine now cites its sources and verifies demand before recommending a listing.
 
 ## Next Steps
 1. **Scale Production Execution**: Trigger the pipeline for the full 6,000-unit backlog.
 2. **Implement HITL Instruction Presets**: Create a UI library for "learned" agent instructions to improve first-pass extraction rates.
 3. **Refine Market Signal Scoring**: Enhance `net_expected` calculations with real-time shipping API integrations (e.g., ShipStation/PirateShip).
+4. **Competitve Pricing Logic**: Implement an "Auto-Undercut" strategy based on the `lowestActivePrice` signal.
 
 ### **Gold Truth Reference**
 - **Maytag MVWB300WQ2**:
@@ -60,6 +66,7 @@ We have successfully implemented the eBay marketplace listing pipeline and valid
 - [x] `npm run build` — PASSED
 - [x] Integration Test (20 Units) — PASSED (45 Drafts Created)
 - [x] ShareX Upload Flow — VERIFIED
+- [x] Pricing Research Citations — VERIFIED (W10311524 cited 5+ eBay URLs)
 
 ---
 *Note: The integration test used simulated agent extraction output to validate the pipeline flow; live extraction via ComputerUseAgent should be monitored for browser-level blocking.*

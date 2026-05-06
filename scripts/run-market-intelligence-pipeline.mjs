@@ -61,11 +61,31 @@ async function runPipeline() {
   for (const part of partsToSurvey) {
     console.log(`\n🔍 Agentic Survey: ${part.part_number} (${part.part_name})`);
     try {
-      const prompt = `Analyze the current eBay market for appliance part number "${part.part_number}".
-1. Use Google Search to find recent "Sold" prices on eBay.
-2. Calculate the median sold price and current active listing volume.
-3. Estimate a conservative "Net Expected" profit after 15% fees, $12 shipping, and $7 labor/materials.
-4. Return a JSON object with: { medianSoldPrice: number, activeCount: number, soldCount: number, netExpected: number, confidence: number }`;
+      const prompt = `Perform a high-fidelity market analysis for appliance part number "${part.part_number}" (${part.part_name}).
+      
+      RESEARCH STEPS:
+      1. Use Google Search to find at least 5 "Sold" listings on eBay for this exact part.
+      2. Identify the lowest "Active" price for a Used version of this part on eBay.
+      3. Reference the retail price on Encompass or PartsDr as an anchor.
+      
+      CALCULATION RULES:
+      - medianSoldPrice: Median of the 5+ sold items found.
+      - netExpected: (medianSoldPrice * 0.85) - 19.50 (Shipping: $12.50, Processing: $7.00).
+      - confidence: 1.0 if 5+ sold items found, 0.5 if 1-2 found, 0.1 if none.
+      
+      CITATIONS:
+      - Include the URLs of the specific eBay listings used to calculate the median.
+      
+      RETURN FORMAT (JSON ONLY):
+      {
+        "medianSoldPrice": number,
+        "activeCount": number,
+        "soldCount": number,
+        "lowestActivePrice": number,
+        "netExpected": number,
+        "confidence": number,
+        "citations": ["url1", "url2", ...]
+      }`;
 
       const result = await model.generateContent(prompt);
       const responseText = result.response.text();
@@ -75,21 +95,23 @@ async function runPipeline() {
       if (!jsonMatch) throw new Error("Could not extract JSON from agent response");
       
       const signal = JSON.parse(jsonMatch[0]);
-      const { medianSoldPrice, activeCount, soldCount, netExpected } = signal;
+      const { medianSoldPrice, activeCount, soldCount, netExpected, confidence, citations } = signal;
 
       if (!dryRun) {
         await sql.query(`
           INSERT INTO part_market_signal (
             part_number, normalized_model, ebay_active_count, ebay_sold_count,
-            sell_through_rate, median_sold_price, net_expected, checked_at, raw
+            sell_through_rate, median_sold_price, active_min_price, net_expected, confidence, checked_at, raw
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, now(), $8)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now(), $10)
           ON CONFLICT (part_number, normalized_model) DO UPDATE SET
             ebay_active_count = EXCLUDED.ebay_active_count,
             ebay_sold_count = EXCLUDED.ebay_sold_count,
             sell_through_rate = EXCLUDED.sell_through_rate,
             median_sold_price = EXCLUDED.median_sold_price,
+            active_min_price = EXCLUDED.active_min_price,
             net_expected = EXCLUDED.net_expected,
+            confidence = EXCLUDED.confidence,
             checked_at = now(),
             raw = EXCLUDED.raw
         `, [
@@ -99,10 +121,12 @@ async function runPipeline() {
           soldCount || 0, 
           (activeCount > 0 ? soldCount / activeCount : 0), 
           medianSoldPrice || 0, 
+          signal.lowestActivePrice || 0,
           netExpected || 0, 
-          JSON.stringify({ agent_analysis: responseText, signal })
+          String(confidence || 'low'),
+          JSON.stringify({ agent_analysis: responseText, signal, citations, confidence })
         ]);
-        console.log(`✅ Agentic Signal updated for ${part.part_number} (Net: $${(netExpected || 0).toFixed(2)})`);
+        console.log(`✅ Agentic Signal updated for ${part.part_number} (Net: $${(netExpected || 0).toFixed(2)}, Conf: ${confidence})`);
       } else {
         console.log(`[DRY RUN] Agent would update signal for ${part.part_number}:`, signal);
       }
