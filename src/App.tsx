@@ -1843,8 +1843,6 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                     {filteredParts.map((part) => {
                       const activeEbayUrl = ebaySearchUrl(part.partNumber);
                       const soldCompsUrl = ebaySoldSearchUrl(part.partNumber);
-                      const diagramUrl = getPartUrl(part, 'diagramUrl', 'diagram_url', 'sourceUrl', 'source_url');
-                      const priceUrl = getPartUrl(part, 'priceUrl', 'price_url');
                       const manualEbayPrice = ebayManualPriceValue(part);
                       const manualEbaySource = String(part.ebayPriceSource || part.ebay_price_source || '').trim();
                       const manualEbayPriceUrl = getPartUrl(part, 'ebayPriceUrl', 'ebay_price_url');
@@ -1912,28 +1910,6 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                         </td>
                           <td className="align-top px-4 py-3">
                             <div className="flex flex-wrap gap-2">
-                              {diagramUrl && (
-                                <a
-                                  href={diagramUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={(event) => event.stopPropagation()}
-                                  className="inline-flex h-7 items-center whitespace-nowrap rounded border border-emerald-600 bg-white px-3 text-[11px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-50"
-                                >
-                                  Diagram
-                                </a>
-                              )}
-                              {priceUrl && (
-                                <a
-                                  href={priceUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={(event) => event.stopPropagation()}
-                                  className="inline-flex h-7 items-center whitespace-nowrap rounded border border-pro-slate-300 bg-white px-3 text-[11px] font-semibold text-pro-slate-700 transition-colors hover:bg-pro-slate-50"
-                                >
-                                  Price
-                                </a>
-                              )}
                               <a
                                 href={activeEbayUrl}
                                 target="_blank"
