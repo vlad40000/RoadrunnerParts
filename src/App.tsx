@@ -1033,6 +1033,14 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     const dataSource = aiParts.length > 0
       ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
       : partsData;
+
+    const escapeCsvCell = (value: unknown) => {
+      const text = String(value ?? "");
+      return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    };
+
+    const safeText = (value: unknown) => String(value ?? "");
+
     const headers = ['Ref ID', 'Part Number', 'Description', 'Price (USD)', 'Price Source', 'eBay Manual Price (USD)', 'eBay Price URL', 'Assembly Section', 'Diagram URL', 'Price URL'];
     const rows = dataSource.map(part => {
       const diagramUrl = getPartUrl(part, 'diagramUrl', 'diagram_url', 'sourceUrl', 'source_url');
@@ -1041,31 +1049,35 @@ Sort the final JSON alphabetically by part_name before outputting.`;
       const ebayPrice = ebayManualPriceValue(part);
       return [
         getDiagramReferenceId(part),
-        part.partNumber,
-        `"${part.description.replace(/"/g, '""')}"`,
+        safeText(part.partNumber),
+        safeText(part.description),
         hasApprovedPrice(part) ? part.price : '',
-        `"${normalizePriceSource(part.priceSource || part.price_source)}"`,
+        normalizePriceSource(part.priceSource || part.price_source),
         ebayPrice ?? '',
-        `"${ebayPriceUrl.replace(/"/g, '""')}"`,
-        `"${part.section.replace(/"/g, '""')}"`,
-        `"${diagramUrl.replace(/"/g, '""')}"`,
-        `"${priceUrl.replace(/"/g, '""')}"`
+        safeText(ebayPriceUrl),
+        safeText(part.section),
+        safeText(diagramUrl),
+        safeText(priceUrl)
       ];
     });
 
     const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.join(','))
+      headers.map(escapeCsvCell).join(','),
+      ...rows.map(row => row.map(escapeCsvCell).join(','))
     ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const bom = "\uFEFF";
+    const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `BOM-${lookupModel || 'APPLIANCE'}.csv`);
+    const rawModel = normalizeModelId(lookupModel || 'APPLIANCE') || 'APPLIANCE';
+    const safeFileModel = rawModel.replace(/[^A-Z0-9_-]/gi, '_');
+    link.setAttribute('download', `BOM-${safeFileModel}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleEbayPricingUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
