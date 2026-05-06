@@ -1820,15 +1820,23 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+                <table className="min-w-[1480px] table-fixed border-collapse">
+                  <colgroup>
+                    <col className="w-[16rem]" />
+                    <col className="w-[38rem]" />
+                    <col className="w-[10rem]" />
+                    <col className="w-[10rem]" />
+                    <col className="w-[13rem]" />
+                    <col className="w-[18rem]" />
+                  </colgroup>
                   <thead>
                     <tr className="bg-pro-slate-50 border-b border-pro-slate-200">
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">OEM Identifier</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">Component Description</th>
-                      <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest w-32">Market Cost</th>
-                      <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest w-32">eBay Manual</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">Market Cost</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">eBay Manual</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">Assembly</th>
-                      <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest w-32">Actions</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-pro-slate-100">
@@ -1847,14 +1855,14 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                           onClick={() => setSelectedPart(part)}
                           className="hover:bg-pro-slate-50 cursor-pointer transition-colors group"
                         >
-                        <td className="px-4 py-3">
+                        <td className="align-top px-4 py-3">
                           <div className="flex flex-col">
                             <span className="text-xs font-mono font-bold text-pro-navy group-hover:text-pro-blue underline decoration-transparent group-hover:decoration-pro-blue/30 transition-all">{part.partNumber}</span>
                             <span className="text-[9px] font-bold text-pro-slate-400">ID {part.id}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-xs font-semibold text-pro-slate-700">{part.description}</td>
-                        <td className="px-4 py-3">
+                        <td className="align-top px-4 py-3 text-xs font-semibold leading-snug text-pro-slate-700">{part.description}</td>
+                        <td className="align-top px-4 py-3">
                           <div className="flex flex-col">
                             {hasApprovedPrice(part) ? (
                               <>
@@ -1870,7 +1878,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="align-top px-4 py-3">
                           <div className="flex flex-col">
                             {manualEbayPrice !== null ? (
                               <>
@@ -1897,12 +1905,12 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="align-top px-4 py-3">
                           <span className="text-[10px] font-bold px-2 py-0.5 bg-pro-slate-100 text-pro-slate-500 rounded uppercase tracking-tighter">
                             {getSectionDisplayLabel(part.section)}
                           </span>
                         </td>
-                          <td className="px-4 py-3">
+                          <td className="align-top px-4 py-3">
                             <div className="flex flex-wrap gap-2">
                               {diagramUrl && (
                                 <a
