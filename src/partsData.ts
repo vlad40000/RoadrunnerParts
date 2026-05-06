@@ -16,6 +16,10 @@ export interface Part {
   diagram_url?: string;
   diagramRef?: string;
   diagram_ref?: string;
+  diagramNumber?: string | number;
+  diagram_number?: string | number;
+  callout?: string | number;
+  callout_number?: string | number;
   sourceUrl?: string;
   source_url?: string;
   sourceProvider?: string;

@@ -98,7 +98,15 @@ const getPartUrl = (part: Part, ...keys: Array<keyof Part>) => {
 };
 
 const getDiagramReferenceId = (part: Part) => {
-  const value = String(part.diagramRef || part.diagram_ref || '').trim();
+  const value = String(
+    part.diagramRef ||
+      part.diagram_ref ||
+      part.diagramNumber ||
+      part.diagram_number ||
+      part.callout ||
+      part.callout_number ||
+      '',
+  ).trim();
   return value || 'N/A';
 };
 
