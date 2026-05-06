@@ -777,10 +777,10 @@ export function BomPromptWorkspace({
   }, [initialJobId]);
 
   useEffect(() => {
-    if (initialAction === "market_intel") {
+    if (initialAction === "market_intel" || initialAction === "market_ops") {
       setWorkspaceView("mission");
-      setActiveMode("browser_tool");
-      loadScenarioByType("market_intelligence_survey");
+      setActiveMode("pricing");
+      loadScenarioByType("pricing_reconciliation");
     }
   }, [initialAction, loadScenarioByType]);
 
@@ -3437,36 +3437,216 @@ function PricingPanel(props: {
   loadScenarioByType: (type: PromptScenarioType, patch?: Record<string, unknown>) => void;
   setActiveMode: (mode: BomWorkspaceMode) => void;
 }) {
+  const [pipelineStats, setPipelineStats] = useState<{
+    pendingSurvey: number;
+    surveyed: number;
+    marketSignals: number;
+    draftListings: number;
+  }>({
+    pendingSurvey: 0,
+    surveyed: 0,
+    marketSignals: 0,
+    draftListings: 0,
+  });
+  const [pipelineBusy, setPipelineBusy] = useState(false);
+  const [pipelineMessage, setPipelineMessage] = useState("");
+  const [pipelineError, setPipelineError] = useState("");
+
+  const loadEbayPipeline = useCallback(async () => {
+    setPipelineError("");
+    try {
+      const response = await fetch("/api/ebay/pipeline?limit=25", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.detail || payload?.error || "Failed to load eBay pipeline.");
+      }
+      setPipelineStats(
+        payload.stats || {
+          pendingSurvey: 0,
+          surveyed: 0,
+          marketSignals: 0,
+          draftListings: 0,
+        },
+      );
+    } catch (error) {
+      setPipelineError(error instanceof Error ? error.message : "Failed to load eBay pipeline.");
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadEbayPipeline();
+  }, [loadEbayPipeline]);
+
+  const runDraftPrep = useCallback(async () => {
+    setPipelineBusy(true);
+    setPipelineError("");
+    setPipelineMessage("");
+    try {
+      const response = await fetch("/api/ebay/pipeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "prepare_drafts",
+          limit: 25,
+          minNetExpected: 15,
+          dryRun: false,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.detail || payload?.error || "Failed to prepare eBay drafts.");
+      }
+      setPipelineStats(
+        payload.stats || {
+          pendingSurvey: 0,
+          surveyed: 0,
+          marketSignals: 0,
+          draftListings: 0,
+        },
+      );
+      setPipelineMessage(`Prepared ${payload.preparedCount || 0} eBay drafts in the current workflow.`);
+    } catch (error) {
+      setPipelineError(error instanceof Error ? error.message : "Failed to prepare eBay drafts.");
+    } finally {
+      setPipelineBusy(false);
+    }
+  }, []);
+
+  const pricedRows = props.finalRows.filter((row) => {
+    const priceText = firstRowText(row, ["price", "retailPrice", "part_price", "verified_listed_price"]);
+    const price = Number(String(priceText || "").replace(/[$,\s]/g, ""));
+    const source = firstRowText(row, ["priceSource", "price_source", "retailPriceSource", "source"]);
+    return Number.isFinite(price) && price > 0 && Boolean(source);
+  }).length;
+
+  const listingReadyRows = props.finalRows.filter((row) => {
+    const partNumber = firstRowText(row, ["partNumber", "part_number", "currentServicePartNumber"]);
+    const priceText = firstRowText(row, ["price", "retailPrice", "part_price", "verified_listed_price"]);
+    const price = Number(String(priceText || "").replace(/[$,\s]/g, ""));
+    return Boolean(partNumber) && Number.isFinite(price) && price > 0;
+  }).length;
+
+  const processSteps: Array<{
+    step: string;
+    owner: string;
+    payoff: string;
+    painAvoided: string;
+  }> = [
+    {
+      step: "1) Capture source-backed prices for each row",
+      owner: "Pricing Source Agent",
+      payoff: "Every price is tied to a real source URL before decisions are made.",
+      painAvoided: "Stops guessed pricing and rework from bad source data.",
+    },
+    {
+      step: "2) Verify model/part/price alignment",
+      owner: "Pricing Verification Agent",
+      payoff: "Only valid rows survive to listing prep.",
+      painAvoided: "Avoids listing the wrong part or wrong fitment.",
+    },
+    {
+      step: "3) Score market demand from comps",
+      owner: "Market Snapshot Agent",
+      payoff: "You can prioritize parts with better sell-through potential.",
+      painAvoided: "Avoids wasting time on low-yield listings.",
+    },
+    {
+      step: "4) Build draft listing package",
+      owner: "Listing Draft Agent",
+      payoff: "Title/description/price draft is ready for operator review.",
+      painAvoided: "Avoids manual copy-paste and inconsistent listing quality.",
+    },
+    {
+      step: "5) Operator approves and publishes",
+      owner: "Operator",
+      payoff: "Final control stays with you before anything goes live.",
+      painAvoided: "Prevents accidental publication of bad listings.",
+    },
+  ];
+
   return (
-    <Panel>
-      <PanelHeader
-        title="Pricing"
-        action={
+    <div className="grid gap-4">
+      <Panel>
+        <PanelHeader
+          title="Pricing And Listing Workflow"
+          action={
+            <button
+              type="button"
+              onClick={() => {
+                props.loadScenarioByType("pricing_reconciliation");
+                props.setActiveMode("prompt_scenarios");
+              }}
+              className="h-8 rounded-lg border border-white/10 bg-white/5 px-3 text-[10px] font-bold uppercase tracking-widest text-white/70"
+            >
+              Run Pricing Prompt
+            </button>
+          }
+        />
+        <div className="grid gap-3 p-4 md:grid-cols-3">
+          {[
+            ["Rows in scope", String(props.finalRows.length)],
+            ["Rows with verified pricing", String(pricedRows)],
+            ["Rows ready for listing prep", String(listingReadyRows)],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg bg-white/5 p-4">
+              <div className="text-[10px] uppercase tracking-widest text-white/35">{label}</div>
+              <div className="mt-2 font-mono text-xl font-semibold text-white">{value}</div>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-3 border-t border-white/10 p-4 md:grid-cols-4">
+          {[
+            ["Pending Survey", String(pipelineStats.pendingSurvey)],
+            ["Market Signals", String(pipelineStats.marketSignals)],
+            ["Draft Listings", String(pipelineStats.draftListings)],
+            ["Surveyed", String(pipelineStats.surveyed)],
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-lg bg-white/5 p-4">
+              <div className="text-[10px] uppercase tracking-widest text-white/35">{label}</div>
+              <div className="mt-2 font-mono text-xl font-semibold text-white">{value}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 border-t border-white/10 p-4">
           <button
             type="button"
-            onClick={() => {
-              props.loadScenarioByType("pricing_reconciliation");
-              props.setActiveMode("prompt_scenarios");
-            }}
+            onClick={() => void loadEbayPipeline()}
             className="h-8 rounded-lg border border-white/10 bg-white/5 px-3 text-[10px] font-bold uppercase tracking-widest text-white/70"
           >
-            Pricing Prompt
+            Refresh eBay Stats
           </button>
-        }
-      />
-      <div className="grid gap-3 p-4 md:grid-cols-3">
-        {[
-          ["Validated rows", String(props.finalRows.length)],
-          ["Pricing source", "not wired"],
-          ["Execution", "deferred"],
-        ].map(([label, value]) => (
-          <div key={label} className="rounded-lg bg-white/5 p-4">
-            <div className="text-[10px] uppercase tracking-widest text-white/35">{label}</div>
-            <div className="mt-2 font-mono text-xl font-semibold text-white">{value}</div>
-          </div>
-        ))}
-      </div>
-    </Panel>
+          <button
+            type="button"
+            onClick={() => void runDraftPrep()}
+            disabled={pipelineBusy}
+            className="h-8 rounded-lg bg-white px-3 text-[10px] font-bold uppercase tracking-widest text-black disabled:opacity-40"
+          >
+            {pipelineBusy ? "Preparing Drafts" : "Prepare eBay Drafts"}
+          </button>
+        </div>
+        {pipelineMessage ? <div className="px-4 pb-2 text-xs text-emerald-200">{pipelineMessage}</div> : null}
+        {pipelineError ? <div className="px-4 pb-4 text-xs text-red-300">{pipelineError}</div> : null}
+      </Panel>
+      <Panel>
+        <PanelHeader title="One Process Per Agent" />
+        <div className="grid gap-3 p-4">
+          {processSteps.map((item) => (
+            <div key={item.step} className="rounded-lg border border-white/10 bg-white/5 p-3">
+              <div className="text-xs font-bold text-white">{item.step}</div>
+              <div className="mt-1 text-[11px] text-white/60">
+                Owner: <span className="font-semibold text-white/85">{item.owner}</span>
+              </div>
+              <div className="mt-2 text-[11px] text-emerald-200">
+                Payoff: {item.payoff}
+              </div>
+              <div className="mt-1 text-[11px] text-amber-200">
+                Pain avoided: {item.painAvoided}
+              </div>
+            </div>
+          ))}
+        </div>
+      </Panel>
+    </div>
   );
 }
 
