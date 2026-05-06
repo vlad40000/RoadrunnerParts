@@ -38,6 +38,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Table2,
+  Terminal,
   Upload,
   UserCircle,
   Video,
@@ -1102,7 +1103,17 @@ export function BomPromptWorkspace({
             <Bot size={14} />
           </button>
           <span className="bom-cockpit-version">MISSION COCKPIT</span>
-          <span className="bom-cockpit-job">{model || job?.model || "no model"}</span>
+          <div className="flex items-center gap-3">
+            <span className="bom-cockpit-job">{model || job?.model || "no model"}</span>
+            <button
+              onClick={() => navigator.clipboard.writeText(jobId)}
+              className="flex items-center gap-1.5 rounded-md bg-white/5 px-2 py-0.5 font-mono text-[10px] font-bold text-neutral-400 hover:bg-white/10 hover:text-white transition-all"
+              title="Click to copy Job ID"
+            >
+              <Terminal size={10} />
+              {jobId}
+            </button>
+          </div>
           <div className="ml-auto flex items-center gap-2">
             <ScenarioWorkflowSelect scenarios={scenarios} selectedScenario={selectedScenario} loadScenario={loadScenario} />
             <button type="button" className="bom-cockpit-copy" onClick={() => setPromptDrawerOpen((open) => !open)}>

@@ -214,7 +214,7 @@ function ToggleRow({
   );
 }
 
-export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirmed }: ComputerUseSupervisorProps) {
+export function ComputerUseSupervisor({ jobId, slotId, model, sourceUrl, onActionConfirmed }: ComputerUseSupervisorProps) {
   const [activeScreen, setActiveScreen] = useState<string | null>(null);
   const [currentUrl, setCurrentUrl] = useState<string>("");
   const [actions, setActions] = useState<ComputerUseAction[]>([]);
@@ -453,10 +453,18 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
         setTelemetry(events);
         setIsAgentRunning(events.some((event) => event.status === "running" || event.status === "executing"));
 
-        const screenEvent = events.find((e) => e.event === "url_context_frame" || e.event === "grounding_recon_frame" || e.event === "cu_screenshot");
-        if (screenEvent && screenEvent.payload?.screenshot) {
-          setActiveScreen(screenEvent.payload.screenshot);
-          setCurrentUrl(String(screenEvent.payload.url || ""));
+        const screenEvent = events.find((e) => 
+          e.event === "url_context_frame" || 
+          e.event === "grounding_recon_frame" || 
+          e.event === "cu_screenshot" ||
+          e.event === "manual_vision_capture"
+        );
+        if (screenEvent) {
+          const img = screenEvent.payload?.image || screenEvent.payload?.screenshot;
+          if (img) {
+            setActiveScreen(img);
+            setCurrentUrl(String(screenEvent.payload?.url || (screenEvent.event === "manual_vision_capture" ? "ShareX Manual Capture" : "")));
+          }
         }
 
         const safetyEvent = events.find((e) => e.status === "require_confirmation");
@@ -916,7 +924,33 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
             ) : (
               <>
                 <div className="px-2 py-2 border-b border-white/5 flex items-center justify-between">
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Delivered Evidence</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Visual Evidence</h3>
+                </div>
+                <div className="p-2 grid grid-cols-4 gap-1.5 border-b border-white/5">
+                  {telemetry.filter(t => (t.event === 'cu_screenshot' || t.event === 'manual_vision_capture') && (t.payload?.image || t.payload?.screenshot)).map((t) => (
+                    <div 
+                      key={t.id} 
+                      className={`relative aspect-square rounded-md overflow-hidden border border-white/10 bg-black/20 cursor-pointer hover:border-blue-500/50 transition-all ${t.id === telemetry.find(e => e.payload?.image === activeScreen || e.payload?.screenshot === activeScreen)?.id ? 'ring-1 ring-blue-500 border-blue-500' : ''}`}
+                      onClick={() => {
+                        const img = t.payload?.image || t.payload?.screenshot;
+                        if (img) {
+                          setActiveScreen(img);
+                          setCurrentUrl(String(t.payload?.url || (t.event === "manual_vision_capture" ? "ShareX Manual Capture" : "")));
+                        }
+                      }}
+                    >
+                      <img src={t.payload?.image || t.payload?.screenshot} className="w-full h-full object-cover" alt="Thumb" />
+                      {t.event === 'manual_vision_capture' && (
+                        <div className="absolute top-0.5 right-0.5 bg-blue-600 rounded-full p-0.5 shadow-lg">
+                           <Monitor size={6} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="px-2 py-2 border-b border-white/5 flex items-center justify-between">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Delivered Actions</h3>
                   <div className="flex items-center gap-1 text-[10px] font-bold text-neutral-500">
                     <Clock size={10} />
                     Real-time

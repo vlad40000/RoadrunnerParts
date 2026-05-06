@@ -21,6 +21,11 @@ import {
   determineRetrievalState,
   validateManifestCoverage,
 } from "../contract";
+import { 
+  createEbayDraftListing, 
+  upsertMarketSnapshot, 
+  upsertChannelListing 
+} from "../ebay-listing-service";
 
 export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
   const args = call.args as any;
@@ -394,7 +399,13 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
       };
 
     case "create_ebay_draft_listing":
-      return { status: "draft_created", listingId: "ebay_draft_123" };
+      return createEbayDraftListing({
+        partInventoryId: args.partInventoryId,
+        title: args.title,
+        description: args.description,
+        price: args.price,
+        photos: args.photos || [],
+      });
 
     case "revise_ebay_listing_price":
       return { status: "revised", listingId: args.listingId, newPrice: args.newPrice };
@@ -403,10 +414,17 @@ export async function dispatchBomToolCall(call: FunctionCall): Promise<any> {
       return { status: "ended", listingId: args.listingId, reason: args.reason };
 
     case "db_upsert_market_snapshot":
-      return { status: "success", partNumber: args.partNumber };
+      return upsertMarketSnapshot({
+        partNumber: args.partNumber,
+        snapshot: args.snapshot
+      });
 
     case "db_upsert_channel_listing":
-      return { status: "success", channelListingId: args.channelListingId };
+      return upsertChannelListing({
+        partInventoryId: args.partInventoryId,
+        channelListingId: args.channelListingId,
+        listingPayload: args.listingPayload
+      });
 
     default:
       throw new Error(`Unknown tool: ${call.name}`);

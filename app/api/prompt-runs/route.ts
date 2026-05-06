@@ -133,6 +133,12 @@ function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
     googleSearchGrounding: toolInput.googleSearchGrounding !== false,
     googleMapsGrounding: toolInput.googleMapsGrounding !== false,
     urlContext: toolInput.urlContext !== false,
+    computerUse:
+      toolInput.computerUse === true
+        ? true
+        : toolInput.computerUse === false
+          ? false
+          : DEFAULT_MODEL_TOOLS.computerUse,
     thinkingLevel,
     mediaResolution,
     stopSequence: typeof toolInput.stopSequence === "string" ? toolInput.stopSequence : "",
