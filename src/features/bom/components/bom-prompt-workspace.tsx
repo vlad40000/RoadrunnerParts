@@ -1281,6 +1281,7 @@ export function BomPromptWorkspace({
             onClose={() => setIsInstructionsDrawerOpen(false)}
             currentInstruction={systemPrompt}
             baseInstruction={selectedScenario?.systemPrompt || ""}
+            jobId={jobId}
             onSelect={(content) => setSystemPrompt(content)}
           />
           <ModelSelectionPortal

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Plus, Trash2, Save, Check, Settings2, ArrowUp, ArrowDown, AlertTriangle } from "lucide-react";
+import { X, Plus, Trash2, Save, Check, Settings2, ArrowUp, ArrowDown, AlertTriangle, Bot } from "lucide-react";
 
 export type SystemInstruction = {
   id: string;
@@ -99,21 +99,25 @@ export function SystemInstructionsDrawer({
   onClose,
   currentInstruction,
   baseInstruction = "",
+  jobId,
   onSelect,
 }: {
   isOpen: boolean;
   onClose: () => void;
   currentInstruction: string;
   baseInstruction?: string;
+  jobId?: string;
   onSelect: (content: string) => void;
 }) {
   const [instructions, setInstructions] = useState<SystemInstruction[]>([]);
+  const [learnedInstructions, setLearnedInstructions] = useState<string>("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editContent, setEditContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isPromotingLearned, setIsPromotingLearned] = useState(false);
 
   const fetchPresets = async () => {
     setIsLoading(true);
@@ -128,6 +132,19 @@ export function SystemInstructionsDrawer({
       console.error("Failed to fetch presets from backend", e);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchLearnedInstructions = async () => {
+    if (!jobId) return;
+    try {
+      const res = await fetch(`/api/bom/jobs/${jobId}/instructions`);
+      const data = await res.json();
+      if (data.ok) {
+        setLearnedInstructions(data.instructions || "");
+      }
+    } catch (e) {
+      console.error("Failed to fetch learned instructions", e);
     }
   };
 
@@ -146,7 +163,16 @@ export function SystemInstructionsDrawer({
     
     // Then sync from backend
     fetchPresets();
-  }, []);
+    fetchLearnedInstructions();
+  }, [jobId]);
+
+  const promoteLearned = () => {
+    if (!learnedInstructions) return;
+    setEditingId(`temp-promote-${crypto.randomUUID()}`);
+    setEditName(`Learned Rule: ${new Date().toLocaleDateString()}`);
+    setEditContent(learnedInstructions);
+    setIsPromotingLearned(true);
+  };
 
   useEffect(() => {
     if (!instructions.length) {
@@ -273,6 +299,7 @@ export function SystemInstructionsDrawer({
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
       setSaveError(null);
       setEditingId(null);
+      setIsPromotingLearned(false);
     } catch (e) {
       console.error("Failed to save preset to backend", e);
       setSaveError(e instanceof Error ? e.message : "Failed to save preset.");
@@ -303,6 +330,32 @@ export function SystemInstructionsDrawer({
         </header>
 
         <div className="flex h-[calc(100%-3.5rem)] flex-col overflow-hidden p-6 bg-[#0f1115]">
+          {learnedInstructions && (
+            <div className="mb-6 rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 shadow-[0_0_15px_rgba(59,130,246,0.05)]">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bot size={14} className="text-blue-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Learned Behavioral Rules</span>
+                </div>
+                <button 
+                  onClick={promoteLearned}
+                  className="rounded bg-blue-500/20 px-2 py-0.5 text-[9px] font-bold text-blue-300 hover:bg-blue-500/30 transition-colors"
+                >
+                  PROMOTE TO PRESET
+                </button>
+              </div>
+              <p className="text-[11px] leading-relaxed text-white/60 italic line-clamp-3">
+                "{learnedInstructions}"
+              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <div className="h-1 flex-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full w-full bg-blue-500/40" />
+                </div>
+                <span className="text-[9px] font-bold text-white/20 uppercase tracking-tighter">Active for this job</span>
+              </div>
+            </div>
+          )}
+
           <div className="mb-6 flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30">
               Instruction Presets {selectedIds.length ? `(${selectedIds.length} active)` : ""}
