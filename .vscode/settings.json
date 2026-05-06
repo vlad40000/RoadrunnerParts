@@ -4,5 +4,6 @@
   "less.lint.unknownAtRules": "ignore",
   "files.associations": {
     "*.css": "tailwindcss"
-  }
+  },
+  "docker.lsp.experimental.scout.recommendedTag": true
 }
