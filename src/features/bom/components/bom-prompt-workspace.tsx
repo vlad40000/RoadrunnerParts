@@ -1387,6 +1387,7 @@ export function BomPromptWorkspace({
               runScenario={runScenario}
               updateSlot={updateSlot}
               setToolsPopoverSlot={setToolsPopoverSlot}
+              addPromptAttachments={addPromptAttachments}
             />
           </div>
 
@@ -1615,6 +1616,7 @@ function PromptComposer({
   runScenario,
   updateSlot,
   setToolsPopoverSlot,
+  addPromptAttachments,
 }: {
   selectedScenario: PromptScenario | undefined;
   promptText: string;
@@ -1630,7 +1632,10 @@ function PromptComposer({
   runScenario: () => void;
   updateSlot: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
   setToolsPopoverSlot: (slotId: ModelSlot["id"] | null) => void;
+  addPromptAttachments: (files: FileList | null, kind: PromptAttachmentKind) => void;
 }) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   return (
     <div className="ai-composer-wrap">
       {toolsPopoverSlot ? (
@@ -1641,6 +1646,16 @@ function PromptComposer({
         />
       ) : null}
       <div className="ai-composer">
+        <input
+          ref={fileInputRef}
+          className="mission-file-input"
+          type="file"
+          multiple
+          onChange={(event) => {
+            addPromptAttachments(event.currentTarget.files, "file");
+            event.currentTarget.value = "";
+          }}
+        />
         <textarea
           value={promptText}
           onChange={(event) => setPromptText(event.target.value)}
@@ -1656,7 +1671,7 @@ function PromptComposer({
           <button type="button" className="ai-icon-button" title="Voice input">
             <Bot size={14} />
           </button>
-          <button type="button" className="ai-icon-button" title="Add context">
+          <button type="button" className="ai-icon-button" title="Add context" onClick={() => fileInputRef.current?.click()}>
             <Plus size={14} />
           </button>
           <button type="button" className="ai-run-button" onClick={runScenario} disabled={runBusy || Boolean(inputError)}>
