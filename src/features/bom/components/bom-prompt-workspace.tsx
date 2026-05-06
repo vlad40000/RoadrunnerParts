@@ -780,6 +780,7 @@ export function BomPromptWorkspace({
     if (initialAction === "market_intel" || initialAction === "market_ops") {
       setWorkspaceView("mission");
       setActiveMode("pricing");
+      setPromptDrawerOpen(false);
       loadScenarioByType("pricing_reconciliation");
     }
   }, [initialAction, loadScenarioByType]);
