@@ -114,6 +114,58 @@ function toUiPart(row: any, index: number) {
   };
 }
 
+function isNonEmpty(value: unknown) {
+  return value !== undefined && value !== null && String(value).trim() !== "";
+}
+
+function nonFallbackSection(section: unknown) {
+  const text = String(section || "").trim().toLowerCase();
+  return text !== "" && text !== "database evidence";
+}
+
+function partScore(part: any) {
+  let score = 0;
+  const priced = typeof part.price === "number" && part.price > 0 && isNonEmpty(part.priceSource);
+  if (priced) score += 100;
+  if (typeof part.ebayPrice === "number" && part.ebayPrice > 0) score += 20;
+  if (isNonEmpty(part.diagramUrl)) score += 10;
+  if (isNonEmpty(part.sourceUrl)) score += 10;
+  if (nonFallbackSection(part.section)) score += 5;
+  score += Math.min(10, String(part.description || "").trim().length / 20);
+  return score;
+}
+
+function mergeParts(preferred: any, alternate: any) {
+  return {
+    ...alternate,
+    ...preferred,
+    description: isNonEmpty(preferred.description) ? preferred.description : alternate.description,
+    section: nonFallbackSection(preferred.section) ? preferred.section : alternate.section,
+    price: preferred.price ?? alternate.price,
+    priceSource: isNonEmpty(preferred.priceSource) ? preferred.priceSource : alternate.priceSource,
+    price_source: isNonEmpty(preferred.price_source) ? preferred.price_source : alternate.price_source,
+    priceUrl: isNonEmpty(preferred.priceUrl) ? preferred.priceUrl : alternate.priceUrl,
+    price_url: isNonEmpty(preferred.price_url) ? preferred.price_url : alternate.price_url,
+    ebayPrice: preferred.ebayPrice ?? alternate.ebayPrice,
+    ebay_price: preferred.ebay_price ?? alternate.ebay_price,
+    ebayPriceSource: isNonEmpty(preferred.ebayPriceSource) ? preferred.ebayPriceSource : alternate.ebayPriceSource,
+    ebay_price_source: isNonEmpty(preferred.ebay_price_source) ? preferred.ebay_price_source : alternate.ebay_price_source,
+    ebayPriceUrl: isNonEmpty(preferred.ebayPriceUrl) ? preferred.ebayPriceUrl : alternate.ebayPriceUrl,
+    ebay_price_url: isNonEmpty(preferred.ebay_price_url) ? preferred.ebay_price_url : alternate.ebay_price_url,
+    diagramUrl: isNonEmpty(preferred.diagramUrl) ? preferred.diagramUrl : alternate.diagramUrl,
+    diagram_url: isNonEmpty(preferred.diagram_url) ? preferred.diagram_url : alternate.diagram_url,
+    sourceUrl: isNonEmpty(preferred.sourceUrl) ? preferred.sourceUrl : alternate.sourceUrl,
+    source_url: isNonEmpty(preferred.source_url) ? preferred.source_url : alternate.source_url,
+    originalPartNumber: isNonEmpty(preferred.originalPartNumber) ? preferred.originalPartNumber : alternate.originalPartNumber,
+    currentServicePartNumber: isNonEmpty(preferred.currentServicePartNumber)
+      ? preferred.currentServicePartNumber
+      : alternate.currentServicePartNumber,
+    compatibleModels: Array.from(
+      new Set([...(preferred.compatibleModels || []), ...(alternate.compatibleModels || [])].filter(Boolean)),
+    ),
+  };
+}
+
 function partKeys(row: any) {
   return [
     row.partNumber,
@@ -434,15 +486,21 @@ export async function GET(request: Request) {
       diagram_url: verifiedDiagramUrl || rowEncompassDiagramUrl || canonicalDiagramUrl || rowDiagramUrl || pricedSourceUrl,
     };
   });
-  const seen = new Set<string>();
-  const parts = rows
-    .map(toUiPart)
-    .filter((part) => {
-      const key = `${part.partNumber}|${part.section}|${part.description}`;
-      if (!part.partNumber || seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
+  const deduped = new Map<string, any>();
+  for (const part of rows.map(toUiPart)) {
+    if (!part.partNumber) continue;
+    const key = normalizeKey(part.partNumber);
+    const existing = deduped.get(key);
+    if (!existing) {
+      deduped.set(key, part);
+      continue;
+    }
+    const preferred = partScore(part) >= partScore(existing) ? part : existing;
+    const alternate = preferred === part ? existing : part;
+    deduped.set(key, mergeParts(preferred, alternate));
+  }
+
+  const parts = Array.from(deduped.values())
     .sort((a, b) => {
       const aPriced = typeof a.price === "number" && a.price > 0 && a.priceSource ? 1 : 0;
       const bPriced = typeof b.price === "number" && b.price > 0 && b.priceSource ? 1 : 0;
