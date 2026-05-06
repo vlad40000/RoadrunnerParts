@@ -250,6 +250,7 @@ const normalizeModelId = (value?: string | null) => (value || '').toUpperCase().
 const stripLookupLabel = (value?: string | null) =>
   (value || "").replace(/^\s*(MODEL|PART)\s*#?\s*:?\s*/i, "").trim();
 const HOME_DRAFT_STORAGE_KEY = 'roadrunner:home-draft';
+const INVENTORY_DB_DOWNLOAD_PATH = '/OriginalUsedAppliancesDB.xlsx';
 
 type EbayManualDraft = {
   price: string;
@@ -287,6 +288,7 @@ export default function App() {
   const [isEbayUploadLoading, setIsEbayUploadLoading] = useState(false);
   const [ebayManualDrafts, setEbayManualDrafts] = useState<Record<string, EbayManualDraft>>({});
   const [ebayManualSaving, setEbayManualSaving] = useState<Record<string, boolean>>({});
+  const hasModelContext = Boolean(normalizeModelId(stripLookupLabel(lookupModel || modelEntry || "")));
 
   // Compatibility State
   const [checkModel, setCheckModel] = useState('');
@@ -313,7 +315,7 @@ export default function App() {
       modelMetadata.diagramParse.visualTruth.assemblyNames.forEach(addSection);
     }
 
-    const source = aiParts.length > 0 ? aiParts : partsData;
+    const source = aiParts.length > 0 ? aiParts : (hasModelContext ? [] : partsData);
     source.forEach((part) => addSection(part.section));
 
     const preferredOrder = [
@@ -339,7 +341,7 @@ export default function App() {
       })
       .map(([, label]) => label)
       .slice(0, 8);
-  }, [aiParts, lookupModel, modelEntry, modelMetadata, searchTerm]);
+  }, [aiParts, hasModelContext, lookupModel, modelEntry, modelMetadata, searchTerm]);
 
   const selectedSectionLabel = useMemo(() => {
     if (selectedSections.length === 0) return 'All Components';
@@ -1032,7 +1034,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
   const handleExportCSV = () => {
     const dataSource = aiParts.length > 0
       ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
-      : partsData;
+      : (hasModelContext ? [] : partsData);
 
     const escapeCsvCell = (value: unknown) => {
       const text = String(value ?? "");
@@ -1078,6 +1080,15 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadInventorySheet = () => {
+    const link = document.createElement('a');
+    link.href = INVENTORY_DB_DOWNLOAD_PATH;
+    link.download = 'OriginalUsedAppliancesDB.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const handleEbayPricingUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1192,7 +1203,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
   const filteredParts = useMemo(() => {
     const dataSource = aiParts.length > 0
       ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
-      : partsData;
+      : (hasModelContext ? [] : partsData);
     const normalizedSearch = searchTerm.toLowerCase();
     const filtered = dataSource.filter(part => {
       const matchesSearch =
@@ -1226,17 +1237,17 @@ Sort the final JSON alphabetically by part_name before outputting.`;
       }
       return a.id - b.id;
     });
-  }, [searchTerm, selectedSectionKeys, aiParts, sortBy, showUnpricedDbRows]);
+  }, [searchTerm, selectedSectionKeys, aiParts, sortBy, showUnpricedDbRows, hasModelContext]);
 
   const stats = useMemo(() => {
-    const dataSource = aiParts.length > 0 ? aiParts : partsData;
+    const dataSource = aiParts.length > 0 ? aiParts : (hasModelContext ? [] : partsData);
     return {
       total: dataSource.length,
       filtered: filteredParts.length,
       sections: dynamicSections.length,
       isAI: aiParts.length > 0
     };
-  }, [filteredParts, aiParts]);
+  }, [filteredParts, aiParts, dynamicSections.length, hasModelContext]);
 
   const isBomComplete = expectedPartCount !== null && aiParts.length >= expectedPartCount;
   const completeBomLabel = isBomComplete
@@ -1779,6 +1790,14 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                 >
                   {isEbayUploadLoading ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
                   Upload eBay Sheet
+                </button>
+                <button
+                  onClick={handleDownloadInventorySheet}
+                  className="inline-flex h-9 items-center gap-2 rounded-lg border border-pro-slate-300 bg-white px-3 text-[11px] font-bold uppercase tracking-wider text-pro-slate-600 transition-colors hover:border-pro-blue hover:text-pro-blue"
+                  title="Download OriginalUsedAppliancesDB.xlsx"
+                >
+                  <Download size={14} />
+                  Download Inventory Sheet
                 </button>
                 <button
                   onClick={() => window.print()}
