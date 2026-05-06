@@ -78,6 +78,16 @@ const ebayManualPriceValue = (part: Part) => {
   return null;
 };
 
+const stripManualEbayDisplayFields = <T extends Record<string, any>>(part: T): T => ({
+  ...part,
+  ebayPrice: undefined,
+  ebay_price: undefined,
+  ebayPriceSource: '',
+  ebay_price_source: '',
+  ebayPriceUrl: '',
+  ebay_price_url: '',
+});
+
 const parseManualEbayPrice = (value: string) => {
   const text = String(value || '').trim();
   if (!text) return null;
@@ -645,7 +655,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
       setShowUnpricedDbRows(false);
 
       const processedParts = rawParts.map((p: any) => ({
-        ...p,
+        ...stripManualEbayDisplayFields(p),
         partNumber: (p.partNumber || "").toUpperCase().trim(),
       }));
 
@@ -673,7 +683,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
           return (a.partNumber || "").localeCompare(b.partNumber || "");
         })
         .map((part, index) => ({
-          ...part,
+          ...stripManualEbayDisplayFields(part),
           id: 10001 + index,
         }));
 
@@ -737,7 +747,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
       const rows = Array.isArray(payload.parts) ? payload.parts : [];
       const normalizedRows = rows.map((part: any, index: number) => ({
-        ...part,
+        ...stripManualEbayDisplayFields(part),
         id: Number(part.id) || index + 1,
         partNumber: normalizeModelId(part.partNumber),
         description: part.description || 'Appliance Part',
@@ -1945,9 +1955,6 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                     {filteredParts.map((part) => {
                       const activeEbayUrl = ebaySearchUrl(part.partNumber);
                       const soldCompsUrl = ebaySoldSearchUrl(part.partNumber);
-                      const manualEbayPrice = ebayManualPriceValue(part);
-                      const manualEbaySource = String(part.ebayPriceSource || part.ebay_price_source || '').trim();
-                      const manualEbayPriceUrl = getPartUrl(part, 'ebayPriceUrl', 'ebay_price_url');
                       const manualDraft = getEbayManualDraft(part);
                       const isManualSaving = ebayManualSaving[ebayDraftKey(part)] === true;
 
@@ -1981,55 +1988,33 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                           </div>
                         </td>
                         <td className="align-top px-4 py-3">
-                          <div className="flex flex-col">
-                            {manualEbayPrice !== null ? (
-                              <>
-                                <span className="text-sm font-black text-pro-slate-900">${manualEbayPrice.toFixed(2)}</span>
-                                <span className="text-[9px] font-bold uppercase tracking-tight text-pro-slate-400">
-                                  {(manualEbaySource || 'ebay.com').toUpperCase()}
-                                </span>
-                                {manualEbayPriceUrl && (
-                                  <a
-                                    href={manualEbayPriceUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    onClick={(event) => event.stopPropagation()}
-                                    className="mt-1 text-[10px] font-bold uppercase tracking-tight text-pro-blue hover:underline"
-                                  >
-                                    Listing
-                                  </a>
-                                )}
-                              </>
-                            ) : (
-                              <div
-                                className="flex w-full min-w-[11rem] flex-col gap-2"
-                                onClick={(event) => event.stopPropagation()}
-                              >
-                                <input
-                                  type="text"
-                                  value={manualDraft.price}
-                                  onChange={(event) => updateEbayManualDraft(part, { price: event.target.value })}
-                                  placeholder="Enter eBay price"
-                                  className="h-8 rounded-md border border-pro-slate-200 bg-white px-2 text-[11px] font-semibold text-pro-slate-700 outline-none transition-colors focus:border-pro-blue"
-                                />
-                                <input
-                                  type="text"
-                                  value={manualDraft.url}
-                                  onChange={(event) => updateEbayManualDraft(part, { url: event.target.value })}
-                                  placeholder="Paste eBay listing URL"
-                                  className="h-8 rounded-md border border-pro-slate-200 bg-white px-2 text-[11px] font-medium text-pro-slate-700 outline-none transition-colors focus:border-pro-blue"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleManualEbaySave(part)}
-                                  disabled={isManualSaving}
-                                  className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-pro-blue bg-white px-2 text-[10px] font-bold uppercase tracking-wider text-pro-blue transition-colors hover:bg-blue-50 disabled:opacity-60"
-                                >
-                                  {isManualSaving ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                                  Save eBay
-                                </button>
-                              </div>
-                            )}
+                          <div
+                            className="flex w-full min-w-[11rem] flex-col gap-2"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <input
+                              type="text"
+                              value={manualDraft.price}
+                              onChange={(event) => updateEbayManualDraft(part, { price: event.target.value })}
+                              placeholder="Enter eBay price"
+                              className="h-8 rounded-md border border-pro-slate-200 bg-white px-2 text-[11px] font-semibold text-pro-slate-700 outline-none transition-colors focus:border-pro-blue"
+                            />
+                            <input
+                              type="text"
+                              value={manualDraft.url}
+                              onChange={(event) => updateEbayManualDraft(part, { url: event.target.value })}
+                              placeholder="Paste eBay listing URL"
+                              className="h-8 rounded-md border border-pro-slate-200 bg-white px-2 text-[11px] font-medium text-pro-slate-700 outline-none transition-colors focus:border-pro-blue"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleManualEbaySave(part)}
+                              disabled={isManualSaving}
+                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-pro-blue bg-white px-2 text-[10px] font-bold uppercase tracking-wider text-pro-blue transition-colors hover:bg-blue-50 disabled:opacity-60"
+                            >
+                              {isManualSaving ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                              Save eBay
+                            </button>
                           </div>
                         </td>
                         <td className="align-top px-4 py-3">
