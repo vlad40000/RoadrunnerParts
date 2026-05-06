@@ -97,6 +97,16 @@ const getPartUrl = (part: Part, ...keys: Array<keyof Part>) => {
   return '';
 };
 
+const getDiagramReferenceId = (part: Part) => {
+  const value = String(part.diagramRef || part.diagram_ref || '').trim();
+  return value || String(part.id);
+};
+
+const getDiagramReferenceLabel = (part: Part) =>
+  String(part.diagramRef || part.diagram_ref || '').trim()
+    ? `DIAG ID ${getDiagramReferenceId(part)}`
+    : `ID ${part.id}`;
+
 const normalizeSectionKey = (value?: string | null) =>
   String(value || '')
     .trim()
@@ -1015,7 +1025,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
       const ebayPriceUrl = getPartUrl(part, 'ebayPriceUrl', 'ebay_price_url');
       const ebayPrice = ebayManualPriceValue(part);
       return [
-        part.id,
+        getDiagramReferenceId(part),
         part.partNumber,
         `"${part.description.replace(/"/g, '""')}"`,
         hasApprovedPrice(part) ? part.price : '',
@@ -1868,7 +1878,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                   <div>
                     <div className="flex justify-between items-start mb-3">
                       <span className="text-[10px] font-bold text-pro-slate-400 uppercase tracking-widest">
-                        Item ID {part.id}
+                        {getDiagramReferenceLabel(part)}
                       </span>
                     </div>
                     <h3 className="text-sm font-bold text-pro-slate-900 mb-2 leading-snug group-hover:text-pro-blue transition-colors">
@@ -1945,7 +1955,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                         <td className="align-top px-4 py-3">
                           <div className="flex flex-col">
                             <span className="text-xs font-mono font-bold text-pro-navy group-hover:text-pro-blue underline decoration-transparent group-hover:decoration-pro-blue/30 transition-all">{part.partNumber}</span>
-                            <span className="text-[9px] font-bold text-pro-slate-400">ID {part.id}</span>
+                            <span className="text-[9px] font-bold text-pro-slate-400">{getDiagramReferenceLabel(part)}</span>
                           </div>
                         </td>
                         <td className="align-top px-4 py-3 text-xs font-semibold leading-snug text-pro-slate-700">{part.description}</td>
@@ -2281,8 +2291,8 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                   </h2>
                   <div className="flex items-center gap-4 mt-6">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Part Index</span>
-                      <span className="text-sm font-mono font-bold text-white/90">{selectedPart.partNumber}</span>
+                      <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest">Diag ID</span>
+                      <span className="text-sm font-mono font-bold text-white/90">{getDiagramReferenceId(selectedPart)}</span>
                     </div>
                     {hasApprovedPrice(selectedPart) && (
                       <div className="flex flex-col border-l border-white/10 pl-4">
