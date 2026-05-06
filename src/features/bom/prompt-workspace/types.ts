@@ -18,6 +18,7 @@ export type ModelToolSettings = {
   googleSearchGrounding: boolean;
   googleMapsGrounding: boolean;
   urlContext: boolean;
+  computerUse: boolean;
   thinkingLevel: "low" | "medium" | "high";
   mediaResolution: "default" | "low" | "high";
   stopSequence?: string;
@@ -30,6 +31,7 @@ export const DEFAULT_MODEL_TOOLS: ModelToolSettings = {
   googleSearchGrounding: true,
   googleMapsGrounding: true,
   urlContext: true,
+  computerUse: false,
   thinkingLevel: "high",
   mediaResolution: "default",
   stopSequence: "",

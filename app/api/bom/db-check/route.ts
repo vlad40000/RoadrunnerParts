@@ -39,6 +39,9 @@ function toUiPart(row: any, index: number) {
   const price = toNumber(firstValue(row.price, row.part_price, row.retailPrice, row.retail_price));
   const priceSource = firstValue(row.price_source, row.priceSource, row.retail_price_source, row.retailPriceSource);
   const priceUrl = firstValue(row.price_url, row.priceUrl, row.retailPricingUrl, row.retail_price_url);
+  const ebayPrice = toNumber(firstValue(row.ebay_price, row.ebayPrice));
+  const ebayPriceSource = firstValue(row.ebay_price_source, row.ebayPriceSource, row.ebay_source, row.ebaySource);
+  const ebayPriceUrl = firstValue(row.ebay_price_url, row.ebayPriceUrl, row.ebay_url, row.ebayUrl);
   const sourceUrl = firstValue(
     row.diagram_url,
     row.diagramUrl,
@@ -72,6 +75,12 @@ function toUiPart(row: any, index: number) {
     price_source: priceSource,
     priceUrl,
     price_url: priceUrl,
+    ebayPrice,
+    ebay_price: ebayPrice,
+    ebayPriceSource,
+    ebay_price_source: ebayPriceSource,
+    ebayPriceUrl,
+    ebay_price_url: ebayPriceUrl,
     diagramUrl,
     diagram_url: diagramUrl,
     diagramRef: row.diagram_ref || row.diagramRef || undefined,
@@ -196,6 +205,11 @@ export async function GET(request: Request) {
         from part_pricing pp
         join appliance_models am on pp.model_id = am.id
         where upper(regexp_replace(pp.part_number, '[^A-Z0-9]', '', 'g')) = ${effectiveNormalizedPart}
+          and (
+            lower(pp.source) like '%encompass.com%'
+            or lower(pp.source) like '%searspartsdirect.com%'
+            or lower(pp.source) like '%fix.com%'
+          )
           and (${normalizedModel} = '' or am.normalized_model = ${normalizedModel})
         order by pp.captured_at desc
         limit 500
@@ -214,6 +228,50 @@ export async function GET(request: Request) {
         from part_pricing pp
         join appliance_models am on pp.model_id = am.id
         where am.normalized_model = ${normalizedModel}
+          and (
+            lower(pp.source) like '%encompass.com%'
+            or lower(pp.source) like '%searspartsdirect.com%'
+            or lower(pp.source) like '%fix.com%'
+          )
+        order by pp.captured_at desc
+        limit 500
+      `;
+
+  const ebayPricingRows = effectiveNormalizedPart
+    ? await sql`
+        select
+          am.normalized_model,
+          pp.part_number,
+          pp.price::text as ebay_price,
+          pp.source as ebay_price_source,
+          pp.price_url as ebay_price_url,
+          pp.price_url as source_url,
+          pp.availability,
+          pp.captured_at,
+          'part_pricing_ebay' as source_provider
+        from part_pricing pp
+        join appliance_models am on pp.model_id = am.id
+        where upper(regexp_replace(pp.part_number, '[^A-Z0-9]', '', 'g')) = ${effectiveNormalizedPart}
+          and lower(pp.source) like '%ebay%'
+          and (${normalizedModel} = '' or am.normalized_model = ${normalizedModel})
+        order by pp.captured_at desc
+        limit 500
+      `
+    : await sql`
+        select
+          am.normalized_model,
+          pp.part_number,
+          pp.price::text as ebay_price,
+          pp.source as ebay_price_source,
+          pp.price_url as ebay_price_url,
+          pp.price_url as source_url,
+          pp.availability,
+          pp.captured_at,
+          'part_pricing_ebay' as source_provider
+        from part_pricing pp
+        join appliance_models am on pp.model_id = am.id
+        where am.normalized_model = ${normalizedModel}
+          and lower(pp.source) like '%ebay%'
         order by pp.captured_at desc
         limit 500
       `;
@@ -283,6 +341,7 @@ export async function GET(request: Request) {
   const providerResultRows = Array.isArray(providerRows) ? (providerRows as any[]) : [];
   const cachedResultRows = Array.isArray(cachedRows) ? (cachedRows as any[]) : [];
   const partPricingResultRows = Array.isArray(partPricingRows) ? (partPricingRows as any[]) : [];
+  const ebayPricingResultRows = Array.isArray(ebayPricingRows) ? (ebayPricingRows as any[]) : [];
   const rawResultRows = Array.isArray(rawRows) ? (rawRows as any[]) : [];
   const canonicalDiagramUrl = firstValue(...(Array.isArray(canonicalDiagramRows) ? (canonicalDiagramRows as any[]).map((row) => row.url) : []));
   const verifiedPriceByPart = new Map<string, any>();
@@ -300,6 +359,14 @@ export async function GET(request: Request) {
       }
     }
   }
+  const ebayPriceByPart = new Map<string, any>();
+  for (const row of ebayPricingResultRows) {
+    for (const key of partKeys(row)) {
+      if (!ebayPriceByPart.has(key)) {
+        ebayPriceByPart.set(key, row);
+      }
+    }
+  }
 
   const rows = [...providerResultRows, ...cachedResultRows, ...rawResultRows].map((row) => {
     const rowDiagramUrl = firstValue(row.diagram_url, row.provider_assembly_url, row.source_url);
@@ -307,9 +374,13 @@ export async function GET(request: Request) {
       ? rowDiagramUrl
       : undefined;
     const pricedMatch = partKeys(row).map((key) => verifiedPriceByPart.get(key)).find(Boolean);
+    const ebayMatch = partKeys(row).map((key) => ebayPriceByPart.get(key)).find(Boolean);
     if (!pricedMatch) {
       return {
         ...row,
+        ebay_price: ebayMatch?.ebay_price,
+        ebay_price_source: ebayMatch?.ebay_price_source,
+        ebay_price_url: ebayMatch?.ebay_price_url || ebayMatch?.source_url,
         diagram_url: rowEncompassDiagramUrl || canonicalDiagramUrl || rowDiagramUrl,
       };
     }
@@ -322,6 +393,9 @@ export async function GET(request: Request) {
       price: pricedMatch.price,
       price_source: pricedMatch.price_source,
       price_url: pricedSourceUrl,
+      ebay_price: ebayMatch?.ebay_price,
+      ebay_price_source: ebayMatch?.ebay_price_source,
+      ebay_price_url: ebayMatch?.ebay_price_url || ebayMatch?.source_url,
       source_url: row.source_url || pricedMatch.source_url,
       diagram_url: verifiedDiagramUrl || rowEncompassDiagramUrl || canonicalDiagramUrl || rowDiagramUrl || pricedSourceUrl,
     };
@@ -355,6 +429,7 @@ export async function GET(request: Request) {
       providerSeedRows: providerResultRows.length,
       modelPartsCacheRows: cachedResultRows.length,
       partPricingRows: partPricingResultRows.length,
+      ebayPricingRows: ebayPricingResultRows.length,
       rawEvidenceRows: rawResultRows.length,
     },
     retrievalState: parts.length ? "db_evidence_found" : "not_found",

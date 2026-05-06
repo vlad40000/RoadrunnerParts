@@ -258,7 +258,8 @@ type ModelToolToggleKey =
   | "functionCalling"
   | "googleSearchGrounding"
   | "googleMapsGrounding"
-  | "urlContext";
+  | "urlContext"
+  | "computerUse";
 
 const TOOL_LABELS: Array<{ key: ModelToolToggleKey; label: string; editable?: boolean }> = [
   { key: "structuredOutputs", label: "Structured outputs", editable: true },
@@ -267,6 +268,7 @@ const TOOL_LABELS: Array<{ key: ModelToolToggleKey; label: string; editable?: bo
   { key: "googleSearchGrounding", label: "Grounding with Google Search" },
   { key: "googleMapsGrounding", label: "Grounding with Google Maps" },
   { key: "urlContext", label: "URL context" },
+  { key: "computerUse", label: "Computer Use", editable: true },
 ];
 
 const MODES: Array<{
@@ -586,6 +588,7 @@ function buildCompiledRunPreview(input: {
         },
         thinkingLevel: slot.tools?.thinkingLevel ?? null,
         mediaResolution: slot.tools?.mediaResolution ?? null,
+        computerUse: slot.tools?.computerUse ?? null,
         stopSequence: slot.tools?.stopSequence || null,
       },
     }));
@@ -1189,6 +1192,7 @@ export function BomPromptWorkspace({
                 lastRun={lastRun}
                 captures={captures}
                 modelSlots={modelSlots}
+                jobId={jobId}
               />
             )}
             <PromptCockpitDrawer
@@ -2616,6 +2620,7 @@ function BrowserCanvas(props: {
   lastRun: PromptRun | null;
   captures: BrowserSourceCapture[];
   modelSlots: ModelSlot[];
+  jobId: string;
 }) {
   const visibleUrl = props.browserFrameUrl || props.browserUrl || "about:blank";
   const enabledSlots = props.modelSlots.filter((slot) => slot.enabled).slice(0, 2);
@@ -2628,12 +2633,13 @@ function BrowserCanvas(props: {
           <BrowserBoardPane
             key={slot.id}
             slot={slot}
-            visibleUrl={visibleUrl}
             browserFrameUrl={props.browserFrameUrl}
+            visibleUrl={props.browserUrl}
             browserSupplier={props.browserSupplier}
             model={props.model}
             lastRun={props.lastRun}
             captures={props.captures}
+            jobId={props.jobId}
           />
         ))}
       </div>
@@ -2649,6 +2655,7 @@ function BrowserBoardPane(props: {
   model: string;
   lastRun: PromptRun | null;
   captures: BrowserSourceCapture[];
+  jobId: string;
 }) {
   const slotOutput = props.lastRun?.outputs.find((output) => output.slotId === props.slot.id) || null;
   const outputs = slotOutput ? [slotOutput] : props.lastRun?.outputs.slice(0, 5) || [];
@@ -2663,7 +2670,9 @@ function BrowserBoardPane(props: {
         <div className="bom-browser-spinner" />
       </div>
       <div className="bom-browser-body">
-        {props.browserFrameUrl ? (
+        {props.slot.tools?.computerUse ? (
+          <ComputerUseSupervisor jobId={props.jobId} slotId={props.slot.id} model={props.model} sourceUrl={props.visibleUrl} />
+        ) : props.browserFrameUrl ? (
           <iframe title={`${props.slot.id} BOM browser preview`} src={props.browserFrameUrl} sandbox="allow-same-origin allow-scripts" />
         ) : (
           <div className="bom-canvas-idle">

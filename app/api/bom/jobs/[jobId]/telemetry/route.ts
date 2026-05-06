@@ -29,10 +29,23 @@ export async function GET(req: NextRequest, { params }: Params) {
     );
   }
 
-  const rows = await db
+  const slotId = req.nextUrl.searchParams.get("slotId");
+  
+  let query = db
     .select()
     .from(bomTelemetry)
-    .where(eq(bomTelemetry.jobId, jobId))
+    .where(eq(bomTelemetry.jobId, jobId));
+
+  if (slotId) {
+    // Note: Drizzle syntax for multiple conditions
+    const { and } = await import("drizzle-orm");
+    query = db
+      .select()
+      .from(bomTelemetry)
+      .where(and(eq(bomTelemetry.jobId, jobId), eq(bomTelemetry.slotId, slotId)));
+  }
+
+  const rows = await query
     .orderBy(desc(bomTelemetry.createdAt))
     .limit(limitParam(req));
 
@@ -41,6 +54,7 @@ export async function GET(req: NextRequest, { params }: Params) {
     telemetry: rows.map((row) => ({
       id: row.id,
       jobId: row.jobId,
+      slotId: row.slotId,
       event: row.event,
       status: row.status,
       model: row.model,
@@ -78,6 +92,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     .insert(bomTelemetry)
     .values({
       jobId,
+      slotId: typeof body.slotId === "string" ? body.slotId : null,
       event,
       status,
       model: typeof body.model === "string" ? body.model : job.model,
@@ -94,6 +109,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     telemetry: {
       id: row.id,
       jobId: row.jobId,
+      slotId: row.slotId,
       event: row.event,
       status: row.status,
       model: row.model,

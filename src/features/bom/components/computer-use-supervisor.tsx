@@ -33,6 +33,7 @@ type ReconTelemetry = {
 
 interface ComputerUseSupervisorProps {
   jobId: string;
+  slotId?: string;
   model?: string;
   sourceUrl?: string;
   onActionConfirmed?: (actionId: string, confirmed: boolean) => void;
@@ -301,6 +302,7 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
         sourceUrl,
         goal,
         config,
+        slotId,
       });
 
       let data: any = null;
@@ -379,8 +381,10 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
   async function sendInstruction() {
     if (!jobId || !instruction.trim() || isSendingInstruction) return;
     setIsSendingInstruction(true);
+    const url = new URL(`/api/bom/jobs/${jobId}/telemetry`, window.location.origin);
+    if (slotId) url.searchParams.set("slotId", slotId);
     try {
-      const res = await fetch(`/api/bom/jobs/${jobId}/telemetry`, {
+      const res = await fetch(url.toString(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -426,9 +430,16 @@ export function ComputerUseSupervisor({ jobId, model, sourceUrl, onActionConfirm
       try {
         pollTickRef.current += 1;
         const shouldFetchJob = pollTickRef.current % 2 === 1;
+        const url = new URL(`/api/bom/jobs/${jobId}/telemetry`, window.location.origin);
+        url.searchParams.set("limit", "15");
+        if (slotId) url.searchParams.set("slotId", slotId);
+        
+        const jobUrl = new URL(`/api/bom/jobs/${jobId}`, window.location.origin);
+        if (slotId) jobUrl.searchParams.set("slotId", slotId);
+
         const [telemetryRes, jobRes] = await Promise.all([
-          fetch(`/api/bom/jobs/${jobId}/telemetry?limit=15`, { cache: "no-store" }),
-          shouldFetchJob ? fetch(`/api/bom/jobs/${jobId}`, { cache: "no-store" }) : Promise.resolve(null),
+          fetch(url.toString(), { cache: "no-store" }),
+          shouldFetchJob ? fetch(jobUrl.toString(), { cache: "no-store" }) : Promise.resolve(null),
         ]);
         const telemetryData = await telemetryRes.json().catch(() => null);
         const jobData = jobRes ? await jobRes.json().catch(() => null) : null;

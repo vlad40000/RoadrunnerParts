@@ -2,6 +2,7 @@ import { neon } from "@neondatabase/serverless";
 import dotenv from "dotenv";
 import { scrapeEbayActive, scrapeEbaySold } from "../src/lib/ebay-scraper.ts";
 import { generateEbayTitle, generateEbayDescription } from "../src/lib/ebay-listing-gen.ts";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config({ path: ".env.local" });
 dotenv.config();
@@ -36,13 +37,14 @@ async function runPipeline() {
   // --- PHASE 1: MARKET SURVEY ---
   console.log("--- PHASE 1: MARKET SURVEY ---");
   const partsToSurvey = await sql.query(`
-    SELECT b.part_number, b.normalized_model, b.part_name, m.brand
-    FROM bom_part b
-    JOIN machine_inventory m ON b.normalized_model = m.normalized_model
+    SELECT b.part_number, am.normalized_model, b.description as part_name, m.brand
+    FROM bom_parts b
+    JOIN appliance_models am ON b.model_id = am.id
+    JOIN machine_inventory m ON am.normalized_model = m.normalized_model
     JOIN appliance_inventory_queue q ON m.id::text = q.machine_id
     LEFT JOIN part_market_signal s
       ON b.part_number = s.part_number
-     AND b.normalized_model = s.normalized_model
+     AND am.normalized_model = s.normalized_model
     WHERE q.rank_score >= 650
       AND (s.checked_at IS NULL OR s.checked_at < now() - interval '7 days')
     LIMIT $1
@@ -50,25 +52,30 @@ async function runPipeline() {
 
   console.log(`Found ${partsToSurvey.length} parts requiring fresh market signals.`);
 
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-3.1-flash-lite-preview",
+    tools: [{ googleSearch: {} }]
+  });
+
   for (const part of partsToSurvey) {
-    console.log(`Surveying: ${part.part_number} (${part.part_name})`);
+    console.log(`\n🔍 Agentic Survey: ${part.part_number} (${part.part_name})`);
     try {
-      const active = await scrapeEbayActive(part.part_number);
-      const sold = await scrapeEbaySold(part.part_number);
+      const prompt = `Analyze the current eBay market for appliance part number "${part.part_number}".
+1. Use Google Search to find recent "Sold" prices on eBay.
+2. Calculate the median sold price and current active listing volume.
+3. Estimate a conservative "Net Expected" profit after 15% fees, $12 shipping, and $7 labor/materials.
+4. Return a JSON object with: { medianSoldPrice: number, activeCount: number, soldCount: number, netExpected: number, confidence: number }`;
+
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
       
-      const activeCount = active.length;
-      const soldCount = sold.length;
-      const sellThrough = activeCount > 0 ? soldCount / activeCount : (soldCount > 0 ? 1 : 0);
+      // Basic JSON extraction from markdown
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error("Could not extract JSON from agent response");
       
-      const soldPrices = sold.map(s => s.price).filter(p => p > 0);
-      const medianSold = soldPrices.length > 0 ? soldPrices.sort((a,b) => a-b)[Math.floor(soldPrices.length/2)] : 0;
-      
-      // Net expected calculation (conservative)
-      const fees = medianSold * 0.15;
-      const ship = 12.00; // Average for parts
-      const pack = 2.00;
-      const labor = 5.00;
-      const netExpected = medianSold > 0 ? medianSold - fees - ship - pack - labor : 0;
+      const signal = JSON.parse(jsonMatch[0]);
+      const { medianSoldPrice, activeCount, soldCount, netExpected } = signal;
 
       if (!dryRun) {
         await sql.query(`
@@ -88,22 +95,21 @@ async function runPipeline() {
         `, [
           part.part_number, 
           part.normalized_model, 
-          activeCount, 
-          soldCount, 
-          sellThrough, 
-          medianSold, 
-          netExpected, 
-          JSON.stringify({ active_listings: active, sold_listings: sold })
+          activeCount || 0, 
+          soldCount || 0, 
+          (activeCount > 0 ? soldCount / activeCount : 0), 
+          medianSoldPrice || 0, 
+          netExpected || 0, 
+          JSON.stringify({ agent_analysis: responseText, signal })
         ]);
-        console.log(`✅ Signal updated for ${part.part_number} (Net: $${netExpected.toFixed(2)})`);
+        console.log(`✅ Agentic Signal updated for ${part.part_number} (Net: $${(netExpected || 0).toFixed(2)})`);
       } else {
-        console.log(`[DRY RUN] Would update signal for ${part.part_number} (Net: $${netExpected.toFixed(2)})`);
+        console.log(`[DRY RUN] Agent would update signal for ${part.part_number}:`, signal);
       }
       
-      // Jitter delay between scrapes
-      await new Promise(r => setTimeout(r, 2000 + Math.random() * 2000));
+      await new Promise(r => setTimeout(r, 1000)); // Minimal delay for API rate limits
     } catch (err) {
-      console.error(`❌ Failed to survey ${part.part_number}:`, err.message);
+      console.error(`❌ Failed agentic survey for ${part.part_number}:`, err.message);
     }
   }
 
@@ -117,10 +123,11 @@ async function runPipeline() {
       s.net_expected,
       m.id AS machine_id,
       m.brand,
-      b.part_name
+      b.description as part_name
     FROM part_market_signal s
     JOIN machine_inventory m ON s.normalized_model = m.normalized_model
-    JOIN bom_part b ON s.part_number = b.part_number AND s.normalized_model = b.normalized_model
+    JOIN appliance_models am ON m.normalized_model = am.normalized_model
+    JOIN bom_parts b ON s.part_number = b.part_number AND b.model_id = am.id
     LEFT JOIN part_inventory i ON s.part_number = i.part_number AND m.id = i.machine_id
     WHERE s.net_expected >= $1
       AND i.id IS NULL

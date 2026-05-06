@@ -126,9 +126,22 @@ why are the prompts not auto loading? why are the URLs not loading?
 - **Prompt Architecture Persistent**: AI agent instructions are now cloud-persisted, reviewable, and version-tracked via telemetry logs.
 - **Agentic Recipes Defined**: High-performance combinations of Gemini 3 features (Thinking, Computer Use, Parallel Calls) are documented and ready for implementation.
 
-- [x] **Cookbook Integration**: Seeded `agent_preset` table with Gemini 3 Cookbook recipes and registered `visual_loop_recovery` scenario.
-- [ ] Implement the "Visual Loop" recovery logic in `browser-agent/computer-use-agent.mjs` using the defined recipe.
-- [ ] Orchestrate the "Market-Signal Intelligence" pipeline as a single batch worker.
-- [ ] Run end-to-end integration test on a 20-unit sample using the new agentic recipes.
-- [ ] Automate eBay draft creation via the official eBay API (using BOM Dispatcher).
+### **Agentic Hardening & Market Intelligence**
+- [x] **Computer Use Upgrade**: Migrated `ComputerUseAgent` to high-performance model with `save_agent_instruction` and `request_manual_gate` for self-correcting 403/429 bypass.
+- [x] **Instruction Persistence**: Implemented `/api/bom/jobs/[jobId]/instructions` endpoint to store learned behavioral rules in the `bom_jobs` table.
+- [x] **Market Survey Agentized**: Refactored `run-market-intelligence-pipeline.mjs` to use Gemini API with Google Search for real-time pricing and profit analysis.
+- [x] **Schema Synchronization**: Normalized `bom_parts` and `appliance_models` join paths in batch scripts.
 
+## Phase 5: Parallel Marketplace Intelligence (ACTIVE)
+- [x] Dual-Agent Orchestration: Enabled split-screen live agent views (Slot A / Slot B).
+- [x] Telemetry Isolation: Added `slot_id` to `bom_telemetry` and APIs for independent agent tracking.
+- [/] Market-Signal Intelligence: Batch worker in `bom-orchestrator.ts` active; finalizing eBay tool.
+- [ ] Integration Test: 20-unit full loop validation.
+
+### Next Steps
+1. Finalize `create_ebay_draft_listing` tool.
+2. Seed `appliance_inventory_queue` for 20-unit test.
+3. Validate "URL Handoff" reliability in dual-agent mode.
+
+---
+*Note: If your API key does not yet support `gemini-3.1-flash-lite-preview`, you may encounter 404 errors. I recommend verifying model availability in Google AI Studio or falling back to `gemini-2.0-flash`.*

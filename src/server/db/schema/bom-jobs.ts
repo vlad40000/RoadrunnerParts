@@ -104,6 +104,8 @@ export const bomJobs = pgTable("bom_jobs", {
   
   requiresApproval: boolean("requires_approval").default(false),
   approvalStatus: text("approval_status"), // 'pending', 'approved', 'rejected'
+  
+  systemInstructions: text("system_instructions"), // Dynamically learned or operator-provided instructions
 
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

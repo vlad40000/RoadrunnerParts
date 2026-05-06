@@ -69,6 +69,15 @@ const hasApprovedPrice = (part: Part) => {
   return isApproved;
 };
 
+const marketPriceValue = (part: Part) =>
+  typeof part.price === 'number' && part.price > 0 ? part.price : null;
+
+const ebayManualPriceValue = (part: Part) => {
+  if (typeof part.ebayPrice === 'number' && part.ebayPrice > 0) return part.ebayPrice;
+  if (typeof part.ebay_price === 'number' && part.ebay_price > 0) return part.ebay_price;
+  return null;
+};
+
 const getPartUrl = (part: Part, ...keys: Array<keyof Part>) => {
   for (const key of keys) {
     const value = String(part[key] || '').trim();
@@ -76,6 +85,86 @@ const getPartUrl = (part: Part, ...keys: Array<keyof Part>) => {
   }
   return '';
 };
+
+const normalizeSectionKey = (value?: string | null) =>
+  String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/&/g, ' AND ')
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const sectionDisplayOverrides: Record<string, string> = {
+  'BACKSPLASH BLOWER AND DRIVE ASSEMBLY': 'BACKSPLASH, BLOWER & DRIVE ASSEMBLY',
+  'CABINET AND TOP PANEL': 'CABINET & TOP PANEL',
+  DRUM: 'DRUM',
+  'FRONT PANEL AND DOOR': 'FRONT PANEL & DOOR',
+};
+
+const sectionDiagramAssets: Record<string, { label: string; src: string }> = {
+  'BACKSPLASH BLOWER AND DRIVE ASSEMBLY': {
+    label: 'BACKSPLASH, BLOWER & DRIVE ASSEMBLY',
+    src: '/diagrams/HTDX100ED3WW/backsplash-blower-drive-assembly.png',
+  },
+  'CABINET AND TOP PANEL': {
+    label: 'CABINET & TOP PANEL',
+    src: '/diagrams/HTDX100ED3WW/cabinet-top-panel.png',
+  },
+  DRUM: {
+    label: 'DRUM',
+    src: '/diagrams/HTDX100ED3WW/drum.png',
+  },
+  'FRONT PANEL AND DOOR': {
+    label: 'FRONT PANEL & DOOR',
+    src: '/diagrams/HTDX100ED3WW/front-panel-door.png',
+  },
+};
+const htdxCanonicalSectionKeys = [
+  'BACKSPLASH BLOWER AND DRIVE ASSEMBLY',
+  'CABINET AND TOP PANEL',
+  'DRUM',
+  'FRONT PANEL AND DOOR',
+] as const;
+
+const getSectionDisplayLabel = (section: string) => {
+  const key = normalizeSectionKey(section);
+  if (sectionDisplayOverrides[key]) return sectionDisplayOverrides[key];
+  return section;
+};
+
+function AssemblyDiagramPreview({
+  diagram,
+}: {
+  diagram: { label: string; src: string } | null;
+}) {
+  if (!diagram) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-2xl border border-pro-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-pro-slate-400">
+            Assembly Diagram
+          </p>
+          <h2 className="mt-1 text-sm font-black uppercase tracking-tight text-pro-navy">
+            {diagram.label}
+          </h2>
+        </div>
+        <ImageIcon size={18} className="text-pro-blue" />
+      </div>
+      <div className="overflow-hidden rounded-xl border border-pro-slate-100 bg-pro-slate-50">
+        <img
+          src={diagram.src}
+          alt={`${diagram.label} diagram`}
+          className="h-auto w-full object-contain"
+        />
+      </div>
+    </div>
+  );
+}
 
 /**
  * Image processing helpers for the OCR rescue pipeline.
@@ -152,8 +241,9 @@ export default function App() {
   const [isDbChecking, setIsDbChecking] = useState(false);
   const [dbCheckStatus, setDbCheckStatus] = useState<string | null>(null);
   const [showUnpricedDbRows, setShowUnpricedDbRows] = useState(false);
-  const [sortBy, setSortBy] = useState<'id' | 'rating' | 'popularity'>('id');
+  const [sortBy, setSortBy] = useState<'id' | 'price_asc' | 'price_desc'>('id');
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(true);
+  const [isEbayUploadLoading, setIsEbayUploadLoading] = useState(false);
 
   // Compatibility State
   const [checkModel, setCheckModel] = useState('');
@@ -163,44 +253,70 @@ export default function App() {
   } | null>(null);
 
   const dynamicSections = useMemo(() => {
-    if (modelMetadata?.diagramParse?.visualTruth?.assemblyNames) {
-      return modelMetadata.diagramParse.visualTruth.assemblyNames.slice(0, 8);
+    const activeModelNormalized = normalizeModelId(lookupModel || modelEntry || searchTerm);
+    if (activeModelNormalized === 'HTDX100ED3WW') {
+      return htdxCanonicalSectionKeys.map((key) => sectionDisplayOverrides[key] || key);
     }
+
+    const sectionMap = new Map<string, string>();
+    const addSection = (section: unknown) => {
+      const raw = String(section || '').trim();
+      const key = normalizeSectionKey(raw);
+      if (!key || sectionMap.has(key)) return;
+      sectionMap.set(key, sectionDisplayOverrides[key] || raw);
+    };
+
+    if (modelMetadata?.diagramParse?.visualTruth?.assemblyNames) {
+      modelMetadata.diagramParse.visualTruth.assemblyNames.forEach(addSection);
+    }
+
     const source = aiParts.length > 0 ? aiParts : partsData;
-    const unique = Array.from(new Set(source.map(p => p.section).filter(Boolean)));
+    source.forEach((part) => addSection(part.section));
+
     const preferredOrder = [
-      'Basket and Tub Parts',
-      'Console and Water Inlet Parts',
-      'Cover Sheet & Documentation',
-      'Gearcase, Motor, and Pump Parts',
-      'Optional / Installation Parts',
-      'Top and Cabinet Parts',
+      'BACKSPLASH BLOWER AND DRIVE ASSEMBLY',
+      'CABINET AND TOP PANEL',
+      'DRUM',
+      'FRONT PANEL AND DOOR',
+      'BASKET AND TUB PARTS',
+      'CONSOLE AND WATER INLET PARTS',
+      'COVER SHEET AND DOCUMENTATION',
+      'GEARCASE MOTOR AND PUMP PARTS',
+      'OPTIONAL INSTALLATION PARTS',
+      'TOP AND CABINET PARTS',
     ];
-    return unique
+    return Array.from(sectionMap.entries())
       .sort((a, b) => {
-        const ai = preferredOrder.indexOf(a);
-        const bi = preferredOrder.indexOf(b);
+        const ai = preferredOrder.indexOf(a[0]);
+        const bi = preferredOrder.indexOf(b[0]);
         if (ai !== -1 || bi !== -1) {
           return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
         }
-        return a.localeCompare(b);
+        return a[1].localeCompare(b[1]);
       })
+      .map(([, label]) => label)
       .slice(0, 8);
-  }, [aiParts, modelMetadata]);
+  }, [aiParts, lookupModel, modelEntry, modelMetadata, searchTerm]);
 
   const selectedSectionLabel = useMemo(() => {
     if (selectedSections.length === 0) return 'All Components';
-    if (selectedSections.length === 1) return selectedSections[0];
+    if (selectedSections.length === 1) return getSectionDisplayLabel(selectedSections[0]);
     return `${selectedSections.length} Components`;
   }, [selectedSections]);
 
   const toggleSection = (section: string) => {
-    setSelectedSections((current) =>
-      current.includes(section)
-        ? current.filter((item) => item !== section)
-        : [...current, section],
-    );
+    setSelectedSections([getSectionDisplayLabel(section)]);
   };
+
+  const selectedSectionKeys = useMemo(
+    () => selectedSections.map(normalizeSectionKey).filter(Boolean),
+    [selectedSections],
+  );
+
+  const activeAssemblyDiagram = useMemo(() => {
+    if (selectedSectionKeys.length !== 1) return null;
+    return sectionDiagramAssets[selectedSectionKeys[0]] || null;
+  }, [selectedSectionKeys]);
 
   // AI Chat & Voice states
   const [isRecording, setIsRecording] = useState(false);
@@ -266,6 +382,7 @@ export default function App() {
   const [isCompatSourceMenuOpen, setIsCompatSourceMenuOpen] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+  const ebayPricingUploadRef = useRef<HTMLInputElement>(null);
   const expectedCountLookupModelRef = useRef<string | null>(null);
   const expectedCountRequestRef = useRef(0);
 
@@ -873,16 +990,20 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     const dataSource = aiParts.length > 0
       ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
       : partsData;
-    const headers = ['Ref ID', 'Part Number', 'Description', 'Price (USD)', 'Price Source', 'Assembly Section', 'Diagram URL', 'Price URL'];
+    const headers = ['Ref ID', 'Part Number', 'Description', 'Price (USD)', 'Price Source', 'eBay Manual Price (USD)', 'eBay Price URL', 'Assembly Section', 'Diagram URL', 'Price URL'];
     const rows = dataSource.map(part => {
       const diagramUrl = getPartUrl(part, 'diagramUrl', 'diagram_url', 'sourceUrl', 'source_url');
       const priceUrl = getPartUrl(part, 'priceUrl', 'price_url');
+      const ebayPriceUrl = getPartUrl(part, 'ebayPriceUrl', 'ebay_price_url');
+      const ebayPrice = ebayManualPriceValue(part);
       return [
         part.id,
         part.partNumber,
         `"${part.description.replace(/"/g, '""')}"`,
         hasApprovedPrice(part) ? part.price : '',
         `"${normalizePriceSource(part.priceSource || part.price_source)}"`,
+        ebayPrice ?? '',
+        `"${ebayPriceUrl.replace(/"/g, '""')}"`,
         `"${part.section.replace(/"/g, '""')}"`,
         `"${diagramUrl.replace(/"/g, '""')}"`,
         `"${priceUrl.replace(/"/g, '""')}"`
@@ -904,6 +1025,46 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     document.body.removeChild(link);
   };
 
+  const handleEbayPricingUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    const model = normalizeModelId(lookupModel || modelEntry || searchTerm);
+    if (!model) {
+      alert('Enter a model before importing eBay pricing.');
+      return;
+    }
+
+    setIsEbayUploadLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('model', model);
+
+      const response = await fetch('/api/bom/ebay-pricing/import', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result?.error || 'Failed to import eBay pricing spreadsheet.');
+      }
+
+      await handleDbCheck();
+      const warningCount = Array.isArray(result.warnings) ? result.warnings.length : 0;
+      setDbCheckStatus(
+        `eBay pricing import complete: ${result.importedRows} rows from ${file.name}${warningCount ? ` (${warningCount} warning${warningCount === 1 ? '' : 's'})` : ''}.`,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to import eBay pricing spreadsheet.';
+      setDbCheckStatus(`eBay pricing import failed: ${message}`);
+      alert(message);
+    } finally {
+      setIsEbayUploadLoading(false);
+    }
+  };
+
   const filteredParts = useMemo(() => {
     const dataSource = aiParts.length > 0
       ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
@@ -916,15 +1077,32 @@ Sort the final JSON alphabetically by part_name before outputting.`;
         part.partNumber.toLowerCase().includes(normalizedSearch) ||
         (part.compatibleModels || []).some(m => m.toLowerCase().includes(normalizedSearch));
       const matchesSection =
-        selectedSections.length === 0 || selectedSections.includes(part.section);
+        selectedSectionKeys.length === 0 || selectedSectionKeys.includes(normalizeSectionKey(part.section));
       return matchesSearch && matchesSection;
     });
 
     return [...filtered].sort((a, b) => {
-      if (sortBy === 'popularity') return (b.reviewCount || 0) - (a.reviewCount || 0);
+      if (sortBy === 'price_desc') {
+        const aPrice = marketPriceValue(a);
+        const bPrice = marketPriceValue(b);
+        if (aPrice === null && bPrice === null) return a.id - b.id;
+        if (aPrice === null) return 1;
+        if (bPrice === null) return -1;
+        if (bPrice !== aPrice) return bPrice - aPrice;
+        return a.id - b.id;
+      }
+      if (sortBy === 'price_asc') {
+        const aPrice = marketPriceValue(a);
+        const bPrice = marketPriceValue(b);
+        if (aPrice === null && bPrice === null) return a.id - b.id;
+        if (aPrice === null) return 1;
+        if (bPrice === null) return -1;
+        if (aPrice !== bPrice) return aPrice - bPrice;
+        return a.id - b.id;
+      }
       return a.id - b.id;
     });
-  }, [searchTerm, selectedSections, aiParts, sortBy, showUnpricedDbRows]);
+  }, [searchTerm, selectedSectionKeys, aiParts, sortBy, showUnpricedDbRows]);
 
   const stats = useMemo(() => {
     const dataSource = aiParts.length > 0 ? aiParts : partsData;
@@ -1137,16 +1315,17 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                 <button
                   key={section}
                   onClick={() => toggleSection(section)}
-                  className={`w-full text-left px-6 py-3.5 text-lg font-medium transition-all rounded-lg ${selectedSections.includes(section)
+                  className={`w-full text-left px-6 py-3.5 text-lg font-medium transition-all rounded-lg ${selectedSectionKeys.includes(normalizeSectionKey(section))
                     ? 'bg-pro-navy text-white shadow-pro'
                     : 'text-[#31507c] hover:bg-white hover:text-pro-slate-900'
                     }`}
                 >
-                  {section}
+                  {getSectionDisplayLabel(section)}
                 </button>
               ))}
             </nav>
           </section>
+          <AssemblyDiagramPreview diagram={activeAssemblyDiagram} />
         </aside>
 
         {/* Parts Explorer */}
@@ -1451,10 +1630,32 @@ Sort the final JSON alphabetically by part_name before outputting.`;
               >
                 <TableIcon size={22} />
               </button>
+              <button
+                onClick={() =>
+                  setSortBy((current) => {
+                    if (current === 'id') return 'price_desc';
+                    if (current === 'price_desc') return 'price_asc';
+                    return 'id';
+                  })
+                }
+                className="h-11 rounded-lg border border-pro-slate-200 bg-white px-3 text-xs font-bold uppercase tracking-wider text-pro-slate-600 transition-colors hover:border-pro-blue hover:text-pro-blue"
+                title="Toggle price sorting (high to low, low to high, default)"
+              >
+                {sortBy === 'price_desc' ? 'Price High-Low' : sortBy === 'price_asc' ? 'Price Low-High' : 'Default Sort'}
+              </button>
             </div>
 
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => ebayPricingUploadRef.current?.click()}
+                  disabled={isEbayUploadLoading}
+                  className="inline-flex h-9 items-center gap-2 rounded-lg border border-pro-slate-300 bg-white px-3 text-[11px] font-bold uppercase tracking-wider text-pro-slate-600 transition-colors hover:border-pro-blue hover:text-pro-blue disabled:opacity-60"
+                  title="Upload CSV/XLSX with Part Number + eBay Price to update DB"
+                >
+                  {isEbayUploadLoading ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
+                  Upload eBay Sheet
+                </button>
                 <button
                   onClick={() => window.print()}
                   className="p-3 text-pro-slate-400 hover:text-pro-slate-900 transition-colors"
@@ -1521,17 +1722,23 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                 {dynamicSections.map((section) => (
                   <button
                     key={section}
-                    onClick={() => toggleSection(section)}
-                    className={`w-full text-left px-5 py-4 text-xl font-medium transition-all rounded-lg ${selectedSections.includes(section)
+                    onClick={() => {
+                      toggleSection(section);
+                      setIsCategoryMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-5 py-4 text-xl font-medium transition-all rounded-lg ${selectedSectionKeys.includes(normalizeSectionKey(section))
                       ? 'bg-pro-navy text-white shadow-pro'
                       : 'text-pro-navy hover:bg-pro-slate-100'
                       }`}
                   >
-                    {section}
+                    {getSectionDisplayLabel(section)}
                   </button>
                 ))}
               </nav>
             )}
+            <div className="mt-5">
+              <AssemblyDiagramPreview diagram={activeAssemblyDiagram} />
+            </div>
           </div>
 
           {filteredParts.length === 0 ? (
@@ -1619,6 +1826,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">OEM Identifier</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">Component Description</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest w-32">Market Cost</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest w-32">eBay Manual</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest">Assembly</th>
                       <th className="px-4 py-3 text-left text-[10px] font-black text-[#8aa1c7] uppercase tracking-widest w-32">Actions</th>
                     </tr>
@@ -1629,6 +1837,9 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                       const soldCompsUrl = ebaySoldSearchUrl(part.partNumber);
                       const diagramUrl = getPartUrl(part, 'diagramUrl', 'diagram_url', 'sourceUrl', 'source_url');
                       const priceUrl = getPartUrl(part, 'priceUrl', 'price_url');
+                      const manualEbayPrice = ebayManualPriceValue(part);
+                      const manualEbaySource = String(part.ebayPriceSource || part.ebay_price_source || '').trim();
+                      const manualEbayPriceUrl = getPartUrl(part, 'ebayPriceUrl', 'ebay_price_url');
 
                       return (
                         <tr
@@ -1660,8 +1871,35 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                           </div>
                         </td>
                         <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            {manualEbayPrice !== null ? (
+                              <>
+                                <span className="text-sm font-black text-pro-slate-900">${manualEbayPrice.toFixed(2)}</span>
+                                <span className="text-[9px] font-bold uppercase tracking-tight text-pro-slate-400">
+                                  {(manualEbaySource || 'ebay.com').toUpperCase()}
+                                </span>
+                                {manualEbayPriceUrl && (
+                                  <a
+                                    href={manualEbayPriceUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={(event) => event.stopPropagation()}
+                                    className="mt-1 text-[10px] font-bold uppercase tracking-tight text-pro-blue hover:underline"
+                                  >
+                                    Listing
+                                  </a>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-[10px] font-bold uppercase tracking-tight text-pro-slate-300">
+                                -
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
                           <span className="text-[10px] font-bold px-2 py-0.5 bg-pro-slate-100 text-pro-slate-500 rounded uppercase tracking-tighter">
-                            {part.section}
+                            {getSectionDisplayLabel(part.section)}
                           </span>
                         </td>
                           <td className="px-4 py-3">
@@ -2254,6 +2492,13 @@ Sort the final JSON alphabetically by part_name before outputting.`;
         accept="image/*"
         className="hidden"
         onChange={handleFileUpload}
+      />
+      <input
+        ref={ebayPricingUploadRef}
+        type="file"
+        accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+        className="hidden"
+        onChange={handleEbayPricingUpload}
       />
     </div>
   );

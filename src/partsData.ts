@@ -19,6 +19,12 @@ export interface Part {
   sourceUrl?: string;
   source_url?: string;
   sourceProvider?: string;
+  ebayPrice?: number;
+  ebay_price?: number;
+  ebayPriceSource?: string;
+  ebay_price_source?: string;
+  ebayPriceUrl?: string;
+  ebay_price_url?: string;
 }
 
 

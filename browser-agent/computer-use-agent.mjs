@@ -52,9 +52,10 @@ class ComputerUseAgent {
   constructor(apiKey, options = {}) {
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-computer-use-preview-10-2025',
+      model: 'gemini-3.1-flash-lite-preview',
     });
     this.jobId = options.jobId || process.env.ROADRUNNER_JOB_ID || null;
+    this.slotId = options.slotId || process.env.ROADRUNNER_SLOT_ID || null;
     this.appUrl = options.appUrl || process.env.ROADRUNNER_APP_URL || null;
     this.modelNumber = options.model || null;
     this.browser = null;
@@ -72,6 +73,7 @@ class ComputerUseAgent {
           event,
           status,
           model: this.modelNumber,
+          slotId: this.slotId,
           payload,
         }),
       });
@@ -90,7 +92,10 @@ class ComputerUseAgent {
     while (Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 2000));
       try {
-        const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry?limit=50`);
+        const url = new URL(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry`);
+        url.searchParams.set('limit', '50');
+        if (this.slotId) url.searchParams.set('slotId', this.slotId);
+        const res = await fetch(url.toString());
         const data = await res.json().catch(() => null);
         const events = Array.isArray(data?.telemetry) ? data.telemetry : [];
         const updatedTarget = events.find((event) => event.id === targetTelemetryId);
@@ -151,7 +156,10 @@ class ComputerUseAgent {
   async checkForInstructionUpdates() {
     if (!this.jobId || !this.appUrl) return null;
     try {
-      const res = await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry?limit=20`);
+      const url = new URL(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/telemetry`);
+      url.searchParams.set('limit', '20');
+      if (this.slotId) url.searchParams.set('slotId', this.slotId);
+      const res = await fetch(url.toString());
       const data = await res.json().catch(() => null);
       const events = Array.isArray(data?.telemetry) ? data.telemetry : [];
       
@@ -187,6 +195,31 @@ class ComputerUseAgent {
       });
     } catch (err) {
       console.warn('[CU Agent] Failed to request manual gate:', err.message);
+    }
+  }
+
+  async saveAgentInstruction(instruction, context = {}) {
+    if (!this.jobId || !this.appUrl) return { error: 'Missing jobId or appUrl' };
+    console.log('[CU Agent] Saving Self-Correcting Instruction:', instruction);
+    try {
+      // 1. Post to telemetry for real-time dashboard updates
+      await this.telemetry('cu_instruction_update', 'new', {
+        instruction,
+        source: 'agent_self_correction',
+        ...context,
+      });
+
+      // 2. Persist to job record for long-term stack consistency
+      await fetch(`${this.appUrl}/api/bom/jobs/${encodeURIComponent(this.jobId)}/instructions`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ instruction, append: true }),
+      });
+
+      return { success: true };
+    } catch (err) {
+      console.warn('[CU Agent] Failed to save instruction:', err.message);
+      return { error: err.message };
     }
   }
 
@@ -298,6 +331,12 @@ class ComputerUseAgent {
         case 'wait_5_seconds':
           await new Promise(r => setTimeout(r, 5000));
           break;
+        case 'save_agent_instruction':
+          return await this.saveAgentInstruction(args.instruction, args.context || {});
+        case 'request_manual_gate':
+          await this.requestManualGate({ reason: args.reason, ...args.context });
+          const decision = await this.waitForManualApproval();
+          return { success: decision === 'approved', decision };
         default:
           console.warn(`[CU Agent] Unknown or unimplemented action: ${name}`);
       }
@@ -365,19 +404,16 @@ class ComputerUseAgent {
       const blockInfo = this.detectProviderBlock(currentUrl, pageTitle, pageText);
 
       if (blockInfo) {
-        console.log(`[CU Agent] Provider block detected on ${currentUrl}. Triggering Manual Gate.`);
-        await this.telemetry('cu_provider_block', 'blocked', {
-          turn: i + 1,
-          ...blockInfo,
+        console.log(`[CU Agent] Provider block suspected on ${currentUrl}. Analyzing visually...`);
+        // Instead of immediate gate, we inject a prompt for the model to analyze the block
+        history.push({
+          role: 'user',
+          parts: [{ text: `I detected a possible security block or interceptor: ${blockInfo.reason} from ${blockInfo.provider}. 
+Please look at the screenshot. 
+- If it is a CAPTCHA or Cloudflare Challenge that requires human interaction, use the 'request_manual_gate' tool (once implemented) or just state that you need a human.
+- If it is just a popup, modal, or simple 'Close' button, use 'computer_use' to navigate past it.
+- If you can derive a rule to avoid this in the future, use 'save_agent_instruction'.` }]
         });
-        await this.requestManualGate({
-          blockProvider: blockInfo.provider,
-          blockReason: blockInfo.reason,
-          blockUrl: blockInfo.url,
-        });
-        const decision = await this.waitForManualApproval();
-        if (decision !== 'approved') break;
-        // Continue if approved (operator might have solved the captcha/block)
       }
       const state = await this.captureState();
       await this.telemetry('cu_screenshot', 'running', {
@@ -404,6 +440,34 @@ class ComputerUseAgent {
             computer_use: {
               environment: 'ENVIRONMENT_BROWSER'
             }
+          },
+          {
+            functionDeclarations: [
+              {
+                name: 'save_agent_instruction',
+                description: 'Persists a new behavioral instruction for self-correction during visual loop recovery (e.g. "Wait for element .captcha-overlay to disappear").',
+                parameters: {
+                  type: 'OBJECT',
+                  properties: {
+                    instruction: { type: 'STRING', description: 'The new instruction text.' },
+                    context: { type: 'OBJECT', description: 'Optional metadata about why this instruction is needed.' }
+                  },
+                  required: ['instruction']
+                }
+              },
+              {
+                name: 'request_manual_gate',
+                description: 'Triggers a Human-in-the-Loop (HITL) gate in the cockpit, pausing the agent until an operator approves or solves a challenge (e.g. CAPTCHA).',
+                parameters: {
+                  type: 'OBJECT',
+                  properties: {
+                    reason: { type: 'STRING', description: 'The reason for the manual gate.' },
+                    context: { type: 'OBJECT', description: 'Metadata about the block.' }
+                  },
+                  required: ['reason']
+                }
+              }
+            ]
           }
         ],
         // Required for Computer Use loops to allow the model to think before acting
@@ -514,6 +578,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const goal = args.goal || positionalGoal || "Go to encompass.com and search for model WDF520PADM";
   const agent = new ComputerUseAgent(process.env.GEMINI_API_KEY, {
     jobId: args.jobId,
+    slotId: args.slotId,
     appUrl: args.appUrl,
     model: args.model,
   });

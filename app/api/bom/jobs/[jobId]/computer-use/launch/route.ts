@@ -45,11 +45,13 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const body = await req.json().catch(() => ({}));
   const sourceUrl = String(body.sourceUrl || "").trim();
+  const slotId = String(body.slotId || "").trim();
   const appUrl = req.nextUrl.origin;
   const goal = String(body.goal || "").trim() ||
     [
       "Run the RoadrunnerParts computer-use visual evidence loop.",
       `Model: ${job.model || body.model || "UNKNOWN"}`,
+      slotId ? `Slot: ${slotId}` : "",
       sourceUrl ? `Start URL: ${sourceUrl}` : "",
       "Capture screenshots, proposed actions, redirects, blockers, and source-backed evidence only.",
       "Do not write final BOM rows or speculative cache output.",
@@ -62,6 +64,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       scriptPath,
       "--job-id",
       jobId,
+      "--slot-id",
+      slotId,
       "--app-url",
       appUrl,
       "--url",
@@ -80,6 +84,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         ...process.env,
         ROADRUNNER_APP_URL: appUrl,
         ROADRUNNER_JOB_ID: jobId,
+        ROADRUNNER_SLOT_ID: slotId,
       },
     },
   );
