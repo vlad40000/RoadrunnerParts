@@ -9,6 +9,16 @@ export interface Part {
   reviewCount: number;
   price?: number;
   priceSource?: string;
+  price_source?: string;
+  priceUrl?: string;
+  price_url?: string;
+  diagramUrl?: string;
+  diagram_url?: string;
+  diagramRef?: string;
+  diagram_ref?: string;
+  sourceUrl?: string;
+  source_url?: string;
+  sourceProvider?: string;
 }
 
 

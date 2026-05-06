@@ -6,9 +6,30 @@ import {
   buildKnownEncompassAssemblyUrl,
   normalizeCanonicalModel,
 } from "@/features/bom/services/source-tier-policy";
+import {
+  buildEncompassCanonicalUrlSet,
+  buildEncompassCanonicalUrlSetFromAssemblyUrl,
+} from "@/features/bom/services/providers/deterministic-urls";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function buildSearchUrl(baseUrl?: string | null, model?: string | null) {
+  if (!baseUrl) return null;
+  if (!model) return baseUrl;
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  return `${baseUrl}${separator}searchTerm=${encodeURIComponent(model)}`;
+}
+
+function buildRouteSearchUrl(input: {
+  route?: string | null;
+  brand?: string | null;
+  model: string;
+}) {
+  if (!input.route) return null;
+  const brandSegment = encodeURIComponent(input.brand || input.route);
+  return `https://encompass.com/Exploded-View-Search/${input.route.toUpperCase()}/${brandSegment}?searchTerm=${encodeURIComponent(input.model)}`;
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -21,18 +42,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const normalizedModel = normalizeCanonicalModel(model);
-    const knownUrl = buildKnownEncompassAssemblyUrl(normalizedModel, brand);
-    if (knownUrl) {
-      return NextResponse.json({
-        status: "known_route",
-        normalizedModel,
-        selected: {
-          url: knownUrl,
-          source: "known_encompass_route",
-        },
-        candidates: [],
-      });
-    }
+    const brandRoute = brand ? await resolveEncompassBrandRoute(brand) : null;
+    const explodedViewSearchUrl = buildSearchUrl(brandRoute?.explodedViewSearchUrl, normalizedModel);
 
     const result = await resolveEncompassExplodedViewUrl({
       model: normalizedModel,
@@ -40,18 +51,60 @@ export async function GET(req: NextRequest) {
     });
 
     if (result.status !== "not_found") {
-      return NextResponse.json(result);
+      const indexedSearchUrl = result.selected
+        ? buildRouteSearchUrl({
+            route: result.selected.encompass_route,
+            brand: brand || result.selected.brand,
+            model: normalizedModel,
+          })
+        : explodedViewSearchUrl;
+      const canonicalUrls = result.selected?.url
+        ? buildEncompassCanonicalUrlSetFromAssemblyUrl({
+            url: result.selected.url,
+            explodedViewSearchUrl: indexedSearchUrl,
+          })
+        : null;
+      return NextResponse.json({
+        ...result,
+        canonicalUrls,
+        candidates: result.candidates.map((candidate) => ({
+          ...candidate,
+          canonicalUrls: buildEncompassCanonicalUrlSetFromAssemblyUrl({
+            url: candidate.url,
+            explodedViewSearchUrl: buildRouteSearchUrl({
+              route: candidate.encompass_route,
+              brand: brand || candidate.brand,
+              model: normalizedModel,
+            }) || explodedViewSearchUrl,
+          }),
+        })),
+      });
     }
 
-    const brandRoute = brand ? await resolveEncompassBrandRoute(brand) : null;
+    const knownUrl = buildKnownEncompassAssemblyUrl(normalizedModel, brand);
+    if (knownUrl) {
+      const canonicalUrls = buildEncompassCanonicalUrlSetFromAssemblyUrl({
+        url: knownUrl,
+        explodedViewSearchUrl,
+      });
+      return NextResponse.json({
+        status: "known_route",
+        normalizedModel,
+        selected: {
+          url: knownUrl,
+          source: "known_encompass_route",
+        },
+        canonicalUrls,
+        candidates: [],
+      });
+    }
+
     if (brandRoute?.explodedViewSearchUrl) {
-      const separator = brandRoute.explodedViewSearchUrl.includes("?") ? "&" : "?";
-      const routeUrl = `${brandRoute.explodedViewSearchUrl}${separator}searchTerm=${encodeURIComponent(normalizedModel)}`;
       return NextResponse.json({
         ...result,
         status: "brand_route",
         selected: {
-          url: routeUrl,
+          url: explodedViewSearchUrl,
           source: "encompass_brand_routes",
           brand: brandRoute.brand,
           abv: brandRoute.abv,
@@ -65,6 +118,13 @@ export async function GET(req: NextRequest) {
       ...result,
       status: canonical.explodedViewUrl ? "canonical_fallback" : result.status,
       fallbackUrl: canonical.explodedViewUrl || null,
+      canonicalUrls: canonical.explodedViewUrl
+        ? buildEncompassCanonicalUrlSet({
+            brandAbv: canonical.prefix,
+            model: normalizedModel,
+            explodedViewSearchUrl,
+          })
+        : null,
       selected: canonical.explodedViewUrl
         ? {
             url: canonical.explodedViewUrl,

@@ -38,6 +38,26 @@ function toUiPart(row: any, index: number) {
 
   const price = toNumber(firstValue(row.price, row.part_price, row.retailPrice, row.retail_price));
   const priceSource = firstValue(row.price_source, row.priceSource, row.retail_price_source, row.retailPriceSource);
+  const priceUrl = firstValue(row.price_url, row.priceUrl, row.retailPricingUrl, row.retail_price_url);
+  const sourceUrl = firstValue(
+    row.diagram_url,
+    row.diagramUrl,
+    row.provider_assembly_url,
+    row.providerAssemblyUrl,
+    row.provider_model_url,
+    row.providerModelUrl,
+    row.source_url,
+    row.sourceUrl,
+  );
+  const diagramUrl = firstValue(
+    row.diagram_url,
+    row.diagramUrl,
+    row.provider_assembly_url,
+    row.providerAssemblyUrl,
+    row.source_url,
+    row.sourceUrl,
+    String(priceUrl || "").includes("/Exploded-View-Assembly/") ? priceUrl : undefined,
+  );
 
   return {
     id: index + 1,
@@ -50,8 +70,15 @@ function toUiPart(row: any, index: number) {
     price,
     priceSource,
     price_source: priceSource,
+    priceUrl,
+    price_url: priceUrl,
+    diagramUrl,
+    diagram_url: diagramUrl,
+    diagramRef: row.diagram_ref || row.diagramRef || undefined,
+    diagram_ref: row.diagram_ref || row.diagramRef || undefined,
     sourceProvider: row.provider || row.source_provider || row.source || undefined,
-    sourceUrl: row.diagram_url || row.provider_assembly_url || row.provider_model_url || row.source_url || undefined,
+    sourceUrl,
+    source_url: sourceUrl,
     sourceStatus: row.source_status || undefined,
     sourceFile: row.source_file || undefined,
     replacementNote: row.replacement_note || undefined,
@@ -121,6 +148,9 @@ export async function GET(request: Request) {
           coalesce(part ->> 'section', part ->> 'category') as section,
           coalesce(part ->> 'price', part ->> 'part_price', part ->> 'retailPrice') as price,
           coalesce(part ->> 'priceSource', part ->> 'price_source', part ->> 'retailPriceSource') as price_source,
+          coalesce(part ->> 'priceUrl', part ->> 'price_url', part ->> 'retailPricingUrl', part ->> 'retail_price_url') as price_url,
+          coalesce(part ->> 'diagramUrl', part ->> 'diagram_url') as diagram_url,
+          coalesce(part ->> 'diagramRef', part ->> 'diagram_ref') as diagram_ref,
           coalesce(part ->> 'sourceUrl', part ->> 'retailPricingUrl') as source_url,
           'model_parts_cache' as source_provider
         from model_parts_cache,
@@ -140,6 +170,9 @@ export async function GET(request: Request) {
           coalesce(part ->> 'section', part ->> 'category') as section,
           coalesce(part ->> 'price', part ->> 'part_price', part ->> 'retailPrice') as price,
           coalesce(part ->> 'priceSource', part ->> 'price_source', part ->> 'retailPriceSource') as price_source,
+          coalesce(part ->> 'priceUrl', part ->> 'price_url', part ->> 'retailPricingUrl', part ->> 'retail_price_url') as price_url,
+          coalesce(part ->> 'diagramUrl', part ->> 'diagram_url') as diagram_url,
+          coalesce(part ->> 'diagramRef', part ->> 'diagram_ref') as diagram_ref,
           coalesce(part ->> 'sourceUrl', part ->> 'retailPricingUrl') as source_url,
           'model_parts_cache' as source_provider
         from model_parts_cache,
@@ -148,26 +181,149 @@ export async function GET(request: Request) {
         limit 500
       `;
 
+  const partPricingRows = effectiveNormalizedPart
+    ? await sql`
+        select
+          am.normalized_model,
+          pp.part_number,
+          pp.price::text as price,
+          pp.source as price_source,
+          pp.price_url as price_url,
+          pp.price_url as source_url,
+          pp.availability,
+          pp.captured_at,
+          'part_pricing' as source_provider
+        from part_pricing pp
+        join appliance_models am on pp.model_id = am.id
+        where upper(regexp_replace(pp.part_number, '[^A-Z0-9]', '', 'g')) = ${effectiveNormalizedPart}
+          and (${normalizedModel} = '' or am.normalized_model = ${normalizedModel})
+        order by pp.captured_at desc
+        limit 500
+      `
+    : await sql`
+        select
+          am.normalized_model,
+          pp.part_number,
+          pp.price::text as price,
+          pp.source as price_source,
+          pp.price_url as price_url,
+          pp.price_url as source_url,
+          pp.availability,
+          pp.captured_at,
+          'part_pricing' as source_provider
+        from part_pricing pp
+        join appliance_models am on pp.model_id = am.id
+        where am.normalized_model = ${normalizedModel}
+        order by pp.captured_at desc
+        limit 500
+      `;
+
+  const canonicalDiagramRows = normalizedModel
+    ? await sql`
+        select msu.url
+        from model_source_urls msu
+        join appliance_models am on msu.model_id = am.id
+        where am.normalized_model = ${normalizedModel}
+          and msu.source = 'encompass'
+          and msu.url_type in ('partstore_assembly', 'exploded_view_assembly')
+        order by
+          case when msu.url_type = 'partstore_assembly' then 0 else 1 end,
+          msu.created_at desc
+        limit 1
+      `
+    : [];
+
+  const rawRows = effectiveNormalizedPart
+    ? await sql`
+        select
+          canonical_model as normalized_model,
+          null::text as raw_model,
+          raw_part_number as part_number,
+          substitute_part_number as current_service_part_number,
+          raw_part_name as description,
+          section_name as section,
+          diagram_ref,
+          source as source_provider,
+          source,
+          coalesce(raw_payload ->> 'parsed_price', raw_payload ->> 'price', raw_payload ->> 'part_price') as price,
+          coalesce(raw_payload ->> 'price_source', raw_payload ->> 'priceSource', raw_payload ->> 'retailPriceSource') as price_source,
+          coalesce(raw_payload ->> 'price_url', raw_payload ->> 'priceUrl', raw_payload ->> 'retailPricingUrl') as price_url,
+          coalesce(raw_payload ->> 'diagram_url', raw_payload ->> 'diagramUrl', raw_payload ->> 'providerAssemblyUrl') as diagram_url,
+          coalesce(raw_payload ->> 'source_url', raw_payload ->> 'sourceUrl') as source_url,
+          raw_payload ->> 'source_image_files' as source_file
+        from model_parts_raw
+        where upper(regexp_replace(coalesce(raw_part_number, substitute_part_number, ''), '[^A-Z0-9]', '', 'g')) = ${effectiveNormalizedPart}
+          and (${normalizedModel} = '' or canonical_model = ${normalizedModel})
+        order by created_at desc
+        limit 1000
+      `
+    : await sql`
+        select
+          canonical_model as normalized_model,
+          null::text as raw_model,
+          raw_part_number as part_number,
+          substitute_part_number as current_service_part_number,
+          raw_part_name as description,
+          section_name as section,
+          diagram_ref,
+          source as source_provider,
+          source,
+          coalesce(raw_payload ->> 'parsed_price', raw_payload ->> 'price', raw_payload ->> 'part_price') as price,
+          coalesce(raw_payload ->> 'price_source', raw_payload ->> 'priceSource', raw_payload ->> 'retailPriceSource') as price_source,
+          coalesce(raw_payload ->> 'price_url', raw_payload ->> 'priceUrl', raw_payload ->> 'retailPricingUrl') as price_url,
+          coalesce(raw_payload ->> 'diagram_url', raw_payload ->> 'diagramUrl', raw_payload ->> 'providerAssemblyUrl') as diagram_url,
+          coalesce(raw_payload ->> 'source_url', raw_payload ->> 'sourceUrl') as source_url,
+          raw_payload ->> 'source_image_files' as source_file
+        from model_parts_raw
+        where canonical_model = ${normalizedModel}
+        order by created_at desc
+        limit 1000
+      `;
+
   const providerResultRows = Array.isArray(providerRows) ? (providerRows as any[]) : [];
   const cachedResultRows = Array.isArray(cachedRows) ? (cachedRows as any[]) : [];
-  const cachePriceByPart = new Map<string, any>();
+  const partPricingResultRows = Array.isArray(partPricingRows) ? (partPricingRows as any[]) : [];
+  const rawResultRows = Array.isArray(rawRows) ? (rawRows as any[]) : [];
+  const canonicalDiagramUrl = firstValue(...(Array.isArray(canonicalDiagramRows) ? (canonicalDiagramRows as any[]).map((row) => row.url) : []));
+  const verifiedPriceByPart = new Map<string, any>();
+  for (const row of partPricingResultRows) {
+    for (const key of partKeys(row)) {
+      if (!verifiedPriceByPart.has(key)) {
+        verifiedPriceByPart.set(key, row);
+      }
+    }
+  }
   for (const row of cachedResultRows) {
     for (const key of partKeys(row)) {
-      if (!cachePriceByPart.has(key)) {
-        cachePriceByPart.set(key, row);
+      if (!verifiedPriceByPart.has(key)) {
+        verifiedPriceByPart.set(key, row);
       }
     }
   }
 
-  const rows = [...providerResultRows, ...cachedResultRows].map((row) => {
-    const pricedMatch = partKeys(row).map((key) => cachePriceByPart.get(key)).find(Boolean);
-    if (!pricedMatch || row.price) return row;
+  const rows = [...providerResultRows, ...cachedResultRows, ...rawResultRows].map((row) => {
+    const rowDiagramUrl = firstValue(row.diagram_url, row.provider_assembly_url, row.source_url);
+    const rowEncompassDiagramUrl = String(rowDiagramUrl || "").toLowerCase().includes("encompass")
+      ? rowDiagramUrl
+      : undefined;
+    const pricedMatch = partKeys(row).map((key) => verifiedPriceByPart.get(key)).find(Boolean);
+    if (!pricedMatch) {
+      return {
+        ...row,
+        diagram_url: rowEncompassDiagramUrl || canonicalDiagramUrl || rowDiagramUrl,
+      };
+    }
+    const pricedSourceUrl = firstValue(pricedMatch.price_url, pricedMatch.source_url);
+    const verifiedDiagramUrl = String(pricedMatch.price_source || "").toLowerCase().includes("encompass")
+      ? pricedSourceUrl
+      : undefined;
     return {
-      ...pricedMatch,
       ...row,
       price: pricedMatch.price,
       price_source: pricedMatch.price_source,
+      price_url: pricedSourceUrl,
       source_url: row.source_url || pricedMatch.source_url,
+      diagram_url: verifiedDiagramUrl || rowEncompassDiagramUrl || canonicalDiagramUrl || rowDiagramUrl || pricedSourceUrl,
     };
   });
   const seen = new Set<string>();
@@ -198,6 +354,8 @@ export async function GET(request: Request) {
     sourceCounts: {
       providerSeedRows: providerResultRows.length,
       modelPartsCacheRows: cachedResultRows.length,
+      partPricingRows: partPricingResultRows.length,
+      rawEvidenceRows: rawResultRows.length,
     },
     retrievalState: parts.length ? "db_evidence_found" : "not_found",
     parts,

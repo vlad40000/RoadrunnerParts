@@ -1,5 +1,14 @@
-// import "server-only";
-import { normalizeModel, cleanText } from "./utils";
+// Keep this module dependency-light: it is imported by API routes and UI helpers.
+function cleanText(value: string | null | undefined) {
+  return (value ?? "")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeModel(value: string | null | undefined) {
+  return cleanText(value).toUpperCase().replace(/\s+/g, "");
+}
 
 /**
  * Verified patterns from user research:
@@ -108,6 +117,53 @@ export function parseEncompassExplodedViewUrl(url: string) {
     model: (rawModel || assemblyIdOrModel || "").toUpperCase() || null,
     originalUrl: url
   };
+}
+
+export type EncompassCanonicalUrlSet = {
+  brandAbv: string;
+  modelOptionValue: string | null;
+  model: string;
+  explodedViewAssemblyUrl: string;
+  partstoreAssemblyUrl: string;
+  explodedViewSearchUrl?: string | null;
+};
+
+export function buildEncompassCanonicalUrlSet(input: {
+  brandAbv: string;
+  model: string;
+  modelOptionValue?: string | null;
+  explodedViewSearchUrl?: string | null;
+}): EncompassCanonicalUrlSet {
+  const brandAbv = cleanText(input.brandAbv).toUpperCase();
+  const model = normalizeModel(input.model);
+  const modelOptionValue = input.modelOptionValue ? cleanText(input.modelOptionValue) : null;
+  const assemblyPath = modelOptionValue
+    ? `${brandAbv}/${modelOptionValue}/${model}`
+    : `${brandAbv}/${model}`;
+
+  return {
+    brandAbv,
+    modelOptionValue,
+    model,
+    explodedViewAssemblyUrl: `https://encompass.com/Exploded-View-Assembly/${assemblyPath}`,
+    partstoreAssemblyUrl: `https://partstore.encompass.com/Exploded-View-Assembly/${assemblyPath}`,
+    explodedViewSearchUrl: input.explodedViewSearchUrl || null,
+  };
+}
+
+export function buildEncompassCanonicalUrlSetFromAssemblyUrl(input: {
+  url: string;
+  explodedViewSearchUrl?: string | null;
+}) {
+  const parsed = parseEncompassExplodedViewUrl(input.url);
+  if (!parsed?.mfgCode || !parsed.model) return null;
+
+  return buildEncompassCanonicalUrlSet({
+    brandAbv: parsed.mfgCode,
+    modelOptionValue: parsed.assemblyId,
+    model: parsed.model,
+    explodedViewSearchUrl: input.explodedViewSearchUrl,
+  });
 }
 
 export function buildGeOfficialAssemblyUrl(model: string) {

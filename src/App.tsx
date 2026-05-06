@@ -69,6 +69,14 @@ const hasApprovedPrice = (part: Part) => {
   return isApproved;
 };
 
+const getPartUrl = (part: Part, ...keys: Array<keyof Part>) => {
+  for (const key of keys) {
+    const value = String(part[key] || '').trim();
+    if (/^https?:\/\//i.test(value)) return value;
+  }
+  return '';
+};
+
 /**
  * Image processing helpers for the OCR rescue pipeline.
  */
@@ -862,16 +870,24 @@ Sort the final JSON alphabetically by part_name before outputting.`;
   };
 
   const handleExportCSV = () => {
-    const dataSource = aiParts.length > 0 ? aiParts.filter(hasApprovedPrice) : partsData;
-    const headers = ['Ref ID', 'Part Number', 'Description', 'Price (USD)', 'Price Source', 'Assembly Section'];
-    const rows = dataSource.map(part => [
-      part.id,
-      part.partNumber,
-      `"${part.description.replace(/"/g, '""')}"`,
-      hasApprovedPrice(part) ? part.price : '',
-      `"${normalizePriceSource(part.priceSource)}"`,
-      `"${part.section.replace(/"/g, '""')}"`
-    ]);
+    const dataSource = aiParts.length > 0
+      ? (showUnpricedDbRows ? aiParts : aiParts.filter(hasApprovedPrice))
+      : partsData;
+    const headers = ['Ref ID', 'Part Number', 'Description', 'Price (USD)', 'Price Source', 'Assembly Section', 'Diagram URL', 'Price URL'];
+    const rows = dataSource.map(part => {
+      const diagramUrl = getPartUrl(part, 'diagramUrl', 'diagram_url', 'sourceUrl', 'source_url');
+      const priceUrl = getPartUrl(part, 'priceUrl', 'price_url');
+      return [
+        part.id,
+        part.partNumber,
+        `"${part.description.replace(/"/g, '""')}"`,
+        hasApprovedPrice(part) ? part.price : '',
+        `"${normalizePriceSource(part.priceSource || part.price_source)}"`,
+        `"${part.section.replace(/"/g, '""')}"`,
+        `"${diagramUrl.replace(/"/g, '""')}"`,
+        `"${priceUrl.replace(/"/g, '""')}"`
+      ];
+    });
 
     const csvContent = [
       headers.join(','),
@@ -1611,6 +1627,8 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                     {filteredParts.map((part) => {
                       const activeEbayUrl = ebaySearchUrl(part.partNumber);
                       const soldCompsUrl = ebaySoldSearchUrl(part.partNumber);
+                      const diagramUrl = getPartUrl(part, 'diagramUrl', 'diagram_url', 'sourceUrl', 'source_url');
+                      const priceUrl = getPartUrl(part, 'priceUrl', 'price_url');
 
                       return (
                         <tr
@@ -1634,7 +1652,11 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                                   {normalizePriceSource(part.priceSource)}
                                 </span>
                               </>
-                            ) : null}
+                            ) : (
+                              <span className="text-[10px] font-bold uppercase tracking-tight text-pro-slate-400">
+                                No verified price
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-4 py-3">
@@ -1644,6 +1666,28 @@ Sort the final JSON alphabetically by part_name before outputting.`;
                         </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-2">
+                              {diagramUrl && (
+                                <a
+                                  href={diagramUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="inline-flex h-7 items-center whitespace-nowrap rounded border border-emerald-600 bg-white px-3 text-[11px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-50"
+                                >
+                                  Diagram
+                                </a>
+                              )}
+                              {priceUrl && (
+                                <a
+                                  href={priceUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="inline-flex h-7 items-center whitespace-nowrap rounded border border-pro-slate-300 bg-white px-3 text-[11px] font-semibold text-pro-slate-700 transition-colors hover:bg-pro-slate-50"
+                                >
+                                  Price
+                                </a>
+                              )}
                               <a
                                 href={activeEbayUrl}
                                 target="_blank"
