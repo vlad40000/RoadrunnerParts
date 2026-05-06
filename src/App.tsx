@@ -99,13 +99,10 @@ const getPartUrl = (part: Part, ...keys: Array<keyof Part>) => {
 
 const getDiagramReferenceId = (part: Part) => {
   const value = String(part.diagramRef || part.diagram_ref || '').trim();
-  return value || String(part.id);
+  return value || 'N/A';
 };
 
-const getDiagramReferenceLabel = (part: Part) =>
-  String(part.diagramRef || part.diagram_ref || '').trim()
-    ? `DIAG ID ${getDiagramReferenceId(part)}`
-    : `ID ${part.id}`;
+const getDiagramReferenceLabel = (part: Part) => `DIAG ID ${getDiagramReferenceId(part)}`;
 
 const normalizeSectionKey = (value?: string | null) =>
   String(value || '')

@@ -21,6 +21,15 @@ function toNumber(value: unknown) {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function sanitizeEbayUrl(value: unknown) {
+  const url = String(value || "").trim();
+  if (!url) return undefined;
+  if (/^https?:\/\/(?:www\.)?ebay\.com\/itm\/test(?:[-/?#]|$)/i.test(url)) {
+    return undefined;
+  }
+  return url;
+}
+
 function toUiPart(row: any, index: number) {
   const partNumber = String(
     firstValue(
@@ -41,7 +50,7 @@ function toUiPart(row: any, index: number) {
   const priceUrl = firstValue(row.price_url, row.priceUrl, row.retailPricingUrl, row.retail_price_url);
   const ebayPrice = toNumber(firstValue(row.ebay_price, row.ebayPrice));
   const ebayPriceSource = firstValue(row.ebay_price_source, row.ebayPriceSource, row.ebay_source, row.ebaySource);
-  const ebayPriceUrl = firstValue(row.ebay_price_url, row.ebayPriceUrl, row.ebay_url, row.ebayUrl);
+  const ebayPriceUrl = sanitizeEbayUrl(firstValue(row.ebay_price_url, row.ebayPriceUrl, row.ebay_url, row.ebayUrl));
   const sourceUrl = firstValue(
     row.diagram_url,
     row.diagramUrl,

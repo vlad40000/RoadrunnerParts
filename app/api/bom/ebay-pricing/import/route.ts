@@ -83,6 +83,12 @@ function toNullableUrl(value: string): string | null {
   return null;
 }
 
+function isPlaceholderEbayUrl(value: string | null) {
+  const url = String(value || "").trim();
+  if (!url) return false;
+  return /^https?:\/\/(?:www\.)?ebay\.com\/itm\/test(?:[-/?#]|$)/i.test(url);
+}
+
 async function resolveModelId(
   modelIdCache: Map<string, string>,
   normalizedModel: string,
@@ -184,6 +190,9 @@ export async function POST(request: NextRequest) {
       if (rawPriceUrl.trim() && !priceUrl) {
         return NextResponse.json({ ok: false, error: "Listing URL must start with http:// or https://." }, { status: 400 });
       }
+      if (isPlaceholderEbayUrl(priceUrl)) {
+        return NextResponse.json({ ok: false, error: "Use a real eBay listing URL." }, { status: 400 });
+      }
 
       await upsertEbayPricingRows([
         {
@@ -235,7 +244,8 @@ export async function POST(request: NextRequest) {
       const rowModel = normalizeModel(rowModelRaw) || requestedModel;
       const partNumber = normalizePartNumber(getField(row, "partNumber"));
       const parsedPrice = parsePrice(getField(row, "price"));
-      const priceUrl = toNullableUrl(getField(row, "priceUrl"));
+      const rawPriceUrl = getField(row, "priceUrl");
+      const priceUrl = toNullableUrl(rawPriceUrl);
 
       if (!rowModel) {
         warnings.push(`Row ${index + 2}: missing model.`);
@@ -255,7 +265,7 @@ export async function POST(request: NextRequest) {
         rawModel: rowModelRaw || rowModel,
         partNumber,
         price: parsedPrice,
-        priceUrl,
+        priceUrl: isPlaceholderEbayUrl(priceUrl) ? null : priceUrl,
       });
     }
 
