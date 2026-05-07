@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadrunnerParts eBay Listing Mockups (Used)</title>
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --dark: #111827;
+            --light: #f9fafb;
+            --border: #e5e7eb;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background: #f3f4f6;
+        }
+        #sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--dark);
+            color: white;
+        }
+        #search-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: white;
+            box-sizing: border-box;
+        }
+        #listing-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .listing-item {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .listing-item:hover {
+            background: var(--light);
+            border-color: var(--border);
+        }
+        .listing-item.active {
+            background: #eff6ff;
+            border-color: var(--primary);
+        }
+        .listing-item-pn {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: var(--primary);
+        }
+        .listing-item-title {
+            font-size: 0.85em;
+            color: #4b5563;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #preview-pane {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* eBay Template Styles */
+        .ebay-container {
+            max-width: 800px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        .ebay-header {
+            background-color: #111827;
+            padding: 24px;
+            text-align: center;
+            border-bottom: 4px solid #3B82F6;
+        }
+        .namemark {
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.025em;
+        }
+        .namemark-accent {
+            color: #3B82F6;
+        }
+        .ebay-content {
+            padding: 32px;
+        }
+        .ebay-title {
+            font-size: 24px;
+            color: #111827;
+            margin-top: 0;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #f3f4f6;
+            padding-bottom: 8px;
+        }
+        .ebay-specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 32px;
+        }
+        .ebay-specs-table th, .ebay-specs-table td {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            text-align: left;
+        }
+        .ebay-specs-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            width: 30%;
+        }
+        .ebay-section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #1f2937;
+        }
+        .ebay-policy-box {
+            background-color: #f3f4f6;
+            border-left: 4px solid #3B82F6;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 0 4px 4px 0;
+        }
+        .ebay-footer {
+            background-color: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+        .ebay-description-text {
+            color: #374151;
+            line-height: 1.7;
+        }
+        .hidden { display: none; }
+        .condition-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 0.8em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div id="sidebar-header">
+            <div style="font-weight: 800; font-size: 1.2em;">eBay Listings Mockup</div>
+            <div style="font-size: 0.8em; opacity: 0.8;">Condition: Used • Verified Inventory</div>
+            <input type="text" id="search-input" placeholder="Search by PN or Title...">
+        </div>
+        <div id="listing-list">
+    
+            <div class="listing-item" data-index="0" onclick="showListing(0)">
+                <div class="listing-item-pn">WE21X20562</div>
+                <div class="listing-item-title">GE Genuine OEM WE21X20562 Drum Asm 6.0 - Dryer Drum Assembly</div>
+            </div>
+        
+            <div class="listing-item" data-index="1" onclick="showListing(1)">
+                <div class="listing-item-pn">WE21X20407</div>
+                <div class="listing-item-title">GE Genuine OEM WE21X20407 Drum Asm 6.0 Cu.ft - Dryer Drum Assembly</div>
+            </div>
+        
+            <div class="listing-item" data-index="2" onclick="showListing(2)">
+                <div class="listing-item-pn">WE19M1713</div>
+                <div class="listing-item-title">GE Genuine OEM WE19M1713 Backsplash Graphics Asm - Dryer Control Graphics Panel</div>
+            </div>
+        
+            <div class="listing-item" data-index="3" onclick="showListing(3)">
+                <div class="listing-item-pn">WE11M10001</div>
+                <div class="listing-item-title">GE Genuine OEM WE11M10001 Dryer Heating Element - Dryer Heating Element</div>
+            </div>
+        
+            <div class="listing-item" data-index="4" onclick="showListing(4)">
+                <div class="listing-item-pn">WE11X20397</div>
+                <div class="listing-item-title">GE OEM WE11X20397 G.e. Dryer Heating Element</div>
+            </div>
+        
+            <div class="listing-item" data-index="5" onclick="showListing(5)">
+                <div class="listing-item-pn">WE17X22217</div>
+                <div class="listing-item-title">GE Genuine OEM WE17X22217 Dryer Drive Motor With Pulley - Dryer Drive Motor</div>
+            </div>
+        
+            <div class="listing-item" data-index="6" onclick="showListing(6)">
+                <div class="listing-item-pn">WE17M66</div>
+                <div class="listing-item-title">GE Genuine OEM WE17M66 Motor - Dryer Drive Motor</div>
+            </div>
+        
+            <div class="listing-item" data-index="7" onclick="showListing(7)">
+                <div class="listing-item-pn">WE20X20596</div>
+                <div class="listing-item-title">GE Genuine OEM WE20X20596 Panel - Dryer Cabinet Panel</div>
+            </div>
+        
+            <div class="listing-item" data-index="8" onclick="showListing(8)">
+                <div class="listing-item-pn">WE4M160</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M160 Dryer Safety Thermostat - Dryer Safety Thermostat</div>
+            </div>
+        
+            <div class="listing-item" data-index="9" onclick="showListing(9)">
+                <div class="listing-item-pn">WE4M532</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M532 Dryer Timer - Dryer Timer</div>
+            </div>
+        
+            <div class="listing-item" data-index="10" onclick="showListing(10)">
+                <div class="listing-item-pn">WE49X22295</div>
+                <div class="listing-item-title">GE Genuine OEM WE49X22295 Dryer Door Inner Panel - Dryer Door & Panel Kit</div>
+            </div>
+        
+            <div class="listing-item" data-index="11" onclick="showListing(11)">
+                <div class="listing-item-pn">WE10X20418</div>
+                <div class="listing-item-title">GE Genuine OEM WE10X20418 Inner Door Asm ite - Dryer Inner Door Liner</div>
+            </div>
+        
+            <div class="listing-item" data-index="12" onclick="showListing(12)">
+                <div class="listing-item-pn">WE20X20409</div>
+                <div class="listing-item-title">GE Genuine OEM WE20X20409 Front Panel ite - Dryer Front Cabinet Panel</div>
+            </div>
+        
+            <div class="listing-item" data-index="13" onclick="showListing(13)">
+                <div class="listing-item-pn">WE20X20412</div>
+                <div class="listing-item-title">GE Genuine OEM WE20X20412 Bottom Cover - Dryer Bottom Cover</div>
+            </div>
+        
+            <div class="listing-item" data-index="14" onclick="showListing(14)">
+                <div class="listing-item-pn">WE03X20434</div>
+                <div class="listing-item-title">GE Genuine OEM WE03X20434 Dryer Idler Pulley Arm - Dryer Idler Arm</div>
+            </div>
+        
+            <div class="listing-item" data-index="15" onclick="showListing(15)">
+                <div class="listing-item-pn">WE20X20417</div>
+                <div class="listing-item-title">GE Genuine OEM WE20X20417 Dryer Top Panel - Dryer Top Cabinet Panel</div>
+            </div>
+        
+            <div class="listing-item" data-index="16" onclick="showListing(16)">
+                <div class="listing-item-pn">WE20X20396</div>
+                <div class="listing-item-title">GE Genuine OEM WE20X20396 Rear Panel - Dryer Rear Panel</div>
+            </div>
+        
+            <div class="listing-item" data-index="17" onclick="showListing(17)">
+                <div class="listing-item-pn">WE4M137</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M137 Dryer High-limit Thermostat - Dryer Thermostat</div>
+            </div>
+        
+            <div class="listing-item" data-index="18" onclick="showListing(18)">
+                <div class="listing-item-pn">WE20X20391</div>
+                <div class="listing-item-title">GE Genuine OEM WE20X20391 Chassis Base - Dryer Chassis Base</div>
+            </div>
+        
+            <div class="listing-item" data-index="19" onclick="showListing(19)">
+                <div class="listing-item-pn">WE49X22294</div>
+                <div class="listing-item-title">GE Genuine OEM WE49X22294 End Cap Rh W - Dryer Console End Cap</div>
+            </div>
+        
+            <div class="listing-item" data-index="20" onclick="showListing(20)">
+                <div class="listing-item-pn">WE14X20392</div>
+                <div class="listing-item-title">GE Genuine OEM WE14X20392 Dryer Blower Housing - Dryer Blower Housing</div>
+            </div>
+        
+            <div class="listing-item" data-index="21" onclick="showListing(21)">
+                <div class="listing-item-pn">WE19M1481</div>
+                <div class="listing-item-title">GE Genuine OEM WE19M1481 Dryer Control Panel Cover, Rear - Dryer Console Cover</div>
+            </div>
+        
+            <div class="listing-item" data-index="22" onclick="showListing(22)">
+                <div class="listing-item-pn">WE10X20468</div>
+                <div class="listing-item-title">GE Genuine OEM WE10X20468 Dryer Door Outer Panel - Dryer Outer Door Panel</div>
+            </div>
+        
+            <div class="listing-item" data-index="23" onclick="showListing(23)">
+                <div class="listing-item-pn">WE4M181</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat</div>
+            </div>
+        
+            <div class="listing-item" data-index="24" onclick="showListing(24)">
+                <div class="listing-item-pn">WE19M1478</div>
+                <div class="listing-item-title">GE Genuine OEM WE19M1478 End Cap Lh - Dryer Console End Cap</div>
+            </div>
+        
+            <div class="listing-item" data-index="25" onclick="showListing(25)">
+                <div class="listing-item-pn">WE16X20393</div>
+                <div class="listing-item-title">GE Genuine OEM WE16X20393 Laundry Center Dryer Blower eel - Dryer Blower Wheel</div>
+            </div>
+        
+            <div class="listing-item" data-index="26" onclick="showListing(26)">
+                <div class="listing-item-pn">WE18X25100</div>
+                <div class="listing-item-title">GE Genuine OEM WE18X25100 Dryer Lint Screen - Dryer Lint Filter</div>
+            </div>
+        
+            <div class="listing-item" data-index="27" onclick="showListing(27)">
+                <div class="listing-item-pn">WE18M28</div>
+                <div class="listing-item-title">GE Genuine OEM WE18M28 Filter & Mesh Asm. - Dryer Lint Filter Assembly</div>
+            </div>
+        
+            <div class="listing-item" data-index="28" onclick="showListing(28)">
+                <div class="listing-item-pn">WE14X20425</div>
+                <div class="listing-item-title">GE Genuine OEM WE14X20425 Trap Duct - Dryer Lint Trap Duct</div>
+            </div>
+        
+            <div class="listing-item" data-index="29" onclick="showListing(29)">
+                <div class="listing-item-pn">WE13M39</div>
+                <div class="listing-item-title">GE Genuine OEM WE13M39 Motor Support - Dryer Motor Support Bracket</div>
+            </div>
+        
+            <div class="listing-item" data-index="30" onclick="showListing(30)">
+                <div class="listing-item-pn">WE20X20406</div>
+                <div class="listing-item-title">GE Genuine OEM WE20X20406 Dryer Side Panel - Dryer Side Cabinet Panel</div>
+            </div>
+        
+            <div class="listing-item" data-index="31" onclick="showListing(31)">
+                <div class="listing-item-pn">WE1M1002</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1002 Fuse Cemr 30 Amp 120V - Dryer Power Fuse</div>
+            </div>
+        
+            <div class="listing-item" data-index="32" onclick="showListing(32)">
+                <div class="listing-item-pn">WE1X921</div>
+                <div class="listing-item-title">GE Genuine OEM WE1X921 Motor Strap - Dryer Motor Mounting Strap</div>
+            </div>
+        
+            <div class="listing-item" data-index="33" onclick="showListing(33)">
+                <div class="listing-item-pn">WE1M300</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M300 Dryer Drum Bearing Bracket - Dryer Bearing Retainer</div>
+            </div>
+        
+            <div class="listing-item" data-index="34" onclick="showListing(34)">
+                <div class="listing-item-pn">WE03X29897</div>
+                <div class="listing-item-title">GE Genuine OEM WE03X29897 Dryer Drum Belt - Dryer Drive Belt</div>
+            </div>
+        
+            <div class="listing-item" data-index="35" onclick="showListing(35)">
+                <div class="listing-item-pn">WE4M404</div>
+                <div class="listing-item-title">GE OEM WE4M404 Dryer Temperature Switch</div>
+            </div>
+        
+            <div class="listing-item" data-index="36" onclick="showListing(36)">
+                <div class="listing-item-pn">WE12X21574</div>
+                <div class="listing-item-title">GE Genuine OEM WE12X21574 Belt Drive - Dryer Drive Belt</div>
+            </div>
+        
+            <div class="listing-item" data-index="37" onclick="showListing(37)">
+                <div class="listing-item-pn">WE1M1003</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1003 Dryer Fuse Holder - Dryer Fuse Holder</div>
+            </div>
+        
+            <div class="listing-item" data-index="38" onclick="showListing(38)">
+                <div class="listing-item-pn">WE4M255</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M255 Kenmore Dryer Timer Resistor - Dryer Timer Resistor</div>
+            </div>
+        
+            <div class="listing-item" data-index="39" onclick="showListing(39)">
+                <div class="listing-item-pn">WE13X30697</div>
+                <div class="listing-item-title">GE Genuine OEM WE13X30697 Dryer Motor Clamp - Dryer Motor Clamp</div>
+            </div>
+        
+            <div class="listing-item" data-index="40" onclick="showListing(40)">
+                <div class="listing-item-pn">WE11X29438</div>
+                <div class="listing-item-title">GE Genuine OEM WE11X29438 Dryer Drum Rear Cover - Dryer Rear Drum Panel/Diffuser</div>
+            </div>
+        
+            <div class="listing-item" data-index="41" onclick="showListing(41)">
+                <div class="listing-item-pn">WE14X20421</div>
+                <div class="listing-item-title">GE Genuine OEM WE14X20421 Dryer Exhaust Duct - Dryer Internal Exhaust Duct</div>
+            </div>
+        
+            <div class="listing-item" data-index="42" onclick="showListing(42)">
+                <div class="listing-item-pn">WE1M1007</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1007 Cover Fuse Terminal - Dryer Fuse Cover</div>
+            </div>
+        
+            <div class="listing-item" data-index="43" onclick="showListing(43)">
+                <div class="listing-item-pn">WE3M56</div>
+                <div class="listing-item-title">GE Genuine OEM WE3M56 Bearing - Dryer Drum Top Bearing</div>
+            </div>
+        
+            <div class="listing-item" data-index="44" onclick="showListing(44)">
+                <div class="listing-item-pn">WE03X20228</div>
+                <div class="listing-item-title">GE Genuine OEM WE03X20228 Top Bearing - Dryer Drum Bearing</div>
+            </div>
+        
+            <div class="listing-item" data-index="45" onclick="showListing(45)">
+                <div class="listing-item-pn">WE4M415</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M415 Dryer Door Switch - Dryer Door Interlock Switch</div>
+            </div>
+        
+            <div class="listing-item" data-index="46" onclick="showListing(46)">
+                <div class="listing-item-pn">WE1M462</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M462 Kenmore Dryer Rear Bearing - Dryer Drum Bearing Sleeve</div>
+            </div>
+        
+            <div class="listing-item" data-index="47" onclick="showListing(47)">
+                <div class="listing-item-pn">WE11X20400</div>
+                <div class="listing-item-title">GE Genuine OEM WE11X20400 Heater Housing - Dryer Heating Chamber Housing</div>
+            </div>
+        
+            <div class="listing-item" data-index="48" onclick="showListing(48)">
+                <div class="listing-item-pn">WE01X20419</div>
+                <div class="listing-item-title">GE Genuine OEM WE01X20419 Dryer Door Handle - Dryer Door Handle</div>
+            </div>
+        
+            <div class="listing-item" data-index="49" onclick="showListing(49)">
+                <div class="listing-item-pn">WE4M416</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M416 Dryer Push-to-start Switch - Dryer Start Switch</div>
+            </div>
+        
+            <div class="listing-item" data-index="50" onclick="showListing(50)">
+                <div class="listing-item-pn">WE4M127</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M127 Dryer Operating Thermostat - Dryer Cycling Thermostat</div>
+            </div>
+        
+            <div class="listing-item" data-index="51" onclick="showListing(51)">
+                <div class="listing-item-pn">WE4M525</div>
+                <div class="listing-item-title">GE Genuine OEM WE4M525 4 Term Blk & Grnd Strap - Dryer Terminal Block</div>
+            </div>
+        
+            <div class="listing-item" data-index="52" onclick="showListing(52)">
+                <div class="listing-item-pn">WD21X10261</div>
+                <div class="listing-item-title">GE Genuine OEM WD21X10261 Interlock Switch - Dryer Interlock Switch</div>
+            </div>
+        
+            <div class="listing-item" data-index="53" onclick="showListing(53)">
+                <div class="listing-item-pn">WD21X557</div>
+                <div class="listing-item-title">GE Genuine OEM WD21X557 Interlock Sw - Dryer Interlock Switch</div>
+            </div>
+        
+            <div class="listing-item" data-index="54" onclick="showListing(54)">
+                <div class="listing-item-pn">WE1M1030</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1030 Shield Bottom Cover - Dryer Structural Shield</div>
+            </div>
+        
+            <div class="listing-item" data-index="55" onclick="showListing(55)">
+                <div class="listing-item-pn">WH2M270</div>
+                <div class="listing-item-title">GE Genuine OEM WH2M270 We2x328 - Dryer Hardware Set</div>
+            </div>
+        
+            <div class="listing-item" data-index="56" onclick="showListing(56)">
+                <div class="listing-item-pn">WE1M650</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M650 Dryer Motor Wire Harness Connector - Dryer Wire Connector</div>
+            </div>
+        
+            <div class="listing-item" data-index="57" onclick="showListing(57)">
+                <div class="listing-item-pn">WE13X20394</div>
+                <div class="listing-item-title">GE Genuine OEM WE13X20394 Motor Plate - Dryer Motor Support Plate</div>
+            </div>
+        
+            <div class="listing-item" data-index="58" onclick="showListing(58)">
+                <div class="listing-item-pn">WE1M652</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M652 Dryer Control Knob - Dryer Control Knob</div>
+            </div>
+        
+            <div class="listing-item" data-index="59" onclick="showListing(59)">
+                <div class="listing-item-pn">WE09X20441</div>
+                <div class="listing-item-title">GE Genuine OEM WE09X20441 Felt Trap Duct - Dryer Duct Seal</div>
+            </div>
+        
+            <div class="listing-item" data-index="60" onclick="showListing(60)">
+                <div class="listing-item-pn">WE1M1015</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1015 Ground Strap Asm - Dryer Ground Strap</div>
+            </div>
+        
+            <div class="listing-item" data-index="61" onclick="showListing(61)">
+                <div class="listing-item-pn">WE03X37319</div>
+                <div class="listing-item-title">GE Genuine OEM WE03X37319 Dryer Drum Glide Bearing - Dryer Drum Slides</div>
+            </div>
+        
+            <div class="listing-item" data-index="62" onclick="showListing(62)">
+                <div class="listing-item-pn">WE3M51</div>
+                <div class="listing-item-title">GE Genuine OEM WE3M51 Bearing Slide - Dryer Drum Slide</div>
+            </div>
+        
+            <div class="listing-item" data-index="63" onclick="showListing(63)">
+                <div class="listing-item-pn">WE2M96</div>
+                <div class="listing-item-title">GE Genuine OEM WE2M96 Cap Nut - Dryer Cap Nut</div>
+            </div>
+        
+            <div class="listing-item" data-index="64" onclick="showListing(64)">
+                <div class="listing-item-pn">WE1M659</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M659 Push/ Start Button Grey - Dryer Start Button</div>
+            </div>
+        
+            <div class="listing-item" data-index="65" onclick="showListing(65)">
+                <div class="listing-item-pn">WE1M1101</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1101 Levelling Leg - Dryer Leveling Foot</div>
+            </div>
+        
+            <div class="listing-item" data-index="66" onclick="showListing(66)">
+                <div class="listing-item-pn">WE14X20426</div>
+                <div class="listing-item-title">GE Genuine OEM WE14X20426 Baffle - Dryer Drum Baffle</div>
+            </div>
+        
+            <div class="listing-item" data-index="67" onclick="showListing(67)">
+                <div class="listing-item-pn">WE1M461</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M461 Kenmore Dryer Rear Bearing O-ring - Dryer Bearing O-Ring</div>
+            </div>
+        
+            <div class="listing-item" data-index="68" onclick="showListing(68)">
+                <div class="listing-item-pn">WE1M780</div>
+                <div class="listing-item-title">GE OEM WE1M780 Dryer Heating Element Bracket</div>
+            </div>
+        
+            <div class="listing-item" data-index="69" onclick="showListing(69)">
+                <div class="listing-item-pn">WE1M825</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M825 a , Gasket (Seal) 39 Inch - Dryer Foam Duct Gasket</div>
+            </div>
+        
+            <div class="listing-item" data-index="70" onclick="showListing(70)">
+                <div class="listing-item-pn">WE01X20423</div>
+                <div class="listing-item-title">GE OEM WE01X20423 Dryer Power Cord Access Bracket</div>
+            </div>
+        
+            <div class="listing-item" data-index="71" onclick="showListing(71)">
+                <div class="listing-item-pn">WE03X37320</div>
+                <div class="listing-item-title">GE OEM WE03X37320 Dryer Drum Glide Bearing, Upper</div>
+            </div>
+        
+            <div class="listing-item" data-index="72" onclick="showListing(72)">
+                <div class="listing-item-pn">WE1M934</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M934 Door Reversal Plug - Dryer Plug Button</div>
+            </div>
+        
+            <div class="listing-item" data-index="73" onclick="showListing(73)">
+                <div class="listing-item-pn">WE3M52</div>
+                <div class="listing-item-title">GE Genuine OEM WE3M52 Bearing Slide - Dryer Drum Glide</div>
+            </div>
+        
+            <div class="listing-item" data-index="74" onclick="showListing(74)">
+                <div class="listing-item-pn">WE03X31620</div>
+                <div class="listing-item-title">GE Genuine OEM WE03X31620 Dryer Idler Pulley - Dryer Idler Pulley Wheel</div>
+            </div>
+        
+            <div class="listing-item" data-index="75" onclick="showListing(75)">
+                <div class="listing-item-pn">WE09X27636</div>
+                <div class="listing-item-title">GE Genuine OEM WE09X27636 Dryer Blower Gasket - Dryer Blower Housing Gasket</div>
+            </div>
+        
+            <div class="listing-item" data-index="76" onclick="showListing(76)">
+                <div class="listing-item-pn">WE12X20395</div>
+                <div class="listing-item-title">GE Genuine OEM WE12X20395 Idler Pulley - Dryer Idler Pulley Wheel</div>
+            </div>
+        
+            <div class="listing-item" data-index="77" onclick="showListing(77)">
+                <div class="listing-item-pn">WE1M966</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M966 Blower Gasket (Exhaust) - Dryer Blower Gasket</div>
+            </div>
+        
+            <div class="listing-item" data-index="78" onclick="showListing(78)">
+                <div class="listing-item-pn">WH01X10313</div>
+                <div class="listing-item-title">GE Genuine OEM WH01X10313 Washer Control Knob - Dryer Selection Knob</div>
+            </div>
+        
+            <div class="listing-item" data-index="79" onclick="showListing(79)">
+                <div class="listing-item-pn">WE1M1011</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1011 Latch - Dryer Door Catch</div>
+            </div>
+        
+            <div class="listing-item" data-index="80" onclick="showListing(80)">
+                <div class="listing-item-pn">WE1M536</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M536 Latch - Dryer Door Latch</div>
+            </div>
+        
+            <div class="listing-item" data-index="81" onclick="showListing(81)">
+                <div class="listing-item-pn">WE1M1033</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M1033 Dryer Door Hinge - Dryer Door Hinge</div>
+            </div>
+        
+            <div class="listing-item" data-index="82" onclick="showListing(82)">
+                <div class="listing-item-pn">WE1M505</div>
+                <div class="listing-item-title">GE Genuine OEM WE1M505 Hinge - Dryer Door Hinge</div>
+            </div>
+        
+            <div class="listing-item" data-index="83" onclick="showListing(83)">
+                <div class="listing-item-pn">WE2M196</div>
+                <div class="listing-item-title">GE Genuine OEM WE2M196 Ground Screw - Dryer Electrical Screw</div>
+            </div>
+        
+            <div class="listing-item" data-index="84" onclick="showListing(84)">
+                <div class="listing-item-pn">WE1X1192</div>
+                <div class="listing-item-title">GE Genuine OEM WE1X1192 Door Strike - Dryer Door Catch Strike</div>
+            </div>
+        
+            <div class="listing-item" data-index="85" onclick="showListing(85)">
+                <div class="listing-item-pn">WZ05X0158</div>
+                <div class="listing-item-title">GE Genuine OEM WZ05X0158 Screw 8-32X3/8 Grd Scr - Dryer Grounding Screw</div>
+            </div>
+        
+            <div class="listing-item" data-index="86" onclick="showListing(86)">
+                <div class="listing-item-pn">WE00X181L</div>
+                <div class="listing-item-title">GE Genuine OEM WE00X181L Shaft - Dryer Drum Support Shaft</div>
+            </div>
+        
+            <div class="listing-item" data-index="87" onclick="showListing(87)">
+                <div class="listing-item-pn">WE00X1811</div>
+                <div class="listing-item-title">GE Genuine OEM WE00X1811 Shaft - Dryer Drum Axle Shaft</div>
+            </div>
+        
+        </div>
+    </div>
+    <div id="preview-pane">
+        <div id="welcome-message" style="text-align: center; margin-top: 100px; color: #6b7280;">
+            <svg style="width: 64px; height: 64px; margin-bottom: 20px; opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+            <h2>Reviewing Used Inventory</h2>
+            <p>Verification dashboard for RoadrunnerParts eBay pipeline</p>
+        </div>
+        <div id="listing-preview" class="hidden"></div>
+    </div>
+
+    <script>
+        const listings = [{"partNumber": "WE21X20562", "title": "GE Genuine OEM WE21X20562 Drum Asm 6.0 - Dryer Drum Assembly", "description": "<b>Genuine GE OEM WE21X20562 Drum Asm 6.0</b>\n\nRoadrunnerParts Genuine GE WE21X20562 Drum Assembly for dryers\n\n<b>Diagram ID:</b> 503\n\n<b>Product Features:</b>\n- This 6\n- It features built-in baffles to lift and tumble clothing for optimal exposure to heated air\n\n<b>Compatibility:</b>\nFits various models including: DPSR475EW0WW, DPSR473EW1WW, GTD42EASJ0WW, GTD65EBSJ2WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE21X20562", "type": "Drum Assembly", "compatibleModels": ["DPSR475EW0WW", "DPSR473EW1WW", "GTD42EASJ0WW", "GTD65EBSJ2WS"], "condition": "Used"}}, {"partNumber": "WE21X20407", "title": "GE Genuine OEM WE21X20407 Drum Asm 6.0 Cu.ft - Dryer Drum Assembly", "description": "<b>Genuine GE OEM WE21X20407 Drum Asm 6.0 Cu.ft</b>\n\nRoadrunnerParts Genuine OEM WE21X20407 Drum Assembly (Diagram ID 503)\n\n<b>Diagram ID:</b> 503\n\n<b>Product Features:</b>\n- This 6\n- 0 cubic foot white dryer drum is the central rotating component that holds laundry and facilitates airflow\n- It is designed to work with General Electric, Hotpoint, and Kenmore electric and gas dryers to restore smooth and efficient drying performance\n\n<b>Compatibility:</b>\nFits various models including: GTDP490ED5WS, GTDP280ED0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE21X20407", "type": "Drum Assembly", "compatibleModels": ["GTDP490ED5WS", "GTDP280ED0WW"], "condition": "Used"}}, {"partNumber": "WE19M1713", "title": "GE Genuine OEM WE19M1713 Backsplash Graphics Asm - Dryer Control Graphics Panel", "description": "<b>Genuine GE OEM WE19M1713 Backsplash Graphics Asm</b>\n\nRoadrunnerParts Genuine GE WE19M1713 Backsplash Graphics Assembly (Diagram ID 13)\n\n<b>Diagram ID:</b> 13\n\n<b>Product Features:</b>\n- This decorative and functional panel displays operational instructions, control labels, and safety icons clearly above the dryer controls\n- It is mounted at the top rear of the dryer to restore clear visibility of cycles and settings\n\n<b>Compatibility:</b>\nFits various models including: Caf\u00e9, Hotpoint, General Electric Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE19M1713", "type": "Control Graphics Panel", "compatibleModels": ["Caf\u00e9", "Hotpoint", "General Electric Dryers"], "condition": "Used"}}, {"partNumber": "WE11M10001", "title": "GE Genuine OEM WE11M10001 Dryer Heating Element - Dryer Heating Element", "description": "<b>Genuine GE OEM WE11M10001 Dryer Heating Element</b>\n\nRoadrunnerParts Genuine GE WE11M10001 Mica Heating Element (Diagram ID 514)\n\n<b>Diagram ID:</b> 514\n\n<b>Product Features:</b>\n- This 120/240V coil is responsible for generating the heat required to dry clothes\n- Crafted from durable mica material, it ensures optimal heat distribution\n- Replace this part if your dryer runs but fails to heat or takes too long to dry\n\n<b>Compatibility:</b>\nFits various models including: GTD65EBPL0DG, GTDX180ED4WW, GTD48EASW0WB\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE11M10001", "type": "Heating Element", "compatibleModels": ["GTD65EBPL0DG", "GTDX180ED4WW", "GTD48EASW0WB"], "condition": "Used"}}, {"partNumber": "WE11X20397", "title": "GE OEM WE11X20397 G.e. Dryer Heating Element", "description": "<b>Genuine GE OEM WE11X20397 G.e. Dryer Heating Element</b>\n\nRoadrunnerParts Genuine OEM WE11X20397 Dryer Heating Element and Housing Assembly (Diagram ID 512)\n\n<b>Diagram ID:</b> 512\n\n<b>Product Features:</b>\n- This complete assembly includes the heating element and the protective mica housing\n- It is a critical component for generating warmth and directing airflow through the drum for effective drying cycles\n\n<b>Compatibility:</b>\nFits various models including: DIST333JTJWW, DHDVH68EJ0MS, DLSR483EG6WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE11X20397", "type": "Heating Element & Housing", "compatibleModels": ["DIST333JTJWW", "DHDVH68EJ0MS", "DLSR483EG6WW"], "condition": "Used"}}, {"partNumber": "WE17X22217", "title": "GE Genuine OEM WE17X22217 Dryer Drive Motor With Pulley - Dryer Drive Motor", "description": "<b>Genuine GE OEM WE17X22217 Dryer Drive Motor With Pulley</b>\n\nRoadrunnerParts Genuine GE WE17X22217 Dryer Drive Motor Kit (Diagram ID 630)\n\n<b>Diagram ID:</b> 630\n\n<b>Product Features:</b>\n- This 1/4HP, 115V motor rotates the drive belt to spin the dryer drum\n- The kit includes the motor, a pre-installed pulley, a wiring harness, and installation instructions\n- Ideal for resolving issues with a dryer that won't tumble or starts then stops\n\n<b>Compatibility:</b>\nFits various models including: PTDS650GM2WT, DX4500GG8WW, GTDX200EM0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE17X22217", "type": "Drive Motor", "compatibleModels": ["PTDS650GM2WT", "DX4500GG8WW", "GTDX200EM0WW"], "condition": "Used"}}, {"partNumber": "WE17M66", "title": "GE Genuine OEM WE17M66 Motor - Dryer Drive Motor", "description": "<b>Genuine GE OEM WE17M66 Motor</b>\n\nRoadrunnerParts Genuine GE WE17M66 Drive Motor (Diagram ID 630)\n\n<b>Diagram ID:</b> 630\n\n<b>Product Features:</b>\n- This powerful electric motor is designed to drive the drum and blower wheel of the dryer\n- It facilitates the tumbling action and airflow necessary for moisture removal\n- This is an original GE replacement part for modern laundry centers and stand-alone dryers\n\n<b>Compatibility:</b>\nFits various models including: GTDP220EF3WW, Kenmore Laundry Centers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE17M66", "type": "Drive Motor", "compatibleModels": ["GTDP220EF3WW", "Kenmore Laundry Centers"], "condition": "Used"}}, {"partNumber": "WE20X20596", "title": "GE Genuine OEM WE20X20596 Panel - Dryer Cabinet Panel", "description": "<b>Genuine GE OEM WE20X20596 Panel</b>\n\nRoadrunnerParts Genuine GE WE20X20596 Cabinet Panel (Diagram ID 420)\n\n<b>Diagram ID:</b> 420\n\n<b>Product Features:</b>\n- This structural component serves as part of the dryer's outer cabinet, protecting internal electrical and mechanical parts\n- Replace if the original panel is dented, rusted, or damaged to maintain the appliance's structural integrity and appearance\n\n<b>Compatibility:</b>\nFits various models including: GE Gas Dryers, GE Electric Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE20X20596", "type": "Cabinet Panel", "compatibleModels": ["GE Gas Dryers", "GE Electric Dryers"], "condition": "Used"}}, {"partNumber": "WE4M160", "title": "GE Genuine OEM WE4M160 Dryer Safety Thermostat - Dryer Safety Thermostat", "description": "<b>Genuine GE OEM WE4M160 Dryer Safety Thermostat</b>\n\nRoadrunnerParts Genuine GE WE4M160 Safety Thermostat (Diagram ID 505)\n\n<b>Diagram ID:</b> 505\n\n<b>Product Features:</b>\n- This high-limit thermostat is rated at L210 and serves as a safety mechanism to prevent overheating\n- It automatically shuts down power to the heating element if temperatures reach unsafe levels, protecting both the dryer and your home\n\n<b>Compatibility:</b>\nFits various models including: BWXR473ET0WW, DBB3300EA0AA, DPSR473EV0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M160", "type": "Safety Thermostat", "compatibleModels": ["BWXR473ET0WW", "DBB3300EA0AA", "DPSR473EV0WW"], "condition": "Used"}}, {"partNumber": "WE4M532", "title": "GE Genuine OEM WE4M532 Dryer Timer - Dryer Timer", "description": "<b>Genuine GE OEM WE4M532 Dryer Timer</b>\n\nRoadrunnerParts Genuine OEM WE4M532 Dryer Timer (Diagram ID 100)\n\n<b>Diagram ID:</b> 100\n\n<b>Product Features:</b>\n- This mechanical timer regulates the duration of drying cycles, cooldown periods, and shut-off times\n- It contains a series of cams and electrical switches that control the heating element and motor functions during the drying process\n\n<b>Compatibility:</b>\nFits various models including: DBLR333EG1CC, DLLLR33EJ0WW, GTDX100EM0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M532", "type": "Timer", "compatibleModels": ["DBLR333EG1CC", "DLLLR33EJ0WW", "GTDX100EM0WW"], "condition": "Used"}}, {"partNumber": "WE49X22295", "title": "GE Genuine OEM WE49X22295 Dryer Door Inner Panel - Dryer Door & Panel Kit", "description": "<b>Genuine GE OEM WE49X22295 Dryer Door Inner Panel</b>\n\nRoadrunnerParts Genuine GE WE49X22295 Front Panel and Inner Door Kit (Diagram ID 305)\n\n<b>Diagram ID:</b> 305\n\n<b>Product Features:</b>\n- This comprehensive kit restores the sealing capability and appearance of your dryer\n- It includes the white front cabinet panel and the matching inner door liner to ensure a safe closure and proper airflow containment\n\n<b>Compatibility:</b>\nFits various models including: DBXR463EB0WW, GE White Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE49X22295", "type": "Door & Panel Kit", "compatibleModels": ["DBXR463EB0WW", "GE White Dryers"], "condition": "Used"}}, {"partNumber": "WE10X20418", "title": "GE Genuine OEM WE10X20418 Inner Door Asm ite - Dryer Inner Door Liner", "description": "<b>Genuine GE OEM WE10X20418 Inner Door Asm ite</b>\n\nRoadrunnerParts Genuine GE WE10X20418 Inner Door Assembly (Diagram ID 305)\n\n<b>Diagram ID:</b> 305\n\n<b>Product Features:</b>\n- This white interior door liner provides structural support and helps maintain the seal against the front panel for optimal drying efficiency\n- This component is essential for proper door alignment and latching\n\n<b>Compatibility:</b>\nFits various models including: GE Spacemaker, GE Laundry Centers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE10X20418", "type": "Inner Door Liner", "compatibleModels": ["GE Spacemaker", "GE Laundry Centers"], "condition": "Used"}}, {"partNumber": "WE20X20409", "title": "GE Genuine OEM WE20X20409 Front Panel ite - Dryer Front Cabinet Panel", "description": "<b>Genuine GE OEM WE20X20409 Front Panel ite</b>\n\nRoadrunnerParts Genuine GE WE20X20409 White Front Panel (Diagram ID 301)\n\n<b>Diagram ID:</b> 301\n\n<b>Product Features:</b>\n- This structural piece forms the front face of the dryer cabinet and houses the door opening\n- Replace this part if the original panel is scratched, dented, or warped to restore the appliance's factory finish\n\n<b>Compatibility:</b>\nFits various models including: GE Profile, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE20X20409", "type": "Front Cabinet Panel", "compatibleModels": ["GE Profile", "Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE20X20412", "title": "GE Genuine OEM WE20X20412 Bottom Cover - Dryer Bottom Cover", "description": "<b>Genuine GE OEM WE20X20412 Bottom Cover</b>\n\nRoadrunnerParts Genuine GE WE20X20412 Dryer Bottom Cover (Diagram ID 222)\n\n<b>Diagram ID:</b> 222\n\n<b>Product Features:</b>\n- This silver metal cover installs at the base of the dryer cabinet\n- Measuring approximately 26-3/4 inches by 8 inches, it encloses the chassis and protects internal components from floor debris and moisture\n\n<b>Compatibility:</b>\nFits various models including: GTDP490ED5WS, HTDX100GM4WW, HTDP120GD2WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE20X20412", "type": "Bottom Cover", "compatibleModels": ["GTDP490ED5WS", "HTDX100GM4WW", "HTDP120GD2WW"], "condition": "Used"}}, {"partNumber": "WE03X20434", "title": "GE Genuine OEM WE03X20434 Dryer Idler Pulley Arm - Dryer Idler Arm", "description": "<b>Genuine GE OEM WE03X20434 Dryer Idler Pulley Arm</b>\n\nRoadrunnerParts Genuine OEM WE03X20434 Idler Spring Arm (Diagram ID 215)\n\n<b>Diagram ID:</b> 215\n\n<b>Product Features:</b>\n- This metal arm supports the idler pulley to maintain the necessary tension on the drive belt\n- Proper tension ensures the drum rotates smoothly and prevents the belt from slipping or breaking during heavy laundry loads\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, DRSR483ED2WW, 5TX62E9ST0WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE03X20434", "type": "Idler Arm", "compatibleModels": ["DDE8500RFM", "DRSR483ED2WW", "5TX62E9ST0WS"], "condition": "Used"}}, {"partNumber": "WE20X20417", "title": "GE Genuine OEM WE20X20417 Dryer Top Panel - Dryer Top Cabinet Panel", "description": "<b>Genuine GE OEM WE20X20417 Dryer Top Panel</b>\n\nRoadrunnerParts Genuine GE WE20X20417 Top Access Panel (Diagram ID 401)\n\n<b>Diagram ID:</b> 401\n\n<b>Product Features:</b>\n- This white metal cover installs on top of the dryer cabinet\n- It provides a finished look and protects the control console and internal wiring\n- Replace if rusted, scratched, or missing to maintain a clean appearance\n\n<b>Compatibility:</b>\nFits various models including: GE Hotpoint, Whirlpool, RCA Appliances\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE20X20417", "type": "Top Cabinet Panel", "compatibleModels": ["GE Hotpoint", "Whirlpool", "RCA Appliances"], "condition": "Used"}}, {"partNumber": "WE20X20396", "title": "GE Genuine OEM WE20X20396 Rear Panel - Dryer Rear Panel", "description": "<b>Genuine GE OEM WE20X20396 Rear Panel</b>\n\nRoadrunnerParts Genuine OEM WE20X20396 Rear Cabinet Panel (Diagram ID 420)\n\n<b>Diagram ID:</b> 420\n\n<b>Product Features:</b>\n- This structural metal panel shields the rear components of the dryer, including the motor and heating duct\n- It is essential for containing airflow and maintaining the mechanical stability of the cabinet during high-speed rotation\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, GE Gas Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE20X20396", "type": "Rear Panel", "compatibleModels": ["GE Electric Dryers", "GE Gas Dryers"], "condition": "Used"}}, {"partNumber": "WE4M137", "title": "GE Genuine OEM WE4M137 Dryer High-limit Thermostat - Dryer Thermostat", "description": "<b>Genuine GE OEM WE4M137 Dryer High-limit Thermostat</b>\n\nRoadrunnerParts Genuine GE WE4M137 High-Limit Thermostat (Diagram ID 507)\n\n<b>Diagram ID:</b> 507\n\n<b>Product Features:</b>\n- This temperature control component monitors internal heat levels to prevent fire hazards and damage to clothing\n- It acts as a safety override that trips if the dryer overheats due to a restricted vent or cycling failure\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, NJSR453EW2AA, DPSR475EW0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M137", "type": "Thermostat", "compatibleModels": ["DDE8500RFM", "NJSR453EW2AA", "DPSR475EW0WW"], "condition": "Used"}}, {"partNumber": "WE20X20391", "title": "GE Genuine OEM WE20X20391 Chassis Base - Dryer Chassis Base", "description": "<b>Genuine GE OEM WE20X20391 Chassis Base</b>\n\nRoadrunnerParts Genuine GE WE20X20391 Galvanized Chassis Base (Diagram ID 408)\n\n<b>Diagram ID:</b> 408\n\n<b>Product Features:</b>\n- This heavy-duty structural base measures approximately 26-3/4 inches wide by 22-1/8 inches deep\n- It serves as the foundation for the dryer's motor, drum supports, and cabinet, ensuring stable operation and proper alignment\n\n<b>Compatibility:</b>\nFits various models including: GTDP280ED0WW, DBLR333EG7WW, DBSR463GG8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE20X20391", "type": "Chassis Base", "compatibleModels": ["GTDP280ED0WW", "DBLR333EG7WW", "DBSR463GG8WW"], "condition": "Used"}}, {"partNumber": "WE49X22294", "title": "GE Genuine OEM WE49X22294 End Cap Rh W - Dryer Console End Cap", "description": "<b>Genuine GE OEM WE49X22294 End Cap Rh W</b>\n\nRoadrunnerParts Genuine GE WE49X22294 End Cap Service Kit (Diagram ID 4)\n\n<b>Diagram ID:</b> 4\n\n<b>Product Features:</b>\n- This right-hand white end cap restores the appearance and stability of the control console\n- It protects internal control switches and helps maintain proper console alignment on GE and Hotpoint dryer models\n\n<b>Compatibility:</b>\nFits various models including: DBLR333EG1WW, GTDX200EM0WW, GTDP520ED3WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE49X22294", "type": "Console End Cap", "compatibleModels": ["DBLR333EG1WW", "GTDX200EM0WW", "GTDP520ED3WW"], "condition": "Used"}}, {"partNumber": "WE14X20392", "title": "GE Genuine OEM WE14X20392 Dryer Blower Housing - Dryer Blower Housing", "description": "<b>Genuine GE OEM WE14X20392 Dryer Blower Housing</b>\n\nRoadrunnerParts Genuine OEM WE14X20392 Blower Housing Assembly (Diagram ID 219)\n\n<b>Diagram ID:</b> 219\n\n<b>Product Features:</b>\n- This assembly encloses the blower wheel to create the suction and airflow required to move moisture-laden air through the lint filter and out the exhaust duct\n- It is essential for efficient drying performance\n\n<b>Compatibility:</b>\nFits various models including: HTDX100ED3WW, GTDX180ED3WW, GTDP200EM1WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE14X20392", "type": "Blower Housing", "compatibleModels": ["HTDX100ED3WW", "GTDX180ED3WW", "GTDP200EM1WW"], "condition": "Used"}}, {"partNumber": "WE19M1481", "title": "GE Genuine OEM WE19M1481 Dryer Control Panel Cover, Rear - Dryer Console Cover", "description": "<b>Genuine GE OEM WE19M1481 Dryer Control Panel Cover, Rear</b>\n\nRoadrunnerParts Genuine GE WE19M1481 Rear Control Panel Cover (Diagram ID 72)\n\n<b>Diagram ID:</b> 72\n\n<b>Product Features:</b>\n- This metal shield installs on the back of the control console to protect the timer, cycle switches, and wiring from dust and heat damage\n- Measuring approximately 37\n- 5 x 13\n\n<b>Compatibility:</b>\nFits various models including: GTDX180ED4WW, DBLR333EG1WW, HTDX100ED4WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE19M1481", "type": "Console Cover", "compatibleModels": ["GTDX180ED4WW", "DBLR333EG1WW", "HTDX100ED4WW"], "condition": "Used"}}, {"partNumber": "WE10X20468", "title": "GE Genuine OEM WE10X20468 Dryer Door Outer Panel - Dryer Outer Door Panel", "description": "<b>Genuine GE OEM WE10X20468 Dryer Door Outer Panel</b>\n\nRoadrunnerParts Genuine OEM WE10X20468 White Outer Door Panel (Diagram ID 307)\n\n<b>Diagram ID:</b> 307\n\n<b>Product Features:</b>\n- This factory white panel restores the exterior look of your dryer\n- Replace this component if the door is dented, scratched, or missing to maintain proper door alignment and aesthetic consistency\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, Kenmore Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE10X20468", "type": "Outer Door Panel", "compatibleModels": ["GE Dryers", "Hotpoint Dryers", "Kenmore Dryers"], "condition": "Used"}}, {"partNumber": "WE4M181", "title": "GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat", "description": "<b>Genuine GE OEM WE4M181 Dryer Operating Thermostat</b>\n\nRoadrunnerParts Genuine GE WE4M181 Cycling Thermostat (Diagram ID 506)\n\n<b>Diagram ID:</b> 506\n\n<b>Product Features:</b>\n- This 4-wire thermostat monitors and regulates the internal drum temperature by cycling the heating element on and off\n- It prevents clothing damage by ensuring a consistent, safe heat level throughout the drying cycle\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, Frigidaire, Kenmore\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M181", "type": "Cycling Thermostat", "compatibleModels": ["GE Electric Dryers", "Frigidaire", "Kenmore"], "condition": "Used"}}, {"partNumber": "WE19M1478", "title": "GE Genuine OEM WE19M1478 End Cap Lh - Dryer Console End Cap", "description": "<b>Genuine GE OEM WE19M1478 End Cap Lh</b>\n\nRoadrunnerParts Genuine GE WE19M1478 Left-Hand White End Cap (Diagram ID 3)\n\n<b>Diagram ID:</b> 3\n\n<b>Product Features:</b>\n- This original equipment replacement part fits on the left side of the dryer's control console\n- It ensures a finished appearance and protects the electronic components housed within the control area\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, RCA models\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE19M1478", "type": "Console End Cap", "compatibleModels": ["GE Dryers", "Hotpoint Dryers", "RCA models"], "condition": "Used"}}, {"partNumber": "WE16X20393", "title": "GE Genuine OEM WE16X20393 Laundry Center Dryer Blower eel - Dryer Blower Wheel", "description": "<b>Genuine GE OEM WE16X20393 Laundry Center Dryer Blower eel</b>\n\nRoadrunnerParts Genuine OEM WE16X20393 Blower Wheel (Diagram ID 201)\n\n<b>Diagram ID:</b> 201\n\n<b>Product Features:</b>\n- This fan blade attaches directly to the dryer's drive motor shaft\n- It is responsible for pulling air through the drum and blowing it out through the exhaust vent\n- Replace this if your dryer has restricted airflow or makes loud rumbling noises\n\n<b>Compatibility:</b>\nFits various models including: GUD24ESSM0WW, GTUN275EM1WW, GFDN160EJ0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE16X20393", "type": "Blower Wheel", "compatibleModels": ["GUD24ESSM0WW", "GTUN275EM1WW", "GFDN160EJ0WW"], "condition": "Used"}}, {"partNumber": "WE18X25100", "title": "GE Genuine OEM WE18X25100 Dryer Lint Screen - Dryer Lint Filter", "description": "<b>Genuine GE OEM WE18X25100 Dryer Lint Screen</b>\n\nRoadrunnerParts Genuine GE WE18X25100 Lint Filter Screen (Diagram ID 300)\n\n<b>Diagram ID:</b> 300\n\n<b>Product Features:</b>\n- This gray plastic-framed filter features a fine metal mesh to effectively trap lint and debris from clothing\n- Maintaining a clean lint screen is essential for maximizing airflow and preventing fire hazards in your dryer\n\n<b>Compatibility:</b>\nFits various models including: NJSR453EW2AA, DPSR475EW0WW, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE18X25100", "type": "Lint Filter", "compatibleModels": ["NJSR453EW2AA", "DPSR475EW0WW", "HTDX100EM8WW"], "condition": "Used"}}, {"partNumber": "WE18M28", "title": "GE Genuine OEM WE18M28 Filter & Mesh Asm. - Dryer Lint Filter Assembly", "description": "<b>Genuine GE OEM WE18M28 Filter & Mesh Asm.</b>\n\nRoadrunnerParts Genuine GE WE18M28 Filter and Mesh Assembly (Diagram ID 300)\n\n<b>Diagram ID:</b> 300\n\n<b>Product Features:</b>\n- This lint screen features a white plastic frame and a durable mesh to catch fibers during the drying cycle\n- It helps prevent lint from entering the internal blower and ductwork, maintaining safe and efficient airflow\n\n<b>Compatibility:</b>\nFits various models including: DBSR463EG0WW, DBXR300EG0WS, DHDSR46EG0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE18M28", "type": "Lint Filter Assembly", "compatibleModels": ["DBSR463EG0WW", "DBXR300EG0WS", "DHDSR46EG0WW"], "condition": "Used"}}, {"partNumber": "WE14X20425", "title": "GE Genuine OEM WE14X20425 Trap Duct - Dryer Lint Trap Duct", "description": "<b>Genuine GE OEM WE14X20425 Trap Duct</b>\n\nRoadrunnerParts Genuine OEM WE14X20425 Trap Duct Assembly (Diagram ID 311)\n\n<b>Diagram ID:</b> 311\n\n<b>Product Features:</b>\n- This component guides hot, moist air into the lint filter area\n- It plays a critical role in directing airflow and preventing excessive lint buildup inside the dryer cabinet\n- Replace if cracked or warped to restore venting efficiency\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, GE Gas Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE14X20425", "type": "Lint Trap Duct", "compatibleModels": ["GE Electric Dryers", "GE Gas Dryers"], "condition": "Used"}}, {"partNumber": "WE13M39", "title": "GE Genuine OEM WE13M39 Motor Support - Dryer Motor Support Bracket", "description": "<b>Genuine GE OEM WE13M39 Motor Support</b>\n\nRoadrunnerParts Genuine GE WE13M39 Motor Support Bracket (Diagram ID 205)\n\n<b>Diagram ID:</b> 205\n\n<b>Product Features:</b>\n- This essential metal bracket secures the drive motor to the base of the dryer\n- It helps minimize vibration and maintains the alignment of the motor with the drive belt and blower wheel for quiet, reliable performance\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, DPSR475EW0WW, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE13M39", "type": "Motor Support Bracket", "compatibleModels": ["DDE8500RFM", "DPSR475EW0WW", "HTDX100EM8WW"], "condition": "Used"}}, {"partNumber": "WE20X20406", "title": "GE Genuine OEM WE20X20406 Dryer Side Panel - Dryer Side Cabinet Panel", "description": "<b>Genuine GE OEM WE20X20406 Dryer Side Panel</b>\n\nRoadrunnerParts Genuine GE WE20X20406 White Side Panel (Diagram ID 404)\n\n<b>Diagram ID:</b> 404\n\n<b>Product Features:</b>\n- This exterior cabinet panel protects internal mechanical parts and maintains the aesthetic of the appliance\n- Made of white-coated steel, it is a direct replacement for panels damaged by rust, dents, or scratches\n\n<b>Compatibility:</b>\nFits various models including: BBXR473EH6WW, DBXR300GG7WS, DCCB330EJ1WC\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE20X20406", "type": "Side Cabinet Panel", "compatibleModels": ["BBXR473EH6WW", "DBXR300GG7WS", "DCCB330EJ1WC"], "condition": "Used"}}, {"partNumber": "WE1M1002", "title": "GE Genuine OEM WE1M1002 Fuse Cemr 30 Amp 120V - Dryer Power Fuse", "description": "<b>Genuine GE OEM WE1M1002 Fuse Cemr 30 Amp 120V</b>\n\nRoadrunnerParts Genuine OEM WE1M1002 CCMR Power Fuse (Diagram ID 418)\n\n<b>Diagram ID:</b> 418\n\n<b>Product Features:</b>\n- This 30 Amp, 120V fuse provides essential overcurrent protection for your appliance\n- It prevents damage to internal components and wiring by opening the circuit during an electrical fault or overload\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, GE Laundry Centers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1002", "type": "Power Fuse", "compatibleModels": ["GE Electric Dryers", "GE Laundry Centers"], "condition": "Used"}}, {"partNumber": "WE1X921", "title": "GE Genuine OEM WE1X921 Motor Strap - Dryer Motor Mounting Strap", "description": "<b>Genuine GE OEM WE1X921 Motor Strap</b>\n\nRoadrunnerParts Genuine GE WE1X921 Dryer Motor Strap (Diagram ID 204)\n\n<b>Diagram ID:</b> 204\n\n<b>Product Features:</b>\n- This heavy-duty strap secures the dryer motor to its support bracket or cabinet\n- By providing a firm hold, it significantly reduces motor vibration and mechanical noise while the drum is in motion\n\n<b>Compatibility:</b>\nFits various models including: DIST333JTJWW, GHDS830ED1WS, GTD490ED5WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1X921", "type": "Motor Mounting Strap", "compatibleModels": ["DIST333JTJWW", "GHDS830ED1WS", "GTD490ED5WS"], "condition": "Used"}}, {"partNumber": "WE1M300", "title": "GE Genuine OEM WE1M300 Dryer Drum Bearing Bracket - Dryer Bearing Retainer", "description": "<b>Genuine GE OEM WE1M300 Dryer Drum Bearing Bracket</b>\n\nRoadrunnerParts Genuine OEM WE1M300 Dryer Drum Bearing Retainer (Diagram ID 3102)\n\n<b>Diagram ID:</b> 3102\n\n<b>Product Features:</b>\n- This metal bracket is mounted to the rear housing assembly and securely holds the rear drum bearing in place\n- It ensures the drum remains perfectly aligned for smooth, balanced, and quiet rotation\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, NJSR453EW2AA, PFDS455EL2MG\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M300", "type": "Bearing Retainer", "compatibleModels": ["DDE8500RFM", "NJSR453EW2AA", "PFDS455EL2MG"], "condition": "Used"}}, {"partNumber": "WE03X29897", "title": "GE Genuine OEM WE03X29897 Dryer Drum Belt - Dryer Drive Belt", "description": "<b>Genuine GE OEM WE03X29897 Dryer Drum Belt</b>\n\nRoadrunnerParts Genuine GE WE03X29897 Dryer Drive Belt (Diagram ID 213)\n\n<b>Diagram ID:</b> 213\n\n<b>Product Features:</b>\n- This 4-rib rubber belt is 89\n- 5 inches long and wraps around the dryer drum, tension pulley, and motor shaft\n- It is the primary drive component that facilitates the tumbling motion required for even drying\n\n<b>Compatibility:</b>\nFits various models including: GTD48EASW0WB, GUD27EEPV0DG, PTD60GBPR0DG\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE03X29897", "type": "Drive Belt", "compatibleModels": ["GTD48EASW0WB", "GUD27EEPV0DG", "PTD60GBPR0DG"], "condition": "Used"}}, {"partNumber": "WE4M404", "title": "GE OEM WE4M404 Dryer Temperature Switch", "description": "<b>Genuine GE OEM WE4M404 Dryer Temperature Switch</b>\n\nRoadrunnerParts Genuine OEM WE4M404 Dryer Temperature Switch (Diagram ID 87)\n\n<b>Diagram ID:</b> 87\n\n<b>Product Features:</b>\n- This three-temperature rotary switch allows users to select the desired heat level for each cycle\n- It acts as the 'brain' that signals the thermostats to maintain consistent heat settings for optimal drying results\n\n<b>Compatibility:</b>\nFits various models including: DBLR333EE0CC, HTDX100EM4WW, GE Compact Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M404", "type": "Temperature Selector Switch", "compatibleModels": ["DBLR333EE0CC", "HTDX100EM4WW", "GE Compact Dryers"], "condition": "Used"}}, {"partNumber": "WE12X21574", "title": "GE Genuine OEM WE12X21574 Belt Drive - Dryer Drive Belt", "description": "<b>Genuine GE OEM WE12X21574 Belt Drive</b>\n\nRoadrunnerParts Genuine GE WE12X21574 Dryer Drum Drive Belt (Diagram ID 213)\n\n<b>Diagram ID:</b> 213\n\n<b>Product Features:</b>\n- This durable rubber belt is designed to connect the motor to the dryer drum\n- Replaced by the upgraded 4-rib design, this belt ensures a strong grip on the motor pulley to prevent slipping and ensure clothes tumble evenly\n\n<b>Compatibility:</b>\nFits various models including: GFD40ESCM1WW, VTD52EASR0WB, GTD45GASJ3WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE12X21574", "type": "Drive Belt", "compatibleModels": ["GFD40ESCM1WW", "VTD52EASR0WB", "GTD45GASJ3WS"], "condition": "Used"}}, {"partNumber": "WE1M1003", "title": "GE Genuine OEM WE1M1003 Dryer Fuse Holder - Dryer Fuse Holder", "description": "<b>Genuine GE OEM WE1M1003 Dryer Fuse Holder</b>\n\nRoadrunnerParts Genuine OEM WE1M1003 Fuse Holder (Diagram ID 417)\n\n<b>Diagram ID:</b> 417\n\n<b>Product Features:</b>\n- Rated for 600V and 30A, this holder secures the thermal fuse connection within the dryer's electrical circuit\n- It ensures a stable electrical path and protects your appliance from unexpected power failures or surges\n\n<b>Compatibility:</b>\nFits various models including: GTDX180ED4WW, HTDX100ED4WW, GTUP240GM0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1003", "type": "Fuse Holder", "compatibleModels": ["GTDX180ED4WW", "HTDX100ED4WW", "GTUP240GM0WW"], "condition": "Used"}}, {"partNumber": "WE4M255", "title": "GE Genuine OEM WE4M255 Kenmore Dryer Timer Resistor - Dryer Timer Resistor", "description": "<b>Genuine GE OEM WE4M255 Kenmore Dryer Timer Resistor</b>\n\nRoadrunnerParts Genuine GE WE4M255 Timer Resistor (Diagram ID 80)\n\n<b>Diagram ID:</b> 80\n\n<b>Product Features:</b>\n- This 4500-Ohm resistor is a critical component for regulating the timer motor speed\n- It ensures that the dryer cycles advance properly\n- Replace this part if your timer does not move or the dryer runs indefinitely without stopping\n\n<b>Compatibility:</b>\nFits various models including: DBLR333EG7WW, GE Dryers, Kenmore Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M255", "type": "Timer Resistor", "compatibleModels": ["DBLR333EG7WW", "GE Dryers", "Kenmore Dryers"], "condition": "Used"}}, {"partNumber": "WE13X30697", "title": "GE Genuine OEM WE13X30697 Dryer Motor Clamp - Dryer Motor Clamp", "description": "<b>Genuine GE OEM WE13X30697 Dryer Motor Clamp</b>\n\nRoadrunnerParts Genuine GE WE13X30697 Motor Clamp (Diagram ID 203)\n\n<b>Diagram ID:</b> 203\n\n<b>Product Features:</b>\n- This secure metal clamp is used to hold the drive motor in position within the dryer cabinet\n- By ensuring the motor remains fixed, it helps maintain belt alignment and reduces vibration noise during the drying process\n\n<b>Compatibility:</b>\nFits various models including: GE Hotpoint, Kenmore Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE13X30697", "type": "Motor Clamp", "compatibleModels": ["GE Hotpoint", "Kenmore Dryers"], "condition": "Used"}}, {"partNumber": "WE11X29438", "title": "GE Genuine OEM WE11X29438 Dryer Drum Rear Cover - Dryer Rear Drum Panel/Diffuser", "description": "<b>Genuine GE OEM WE11X29438 Dryer Drum Rear Cover</b>\n\nRoadrunnerParts Genuine OEM WE11X29438 Rear Drum Cover (Diagram ID 504)\n\n<b>Diagram ID:</b> 504\n\n<b>Product Features:</b>\n- This diffuser panel forms the back wall of the dryer drum and houses the rear drum support shaft and bearing\n- It is designed to withstand high temperatures and ensure consistent airflow through the rear of the drum\n\n<b>Compatibility:</b>\nFits various models including: PTD90GBPT1RS, GTD42GASJ2WW, GFDN160EJ0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE11X29438", "type": "Rear Drum Panel/Diffuser", "compatibleModels": ["PTD90GBPT1RS", "GTD42GASJ2WW", "GFDN160EJ0WW"], "condition": "Used"}}, {"partNumber": "WE14X20421", "title": "GE Genuine OEM WE14X20421 Dryer Exhaust Duct - Dryer Internal Exhaust Duct", "description": "<b>Genuine GE OEM WE14X20421 Dryer Exhaust Duct</b>\n\nRoadrunnerParts Genuine GE WE14X20421 Dryer Exhaust Duct (Diagram ID 228)\n\n<b>Diagram ID:</b> 228\n\n<b>Product Features:</b>\n- This metal pipe routes hot air from the blower housing to the home vent\n- Measuring approximately 17-1/2 inches, it ensures proper venting and airflow for efficient drying and moisture removal\n\n<b>Compatibility:</b>\nFits various models including: DHDSR46EG5WW, DBXR463GB0WW, DDSR475ET6WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE14X20421", "type": "Internal Exhaust Duct", "compatibleModels": ["DHDSR46EG5WW", "DBXR463GB0WW", "DDSR475ET6WW"], "condition": "Used"}}, {"partNumber": "WE1M1007", "title": "GE Genuine OEM WE1M1007 Cover Fuse Terminal - Dryer Fuse Cover", "description": "<b>Genuine GE OEM WE1M1007 Cover Fuse Terminal</b>\n\nRoadrunnerParts Genuine OEM WE1M1007 Fuse Terminal Cover (Diagram ID 430)\n\n<b>Diagram ID:</b> 430\n\n<b>Product Features:</b>\n- This metal cover shields and insulates the fuse terminal connections inside the dryer\n- It protects the electrical contacts from accidental contact, arcing, and debris, ensuring a safe and consistent power supply\n\n<b>Compatibility:</b>\nFits various models including: GFD40ESCM0WW, GFDL110EH0WW, GFDN110ED3WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1007", "type": "Fuse Cover", "compatibleModels": ["GFD40ESCM0WW", "GFDL110EH0WW", "GFDN110ED3WW"], "condition": "Used"}}, {"partNumber": "WE3M56", "title": "GE Genuine OEM WE3M56 Bearing - Dryer Drum Top Bearing", "description": "<b>Genuine GE OEM WE3M56 Bearing</b>\n\nRoadrunnerParts Genuine GE WE3M56 Upper Drum Bearing (Diagram ID 313)\n\n<b>Diagram ID:</b> 313\n\n<b>Product Features:</b>\n- This top bearing supports the front of the dryer drum, reducing friction as it rotates\n- It is designed to eliminate squeaking and grinding noises, ensuring quiet and smooth drum operation throughout the life of the dryer\n\n<b>Compatibility:</b>\nFits various models including: GTDX180ED4WW, HTDX100GD3WW, GTDP180GD2WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE3M56", "type": "Drum Top Bearing", "compatibleModels": ["GTDX180ED4WW", "HTDX100GD3WW", "GTDP180GD2WW"], "condition": "Used"}}, {"partNumber": "WE03X20228", "title": "GE Genuine OEM WE03X20228 Top Bearing - Dryer Drum Bearing", "description": "<b>Genuine GE OEM WE03X20228 Top Bearing</b>\n\nRoadrunnerParts Genuine OEM WE03X20228 Top Drum Bearing (Diagram ID 313)\n\n<b>Diagram ID:</b> 313\n\n<b>Product Features:</b>\n- This structural component supports the front part of the dryer drum as it spins\n- By providing a low-friction surface, it maintains drum alignment and prevents loud mechanical noises caused by metal-on-metal contact\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE03X20228", "type": "Drum Bearing", "compatibleModels": ["GE Dryers", "Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE4M415", "title": "GE Genuine OEM WE4M415 Dryer Door Switch - Dryer Door Interlock Switch", "description": "<b>Genuine GE OEM WE4M415 Dryer Door Switch</b>\n\nRoadrunnerParts Genuine GE WE4M415 Door Switch (Diagram ID 380)\n\n<b>Diagram ID:</b> 380\n\n<b>Product Features:</b>\n- This safety switch detects when the dryer door is closed and prohibits the motor from running if the door is open\n- Replace this part if your dryer fails to start or the drum continues to spin while the door is open\n\n<b>Compatibility:</b>\nFits various models including: GUD27ESSJ1WW, DCXR453EV0AA, DPSR483GA0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M415", "type": "Door Interlock Switch", "compatibleModels": ["GUD27ESSJ1WW", "DCXR453EV0AA", "DPSR483GA0WW"], "condition": "Used"}}, {"partNumber": "WE1M462", "title": "GE Genuine OEM WE1M462 Kenmore Dryer Rear Bearing - Dryer Drum Bearing Sleeve", "description": "<b>Genuine GE OEM WE1M462 Kenmore Dryer Rear Bearing</b>\n\nRoadrunnerParts Genuine OEM WE1M462 Rear Drum Bearing Sleeve (Diagram ID 3106)\n\n<b>Diagram ID:</b> 3106\n\n<b>Product Features:</b>\n- This sleeve supports the drum shaft at the back of the dryer to facilitate quiet and balanced rotation\n- Replace if you hear screeching or thumping sounds originating from the rear of the appliance\n\n<b>Compatibility:</b>\nFits various models including: DIST333JTJWW, NVLR333EE1WW, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M462", "type": "Drum Bearing Sleeve", "compatibleModels": ["DIST333JTJWW", "NVLR333EE1WW", "HTDX100EM8WW"], "condition": "Used"}}, {"partNumber": "WE11X20400", "title": "GE Genuine OEM WE11X20400 Heater Housing - Dryer Heating Chamber Housing", "description": "<b>Genuine GE OEM WE11X20400 Heater Housing</b>\n\nRoadrunnerParts Genuine GE WE11X20400 Heating Element Housing (Diagram ID 513)\n\n<b>Diagram ID:</b> 513\n\n<b>Product Features:</b>\n- This protective metal assembly contains and supports the dryer's heating element\n- It ensures that heat is effectively contained and directed toward the drum for safe and efficient laundry drying\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE11X20400", "type": "Heating Chamber Housing", "compatibleModels": ["GE Electric Dryers", "Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE01X20419", "title": "GE Genuine OEM WE01X20419 Dryer Door Handle - Dryer Door Handle", "description": "<b>Genuine GE OEM WE01X20419 Dryer Door Handle</b>\n\nRoadrunnerParts Genuine OEM WE01X20419 White Dryer Door Handle (Diagram ID 603)\n\n<b>Diagram ID:</b> 603\n\n<b>Product Features:</b>\n- This white plastic handle is approximately 7 inches long and snaps directly into the door assembly\n- It provides a secure grip for opening and closing the dryer door and restores the clean, factory look of your appliance\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, DPSR475EW0WW, GUD24ESSMWW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE01X20419", "type": "Door Handle", "compatibleModels": ["DDE8500RFM", "DPSR475EW0WW", "GUD24ESSMWW"], "condition": "Used"}}, {"partNumber": "WE4M416", "title": "GE Genuine OEM WE4M416 Dryer Push-to-start Switch - Dryer Start Switch", "description": "<b>Genuine GE OEM WE4M416 Dryer Push-to-start Switch</b>\n\nRoadrunnerParts Genuine GE WE4M416 Push-to-Start Switch (Diagram ID 35)\n\n<b>Diagram ID:</b> 35\n\n<b>Product Features:</b>\n- This momentary switch initiates the drying cycle when pressed by the user\n- It is a critical component for starting the motor and heating systems\n- Replace if your dryer will not start despite having power\n\n<b>Compatibility:</b>\nFits various models including: GLDP280ED2WS, GRDN510GM1WS, GHDP490EF0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M416", "type": "Start Switch", "compatibleModels": ["GLDP280ED2WS", "GRDN510GM1WS", "GHDP490EF0WW"], "condition": "Used"}}, {"partNumber": "WE4M127", "title": "GE Genuine OEM WE4M127 Dryer Operating Thermostat - Dryer Cycling Thermostat", "description": "<b>Genuine GE OEM WE4M127 Dryer Operating Thermostat</b>\n\nRoadrunnerParts Genuine OEM WE4M127 Operating Cycling Thermostat (Diagram ID 230)\n\n<b>Diagram ID:</b> 230\n\n<b>Product Features:</b>\n- This thermostat regulates heat levels by cycling the element to maintain the selected temperature\n- It prevents the dryer from overheating and ensures clothes are dried at a safe, consistent heat\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, DPSQ475ET0WW, NWXR473ET3AB\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M127", "type": "Cycling Thermostat", "compatibleModels": ["DDE8500RFM", "DPSQ475ET0WW", "NWXR473ET3AB"], "condition": "Used"}}, {"partNumber": "WE4M525", "title": "GE Genuine OEM WE4M525 4 Term Blk & Grnd Strap - Dryer Terminal Block", "description": "<b>Genuine GE OEM WE4M525 4 Term Blk & Grnd Strap</b>\n\nRoadrunnerParts Genuine GE WE4M525 Terminal Block and Ground Strap (Diagram ID 419)\n\n<b>Diagram ID:</b> 419\n\n<b>Product Features:</b>\n- This 4-terminal electrical block facilitates the connection between the dryer's power cord and internal wiring\n- The included ground strap ensures safe electrical operation by bonding the cabinet to the ground point\n\n<b>Compatibility:</b>\nFits various models including: GTDL210ED3WW, GE Laundry Centers, Kenmore models\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE4M525", "type": "Terminal Block", "compatibleModels": ["GTDL210ED3WW", "GE Laundry Centers", "Kenmore models"], "condition": "Used"}}, {"partNumber": "WD21X10261", "title": "GE Genuine OEM WD21X10261 Interlock Switch - Dryer Interlock Switch", "description": "<b>Genuine GE OEM WD21X10261 Interlock Switch</b>\n\nRoadrunnerParts Genuine OEM WD21X10261 Door Interlock Switch (Diagram ID 803)\n\n<b>Diagram ID:</b> 803\n\n<b>Product Features:</b>\n- This safety switch is used in dryers as a belt/idler switch and in dishwashers as a door closure monitor\n- It prohibits appliance operation if the door is open or if the drive belt has snapped\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, GE Dishwashers, Hotpoint RCA\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WD21X10261", "type": "Interlock Switch", "compatibleModels": ["GE Electric Dryers", "GE Dishwashers", "Hotpoint RCA"], "condition": "Used"}}, {"partNumber": "WD21X557", "title": "GE Genuine OEM WD21X557 Interlock Sw - Dryer Interlock Switch", "description": "<b>Genuine GE OEM WD21X557 Interlock Sw</b>\n\nRoadrunnerParts Genuine GE WD21X557 Interlock Switch (Diagram ID 803)\n\n<b>Diagram ID:</b> 803\n\n<b>Product Features:</b>\n- This safety switch ensures that the appliance operates only when the door is securely closed\n- It is a critical component for maintaining safety and preventing leaks in dishwashers or starting failures in dryers\n\n<b>Compatibility:</b>\nFits various models including: GE Dishwashers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WD21X557", "type": "Interlock Switch", "compatibleModels": ["GE Dishwashers", "Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE1M1030", "title": "GE Genuine OEM WE1M1030 Shield Bottom Cover - Dryer Structural Shield", "description": "<b>Genuine GE OEM WE1M1030 Shield Bottom Cover</b>\n\nRoadrunnerParts Genuine OEM WE1M1030 Cabinet Shield Cover (Diagram ID 271)\n\n<b>Diagram ID:</b> 271\n\n<b>Product Features:</b>\n- This bottom shield protects internal electrical components and the floor from heat and lint\n- Replace this structural shield if it is missing or damaged to ensure the longevity of your dryer's internal motor and wiring\n\n<b>Compatibility:</b>\nFits various models including: GTDL210ED3WW, GLDS560ED0WW, GTDX400ED0WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1030", "type": "Structural Shield", "compatibleModels": ["GTDL210ED3WW", "GLDS560ED0WW", "GTDX400ED0WS"], "condition": "Used"}}, {"partNumber": "WH2M270", "title": "GE Genuine OEM WH2M270 We2x328 - Dryer Hardware Set", "description": "<b>Genuine GE OEM WH2M270 We2x328</b>\n\nRoadrunnerParts Genuine GE WH2M270 Screw Package (Diagram ID 3204)\n\n<b>Diagram ID:</b> 3204\n\n<b>Product Features:</b>\n- This hardware set includes twelve (12) high-strength screws used for various structural and mechanical connections in GE washers and dryers\n- These screws are essential for securing panels and internal components\n\n<b>Compatibility:</b>\nFits various models including: GE Washers, GE Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WH2M270", "type": "Hardware Set", "compatibleModels": ["GE Washers", "GE Dryers"], "condition": "Used"}}, {"partNumber": "WE1M650", "title": "GE Genuine OEM WE1M650 Dryer Motor Wire Harness Connector - Dryer Wire Connector", "description": "<b>Genuine GE OEM WE1M650 Dryer Motor Wire Harness Connector</b>\n\nRoadrunnerParts Genuine OEM WE1M650 Motor Wire Harness Connector (Diagram ID 631)\n\n<b>Diagram ID:</b> 631\n\n<b>Product Features:</b>\n- This essential electrical connector links the dryer motor to the main power and control circuit\n- It ensures a stable signal path and consistent voltage supply for smooth motor operation and helps avoid intermittent starting issues\n\n<b>Compatibility:</b>\nFits various models including: NVL333EY0WW, NVL333GB0CC, GE Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M650", "type": "Wire Connector", "compatibleModels": ["NVL333EY0WW", "NVL333GB0CC", "GE Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE13X20394", "title": "GE Genuine OEM WE13X20394 Motor Plate - Dryer Motor Support Plate", "description": "<b>Genuine GE OEM WE13X20394 Motor Plate</b>\n\nRoadrunnerParts Genuine GE WE13X20394 Motor Mounting Plate (Diagram ID 233)\n\n<b>Diagram ID:</b> 233\n\n<b>Product Features:</b>\n- This structural plate supports the drive motor and aligns it with the drum belt and blower housing\n- Replace this if your dryer is making unusual mechanical noises or if the motor has shifted out of position\n\n<b>Compatibility:</b>\nFits various models including: D3000, DCCB330EJ1WC, GE Spacemaker\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE13X20394", "type": "Motor Support Plate", "compatibleModels": ["D3000", "DCCB330EJ1WC", "GE Spacemaker"], "condition": "Used"}}, {"partNumber": "WE1M652", "title": "GE Genuine OEM WE1M652 Dryer Control Knob - Dryer Control Knob", "description": "<b>Genuine GE OEM WE1M652 Dryer Control Knob</b>\n\nRoadrunnerParts Genuine OEM WE1M652 White Timer Control Knob (Diagram ID 7)\n\n<b>Diagram ID:</b> 7\n\n<b>Product Features:</b>\n- This durable plastic knob features a D-shaped shaft for easy installation on the timer or cycle selector\n- It allows for precise control over dryer settings and features a clear dial for better visibility\n\n<b>Compatibility:</b>\nFits various models including: NWXR483EG4WW, HTDX100ED4WW, NVLR223EH7WO\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M652", "type": "Control Knob", "compatibleModels": ["NWXR483EG4WW", "HTDX100ED4WW", "NVLR223EH7WO"], "condition": "Used"}}, {"partNumber": "WE09X20441", "title": "GE Genuine OEM WE09X20441 Felt Trap Duct - Dryer Duct Seal", "description": "<b>Genuine GE OEM WE09X20441 Felt Trap Duct</b>\n\nRoadrunnerParts Genuine GE WE09X20441 Felt Trap Duct Seal (Diagram ID 312)\n\n<b>Diagram ID:</b> 312\n\n<b>Product Features:</b>\n- This lower front felt pad measures approximately 53-1/2 inches long and creates a critical seal around the lint trap duct\n- It supports the front of the dryer drum and prevents air leaks, which maintains drying heat and airflow efficiency\n\n<b>Compatibility:</b>\nFits various models including: GFDN160EJ0WW, GUD24GSSJ0WW, GTD45EASJ1WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE09X20441", "type": "Duct Seal", "compatibleModels": ["GFDN160EJ0WW", "GUD24GSSJ0WW", "GTD45EASJ1WS"], "condition": "Used"}}, {"partNumber": "WE1M1015", "title": "GE Genuine OEM WE1M1015 Ground Strap Asm - Dryer Ground Strap", "description": "<b>Genuine GE OEM WE1M1015 Ground Strap Asm</b>\n\nRoadrunnerParts Genuine OEM WE1M1015 Ground Strap Assembly (Diagram ID 515)\n\n<b>Diagram ID:</b> 515\n\n<b>Product Features:</b>\n- This 1/2-inch copper connection strap bonds the dryer cabinet to the electrical ground\n- It is an essential safety component that creates a direct path for fault currents to prevent electrical shock and ensure safe operation\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, Kenmore models\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1015", "type": "Ground Strap", "compatibleModels": ["GE Dryers", "Hotpoint Dryers", "Kenmore models"], "condition": "Used"}}, {"partNumber": "WE03X37319", "title": "GE Genuine OEM WE03X37319 Dryer Drum Glide Bearing - Dryer Drum Slides", "description": "<b>Genuine GE OEM WE03X37319 Dryer Drum Glide Bearing</b>\n\nRoadrunnerParts Genuine GE WE03X37319 Drum Bearing Slide 2-Pack (Diagram ID 317)\n\n<b>Diagram ID:</b> 317\n\n<b>Product Features:</b>\n- These white Teflon slides install into the outer slots of the front bearing support\n- They provide a low-friction surface for the drum to rotate on, preventing squeaking, grinding, and wear to the front panel\n\n<b>Compatibility:</b>\nFits various models including: DBXR463ED1WW, GTD42EASJ0WW, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE03X37319", "type": "Drum Slides", "compatibleModels": ["DBXR463ED1WW", "GTD42EASJ0WW", "HTDX100EM8WW"], "condition": "Used"}}, {"partNumber": "WE3M51", "title": "GE Genuine OEM WE3M51 Bearing Slide - Dryer Drum Slide", "description": "<b>Genuine GE OEM WE3M51 Bearing Slide</b>\n\nRoadrunnerParts Genuine OEM WE3M51 Bearing Slide (Diagram ID 317)\n\n<b>Diagram ID:</b> 317\n\n<b>Product Features:</b>\n- This low-friction white slide bearing supports the front of the dryer drum as it rotates\n- Replacing worn slides resolves squealing noises and marks on clothes by ensuring a smooth interface between the drum and the front cabinet support\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, Kenmore Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE3M51", "type": "Drum Slide", "compatibleModels": ["GE Dryers", "Hotpoint Dryers", "Kenmore Dryers"], "condition": "Used"}}, {"partNumber": "WE2M96", "title": "GE Genuine OEM WE2M96 Cap Nut - Dryer Cap Nut", "description": "<b>Genuine GE OEM WE2M96 Cap Nut</b>\n\nRoadrunnerParts Genuine GE WE2M96 Dryer Cap Nut (Diagram ID 234)\n\n<b>Diagram ID:</b> 234\n\n<b>Product Features:</b>\n- This essential nut secures the drive belt pulley and other structural parts\n- Durable and corrosion-resistant, it ensures that high-tension components remain properly aligned and prevents mechanical looseness in the motor assembly\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, Haier Cafe\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE2M96", "type": "Cap Nut", "compatibleModels": ["GE Dryers", "Hotpoint Dryers", "Haier Cafe"], "condition": "Used"}}, {"partNumber": "WE1M659", "title": "GE Genuine OEM WE1M659 Push/ Start Button Grey - Dryer Start Button", "description": "<b>Genuine GE OEM WE1M659 Push/ Start Button Grey</b>\n\nRoadrunnerParts Genuine OEM WE1M659 Grey Push-to-Start Button (Diagram ID 2232)\n\n<b>Diagram ID:</b> 2232\n\n<b>Product Features:</b>\n- This gray plastic button is approximately 1 inch in diameter and initiates the drying cycle\n- Replace this part if your original button is cracked, broken, or missing to restore reliable starting function to your dryer\n\n<b>Compatibility:</b>\nFits various models including: GTDX180ED4WW, HTDX100ED4WW, GTDP301EL2WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M659", "type": "Start Button", "compatibleModels": ["GTDX180ED4WW", "HTDX100ED4WW", "GTDP301EL2WS"], "condition": "Used"}}, {"partNumber": "WE1M1101", "title": "GE Genuine OEM WE1M1101 Levelling Leg - Dryer Leveling Foot", "description": "<b>Genuine GE OEM WE1M1101 Levelling Leg</b>\n\nRoadrunnerParts Genuine GE WE1M1101 Leveling Leg (Diagram ID 236)\n\n<b>Diagram ID:</b> 236\n\n<b>Product Features:</b>\n- This adjustable foot supports the dryer and allows for easy leveling on uneven floors\n- Proper leveling is essential to prevent vibration and ensure balanced rotation of the dryer drum\n- Replace if the original leg is bent or rusted\n\n<b>Compatibility:</b>\nFits various models including: GTD42GASJ0WW, GTD72EBSN0WS, HTDX100GM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1101", "type": "Leveling Foot", "compatibleModels": ["GTD42GASJ0WW", "GTD72EBSN0WS", "HTDX100GM8WW"], "condition": "Used"}}, {"partNumber": "WE14X20426", "title": "GE Genuine OEM WE14X20426 Baffle - Dryer Drum Baffle", "description": "<b>Genuine GE OEM WE14X20426 Baffle</b>\n\nRoadrunnerParts Genuine OEM WE14X20426 Dryer Drum Baffle (Diagram ID 509)\n\n<b>Diagram ID:</b> 509\n\n<b>Product Features:</b>\n- These high-quality plastic fins are mounted inside the dryer drum\n- They lift and tumble clothes as the drum rotates, ensuring that hot air circulates evenly through laundry for thorough and wrinkle-free drying results\n\n<b>Compatibility:</b>\nFits various models including: DCCB330EJ2WC, DISR333FCFWW, DMCD330GJ2WC\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE14X20426", "type": "Drum Baffle", "compatibleModels": ["DCCB330EJ2WC", "DISR333FCFWW", "DMCD330GJ2WC"], "condition": "Used"}}, {"partNumber": "WE1M461", "title": "GE Genuine OEM WE1M461 Kenmore Dryer Rear Bearing O-ring - Dryer Bearing O-Ring", "description": "<b>Genuine GE OEM WE1M461 Kenmore Dryer Rear Bearing O-ring</b>\n\nRoadrunnerParts Genuine GE WE1M461 Drum Bearing O-Ring (Diagram ID 3127)\n\n<b>Diagram ID:</b> 3127\n\n<b>Product Features:</b>\n- This authentic OEM replacement part secures the rear drum bearing sleeve onto the drum shaft\n- It plays a critical role in sealing connections to prevent air leaks and maintain a smooth, quiet drying cycle\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, Hotpoint Dryers, Kenmore Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M461", "type": "Bearing O-Ring", "compatibleModels": ["GE Electric Dryers", "Hotpoint Dryers", "Kenmore Dryers"], "condition": "Used"}}, {"partNumber": "WE1M780", "title": "GE OEM WE1M780 Dryer Heating Element Bracket", "description": "<b>Genuine GE OEM WE1M780 Dryer Heating Element Bracket</b>\n\nRoadrunnerParts Genuine OEM WE1M780 Heating Element Bracket (Diagram ID 510)\n\n<b>Diagram ID:</b> 510\n\n<b>Product Features:</b>\n- This metal bracket holds the heating element coil securely in place within the heater housing\n- It ensures that the element does not shift or come into contact with other components, preventing potential short circuits and damage\n\n<b>Compatibility:</b>\nFits various models including: GTD490ED5WS, GFDN110ED0WW, YFD45ESSM1WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M780", "type": "Element Support Bracket", "compatibleModels": ["GTD490ED5WS", "GFDN110ED0WW", "YFD45ESSM1WW"], "condition": "Used"}}, {"partNumber": "WE1M825", "title": "GE Genuine OEM WE1M825 a , Gasket (Seal) 39 Inch - Dryer Foam Duct Gasket", "description": "<b>Genuine GE OEM WE1M825 a , Gasket (Seal) 39 Inch</b>\n\nRoadrunnerParts Genuine GE WE1M825 39-Inch Foam Gasket Seal (Diagram ID 325)\n\n<b>Diagram ID:</b> 325\n\n<b>Product Features:</b>\n- This self-adhesive foam seal wraps around the dryer duct or trap\n- It effectively prevents air leaks and heat loss, ensuring that your dryer operates at maximum thermal efficiency and reduces drying times\n\n<b>Compatibility:</b>\nFits various models including: NVLR333EE1WW, DVLR223GE1WW, GTDX400GD1WS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M825", "type": "Foam Duct Gasket", "compatibleModels": ["NVLR333EE1WW", "DVLR223GE1WW", "GTDX400GD1WS"], "condition": "Used"}}, {"partNumber": "WE01X20423", "title": "GE OEM WE01X20423 Dryer Power Cord Access Bracket", "description": "<b>Genuine GE OEM WE01X20423 Dryer Power Cord Access Bracket</b>\n\nRoadrunnerParts Genuine OEM WE01X20423 Power Cord Strain Relief Bracket (Diagram ID 431)\n\n<b>Diagram ID:</b> 431\n\n<b>Product Features:</b>\n- This bracket attaches to the dryer's back panel to secure the electrical cord at the entry point\n- It prevents mechanical stress on wire terminals and ensures a safe and durable electrical connection for your appliance\n\n<b>Compatibility:</b>\nFits various models including: DLLSR33EF0WC, GTD490ED5WS, GE Washers and Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE01X20423", "type": "Strain Relief Bracket", "compatibleModels": ["DLLSR33EF0WC", "GTD490ED5WS", "GE Washers and Dryers"], "condition": "Used"}}, {"partNumber": "WE03X37320", "title": "GE OEM WE03X37320 Dryer Drum Glide Bearing, Upper", "description": "<b>Genuine GE OEM WE03X37320 Dryer Drum Glide Bearing, Upper</b>\n\nRoadrunnerParts Genuine GE WE03X37320 Drum Bearing Slide 2-Pack (Diagram ID 316)\n\n<b>Diagram ID:</b> 316\n\n<b>Product Features:</b>\n- These copper-filled green Teflon slides fit into the inner slots of the front drum support bearing\n- They provide the necessary low-friction lining to ensure smooth drum rotation and prevent metal-on-metal squealing noises\n\n<b>Compatibility:</b>\nFits various models including: GFD40ESCM0WW, GFD43ESSM0WW, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE03X37320", "type": "Drum Slides (Green)", "compatibleModels": ["GFD40ESCM0WW", "GFD43ESSM0WW", "HTDX100EM8WW"], "condition": "Used"}}, {"partNumber": "WE1M934", "title": "GE Genuine OEM WE1M934 Door Reversal Plug - Dryer Plug Button", "description": "<b>Genuine GE OEM WE1M934 Door Reversal Plug</b>\n\nRoadrunnerParts Genuine OEM WE1M934 White Door Reversal Plug (Diagram ID 112)\n\n<b>Diagram ID:</b> 112\n\n<b>Product Features:</b>\n- This white plastic plug button is used to fill the unused hinge or latch holes when the dryer door is reversed\n- It provides a finished appearance and protects the interior of the cabinet from dust and debris\n\n<b>Compatibility:</b>\nFits various models including: GTD81GSSJ2WS, GTDS825GD0MC, GE Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M934", "type": "Plug Button", "compatibleModels": ["GTD81GSSJ2WS", "GTDS825GD0MC", "GE Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE3M52", "title": "GE Genuine OEM WE3M52 Bearing Slide - Dryer Drum Glide", "description": "<b>Genuine GE OEM WE3M52 Bearing Slide</b>\n\nRoadrunnerParts Genuine GE WE3M52 Green Drum Bearing Slide (Diagram ID 316)\n\n<b>Diagram ID:</b> 316\n\n<b>Product Features:</b>\n- These Teflon-coated slides install into the front drum support and act as a durable liner\n- They ensure smooth rotation and prevent noisy, metal-on-metal friction as the dryer drum tumbles laundry\n\n<b>Compatibility:</b>\nFits various models including: GE Compact Dryers, GE Spacemaker\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE3M52", "type": "Drum Glide", "compatibleModels": ["GE Compact Dryers", "GE Spacemaker"], "condition": "Used"}}, {"partNumber": "WE03X31620", "title": "GE Genuine OEM WE03X31620 Dryer Idler Pulley - Dryer Idler Pulley Wheel", "description": "<b>Genuine GE OEM WE03X31620 Dryer Idler Pulley</b>\n\nRoadrunnerParts Genuine OEM WE03X31620 Idler Pulley Wheel (Diagram ID 216)\n\n<b>Diagram ID:</b> 216\n\n<b>Product Features:</b>\n- This high-strength plastic pulley wheel provides the correct tension to the dryer drum belt\n- It ensures that the drum rotates smoothly as the drive motor turns, eliminating squeaking and preventing drum starting failures\n\n<b>Compatibility:</b>\nFits various models including: GFD40ESCM0WW, GTD48EASW0WB, PTD90EBPT2RS\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE03X31620", "type": "Idler Pulley Wheel", "compatibleModels": ["GFD40ESCM0WW", "GTD48EASW0WB", "PTD90EBPT2RS"], "condition": "Used"}}, {"partNumber": "WE09X27636", "title": "GE Genuine OEM WE09X27636 Dryer Blower Gasket - Dryer Blower Housing Gasket", "description": "<b>Genuine GE OEM WE09X27636 Dryer Blower Gasket</b>\n\nRoadrunnerParts Genuine GE WE09X27636 Exhaust Blower Gasket (Diagram ID 218)\n\n<b>Diagram ID:</b> 218\n\n<b>Product Features:</b>\n- This specialized gasket creates an airtight seal between the blower housing and the exhaust duct\n- It is essential for maintaining proper suction, improving airflow, and preventing moisture from leaking into the dryer cabinet\n\n<b>Compatibility:</b>\nFits various models including: GTD48EASW0WB, GFD43GSSM1WW, PTD60GBPR0DG\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE09X27636", "type": "Blower Housing Gasket", "compatibleModels": ["GTD48EASW0WB", "GFD43GSSM1WW", "PTD60GBPR0DG"], "condition": "Used"}}, {"partNumber": "WE12X20395", "title": "GE Genuine OEM WE12X20395 Idler Pulley - Dryer Idler Pulley Wheel", "description": "<b>Genuine GE OEM WE12X20395 Idler Pulley</b>\n\nRoadrunnerParts Genuine OEM WE12X20395 Idler Pulley (Diagram ID 216)\n\n<b>Diagram ID:</b> 216\n\n<b>Product Features:</b>\n- This rotating wheel maintains tension on the drum drive belt to facilitate continuous drum motion\n- Replace this component if your dryer is noisy, squealing, or if the drum fails to rotate despite the motor running\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, Kenmore Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE12X20395", "type": "Idler Pulley Wheel", "compatibleModels": ["GE Dryers", "Hotpoint Dryers", "Kenmore Dryers"], "condition": "Used"}}, {"partNumber": "WE1M966", "title": "GE Genuine OEM WE1M966 Blower Gasket (Exhaust) - Dryer Blower Gasket", "description": "<b>Genuine GE OEM WE1M966 Blower Gasket (Exhaust)</b>\n\nRoadrunnerParts Genuine GE WE1M966 Blower Exhaust Gasket (Diagram ID 218)\n\n<b>Diagram ID:</b> 218\n\n<b>Product Features:</b>\n- This high-quality gasket provides an essential seal for the dryer's airflow system\n- It ensures that moist air is correctly routed into the exhaust duct without leakage, maximizing drying efficiency and reducing lint buildup\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Kenmore Laundry Centers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M966", "type": "Blower Gasket", "compatibleModels": ["GE Dryers", "Kenmore Laundry Centers"], "condition": "Used"}}, {"partNumber": "WH01X10313", "title": "GE Genuine OEM WH01X10313 Washer Control Knob - Dryer Selection Knob", "description": "<b>Genuine GE OEM WH01X10313 Washer Control Knob</b>\n\nRoadrunnerParts Genuine OEM WH01X10313 Control Knob and Clip (Diagram ID 19)\n\n<b>Diagram ID:</b> 19\n\n<b>Product Features:</b>\n- This white selection knob allows the user to choose cycle and temperature settings\n- It features a D-shaped shaft for a secure fit on the selector switch\n- Replace if the original knob is cracked, stripped, or missing\n\n<b>Compatibility:</b>\nFits various models including: NWXR483EG4WW, HTDX100ED4WW, HSWP1000M4WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WH01X10313", "type": "Selection Knob", "compatibleModels": ["NWXR483EG4WW", "HTDX100ED4WW", "HSWP1000M4WW"], "condition": "Used"}}, {"partNumber": "WE1M1011", "title": "GE Genuine OEM WE1M1011 Latch - Dryer Door Catch", "description": "<b>Genuine GE OEM WE1M1011 Latch</b>\n\nRoadrunnerParts Genuine GE WE1M1011 Door Latch (Diagram ID 327)\n\n<b>Diagram ID:</b> 327\n\n<b>Product Features:</b>\n- This square white plastic latch ensures the dryer door stays securely closed during the drying cycle\n- It activates the safety switch to allow the dryer to start\n- Replace if your dryer door won't stay shut or fails to latch properly\n\n<b>Compatibility:</b>\nFits various models including: DPSR475EW0WW, NJSR453EW2AA, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1011", "type": "Door Catch", "compatibleModels": ["DPSR475EW0WW", "NJSR453EW2AA", "HTDX100EM8WW"], "condition": "Used"}}, {"partNumber": "WE1M536", "title": "GE Genuine OEM WE1M536 Latch - Dryer Door Latch", "description": "<b>Genuine GE OEM WE1M536 Latch</b>\n\nRoadrunnerParts Genuine OEM WE1M536 Dryer Door Latch (Diagram ID 327)\n\n<b>Diagram ID:</b> 327\n\n<b>Product Features:</b>\n- This component ensures a secure mechanical lock when the dryer door is closed\n- It works in conjunction with the door strike to engage the interlock switch, allowing the drying cycle to initiate and proceed safely\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M536", "type": "Door Latch", "compatibleModels": ["GE Dryers", "Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE1M1033", "title": "GE Genuine OEM WE1M1033 Dryer Door Hinge - Dryer Door Hinge", "description": "<b>Genuine GE OEM WE1M1033 Dryer Door Hinge</b>\n\nRoadrunnerParts Genuine GE WE1M1033 Door Hinge (Diagram ID 3051)\n\n<b>Diagram ID:</b> 3051\n\n<b>Product Features:</b>\n- This durable metal hinge allows the dryer door to pivot smoothly when opening and closing\n- It features approximately 1-1/2 inches between mounting holes and is essential for maintaining proper door alignment and effective sealing\n\n<b>Compatibility:</b>\nFits various models including: HTDX100EM8WW, GUD27ESSJ1WW, GE Laundry Centers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M1033", "type": "Door Hinge", "compatibleModels": ["HTDX100EM8WW", "GUD27ESSJ1WW", "GE Laundry Centers"], "condition": "Used"}}, {"partNumber": "WE1M505", "title": "GE Genuine OEM WE1M505 Hinge - Dryer Door Hinge", "description": "<b>Genuine GE OEM WE1M505 Hinge</b>\n\nRoadrunnerParts Genuine OEM WE1M505 Dryer Door Hinge (Diagram ID 3051)\n\n<b>Diagram ID:</b> 3051\n\n<b>Product Features:</b>\n- This original metal hinge supports the weight of the dryer door and ensures it swings open and closed with minimal effort\n- It is specifically designed to fit GE and Hotpoint laundry centers and stand-alone dryers\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1M505", "type": "Door Hinge", "compatibleModels": ["GE Dryers", "Hotpoint Dryers"], "condition": "Used"}}, {"partNumber": "WE2M196", "title": "GE Genuine OEM WE2M196 Ground Screw - Dryer Electrical Screw", "description": "<b>Genuine GE OEM WE2M196 Ground Screw</b>\n\nRoadrunnerParts Genuine GE WE2M196 #8 Ground Screw (Diagram ID 319)\n\n<b>Diagram ID:</b> 319\n\n<b>Product Features:</b>\n- This specialized electrical screw is used to secure ground straps and bonding wires to the dryer's chassis\n- It ensures a reliable and safe electrical path to the ground point to prevent appliance failure and electrical shock\n\n<b>Compatibility:</b>\nFits various models including: DBLR333EG0WW, DBXR300EG5WS, BWXR473ET0WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE2M196", "type": "Electrical Screw", "compatibleModels": ["DBLR333EG0WW", "DBXR300EG5WS", "BWXR473ET0WW"], "condition": "Used"}}, {"partNumber": "WE1X1192", "title": "GE Genuine OEM WE1X1192 Door Strike - Dryer Door Catch Strike", "description": "<b>Genuine GE OEM WE1X1192 Door Strike</b>\n\nRoadrunnerParts Genuine OEM WE1X1192 Dryer Door Strike (Diagram ID 3049)\n\n<b>Diagram ID:</b> 3049\n\n<b>Product Features:</b>\n- This small metal piece is approximately 1 inch long and mounts to the dryer frame\n- It fits into the door catch mechanism to keep the door securely closed and engage the door safety switch during operation\n\n<b>Compatibility:</b>\nFits various models including: 2661532110, GUD27ESSJ1WW, GE Laundry Centers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE1X1192", "type": "Door Catch Strike", "compatibleModels": ["2661532110", "GUD27ESSJ1WW", "GE Laundry Centers"], "condition": "Used"}}, {"partNumber": "WZ05X0158", "title": "GE Genuine OEM WZ05X0158 Screw 8-32X3/8 Grd Scr - Dryer Grounding Screw", "description": "<b>Genuine GE OEM WZ05X0158 Screw 8-32X3/8 Grd Scr</b>\n\nRoadrunnerParts Genuine GE WZ05X0158 Ground Screw (Diagram ID 461)\n\n<b>Diagram ID:</b> 461\n\n<b>Product Features:</b>\n- This 8-32 x 3/8 inch machine screw features a flat head and Phillips drive\n- It is specifically designed for grounding connections within GE dryers and refrigerators to provide safe and reliable electrical performance\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, GE Refrigerators\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WZ05X0158", "type": "Grounding Screw", "compatibleModels": ["GE Dryers", "GE Refrigerators"], "condition": "Used"}}, {"partNumber": "WE00X181L", "title": "GE Genuine OEM WE00X181L Shaft - Dryer Drum Support Shaft", "description": "<b>Genuine GE OEM WE00X181L Shaft</b>\n\nRoadrunnerParts Genuine OEM WE00X181L Rear Drum Support Shaft (Diagram ID 508)\n\n<b>Diagram ID:</b> 508\n\n<b>Product Features:</b>\n- This heavy-duty metal shaft is the central axis for the rear drum bearing\n- It facilitates smooth, balanced rotation of the dryer drum during the tumbling cycle\n- Essential for resolving thumping or screeching noises\n\n<b>Compatibility:</b>\nFits various models including: GTDP490ED7WS, GE Spacemaker\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE00X181L", "type": "Drum Support Shaft", "compatibleModels": ["GTDP490ED7WS", "GE Spacemaker"], "condition": "Used"}}, {"partNumber": "WE00X1811", "title": "GE Genuine OEM WE00X1811 Shaft - Dryer Drum Axle Shaft", "description": "<b>Genuine GE OEM WE00X1811 Shaft</b>\n\nRoadrunnerParts Genuine GE WE00X1811 Drum Support Shaft (Diagram ID 508)\n\n<b>Diagram ID:</b> 508\n\n<b>Product Features:</b>\n- This precision-engineered metal shaft supports the rear of the dryer drum, allowing it to spin freely\n- It acts as the internal axle for the drum bearing assembly and is vital for maintaining proper mechanical balance in your dryer\n\n<b>Compatibility:</b>\nFits various models including: GE Laundry Centers, GE Stand-alone Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.", "specs": {"brand": "GE", "mpn": "WE00X1811", "type": "Drum Axle Shaft", "compatibleModels": ["GE Laundry Centers", "GE Stand-alone Dryers"], "condition": "Used"}}];
+        const previewDiv = document.getElementById('listing-preview');
+        const welcomeDiv = document.getElementById('welcome-message');
+        const items = document.querySelectorAll('.listing-item');
+        const searchInput = document.getElementById('search-input');
+
+        function showListing(index) {
+            const listing = listings[index];
+            welcomeDiv.classList.add('hidden');
+            previewDiv.classList.remove('hidden');
+            
+            items.forEach(item => item.classList.remove('active'));
+            document.querySelector(`[data-index="${index}"]`).classList.add('active');
+
+            const desc = listing.description.replace(/\n/g, '<br>');
+            const conditionLabel = "Used - inspected and prepared for resale";
+            
+            previewDiv.innerHTML = `
+                <div class="ebay-container">
+                    <div class="ebay-header">
+                        <div class="namemark">Roadrunner<span class="namemark-accent">Parts</span></div>
+                    </div>
+                    
+                    <div class="ebay-content">
+                        <div class="condition-badge">Condition: Used</div>
+                        <h1 class="ebay-title">${listing.title}</h1>
+                        
+                        <table class="ebay-specs-table">
+                            <tbody>
+                                <tr><th>Part Number</th><td><strong>${listing.partNumber}</strong></td></tr>
+                                <tr><th>Brand</th><td>${listing.specs.brand || 'GE'}</td></tr>
+                                <tr><th>Condition</th><td>${conditionLabel}</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="ebay-section-title">Item Description</div>
+                        <div class="ebay-description-text">
+                            <p><i>Note: This is a high-quality used component removed from a fully inspected appliance.</i></p>
+                            ${desc}
+                        </div>
+
+                        <div class="ebay-section-title">Shipping & Handling</div>
+                        <div class="ebay-policy-box">
+                            <p style="margin: 0;">We professionally pack and ship all items within 1 business day. Expedited shipping options are available at checkout.</p>
+                        </div>
+
+                        <div class="ebay-section-title">Returns</div>
+                        <div class="ebay-policy-box">
+                            <p style="margin: 0;">Returns are handled under the return terms shown on this eBay listing. Returned parts must be sent back in the same condition received.</p>
+                        </div>
+                    </div>
+
+                    <div class="ebay-footer">
+                        Thank you for shopping with Roadrunner Parts. Your trusted source for professional appliance components.
+                    </div>
+                </div>
+            `;
+            document.getElementById('preview-pane').scrollTop = 0;
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                item.style.display = text.includes(term) ? 'block' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

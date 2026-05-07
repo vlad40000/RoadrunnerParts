@@ -1,0 +1,167 @@
+{
+  "generatedAt": "2026-05-07T23:42:40.368Z",
+  "sourceInput": "scratch/ebay-html/listings.normalized.json",
+  "usageBoundary": "Candidate/reference images only. Do not deploy to eBay without operator approval and image-use rights.",
+  "totalParts": 2,
+  "partsWithCandidates": 2,
+  "records": [
+    {
+      "partNumber": "WE21X20562",
+      "title": "GE Genuine OEM WE21X20562 Drum Asm 6.0 - Dryer Drum Assembly",
+      "candidates": [
+        {
+          "title": "WE21X20562 Drum Asm | Genuine Ge OEM In Stock",
+          "imageUrl": "https://cdn.appliancepartspros.com/images/product/cache/ge-drum-asm-we21x20562-ap5807056_03_l.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.7YeonXeKKrkNbOEasYiuwgHaFj?pid=Api",
+          "pageUrl": "https://www.appliancepartspros.com/ge-drum-asm-we21x20562-ap5807056.html",
+          "sourceDomain": "appliancepartspros.com",
+          "width": 640,
+          "height": 480,
+          "source": "duckduckgo",
+          "score": 118,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 Drum Asm | Genuine Ge OEM In Stock",
+          "imageUrl": "https://cdn.appliancepartspros.com/images/product/cache/ge-drum-asm-we21x20562-ap5807056_01_l.jpg",
+          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.diegEU-a4_sdryD5YD2WMgHaFj?pid=Api",
+          "pageUrl": "https://www.appliancepartspros.com/ge-drum-asm-we21x20562-ap5807056.html",
+          "sourceDomain": "appliancepartspros.com",
+          "width": 640,
+          "height": 480,
+          "source": "duckduckgo",
+          "score": 118,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 Drum Asm | Genuine Ge OEM In Stock",
+          "imageUrl": "https://cdn.appliancepartspros.com/images/product/cache/ge-drum-asm-we21x20562-ap5807056_02_x.jpg",
+          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.Ztm9cFVhW_tJ3eDB8FTP8QHaFj?pid=Api",
+          "pageUrl": "https://www.appliancepartspros.com/ge-drum-asm-we21x20562-ap5807056.html",
+          "sourceDomain": "appliancepartspros.com",
+          "width": 800,
+          "height": 600,
+          "source": "duckduckgo",
+          "score": 118,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 | DRUM ASM | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--qkW5fRMI--/e72a4171ede6fb73a02d854751949de8c41ca851.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.-VdBzbYsCZh7jJzDK4JRTQHaHt?pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE21X20562",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 104,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 | DRUM ASM | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--1EvLfBh3--/w_480,h_500/24165547caa341b549b3d934be708ed1a6deaa88.jpg",
+          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.e7Npazr46SLyQVo1YMcjYAHaHt?pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE21X20562",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 480,
+          "height": 500,
+          "source": "duckduckgo",
+          "score": 98,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 GE Drum Assembly | Reliable Parts",
+          "imageUrl": "https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0.webp",
+          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.LoOZyypOvBIGmFOXTSdOdwHaHt?pid=Api",
+          "pageUrl": "https://www.reliableparts.com/gen-we21x20562.html",
+          "sourceDomain": "reliableparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 79,
+          "reviewStatus": "candidate_needs_operator_review"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "partNumber": "WE21X20407",
+      "title": "GE Genuine OEM WE21X20407 Drum Asm 6.0 Cu.ft - Dryer Drum Assembly",
+      "candidates": [
+        {
+          "title": "General Electric Drum Assembly 6.0 Cu.Ft Wh #GEH-WE21X20407 - Appliance ...",
+          "imageUrl": "https://s3.us-central-1.wasabisys.com/partswarehouse/photos/GEH-WE21X20407-2.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.JA55OyMPiULK38ry7dD8kQHaHa?pid=Api",
+          "pageUrl": "https://www.partswarehouse.com/GE-Haier-Hotpoint-Drum-Assembly-GEH-WE21X20562-p/geh-we21x20407.htm",
+          "sourceDomain": "partswarehouse.com",
+          "width": 500,
+          "height": 500,
+          "source": "duckduckgo",
+          "score": 93,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "Official GE GFE28GSKFSS bottom-mount refrigerator parts | Sears PartsDirect",
+          "imageUrl": "https://c.searspartsdirect.com/img/PLDM/G2105330-00007?f=png",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.WuH7wDj_JjDVwS8tiEfGBAHaJl?pid=Api",
+          "pageUrl": "https://www.searspartsdirect.com/model/68zjnnowzr-000432/ge-gfe28gskfss-bottom-mount-refrigerator-parts",
+          "sourceDomain": "searspartsdirect.com",
+          "width": 2448,
+          "height": 3168,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "Assembly View for DRUM | GTDX180ED4WW",
+          "imageUrl": "http://assets.geappliances.io/parts/00100000/00109200/00109212.p04_2325.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.aRc1Ji5_1Lc99LDVE_Y4WgHaH4?pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/GTDX180ED4WW/4/0/0/0/DRUM",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2325,
+          "height": 2475,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WB2X9154 | RANGE OVEN IGNITER | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--Z80T-eyE--/873e5c2edf934c41a01c8abac8caa7a3150a3458.jpg",
+          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.rwboA8x8IvPo7N0UOYZDFAHaHt?pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WB2X9154",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WR30X10093 | Refrigerator Electronic Ice Maker Assembly Kit | GE ...",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--lslBAkU3--/c610fda8c0b7ada7d99b944eb54913a028a635c1.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.PWZr_9ebWt8r2UxwcmTFSgHaHt?pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WR30X10093",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WB15X10023 | Microwave Handle - White | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--fdA0vuVR--/3eb2ffe3ad08a4a71089e95c36dba36de0a13ea6.jpg",
+          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.xVlNzu3rEHuU5IHNM0vaDQHaHt?pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WB15X10023",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

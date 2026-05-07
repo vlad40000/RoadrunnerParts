@@ -1,0 +1,53 @@
+{
+  "listings": [
+    {
+      "partNumber": "WE21X20562",
+      "title": "GE WE21X20562 Dryer Drum Assembly 6.0 (Replacement)",
+      "description": "This is a genuine GE OEM replacement Dryer Drum Assembly (6.0 Cu. Ft.). This part replaces a damaged or worn drum to restore proper tumbling and circulation. This drum assembly is identified as Diagram ID 503 in compatible dryer illustrated parts breakdowns. Professional installation is recommended due to the size of the component. Please verify your model number to ensure exact fitment.",
+      "specs": {
+        "brand": "GE Appliances",
+        "mpn": "WE21X20562",
+        "type": "Dryer Drum Assembly",
+        "compatibleModels": [
+          "GE",
+          "Hotpoint",
+          "Haier",
+          "Monogram",
+          "Café"
+        ],
+        "condition": "New (as per source, though typically Pulled/Used in RoadrunnerParts program)"
+      }
+    },
+    {
+      "partNumber": "WE21X20407",
+      "title": "GE WE21X20407 Drum Asm 6.0 Cu.ft Wh (Replaced by WE21X20562)",
+      "description": "Genuine OEM GE WE21X20407 Dryer Drum Assembly (6.0 Cu. Ft.). Note: This part has been officially replaced by manufacturer part number WE21X20562. This cylinder rotates during the cycle to ensure even drying of garments. Identified as Diagram ID 503 in appliance parts diagrams. Wear work gloves during installation as metal edges may be sharp.",
+      "specs": {
+        "brand": "GE / Hotpoint / RCA",
+        "mpn": "WE21X20407",
+        "type": "Dryer Drum Assembly",
+        "compatibleModels": [
+          "GE",
+          "Hotpoint",
+          "RCA"
+        ],
+        "condition": "Used - Pulled and Tested"
+      }
+    },
+    {
+      "partNumber": "WE19M1713",
+      "title": "GE WE19M1713 Dryer Backsplash Graphics Assembly",
+      "description": "Genuine OEM GE WE19M1713 Backsplash Graphics Assembly. This adhesive overlay panel features operational instructions, cycle labels, and setting icons for your dryer control interface. Replace worn or faded graphics to restore your control panel's readability and aesthetic. This component is listed as Diagram ID 13 in the manufacturer's illustrated parts breakdown for select models.",
+      "specs": {
+        "brand": "GE Appliances",
+        "mpn": "WE19M1713",
+        "type": "Backsplash Graphics Assembly",
+        "compatibleModels": [
+          "GE",
+          "Hotpoint"
+        ],
+        "condition": "Used - Pulled and Tested"
+      }
+    }
+  ]
+}

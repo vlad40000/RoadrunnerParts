@@ -1,0 +1,1318 @@
+[
+  {
+    "partNumber": "WE21X20562",
+    "title": "Drum Asm 6.0 (replacement)",
+    "description": "This is a replacement Drum Asm 6.0 Cu.ft for compatible dryer units. Referenced as item 503 on the appliance diagram.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE21X20562",
+      "type": "Drum Assembly",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE21X20407",
+    "title": "Drum Asm 6.0 Cu.ft Wh",
+    "description": "Maintain your dryer's performance with this genuine GE Drum Asm. This component, identified as Diagram ID 503, is designed for use in compatible GE appliance models. Please verify your specific model number to ensure compatibility before installation.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE21X20407",
+      "type": "Drum Assembly",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE19M1713",
+    "title": "Backsplash Graphics Asm",
+    "description": "This Backsplash Graphics Assembly (Diagram ID 13) is a genuine OEM part designed for select GE appliances. This panel displays essential operational instructions, control labels, and safety icons, providing clear guidance and a finished aesthetic to the backsplash area of your dryer. It is an ideal replacement for worn, damaged, or faded graphic panels to restore clarity and functionality to your control interface.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE19M1713",
+      "type": "Backsplash Graphics Assembly",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE11M10001",
+    "title": "Dryer Heating Element",
+    "description": "This Dryer Heating Element is a replacement component for your dryer. Referenced as Diagram ID 514, this part is designed to provide the necessary heat for your appliance's drying cycle. Please verify your dryer's model number to ensure compatibility before purchase.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE11M10001",
+      "type": "Heating Element",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE17M66",
+    "title": "Motor",
+    "description": "Genuine GE Appliances drive motor for dryers. This part is identified as Diagram ID 630 in the backsplash, blower, and motor assembly. Please verify your dryer's model number to confirm compatibility, as this part may have been replaced by manufacturer substitution part WE17X22217.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE17M66",
+      "type": "Dryer Drive Motor",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE20X20596",
+    "title": "Panel",
+    "description": "Replacement panel for your appliance. This part is identified as Diagram ID 420 in the manufacturer's diagram.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE20X20596",
+      "type": "Panel",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE4M532",
+    "title": "Dryer Timer",
+    "description": "This genuine GE Appliances Dryer Timer (WE4M532), identified as Diagram ID 100, is engineered to provide precise control over your dryer's cycles. It regulates the duration of drying time, cooldown periods, and cycle completion to ensure efficient and consistent operation. Replacing a faulty timer can resolve issues such as the dryer failing to start, stopping mid-cycle, or running indefinitely. This OEM component is built to meet high standards of quality and durability for reliable performance in compatible electric dryers. Always remember to unplug the appliance before installation.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE4M532",
+      "type": "Dryer Timer",
+      "compatibleModels": [
+        "DBLR333EG1CC",
+        "DBLR333EG1WW",
+        "DBLR333EG2CC",
+        "DBLR333EG2WW",
+        "DBLR333EG3CC",
+        "DBLR333EG3WW",
+        "DBLR333EG4CC",
+        "DBLR333EG4WW",
+        "DBLR333EG5CC",
+        "DBLR333EG5WW",
+        "DBLR333EG6CC",
+        "DBLR333EG6WW",
+        "DBLR333EG7WW",
+        "DLLLR33EJ0WW",
+        "DLLLR33EJ1WW",
+        "DLLLR33EJ2WW",
+        "GHDX100EM0WW",
+        "GNSR465EBAWW",
+        "GNSR465EBBWW",
+        "GNSR465EBCWW",
+        "GNSR465EBWW",
+        "GTDX100EM0WW",
+        "GTDX100EM1WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE49X22295",
+    "title": "Dryer Door Inner Panel",
+    "description": "This genuine GE Appliance Dryer Door Inner Panel (part number WE49X22295) is designed to replace damaged or warped door components. This assembly helps restore the appearance of your dryer and ensures proper door alignment and closure. Refer to Diagram ID 305 for part placement and installation guidance. We recommend verifying compatibility with your specific dryer model number before purchase to ensure a correct fit.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE49X22295",
+      "type": "Dryer Door Panel Kit",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE10X20418",
+    "title": "Inner Door Asm White",
+    "description": "This is a genuine replacement Inner Door Assembly (White) for select appliances. Identified as Diagram ID 305, this part is designed to restore the function and appearance of your dryer door. Please verify your specific model number to ensure compatibility before purchase.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE10X20418",
+      "type": "Inner Door Assembly",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE20X20409",
+    "title": "Front Panel \"White\"",
+    "description": "This is a replacement Front Panel \"White\" for select dryers, referenced by Diagram ID 301. Please verify your specific appliance model to ensure compatibility before purchase.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE20X20409",
+      "type": "Front Panel",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE20X20412",
+    "title": "Bottom Cover",
+    "description": "This is a genuine GE Appliances replacement Bottom Cover for dryers. This component, identified as Diagram ID 222, is designed for use with specific GE, Hotpoint, and Haier laundry appliances. Please verify your model number to ensure compatibility before purchasing.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE20X20412",
+      "type": "Dryer Bottom Cover",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE20X20417",
+    "title": "Dryer Top Panel",
+    "description": "Restore your dryer to its original condition with this genuine GE dryer top cover panel. Designed to fit the top of the dryer cabinet, this white panel is an ideal replacement for a cracked, rusted, loose, or missing top cover. This component is identified as Diagram ID 401. Please verify your specific dryer model number to ensure compatibility before purchasing.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE20X20417",
+      "type": "Dryer Top Panel",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE20X20396",
+    "title": "Rear Panel",
+    "description": "Maintain your dryer with this genuine Rear Panel, designated as Diagram ID 420. This component is designed for specific appliance models to ensure a proper fit and secure operation.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE20X20396",
+      "type": "Dryer Rear Panel",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE20X20391",
+    "title": "Chassis Base",
+    "description": "This is a genuine Chassis Base for your appliance, identified as Diagram ID 408. This component is designed to provide structural support for your dryer unit. Please verify your specific model number to ensure compatibility before purchase.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE20X20391",
+      "type": "Chassis Base",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE49X22294",
+    "title": "End Cap Rh W",
+    "description": "This is a genuine GE Appliances kit of service end cap, identified as Diagram ID 4. Designed for specific appliance maintenance, this OEM part helps restore proper function to your unit. Please verify your appliance model number to ensure compatibility before purchase.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE49X22294",
+      "type": "End Cap",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE10X20468",
+    "title": "Dryer Door Outer Panel (white) - Diag ID 307",
+    "description": "This is a genuine OEM GE Dryer Door Outer Panel (white), identified as Diag ID 307. This replacement part is designed to address cracked, damaged, or malfunctioning dryer doors, helping to restore your appliance to proper working order. Please verify your specific dryer model number for compatibility before purchasing to ensure a proper fit.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE10X20468",
+      "type": "Dryer Door Outer Panel",
+      "compatibleModels": [
+        "GTDX180ED3WW",
+        "HTDX100EM8WW",
+        "DBXR463EB0WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE4M181",
+    "title": "Dryer Operating Thermostat",
+    "description": "This genuine OEM dryer operating thermostat (cycling thermostat), associated with Diagram ID 506, is a 4-wire component designed to regulate the internal temperature of your electric dryer. It cycles the heating element on and off during the drying process to maintain consistent heat levels and prevent overheating. If your dryer is experiencing issues such as failing to heat or overheating, this replacement part can help restore efficient and safe operation.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE4M181",
+      "type": "Cycling Thermostat",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE19M1478",
+    "title": "End Cap Lh Wh",
+    "description": "This is a genuine General Electric (GE) End Cap Lh Wh. This component is identified as Diagram ID 3.",
+    "specs": {
+      "brand": "General Electric (GE)",
+      "mpn": "WE19M1478",
+      "type": "End Cap",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE16X20393",
+    "title": "Laundry Center Dryer Blower Wheel",
+    "description": "This genuine OEM Laundry Center Dryer Blower Wheel (Diag ID 201) is designed to attach to the dryer drive motor shaft, efficiently circulating air through the drum and out the exhaust vent. This high-quality component is essential for maintaining optimal airflow and drying performance in your compatible appliance.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE16X20393",
+      "type": "Dryer Blower Wheel",
+      "compatibleModels": [
+        "GFDN160EJ0WW",
+        "GUD27EEPV0DG",
+        "GTDN500EM0WS",
+        "GTUP240GM0WW",
+        "GTDP301EL2WS",
+        "GTDP520ED3WW",
+        "GTDP250EM1WW",
+        "GTDP400GM0WS",
+        "GTDN550GD2WW",
+        "HTDX100GM5WW",
+        "DBVH512GF3WW",
+        "DBVH510GH1WW",
+        "HTDX100GM8WW",
+        "GFDN120ED2WW",
+        "GUD24ESSM0WW",
+        "GUD24ESSMWW",
+        "GTUN275EM1WW",
+        "GUD27ESSJ0WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE18M28",
+    "title": "Filter & Mesh Asm.",
+    "description": "This genuine OEM Filter & Mesh Assembly (Diagram ID 300) is designed for select GE and Hotpoint dryers. This assembly captures lint and debris during the drying cycle, helping to maintain proper airflow and dryer efficiency. Featuring a durable white plastic frame with a metal screen, this part is an essential component for optimal dryer maintenance. Please verify your specific dryer model number to ensure compatibility.",
+    "specs": {
+      "brand": "General Electric",
+      "mpn": "WE18M28",
+      "type": "Dryer Lint Filter",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE14X20425",
+    "title": "Trap Duct",
+    "description": "This replacement Trap Duct (Diagram ID 311) is designed for use in compatible dryer units. This part includes a felt seal and a foam seal. Please note that the sensor is not included. Ensure your appliance is unplugged before attempting installation.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE14X20425",
+      "type": "Trap Duct",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE20X20406",
+    "title": "Dryer Side Panel (white) Diag ID 404",
+    "description": "This genuine OEM Dryer Side Panel (white) is a direct replacement for your GE dryer. Referenced as Diagram ID 404 in the manufacturer's parts list, this panel is designed to restore the aesthetic and structural integrity of your appliance. Replace your side panel if the existing one is dented, rusted, or otherwise damaged. Please verify your specific dryer model number to ensure compatibility before purchasing.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE20X20406",
+      "type": "Dryer Side Panel",
+      "compatibleModels": [
+        "GTX18ESSJ0WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M1002",
+    "title": "Fuse Cemr 30 Amp 120V",
+    "description": "Restore proper operation to your appliance with this genuine GE OEM dryer power fuse. Rated at 30 Amp and 120 Volt, this fuse (Diagram ID 418) is designed to protect your appliance's electrical circuit by opening when current exceeds safe limits. Replacing a blown fuse can help resolve issues where the appliance won't start or certain functions fail to operate. Please disconnect power to the appliance before servicing and inspect the holder and wiring for any damage.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M1002",
+      "type": "Dryer Power Fuse",
+      "compatibleModels": [
+        "2661532110",
+        "2661532210",
+        "2661532211",
+        "2661532212",
+        "2661532311",
+        "2661532312",
+        "2661532412",
+        "26715321",
+        "2671532110",
+        "2671532210",
+        "2671532211",
+        "2671532212",
+        "2671532311",
+        "2671532312",
+        "2671532412"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1X921",
+    "title": "Motor Strap",
+    "description": "This genuine GE Appliances OEM Motor Strap (Diagram ID 204) is designed to secure your dryer motor to the cabinet. Proper installation helps reduce vibration and noise during operation. If your dryer motor shifts or rattles during use, replacing this strap can restore quiet, reliable performance. This is a high-quality replacement component engineered for compatibility with various GE, Hotpoint, and associated appliance models.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE1X921",
+      "type": "Dryer Motor Strap",
+      "compatibleModels": [
+        "GTDP490ED7WS",
+        "DDG7280RCLWW",
+        "CADE165SWH",
+        "CADE165SAL",
+        "DCCB330GT0AC",
+        "DDP1380GFM",
+        "DLL3680SBLAD",
+        "DLL3680SBLWH",
+        "DDG7680RCL",
+        "DDG7986RCL",
+        "GTDP300GM1WS",
+        "GRDN510GM1WS"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE4M404",
+    "title": "Dryer Temperature Switch",
+    "description": "This genuine OEM GE Dryer Temperature Switch (Diagram ID: 87) is a critical component designed to regulate the heat settings within your dryer, ensuring consistent and optimal drying performance. This three-temperature rotary switch acts as the thermostat-like control, allowing for simple and reliable temperature adjustments. Built to high quality standards, this switch is a direct replacement part for specific GE and Hotpoint dryers. Please ensure your dryer is unplugged before attempting installation and follow all safety precautions.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE4M404",
+      "type": "Dryer Temperature Switch",
+      "compatibleModels": [
+        "653615",
+        "653616",
+        "653617",
+        "65361T5WW",
+        "65371T5WW",
+        "663615",
+        "663616",
+        "663617",
+        "66361T5WW",
+        "DBLR333EE0CC",
+        "DBLR333EE0WW",
+        "DBLR333EE1CC",
+        "DBLR333EE1WW",
+        "DBLR333EE2CC",
+        "DBLR333EE2WW",
+        "DHSR333EA0WB",
+        "DHSR333EA2WB",
+        "DHSR333EV0WB",
+        "DHSR333EV1WB",
+        "DHSR333EV2WB",
+        "HTDX100EM3WW",
+        "HTDX100ED2WW",
+        "GHDX100EM0WW",
+        "GTDX100EM2WW",
+        "HTDX100EM2WW",
+        "HTDX100EM7WW",
+        "HTDX100ED1WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE12X21574",
+    "title": "Belt Drive",
+    "description": "This Belt Drive (Diagram ID 213) is a genuine GE Appliances replacement part designed for use in select dryers. This 4-rib dryer drum belt helps restore smooth drum rotation and quiet operation.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE12X21574",
+      "type": "Dryer Belt",
+      "compatibleModels": [
+        "GHDP490EF3WW",
+        "GHDP490EF4WW",
+        "GHDP490EF5WW",
+        "GHDP490EF6WW",
+        "GHDP490GF3WW",
+        "GHDP490GF4WW",
+        "GHDP490GF5WW",
+        "GHDP490GF6WW",
+        "GTD18ESSJ0WW",
+        "GTD18ESSJ1WW",
+        "GTD18ESSJ2WW",
+        "GTD18GSSJ0WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M1003",
+    "title": "Dryer Fuse Holder",
+    "description": "This is a genuine OEM GE Dryer Fuse Holder. Designed to meet manufacturer standards for reliability and durability, this part ensures a secure connection for your dryer's fuse. Please refer to diagram reference 417 for the exact placement within your appliance. This replacement part is designed for a perfect fit to help restore your dryer's performance.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M1003",
+      "type": "Fuse Holder",
+      "compatibleModels": [
+        "DCCB330EJ3WC",
+        "DCCB330GJ4WC",
+        "DDC4400T5WH",
+        "DISR333FCGWW",
+        "DISR473CG8WW",
+        "DISR473CGBWW",
+        "DISR473DGEWW",
+        "DIST333JTMWW",
+        "DNCD450EGBWC",
+        "GFDN110ED1WW",
+        "GFDN120ED1WW",
+        "GFDS140ED1WW",
+        "GFDS170GH0WW",
+        "GHDN520ED2WS",
+        "GHDN520GD2WS",
+        "GHDP490EF1WW",
+        "GHDP490GF4WW",
+        "GHDS830ED0WS",
+        "GHDS830GD0WS",
+        "GHDS835ED0MC",
+        "GHDS835GD0MC",
+        "GIDP400JD2WW",
+        "GIDP400JD3WW",
+        "GLDP280ED2WS",
+        "GLDS560ED2WW",
+        "GLDS560GD2WW",
+        "GRDN550ED0WS",
+        "GTDL210ED2WW",
+        "GTDL740ED0WW",
+        "GTDL740GD0WW",
+        "GTDN550ED2WW",
+        "GTDN550GD2WW",
+        "GTDP180ED2WW",
+        "GTDP200EF1WS",
+        "GTDP220EF1WW",
+        "GTDP280ED2WW",
+        "GTDP280EH0WS",
+        "GTDP280GH0WS",
+        "GTDP450ED2WS",
+        "GTDP490ED2WS",
+        "GTDP490ED5WS",
+        "GTDP490GD4WS",
+        "GTDP520ED2WW",
+        "GTDP740ED0WW",
+        "GTDP740GD0WW",
+        "GTDS560EF2WS",
+        "GTDS560GF2WS",
+        "GTDS570ED2WW",
+        "GTDS570GD2WW",
+        "GTDS580ED0WW",
+        "GTDS580ED1WW",
+        "GTDS580ED2WW",
+        "GTDS810ED0WS",
+        "GTDS810GD0WS",
+        "GTDS815ED0MC",
+        "GTDS815GD0MC",
+        "GTDS820ED0WS",
+        "GTDS820GD0WS",
+        "GTDS825ED0MC",
+        "GTDS825GD0MC",
+        "GTDS850ED0WS",
+        "GTDS850GD0WS",
+        "GTDS855ED0MC",
+        "GTDS855GD0MC",
+        "GTDX180ED2WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE4M255",
+    "title": "Kenmore Dryer Timer Resistor",
+    "description": "This Kenmore Dryer Timer Resistor (Diagram ID: 80) is an essential component designed to regulate the voltage path to the timer motor, ensuring the timer advances correctly during the drying cycle. If your dryer timer fails to advance or the unit is experiencing issues, replacing this resistor may resolve the problem. This is a manufacturer-approved part compatible with select General Electric, Hotpoint, RCA, and Kenmore dryers.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE4M255",
+      "type": "Timer Resistor",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE13X30697",
+    "title": "Dryer Motor Clamp",
+    "description": "Ensure the secure operation of your dryer with this genuine GE Appliances motor clamp. This component, identified as part #203 in the manufacturer's diagram, serves as a vital strap for securing the dryer motor assembly.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE13X30697",
+      "type": "Dryer Motor Clamp / Strap",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE11X29438",
+    "title": "Dryer Drum Rear Cover",
+    "description": "This Dryer Drum Rear Cover (Diagram ID: 504) is a genuine replacement part designed for your laundry appliance. It serves as an essential component within the dryer drum assembly, helping to ensure proper airflow and mechanical function. Please consult your appliance's repair manual or schematic to confirm this part's compatibility with your specific model.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE11X29438",
+      "type": "Dryer Drum Rear Cover",
+      "compatibleModels": [],
+      "condition": "new"
+    }
+  },
+  {
+    "partNumber": "WE14X20421",
+    "title": "Dryer Exhaust Duct",
+    "description": "This genuine GE Appliances dryer exhaust duct (Diag ID 228) is designed to effectively route hot air from the blower housing to the exhaust vent. It is an ideal replacement for a cracked, rusted, or disconnected duct, helping to restore proper airflow and venting performance to your dryer. Please verify your dryer's model number to confirm compatibility prior to purchase.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE14X20421",
+      "type": "Dryer Exhaust Duct",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M1007",
+    "title": "Cover Fuse Terminal",
+    "description": "This genuine GE OEM Cover Fuse Terminal (Diagram ID 430) is designed to shield and insulate the fuse connection within your appliance. By replacing a cracked, missing, or heat-damaged cover, you ensure safe electrical protection, prevent accidental contact, and maintain dependable circuit performance. Proper installation promotes a secure and consistent connection for your dryer. Please verify your specific appliance model number for compatibility before purchase.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M1007",
+      "type": "Fuse Terminal Cover",
+      "compatibleModels": [
+        "GCMX180ED4WW",
+        "GCMX180ED5WW",
+        "GFD40ESCM0WW",
+        "GFDL110EH0WW",
+        "GFDL110EH1WW",
+        "GFDL110EH2WW",
+        "GFDN110ED1WW",
+        "GFDN110ED2WW",
+        "GFDN110ED3WW",
+        "GFDN120ED1WW",
+        "GFDN120ED2WW",
+        "GFDN120ED3WW",
+        "GFDS140ED0WW",
+        "GFDS140ED1WW",
+        "GFMN110ED1WW",
+        "GFMN110GD1WW",
+        "GFMN120ED1WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE3M56",
+    "title": "General Electric Dryer Upper Drum Bearing - Diag ID 313",
+    "description": "Restore your dryer's performance with this genuine OEM General Electric Upper Drum Bearing. Identified as part 313 in the appliance diagram, this component is essential for supporting the front of the dryer drum, helping to reduce friction, noise, and vibration during the drying cycle. Deterioration of this bearing due to regular use can lead to increased noise; replacing it helps maintain smooth and quiet operation. This is a high-quality, manufacturer-approved replacement part designed specifically for compatible GE, Hotpoint, and select Kenmore front-load electric clothes dryers.",
+    "specs": {
+      "brand": "General Electric",
+      "mpn": "WE3M56",
+      "type": "Upper Drum Bearing",
+      "compatibleModels": [
+        "DCCB330EJ2WC",
+        "DCCB330EJ3WC",
+        "DDC4400T4WH",
+        "DDC4400T5WH",
+        "DDC4500T5WH",
+        "DISR333FCFWW",
+        "DISR333FCGWW",
+        "DISR333FGCWW",
+        "DISR333FGDWW",
+        "DISR473CG8WW",
+        "DISR473CGAWW",
+        "DISR473CGBWW",
+        "DISR473DGDWW",
+        "DISR473DGEWW",
+        "DIST333JTLWW",
+        "DIST333JTMWW",
+        "DMCD330EJ3WC",
+        "DMCD330GJ2WC",
+        "DMCD330GJ3WC",
+        "DMCD330GJ4WC",
+        "DNCD450EGAWC",
+        "DNCD450EGBWC",
+        "DNCD450GGBWC",
+        "DNCD450GGCWC",
+        "DNCD450GGDWC",
+        "GBMX180ED2WS",
+        "GCMX180ED2WW",
+        "GHDN520ED1WS",
+        "GHDN520ED2WS",
+        "GHDN520GD1WS"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE03X20228",
+    "title": "Top Bearing",
+    "description": "This Top Bearing, identified as Diagram ID 313, is a replacement component for your appliance. Please verify your specific model number to ensure compatibility before purchase.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE03X20228",
+      "type": "Top Bearing",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M462",
+    "title": "Kenmore Dryer Rear Bearing",
+    "description": "This Kenmore Dryer Rear Bearing, referenced in Diagram ID 3106, is a genuine OEM part designed to support the rear of the dryer drum for smooth, quiet rotation. This component, also known as a drum bearing sleeve, reduces friction between the drum and the bearing assembly. Replacing a worn or damaged sleeve can help resolve squeaking, screeching, or grinding noises during the drying cycle. Unplug the dryer before installing this part and wear work gloves for safety.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M462",
+      "type": "Dryer Rear Drum Bearing Sleeve",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE11X20400",
+    "title": "Heater Housing",
+    "description": "This is a genuine GE Appliances replacement Heater Housing. Designed for durability and performance, this component corresponds to Diagram ID 513. Please verify your specific appliance model number to ensure compatibility before purchasing.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE11X20400",
+      "type": "Heater Housing",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE01X20419",
+    "title": "Dryer Door Handle (white)",
+    "description": "This genuine OEM dryer door handle (white) is a direct replacement part designed to restore the functionality and appearance of your appliance. Located on the outer dryer door, this durable component (referenced as Diag ID 603) provides a secure grip for opening and closing the dryer door. Manufactured by GE to exact specifications, this high-quality handle is heat-resistant and helps maintain the aesthetics of your laundry room.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE01X20419",
+      "type": "Dryer Door Handle",
+      "compatibleModels": [
+        "DCCB330EJ2WC",
+        "DCCB330EJ3WC",
+        "DCCB330GD0WC",
+        "GTDN550ED0WW",
+        "GTDN550ED1WW",
+        "GTDL210ED0WW",
+        "GTDL210ED1WW",
+        "GTDP180ED0WW",
+        "GTDP180ED1WW",
+        "DISR473CG5WW",
+        "DWLR473ET1WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE4M416",
+    "title": "Dryer Push-to-start Switch",
+    "description": "Restore your dryer's functionality with this genuine OEM push-to-start switch. Designed for reliable performance, this switch (Diagram ID 35) is a critical component that initiates your dryer's cycle when pressed. If your appliance is failing to start or the start button is unresponsive, this replacement part provides a straightforward solution for restoring normal operation.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE4M416",
+      "type": "Push-to-start Switch",
+      "compatibleModels": [
+        "GLDP280ED2WS",
+        "GRDN510GM1WS",
+        "GRDN510EM2WS",
+        "GHDP490EF0WW",
+        "DSKS433EB3WW",
+        "GRDN510GM2WS",
+        "GHDP490GF0WW",
+        "GHDP490EF1WW",
+        "DSKP333EC2WW",
+        "GLDP280ED0WS",
+        "GLDP280GD0WS",
+        "GLDP280ED1WS",
+        "GLDP280GD1WS",
+        "DSKS333EC2WW",
+        "GTD42EASJ2WW",
+        "GTD48EASWWB"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE4M127",
+    "title": "Dryer Operating Thermostat",
+    "description": "Restore your dryer's performance with this genuine OEM Dryer Operating Thermostat (Diagram ID 230). This cycling thermostat is designed to regulate the heating element temperature, ensuring safe and efficient operation. It effectively addresses issues such as a dryer that will not heat, overheats, or runs for excessively long cycles. Before purchasing, please verify your appliance model number to ensure compatibility.",
+    "specs": {
+      "brand": "General Electric",
+      "mpn": "WE4M127",
+      "type": "Cycling Thermostat",
+      "compatibleModels": [
+        "BWXR473ET0WW",
+        "DBLR333EE0CC",
+        "DBLR333EE0WW",
+        "DDE8500RAM",
+        "DDE8500RCM",
+        "DDSR475ET3AA",
+        "DHSR333EV0WB",
+        "DJSR473ET2AA",
+        "DWXR473ET3WW",
+        "NVLR333GE1CC"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE4M525",
+    "title": "4 Term Blk & Grnd Strap",
+    "description": "This genuine OEM 4 Term Blk & Grnd Strap (Diagram ID 419) is designed for use in select GE Appliances dryers and washer-dryer combos. This high-quality replacement component helps restore proper electrical connections and safe operation to your appliance. Replacing a damaged or worn terminal block and ground strap can resolve performance issues and ensure your machine runs efficiently. Please verify compatibility with your specific model before purchase.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE4M525",
+      "type": "Terminal Block & Ground Strap",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WD21X10261",
+    "title": "Interlock Switch",
+    "description": "This genuine GE OEM Interlock Switch (Diagram ID: 803) is a critical safety component designed for select GE electric and gas dryers, as well as specific dishwasher models. This switch monitors the door closure, ensuring the appliance operates only when the door is securely closed and latched. Common symptoms of a faulty interlock switch include the dryer failing to start, the dryer continuing to run with the door open, or timer displays failing to illuminate. Built to meet strict manufacturer standards, this switch is an ideal replacement part for restoring proper safety and functionality to your appliance.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WD21X10261",
+      "type": "Interlock Switch",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WD21X557",
+    "title": "Interlock Sw",
+    "description": "This is a genuine GE Appliances interlock switch, identified as Diagram ID 803. It is designed for use in compatible GE dishwasher units. Please verify your specific appliance model number to ensure compatibility before purchase.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WD21X557",
+      "type": "Interlock Switch",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M1030",
+    "title": "GE WE1M1030 Shield Bottom Cover",
+    "description": "This is a genuine GE appliance part, identified as the Shield Bottom Cover, Diagram ID 271. This component is designed for use with compatible GE dryers.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M1030",
+      "type": "Shield Bottom Cover",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WH2M270",
+    "title": "We2x328 Screw",
+    "description": "This is a genuine OEM screw, compatible with various General Electric appliance models. It is referenced as part number WH2M270 (also known as We2x328) and is identified as Diag ID 3204 in associated parts diagrams. This component is commonly used in appliance assemblies.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WH2M270",
+      "type": "Screw",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M650",
+    "title": "Dryer Motor Wire Harness Connector",
+    "description": "This Dryer Motor Wire Harness Connector (Diagram ID 631) is a genuine OEM part designed for use with compatible dryers. It serves as an essential electrical component that connects the dryer motor to the power and control circuits, ensuring the correct signal path for motor operation. Replacing a damaged or worn connector helps restore motor performance and prevents intermittent failures.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE1M650",
+      "type": "Motor Connector",
+      "compatibleModels": [
+        "DE60FA2-96983",
+        "DG60F27EW11-96978",
+        "DE60F27EW11-96977",
+        "DG60FA2-96979",
+        "DG60FA27AW2-96979",
+        "DE60FA27AW2-96983",
+        "DE60FA1",
+        "DE60FA-96987",
+        "DE60FA-US1-96987"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE13X20394",
+    "title": "Motor Plate",
+    "description": "Maintain the performance of your GE dryer with this Motor Plate, identified as Diag ID 233. This genuine GE component is designed to secure the dryer motor assembly. If your dryer is experiencing issues such as not spinning or emitting unusual noises, this part may be required for your repair.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE13X20394",
+      "type": "Motor Plate",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M652",
+    "title": "Dryer Control Knob",
+    "description": "This Genuine GE Appliance Dryer Control Knob (Diagram ID 7) is a white plastic knob designed to restore timer functionality to your dryer. This assembly features a D-shaped shaft connection for secure, easy installation without tools. If your original knob is cracked, missing, or failing to advance the timer, this replacement provides a reliable solution for your laundry appliance.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M652",
+      "type": "Timer Knob",
+      "compatibleModels": [
+        "HTDP120ED0WW",
+        "HTDP120ED1WW",
+        "HTDP120ED2WW",
+        "HTDP120ED3WW",
+        "HTDP120ED4WW",
+        "HTDP120ED5WW",
+        "HTDP120ED6WW",
+        "HTDP120GD0WW",
+        "HTDP120GD1WW",
+        "HTDP120GD2WW",
+        "HTDP120GD3WW",
+        "HTDP120GD4WW",
+        "HTDP120GD5WW",
+        "HTDP120GD6WW",
+        "HTDX100ED0WW",
+        "HTDX100ED1WW",
+        "HTDX100ED2WW",
+        "HTDX100ED3WW",
+        "HTDX100ED4WW",
+        "HTDX100ED5WW",
+        "HTDX100ED6WW",
+        "HTDX100EM0WW",
+        "HTDX100EM1WW",
+        "HTDX100EM2WW",
+        "HTDX100EM3WW",
+        "HTDX100EM4WW",
+        "HTDX100EM5WW",
+        "HTDX100EM6WW",
+        "HTDX100EM7WW",
+        "HTDX100EM8WW",
+        "HTDX100GD0WW",
+        "HTDX100GD1WW",
+        "HTDX100GD2WW",
+        "HTDX100GD3WW",
+        "HTDX100GD4WW",
+        "HTDX100GD5"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE09X20441",
+    "title": "Felt Trap Duct",
+    "description": "This genuine GE Appliances Felt Trap Duct (Diagram ID: 312) is a replacement felt pad designed to wrap around the bottom half of the plastic hardware behind the dryer's front panel. This component helps maintain a proper seal within the dryer system. Please verify your specific appliance model number to confirm compatibility before purchasing.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE09X20441",
+      "type": "Dryer Felt Trap Duct",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M1015",
+    "title": "Ground Strap Asm",
+    "description": "This is a genuine OEM Ground Strap Assembly for GE dryers. This component, identified as Diag ID 515, is designed to ensure proper electrical grounding for your appliance, maintaining safe and reliable operation. This part is a direct manufacturer replacement, built to meet the original specifications for your GE laundry unit.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M1015",
+      "type": "Ground Strap Assembly",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE03X37319",
+    "title": "Dryer Drum Glide Bearing",
+    "description": "Restore smooth and quiet operation to your dryer with this genuine OEM Dryer Drum Glide Bearing (2-Pack). Identified as Diagram ID 317, these durable bearing slides are installed on the front panel to support the drum as it rotates, significantly reducing friction and wear between the drum and the housing. Over time, these glides can thin or become damaged due to heat and regular use, leading to squeaking, scraping noises, or inefficient drum rotation. This high-quality replacement part is designed to provide stability and quiet performance for your laundry cycles. Note: It is recommended to replace all bearing slides simultaneously to ensure even wear and optimal dryer longevity.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE03X37319",
+      "type": "Dryer Drum Glide Bearing",
+      "compatibleModels": [
+        "DBXR463ED1WW",
+        "DBXR463EG0WW",
+        "DBLR333EG0WW",
+        "GTD42EASJ0WW",
+        "GTD65EBSJ2WS",
+        "GFD45ESSM0WW",
+        "HTDX100EM8WW",
+        "HTDP120ED6WW",
+        "RTD42EASJ0WW",
+        "DSKS433ET0",
+        "DSKS433EA0WW",
+        "DDP1380TAM",
+        "DSKS433EW0WH",
+        "DSKS433EA0AA"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE3M51",
+    "title": "Bearing Slide",
+    "description": "This genuine GE Bearing Slide (Diag ID 317) is an essential component designed to keep your dryer drum rotating smoothly. If your dryer is not tumbling properly, or if you notice squeaking or grinding noises during operation, it may be time to replace the worn bearing slide. This part helps support the drum's front edge, reducing friction between the drum and the front panel. Proper installation ensures quieter performance and helps extend the lifespan of your appliance. Please verify your specific dryer model number for compatibility before purchase.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE3M51",
+      "type": "Dryer Drum Glide Bearing",
+      "compatibleModels": [
+        "DBXR463ED1WW",
+        "DBXR463EG0WW",
+        "DBLR333EG0WW",
+        "GTD42EASJ0WW",
+        "GTD65EBSJ2WS",
+        "GFW510SCN0WW",
+        "HTDX100EM8WW",
+        "HTDP120ED6WW",
+        "RTD42EASJ0WW",
+        "GFD40ESCM0WW",
+        "GFD43ESSM0WW",
+        "GFD45ESSM0WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE2M96",
+    "title": "Cap Nut",
+    "description": "This genuine OEM Cap Nut (Diagram ID: 234) is designed for select GE dryers. It plays an essential role in securing the drive belt and other related internal components, helping to maintain proper tension and alignment for smooth, efficient dryer operation. If you are experiencing loose panels, dryer performance issues, or need to replace a damaged or worn component, this genuine part is an ideal solution. Please verify your specific dryer model number to confirm compatibility before purchase.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WE2M96",
+      "type": "Cap Nut",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M659",
+    "title": "Push/ Start Button Grey",
+    "description": "This is a genuine GE replacement Push/Start Button in grey. This part is identified as Schematic Location 2232 within the appliance assembly diagrams. It is designed for use with compatible GE electric dryers.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M659",
+      "type": "Start Button",
+      "compatibleModels": [
+        "GTD18ESSJ0WW",
+        "GHDP490EF3WW",
+        "GTDP220EF3WW",
+        "GTDX180ED2WW",
+        "DWSR463EG3WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M1101",
+    "title": "Levelling Leg",
+    "description": "Ensure your dryer is stable and level with this genuine replacement Levelling Leg. This part is identified as Diagram ID 236 in your appliance's parts list. It is designed to assist in adjusting the height of your dryer to maintain proper balance during operation.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M1101",
+      "type": "Laundry Appliance Leveling Leg",
+      "compatibleModels": [
+        "GTD65EBSJ3WS",
+        "HTX26EASW0WW",
+        "HTX24GASK0WW",
+        "HTX24EASK0WW",
+        "HTX21GASK1WW",
+        "HTX26GASW0WW",
+        "HTX24GASK1WS",
+        "HTX21PASK0WW",
+        "HTX24GASK0WS",
+        "GTD58GBSV0WS",
+        "GTD58EBSV0WS"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE14X20426",
+    "title": "Baffle",
+    "description": "This is a genuine GE baffle, identified as Diagram ID 509. It is designed for use in GE appliances. If your dryer is experiencing issues such as excessive noise, clothes not tumbling correctly, or uneven drying, this baffle may be the necessary replacement part. Please verify your specific appliance model number to ensure compatibility before purchasing.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE14X20426",
+      "type": "Baffle",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M461",
+    "title": "Kenmore Dryer Rear Bearing O-ring",
+    "description": "Ensure your dryer operates smoothly and quietly with this genuine OEM rear bearing O-ring. Designed for use with select dryers, this O-ring helps secure the drum rear bearing onto the drum shaft, maintaining a proper seal to prevent air leaks and potential performance issues. Refer to Diagram ID 3127 for placement and installation details. This high-quality replacement part is essential for restoring your appliance's efficiency.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M461",
+      "type": "Dryer Rear Bearing O-ring",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M780",
+    "title": "Dryer Heating Element Bracket",
+    "description": "This is a replacement Dryer Heating Element Bracket, identified as Diagram ID 510. Designed for use in compatible clothes dryers, this bracket provides necessary support for the heating element assembly.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE1M780",
+      "type": "Dryer Heating Element Bracket",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M825",
+    "title": "a , Gasket (Seal) 39 Inch",
+    "description": "This 39-inch self-adhesive gasket (seal), designated as Diagram ID 325, is a genuine replacement part for GE dryers. Designed for the lint trap duct housing, this foam seal helps maintain optimal drying efficiency by creating a secure barrier that prevents hot air and lint from escaping the dryer drum. Replacing a worn, warped, or brittle seal is essential for ensuring your appliance operates correctly and safely. Verify your specific dryer model number to ensure compatibility.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M825",
+      "type": "Gasket (Seal)",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE01X20423",
+    "title": "Dryer Power Cord Access Bracket",
+    "description": "This genuine GE Dryer Power Cord Access Bracket (Diagram ID 431) is designed to attach to the back panel of your dryer, securing the power cord at its entry point. This bracket is essential for maintaining safe cord routing and preventing strain on the electrical connection. Please disconnect power before beginning installation.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE01X20423",
+      "type": "Power Cord Access Bracket",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE03X37320",
+    "title": "Dryer Drum Glide Bearing, Upper",
+    "description": "Ensure smooth and quiet operation for your dryer with this genuine OEM Dryer Drum Glide Bearing. Identified as Diagram ID 316, these drum bearing slides are designed to support the drum's front during rotation, effectively reducing friction between the drum and the front panel. Made of durable polytetrafluoroethylene (Teflon), these slides help resolve issues such as squeaking, grinding noises, uneven drying, or marks on clothing caused by worn components. This part is a 2-pack of green bearing slides. It is recommended to verify compatibility with your specific appliance model number before installation.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE03X37320",
+      "type": "Dryer Drum Bearing Slide",
+      "compatibleModels": [
+        "DBXR463ED1WW",
+        "DBXR463EG0WW",
+        "DBLR333EG0WW",
+        "GTD42EASJ0WW",
+        "GTD65EBSJ2WS",
+        "GFD45ESSM0WW",
+        "HTDX100EM8WW",
+        "HTDP120ED6WW",
+        "RTD42EASJ0WW",
+        "2661532210",
+        "2661532211",
+        "36361532412",
+        "2671532110",
+        "DG70FA1-96975",
+        "DE60FA-US1-96987"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M934",
+    "title": "Door Reversal Plug",
+    "description": "This genuine OEM Door Reversal Plug (WE1M934) is designed for select GE, Hotpoint, Haier, Monogram, and Cafe appliances. Often referred to as a plug button, this component is used to cover unused openings on the appliance control panel or dryer door, providing a clean, finished appearance. Please refer to Diagram ID 112 for placement reference. Ensure this is the correct part for your specific model by checking your owner's manual or checking compatibility through your appliance's model number.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M934",
+      "type": "Plug Button",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE3M52",
+    "title": "Bearing Slide",
+    "description": "Restore smooth and quiet operation to your GE dryer with this genuine OEM Bearing Slide (Diagram ID 316). Designed to support the dryer drum as it rotates, this bearing slide helps minimize friction and wear. If your dryer is experiencing squeaking, grinding noises, or difficulty turning the drum, this replacement part can help resolve those issues. This is a genuine GE Appliances replacement part designed for a precise fit.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE3M52",
+      "type": "Dryer Drum Bearing Slide",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE12X20395",
+    "title": "Idler Pulley",
+    "description": "Restore smooth and quiet operation to your dryer with this Idler Pulley (Diagram ID 216). This component is designed to maintain proper tension on the drive belt, ensuring efficient drum rotation and helping to resolve issues such as squealing, grinding noises, or belt slippage. Features a durable white plastic construction with a satin finish.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE12X20395",
+      "type": "Dryer Idler Pulley",
+      "compatibleModels": [
+        "GTD33EASK0WW",
+        "GTD42EASJ0WW",
+        "GTD45EASJ0WS",
+        "GTD65EBSJ0WS",
+        "GTD75ECSL0WS",
+        "GFD40ESCM0WW",
+        "GFD45ESSM0WW",
+        "HTX21EASK0WW",
+        "HTX24GASK0WW",
+        "HTX26EASW0WW",
+        "GTD75GCPL1DG",
+        "PTD90GBPT0DG",
+        "GFD45GSSK0WW",
+        "GTD84GCSN2WS",
+        "PTD60GBSR0WS",
+        "PTD90GBST0WS",
+        "GTD72GBPN0DG",
+        "GFDS175GH1DG",
+        "VTD52GASR0WB",
+        "PTD60GBPR1DG"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M966",
+    "title": "Blower Gasket (Exhaust)",
+    "description": "This Blower Gasket (Exhaust), referenced as Diagram ID 218, is designed for use in select dryers to maintain proper airflow and seal the blower housing. Please verify your specific appliance model to ensure compatibility.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE1M966",
+      "type": "Blower Gasket",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M536",
+    "title": "Genuine GE Dryer Door Latch (Diagram ID 327)",
+    "description": "Ensure your dryer door stays securely closed during operation with this genuine GE replacement door latch. Identified as Item #327 in your appliance diagram, this latch helps maintain a proper seal for efficient drying. Designed for use with various GE, Hotpoint, and Kenmore dryers. Please verify compatibility with your specific dryer model number prior to purchase.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M536",
+      "type": "Dryer Door Latch",
+      "compatibleModels": [
+        "DPVH880GJ3MG",
+        "DDE8500RAM",
+        "DDE8200RCM",
+        "DDE8500RBM",
+        "DDE7109SBLWW",
+        "DDE9500RAM",
+        "DDE9600RAM",
+        "363DDE8509RCMWW",
+        "DDE8500RCM",
+        "DDG9680RCMAA"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M1033",
+    "title": "Dryer Door Hinge",
+    "description": "This genuine OEM dryer door hinge (Diagram ID: 3051) is designed to support the dryer door on the front panel, allowing it to pivot smoothly when opening and closing. Constructed from durable metal with a satin/chrome finish, this hinge is essential for ensuring the proper function and stability of your dryer door. Please verify your dryer's model number to confirm compatibility before purchasing. Screws are not included.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE1M1033",
+      "type": "Dryer Door Hinge",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE1M505",
+    "title": "Hinge",
+    "description": "Replacement Hinge for appliance applications. Refer to Diagram ID 3051 for proper placement and installation instructions.",
+    "specs": {
+      "brand": null,
+      "mpn": "WE1M505",
+      "type": "Hinge",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE2M196",
+    "title": "Ground Screw",
+    "description": "This is a genuine OEM GE Ground Screw, referenced as Diagram ID 319. Designed for quality and reliability, this component is used in various GE and Hotpoint appliance applications, including dryers. Please verify your specific appliance model to ensure compatibility.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE2M196",
+      "type": "Ground Screw",
+      "compatibleModels": [
+        "BWXR473ET0WW",
+        "BWXR473ET2WW",
+        "BWXR473ET3WW",
+        "BWXR473ET5AA",
+        "BWXR473ET5WW",
+        "BWXR473EV0AA",
+        "BWXR473EV0WW",
+        "BWXR473GT0WW",
+        "BWXR473GT2WW",
+        "BWXR473GT3WW",
+        "BWXR473GT5AA",
+        "BWXR473GT5WW",
+        "DBB3300EA0AA",
+        "DBB3300EA0WW",
+        "DBB3300EA1AA",
+        "DHDVH68EJ0MS",
+        "HTDX100ED4WW",
+        "DCCB330GJ3WC",
+        "DCVH680EJ2MR",
+        "DNCD450GGBWC",
+        "GTDX400ED3WS",
+        "DCVH660GH1WW",
+        "DCVH680GJ0BB",
+        "DNCD450EG0WC",
+        "GTDP520ED3WW",
+        "DBVH510GH1WW",
+        "HTDX100GD3WW",
+        "GTDX180PD3WW",
+        "DNCD450GG8WC",
+        "DMCD330GJ4WC",
+        "DNCD450GG5WC",
+        "GTDX185PD2CC",
+        "GFDN110EL0WW",
+        "DCVH515GF4WW",
+        "DHDVH66EH2GG",
+        "DCVH660EH0WW",
+        "GTDP490ED3WS",
+        "DHDVH66EH1BB",
+        "DCVH660GH0GG",
+        "DCVH640GJ1WW",
+        "GTDP180GD2WW",
+        "DCVH660GH1GG",
+        "DPSB620GC0CC",
+        "GTDP180ED2WW",
+        "DHDVH68GJ0WW",
+        "DCVH680EJ1MS",
+        "DCVH660EH3GG",
+        "DNCD450EG9WC",
+        "DHDVH66EH2BB",
+        "DHDVH66GH0BB",
+        "GFDN110GL0WW",
+        "DHDVH66GH3GG",
+        "DCVH515GF3WW",
+        "HTDX100GD4WW",
+        "DBVH520EJ0WW",
+        "GTDX400GD2WS",
+        "GTDP490GD8WS",
+        "DCVH680EJ1WW",
+        "DPSB650EC1CC",
+        "GTDX180PD4WW"
+      ],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WZ05X0158",
+    "title": "Screw 8-32X3/8 Grd Scr",
+    "description": "This is a genuine replacement screw (Part Number: WZ05X0158), designated as Diagram ID 461. This hardware component is designed for specific appliance assemblies. Please verify your appliance model and the associated parts diagram to ensure correct fitment before purchase.",
+    "specs": {
+      "brand": "GE Appliances",
+      "mpn": "WZ05X0158",
+      "type": "Screw",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  },
+  {
+    "partNumber": "WE00X181L",
+    "title": "Shaft",
+    "description": "This Shaft (Diagram ID: 508) is a genuine component designed for use in select General Electric (GE) and Hotpoint dryer models. It is a critical part of the dryer assembly. Please verify your specific dryer model number to ensure compatibility before purchasing, as part availability and fitment can vary.",
+    "specs": {
+      "brand": "GE",
+      "mpn": "WE00X181L",
+      "type": "Dryer Shaft",
+      "compatibleModels": [],
+      "condition": "New"
+    }
+  }
+]

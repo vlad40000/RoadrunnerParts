@@ -23,10 +23,10 @@ describe("eBay Template Generator", () => {
     expect(html).toContain("Whirlpool");
     expect(html).toContain("W10123456");
     expect(html).toContain("Control Board");
-    expect(html).toContain("Used - Pulled from working machine and tested");
+    expect(html).toContain("Used - inspected and prepared for resale");
 
     // Check policies
-    expect(html).toContain("30-day return policy");
+    expect(html).toContain("return terms shown on this eBay listing");
     expect(html).toContain("1 business day");
   });
 
@@ -35,7 +35,7 @@ describe("eBay Template Generator", () => {
       partNumber: "12345",
     });
 
-    expect(html).toContain("OEM"); // Default brand
+    expect(html).toContain("Appliance"); // Default brand
     expect(html).toContain("12345");
     expect(html).toContain("Appliance Component"); // Default name
   });
@@ -54,7 +54,7 @@ describe("generateEbayDescription", () => {
     expect(html).toContain("<!DOCTYPE html>");
     expect(html).toContain("LG");
     expect(html).toContain("EBR12345678");
-    expect(html).toContain("Brand New");
+    expect(html).toContain("New");
     expect(html).toContain("LMXS28626S");
   });
 });

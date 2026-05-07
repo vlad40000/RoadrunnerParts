@@ -2,6 +2,8 @@ import { neon } from "@neondatabase/serverless";
 import dotenv from "dotenv";
 import { generateEbayTitle, generateEbayDescription } from "../src/lib/ebay-listing-gen.ts";
 
+import { EbayAgentService } from "../src/features/ebay/services/ebay-agent-service.ts";
+
 dotenv.config({ path: ".env.local" });
 dotenv.config();
 
@@ -19,7 +21,10 @@ const args = new Map(
 
 const limit = Number(args.get("limit") || 50);
 const dryRun = args.get("dry-run") === "true";
+const agentic = args.get("agentic") === "true";
 const minNetExpected = parseFloat(args.get("min-net") || "15.00");
+
+const agentService = agentic ? new EbayAgentService(process.env.GEMINI_API_KEY) : null;
 
 async function loadMarketableParts() {
   // Find parts with high net_expected and existing machine evidence
@@ -31,10 +36,11 @@ async function loadMarketableParts() {
       s.net_expected,
       m.id AS machine_id,
       m.brand,
-      b.part_name
+      b.description as part_name
     FROM part_market_signal s
     JOIN machine_inventory m ON s.normalized_model = m.normalized_model
-    JOIN bom_part b ON s.part_number = b.part_number AND s.normalized_model = b.normalized_model
+    JOIN appliance_models am ON m.normalized_model = am.normalized_model
+    JOIN bom_parts b ON s.part_number = b.part_number AND b.model_id = am.id
     LEFT JOIN part_inventory i ON s.part_number = i.part_number AND m.id = i.machine_id
     WHERE s.net_expected >= $1
       AND i.id IS NULL
@@ -46,21 +52,45 @@ async function loadMarketableParts() {
 async function prepareListing(row) {
   console.log(`Preparing listing for ${row.part_number} (Net: $${row.net_expected})`);
   
-  const title = generateEbayTitle({
-    brand: row.brand,
-    partNumber: row.part_number,
-    partName: row.part_name,
-    condition: "used",
-    model: row.normalized_model
-  });
-  
-  const description = generateEbayDescription({
-    brand: row.brand,
-    partNumber: row.part_number,
-    partName: row.part_name,
-    condition: "used",
-    model: row.normalized_model
-  });
+  let title = "";
+  let description = "";
+  let agentSpecs = null;
+
+  if (agentService) {
+    console.log(`🔍 Running agentic research for ${row.part_number}...`);
+    const agentResult = await agentService.generateListing({
+      partNumber: row.part_number,
+      partTitle: row.part_name,
+      diagramId: "N/A" // Default for now
+    });
+    
+    if (agentResult) {
+      title = agentResult.title;
+      description = agentResult.description;
+      agentSpecs = agentResult.specs;
+    } else {
+      console.warn(`⚠️ Agentic research failed for ${row.part_number}, falling back to static template.`);
+    }
+  }
+
+  // Fallback to static generation if agentic fails or is disabled
+  if (!title) {
+    title = generateEbayTitle({
+      brand: row.brand,
+      partNumber: row.part_number,
+      partName: row.part_name,
+      condition: "used",
+      model: row.normalized_model
+    });
+    
+    description = generateEbayDescription({
+      brand: row.brand,
+      partNumber: row.part_number,
+      partName: row.part_name,
+      condition: "used",
+      model: row.normalized_model
+    });
+  }
   
   const price = row.median_sold_price;
   
@@ -91,7 +121,12 @@ async function prepareListing(row) {
     title, 
     price, 
     "draft", 
-    JSON.stringify({ description, generated_at: new Date().toISOString() })
+    JSON.stringify({ 
+      description, 
+      generated_at: new Date().toISOString(),
+      agent_specs: agentSpecs,
+      agent_title: agentSpecs ? title : undefined
+    })
   ]);
   
   console.log(`Created draft listing for ${row.part_number}`);

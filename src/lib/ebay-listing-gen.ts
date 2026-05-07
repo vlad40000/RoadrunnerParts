@@ -1,12 +1,12 @@
 import { generateEbayHtmlTemplate } from "./ebay-template-gen";
 
 export function generateEbayTitle({ brand, partNumber, partName, condition, model }) {
-  const brandNorm = brand || "OEM";
+  const brandNorm = brand || "Appliance";
   const nameNorm = partName || "Appliance Part";
   const condNorm = condition === "new" ? "New" : "Used Tested";
   const modelNorm = model ? `Fits ${model}` : "";
   
-  const title = `${brandNorm} ${partNumber} ${nameNorm} ${condNorm} OEM ${modelNorm}`.trim();
+  const title = `${brandNorm} ${partNumber} ${nameNorm} ${condNorm} ${modelNorm}`.trim();
   return title.substring(0, 80); // eBay limit
 }
 

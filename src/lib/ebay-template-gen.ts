@@ -6,10 +6,23 @@ export interface EbayTemplateDetails {
   model?: string | null;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function generateEbayHtmlTemplate(details: EbayTemplateDetails): string {
-  const brand = details.brand || 'OEM';
-  const name = details.partName || 'Appliance Component';
-  const conditionLabel = details.condition === 'new' ? 'Brand New' : 'Used - Pulled from working machine and tested';
+  const brand = escapeHtml(details.brand || 'Appliance');
+  const name = escapeHtml(details.partName || 'Appliance Component');
+  const partNumber = escapeHtml(details.partNumber);
+  const model = details.model ? escapeHtml(details.model) : null;
+  const conditionLabel = details.condition === 'new'
+    ? 'New'
+    : 'Used - inspected and prepared for resale';
   
   return `
 <!DOCTYPE html>
@@ -107,13 +120,13 @@ export function generateEbayHtmlTemplate(details: EbayTemplateDetails): string {
     </div>
     
     <div class="content">
-      <h1>Genuine ${brand} ${name}</h1>
+      <h1>${brand} ${name}</h1>
       
       <table class="specs-table">
         <tbody>
           <tr>
             <th>Part Number</th>
-            <td><strong>${details.partNumber}</strong></td>
+            <td><strong>${partNumber}</strong></td>
           </tr>
           <tr>
             <th>Brand</th>
@@ -127,25 +140,25 @@ export function generateEbayHtmlTemplate(details: EbayTemplateDetails): string {
             <th>Condition</th>
             <td>${conditionLabel}</td>
           </tr>
-          ${details.model ? `
+          ${model ? `
           <tr>
-            <th>Compatible Models</th>
-            <td>${details.model}</td>
+            <th>Donor / Reference Model</th>
+            <td>${model}</td>
           </tr>` : ''}
         </tbody>
       </table>
 
       <div class="section-title">Item Description</div>
-      <p>You are purchasing a genuine OEM replacement part. All of our used parts are carefully pulled from working appliances by professional technicians and rigorously tested before being listed for sale. Please verify your model number and part number before ordering to ensure compatibility.</p>
+      <p>You are purchasing the appliance part listed above. Used parts are removed from inspected appliances and prepared for resale before listing. Please verify your model number, part number, photos, and connector or mounting details before ordering.</p>
 
       <div class="section-title">Shipping & Handling</div>
       <div class="policy-box">
         <p style="margin: 0;">We professionally pack and ship all items within 1 business day. Expedited shipping options are available at checkout.</p>
       </div>
 
-      <div class="section-title">Return Policy (Placeholder)</div>
+      <div class="section-title">Returns</div>
       <div class="policy-box">
-        <p style="margin: 0;">We offer a 30-day return policy on all parts. If the part does not resolve your issue or is no longer needed, you may return it within 30 days of receipt. Please ensure the part is returned in original condition.</p>
+        <p style="margin: 0;">Returns are handled under the return terms shown on this eBay listing. Returned parts must be sent back in the same condition received.</p>
       </div>
     </div>
 

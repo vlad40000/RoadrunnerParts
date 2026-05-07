@@ -1104,6 +1104,8 @@ INPUT ROWS: Part Number, Part Title, Diagram ID.
 - Do not invent replacement part numbers.
 - Do not invent warranty information.
 - Do not claim “OEM” unless the source result says genuine, OEM, manufacturer, or official.
+- Do not list compatible models unless they are explicitly found in source evidence for the exact part number.
+- If the only evidence is the provided input row, keep specs minimal and set compatibleModels to [].
 - If a detail is not found, omit it rather than estimating.
 - The description must be professional and concise.
 - Focus on brand consistency with RoadrunnerParts.
