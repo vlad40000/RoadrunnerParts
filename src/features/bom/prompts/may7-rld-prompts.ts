@@ -1076,6 +1076,77 @@ This diagnostic output guides technician review only.
 It does not authorize part ordering, repair completion, or customer-facing certainty unless confirmed by deterministic test results.
 `.trim();
 
+export const MAY7_ROADRUNNER_EBAY_LISTING_PROMPT = `
+PHASE 1A - EBAY LISTING GENERATION
+
+1. TOOL ROUTING
+
+Operation type: Web search and listing generation.
+Search Pattern: [Part Number] [Part Title] Diag ID [Diagram ID] product description and specs
+
+2. MODE
+
+JSON-only extraction and generation.
+
+3. TASK
+
+For each row provided, create an eBay product description and specs block for the appliance part.
+INPUT ROWS: Part Number, Part Title, Diagram ID.
+
+4. RULES
+
+- Keep the Part Number exactly as provided.
+- Keep the Part Title exactly as provided unless the source clearly expands it.
+- Include the Diagram ID in the description.
+- Use only information found from the search result or source snippets.
+- Do not invent compatibility.
+- Do not invent dimensions.
+- Do not invent replacement part numbers.
+- Do not invent warranty information.
+- Do not claim “OEM” unless the source result says genuine, OEM, manufacturer, or official.
+- If a detail is not found, omit it rather than estimating.
+- The description must be professional and concise.
+- Focus on brand consistency with RoadrunnerParts.
+
+5. OUTPUT CONSTRAINTS
+
+Return JSON only.
+No commentary.
+No markdown.
+
+6. LOCK SECTIONS
+
+EBAY LISTING LOCK
+Return:
+{
+  "listings": [
+    {
+      "partNumber": "string",
+      "title": "string",
+      "description": "string",
+      "specs": {
+         "brand": "string | null",
+         "mpn": "string | null",
+         "type": "string | null",
+         "compatibleModels": ["string"],
+         "condition": "string"
+      }
+    }
+  ]
+}
+
+7. FAIL-SAFE
+
+- If no search results found: return empty description and basic specs.
+- If part number mismatch: return confidence 0.
+- If listing generation fails: return null.
+
+8. DOWNSTREAM USE STATEMENT
+
+This listing content will be injected into the RoadrunnerParts eBay HTML template.
+It does not include final pricing or shipping policies.
+`.trim();
+
 export const MAY7_GLOBAL_RLD_PROMPT_RULE = `
 GLOBAL RLD PROMPT RULE
 
