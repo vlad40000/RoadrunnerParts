@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { SystemInstructionsDrawer, getInstructionStackNames } from "./system-instructions-drawer";
 import { ComputerUseSupervisor } from "./computer-use-supervisor";
+import { CanvasViewport } from "./canvas/canvas-viewport";
 import {
   buildCanonicalEncompassUrls,
   buildKnownEncompassAssemblyUrl,
@@ -2651,8 +2652,17 @@ function BrowserCanvas(props: {
   jobId: string;
 }) {
   const visibleUrl = props.browserFrameUrl || props.browserUrl || "about:blank";
-  const enabledSlots = props.modelSlots.filter((slot) => slot.enabled).slice(0, 2);
-  const visibleSlots = enabledSlots.length ? enabledSlots : [props.modelSlots[0]].filter(Boolean);
+  const visibleSlots = useMemo(() => {
+    const enabledSlots = props.modelSlots.filter((slot) => slot.enabled).slice(0, 2);
+    return enabledSlots.length ? enabledSlots : [props.modelSlots[0]].filter(Boolean);
+  }, [props.modelSlots]);
+  const [activeCanvasId, setActiveCanvasId] = useState(visibleSlots[0]?.id || "slot_a");
+
+  useEffect(() => {
+    if (!visibleSlots.some((slot) => slot.id === activeCanvasId)) {
+      setActiveCanvasId(visibleSlots[0]?.id || "slot_a");
+    }
+  }, [activeCanvasId, visibleSlots]);
 
   return (
     <div className={`bom-browser-wrap ${visibleSlots.length > 1 ? "split" : ""}`}>
@@ -2662,12 +2672,14 @@ function BrowserCanvas(props: {
             key={slot.id}
             slot={slot}
             browserFrameUrl={props.browserFrameUrl}
-            visibleUrl={props.browserUrl}
+            visibleUrl={visibleUrl}
             browserSupplier={props.browserSupplier}
             model={props.model}
             lastRun={props.lastRun}
             captures={props.captures}
             jobId={props.jobId}
+            active={slot.id === activeCanvasId}
+            onActivate={() => setActiveCanvasId(slot.id)}
           />
         ))}
       </div>
@@ -2684,31 +2696,41 @@ function BrowserBoardPane(props: {
   lastRun: PromptRun | null;
   captures: BrowserSourceCapture[];
   jobId: string;
+  active: boolean;
+  onActivate: () => void;
 }) {
   const slotOutput = props.lastRun?.outputs.find((output) => output.slotId === props.slot.id) || null;
   const outputs = slotOutput ? [slotOutput] : props.lastRun?.outputs.slice(0, 5) || [];
+  const canvasLabel = props.slot.id === "slot_a" ? "Model A" : "Model B";
 
   return (
-    <div className="bom-browser-canvas">
+    <div className={`bom-browser-canvas ${props.active ? "is-active" : ""}`}>
       <div className="bom-browser-bar">
         <span className="bom-browser-dot red" />
         <span className="bom-browser-dot yellow" />
         <span className="bom-browser-dot green" />
-        <div className="bom-browser-url">{props.slot.id === "slot_a" ? "Model A" : "Model B"} - {props.visibleUrl}</div>
+        <div className="bom-browser-url">{canvasLabel} - {props.visibleUrl}</div>
         <div className="bom-browser-spinner" />
       </div>
       <div className="bom-browser-body">
-        {props.slot.tools?.computerUse ? (
-          <ComputerUseSupervisor jobId={props.jobId} slotId={props.slot.id} model={props.model} sourceUrl={props.visibleUrl} />
-        ) : props.browserFrameUrl ? (
-          <iframe title={`${props.slot.id} BOM browser preview`} src={props.browserFrameUrl} sandbox="allow-same-origin allow-scripts" />
-        ) : (
-          <div className="bom-canvas-idle">
-            <Globe2 size={42} />
-            <span>Run a supplier to begin scanning</span>
-            <small>{props.model || "No model selected"} - {props.browserSupplier}</small>
-          </div>
-        )}
+        <CanvasViewport
+          label={canvasLabel}
+          sourceLabel={props.visibleUrl}
+          active={props.active}
+          onActivate={props.onActivate}
+        >
+          {props.slot.tools?.computerUse ? (
+            <ComputerUseSupervisor jobId={props.jobId} slotId={props.slot.id} model={props.model} sourceUrl={props.visibleUrl} />
+          ) : props.browserFrameUrl ? (
+            <iframe title={`${props.slot.id} BOM browser preview`} src={props.browserFrameUrl} sandbox="allow-same-origin allow-scripts" />
+          ) : (
+            <div className="bom-canvas-idle">
+              <Globe2 size={42} />
+              <span>Run a supplier to begin scanning</span>
+              <small>{props.model || "No model selected"} - {props.browserSupplier}</small>
+            </div>
+          )}
+        </CanvasViewport>
         <div className="bom-scan-line" />
         <div className={`bom-extraction-feed ${outputs.length || props.captures.length ? "show" : ""}`}>
           <div className="bom-feed-head">
