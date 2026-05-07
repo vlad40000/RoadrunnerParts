@@ -135,6 +135,31 @@ function validateComputerUseOutput(rawOutput: unknown) {
   return { errors, warnings };
 }
 
+function validateHeadingOutput(rawOutput: unknown, headings: string[]) {
+  const rawText = rawTextOf(rawOutput).toLowerCase();
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!rawText) {
+    errors.push("Output is empty.");
+  }
+
+  for (const heading of headings) {
+    if (!rawText.includes(heading.toLowerCase())) {
+      errors.push(`Missing required heading: ${heading}`);
+    }
+  }
+
+  return { errors, warnings };
+}
+
+function manualReviewValidation(rawOutput: unknown, message: string) {
+  const rawText = rawTextOf(rawOutput);
+  const warnings = [message];
+  if (!rawText) warnings.push("Output is empty.");
+  return { errors: [] as string[], warnings };
+}
+
 export function normalizeModelOutput(rawOutput: unknown): NormalizedModelOutput {
   const rawText =
     typeof rawOutput === "string"
@@ -197,6 +222,87 @@ export function validatePromptOutput(input: {
     };
   }
 
+  if (input.scenarioType === "may7_rld_orchestration_phase_1a") {
+    const { errors, warnings } = validateHeadingOutput(input.rawOutput ?? "", [
+      "PROJECT GOAL ID (lock)",
+      "REFERENCE STATE ID (lock)",
+      "SUCCESS STATE ID (lock)",
+      "CONSTRAINT ID (lock)",
+      "LOCK CANDIDATES",
+      "FORBIDDEN DELTA",
+      "AMBIGUITY REGISTER",
+      "SOURCE OF TRUTH FIELD DRAFT",
+      "LOCK READINESS VERDICT",
+    ]);
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      acceptedRows: [],
+      rejectedRows: [],
+      completenessStatus: "unknown",
+    };
+  }
+
+  if (input.scenarioType === "may7_unified_image_tattoo_lock_extraction") {
+    const { errors, warnings } = validateHeadingOutput(input.rawOutput ?? "", [
+      "DESIGN ID (lock)",
+      "STYLE ID (lock)",
+      "CONTEXT ID (lock)",
+      "CAMERA ID (lock)",
+      "COMPOSITION ID (lock)",
+      "TATTOO ID (lock)",
+      "PLACEMENT ID (lock)",
+    ]);
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      acceptedRows: [],
+      rejectedRows: [],
+      completenessStatus: "unknown",
+    };
+  }
+
+  if (input.scenarioType === "may7_global_rld_prompt_rule") {
+    const { errors, warnings } = validateHeadingOutput(input.rawOutput ?? "", [
+      "TOOL ROUTING",
+      "MODE",
+      "TASK",
+      "RULES",
+      "OUTPUT CONSTRAINTS",
+      "LOCK SECTIONS",
+      "FAIL-SAFE",
+      "DOWNSTREAM USE STATEMENT",
+    ]);
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      acceptedRows: [],
+      rejectedRows: [],
+      completenessStatus: "unknown",
+    };
+  }
+
+  if (
+    input.scenarioType === "may7_tattoo_surgical_edit" ||
+    input.scenarioType === "may7_tattoo_flash_variant_sheet"
+  ) {
+    const { errors, warnings } = manualReviewValidation(
+      input.rawOutput ?? "",
+      "This May 7 image-generation prompt requires operator visual review; text validation cannot prove image compliance.",
+    );
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      acceptedRows: [],
+      rejectedRows: [],
+      completenessStatus: "unknown",
+    };
+  }
+
   const normalized =
     input.parsedJson !== undefined
       ? {
@@ -225,6 +331,91 @@ export function validatePromptOutput(input: {
   }
 
   const root = asRecord(normalized.parsedJson);
+
+  if (input.scenarioType === "may7_roadrunner_identity_extraction") {
+    if (!("brand" in root)) warnings.push("brand field is missing.");
+    if (!("model" in root)) warnings.push("model field is missing.");
+    if (!("serial" in root)) warnings.push("serial field is missing.");
+    if (!("appliance_type" in root)) warnings.push("appliance_type field is missing.");
+    if (!Array.isArray(root.voltage_or_power_clues)) {
+      errors.push("voltage_or_power_clues must be an array.");
+    }
+    if (!("confidence" in root)) warnings.push("confidence field is missing.");
+    if ("uncertain_fields" in root && !Array.isArray(root.uncertain_fields)) {
+      errors.push("uncertain_fields must be an array when present.");
+    }
+    if ("rejected_candidates" in root && !Array.isArray(root.rejected_candidates)) {
+      errors.push("rejected_candidates must be an array when present.");
+    }
+  }
+
+  if (input.scenarioType === "may7_roadrunner_orchestrator") {
+    const allowedNextStages = new Set([
+      "NAMEPLATE_INGEST",
+      "IDENTITY_NORMALIZE",
+      "DB_CACHE_CHECK",
+      "SOURCE_RESOLVE",
+      "DIAGRAM_MANIFEST",
+      "PARTS_EXTRACTION",
+      "MANIFEST_MAPPING",
+      "RETAIL_PRICING",
+      "FINAL_BOM_AUDIT",
+      "FINAL_UI_SUMMARY",
+    ]);
+    if (!allowedNextStages.has(text(root.nextStage))) errors.push("nextStage must be one of the allowed May 7 stage values.");
+    if (!text(root.reason)) warnings.push("reason field is missing.");
+    if (!Array.isArray(root.requiredInputs)) errors.push("requiredInputs must be an array.");
+    if (typeof root.blocked !== "boolean") errors.push("blocked must be boolean.");
+    if (!Array.isArray(root.blockers)) errors.push("blockers must be an array.");
+  }
+
+  if (input.scenarioType === "may7_roadrunner_parts_extraction") {
+    const rows = asRows(root.rows);
+    acceptedRows = rows;
+    if (!Array.isArray(root.rows)) errors.push("rows must be an array.");
+    rows.forEach((row, index) => {
+      if (!partTitleOf(row)) {
+        rejectedRows.push({ row, reason: `Row ${index + 1} is missing description/title.` });
+      }
+      if (!("confidence" in row)) warnings.push(`Row ${index + 1} is missing confidence.`);
+      if ("nlaStatus" in row && typeof row.nlaStatus !== "boolean") {
+        rejectedRows.push({ row, reason: `Row ${index + 1} nlaStatus must be boolean.` });
+      }
+    });
+  }
+
+  if (input.scenarioType === "may7_roadrunner_pricing_extraction") {
+    const enrichments = asRows(root.enrichments);
+    acceptedRows = enrichments;
+    if (!Array.isArray(root.enrichments)) errors.push("enrichments must be an array.");
+    enrichments.forEach((row, index) => {
+      if (!text(row.partNumber)) rejectedRows.push({ row, reason: `Enrichment ${index + 1} is missing partNumber.` });
+      if (!["exact", "replacement", "no_match"].includes(text(row.matchType))) {
+        rejectedRows.push({ row, reason: `Enrichment ${index + 1} has invalid matchType.` });
+      }
+      if (row.price !== null && row.price !== undefined && !Number.isFinite(Number(row.price))) {
+        rejectedRows.push({ row, reason: `Enrichment ${index + 1} price must be a number or null.` });
+      }
+    });
+  }
+
+  if (input.scenarioType === "may7_roadrunner_final_bom_audit") {
+    const allowedStates = new Set(["bom_complete", "parts_complete_pricing_partial", "parts_partial", "audit_blocked"]);
+    if (!allowedStates.has(text(root.retrievalState))) errors.push("retrievalState must be a May 7 audit state.");
+    if (typeof root.partsComplete !== "boolean") errors.push("partsComplete must be boolean.");
+    if (typeof root.pricingComplete !== "boolean") errors.push("pricingComplete must be boolean.");
+    if (typeof root.bomComplete !== "boolean") errors.push("bomComplete must be boolean.");
+    if (!Array.isArray(root.blockers)) errors.push("blockers must be an array.");
+  }
+
+  if (input.scenarioType === "may7_roadrunner_diagnostic") {
+    if (!Array.isArray(root.observedSymptoms)) errors.push("observedSymptoms must be an array.");
+    if (!Array.isArray(root.likelyFaultAreas)) errors.push("likelyFaultAreas must be an array.");
+    if (!Array.isArray(root.nextChecks)) errors.push("nextChecks must be an array.");
+    if (!Array.isArray(root.serviceModeChecks)) errors.push("serviceModeChecks must be an array.");
+    if (!Array.isArray(root.safetyWarnings)) errors.push("safetyWarnings must be an array.");
+    if (!Array.isArray(root.missingEvidence)) errors.push("missingEvidence must be an array.");
+  }
 
   if (
     input.scenarioType === "identity_extraction" ||

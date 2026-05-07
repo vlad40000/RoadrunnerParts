@@ -89,7 +89,18 @@ export type PromptScenarioType =
   | "retail_pricing_verification"
   | "market_intelligence_survey"
   | "visual_loop_recovery"
-  | "ebay_listing_prep";
+  | "ebay_listing_prep"
+  | "may7_rld_orchestration_phase_1a"
+  | "may7_unified_image_tattoo_lock_extraction"
+  | "may7_tattoo_surgical_edit"
+  | "may7_tattoo_flash_variant_sheet"
+  | "may7_roadrunner_identity_extraction"
+  | "may7_roadrunner_orchestrator"
+  | "may7_roadrunner_parts_extraction"
+  | "may7_roadrunner_pricing_extraction"
+  | "may7_roadrunner_final_bom_audit"
+  | "may7_roadrunner_diagnostic"
+  | "may7_global_rld_prompt_rule";
 
 export type RetrievalStatus =
   | "no_result"

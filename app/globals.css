@@ -3019,24 +3019,6 @@
     color: #fff !important;
   }
 
-  .bom-settings-reopen {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    z-index: 25;
-    display: inline-flex;
-    width: 32px;
-    height: 44px;
-    align-items: center;
-    justify-content: center;
-    transform: translateY(-50%);
-    border: 1px solid #d9e2ec;
-    border-right: 0;
-    border-radius: 8px 0 0 8px;
-    background: #fff;
-    color: #334155;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
-  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {

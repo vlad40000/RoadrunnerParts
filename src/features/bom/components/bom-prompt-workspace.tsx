@@ -329,7 +329,28 @@ const WORKFLOW_SCENARIO_GROUPS: Array<{
   },
   {
     label: "Marketplace",
-    types: ["ebay_listing_prep"],
+    types: ["ebay_listing_prep", "market_intelligence_survey", "visual_loop_recovery"],
+  },
+  {
+    label: "May 7 RLD Reference",
+    types: [
+      "may7_rld_orchestration_phase_1a",
+      "may7_unified_image_tattoo_lock_extraction",
+      "may7_tattoo_surgical_edit",
+      "may7_tattoo_flash_variant_sheet",
+      "may7_global_rld_prompt_rule",
+    ],
+  },
+  {
+    label: "May 7 Roadrunner",
+    types: [
+      "may7_roadrunner_identity_extraction",
+      "may7_roadrunner_orchestrator",
+      "may7_roadrunner_parts_extraction",
+      "may7_roadrunner_pricing_extraction",
+      "may7_roadrunner_final_bom_audit",
+      "may7_roadrunner_diagnostic",
+    ],
   },
 ];
 
@@ -1292,16 +1313,7 @@ export function BomPromptWorkspace({
               onPatch={updateSlot}
               onClose={() => setMissionSettingsOpen(false)}
             />
-          ) : (
-            <button
-              type="button"
-              className="bom-settings-reopen"
-              title="Open run settings"
-              onClick={() => setMissionSettingsOpen(true)}
-            >
-              <SlidersHorizontal size={16} />
-            </button>
-          )}
+          ) : null}
           <SystemInstructionsDrawer
             isOpen={isInstructionsDrawerOpen}
             onClose={() => setIsInstructionsDrawerOpen(false)}
@@ -2680,13 +2692,40 @@ function CanvasQuickDock({
 }) {
   return (
     <div className="canvas-quick-dock" aria-label="Canvas quick actions">
-      <button type="button" title="Prompt drawer" aria-label="Prompt drawer" data-tooltip="Prompt drawer" onClick={openPrompt}>
+      <button
+        type="button"
+        title="Prompt drawer"
+        aria-label="Prompt drawer"
+        data-tooltip="Prompt drawer"
+        onPointerDownCapture={(event) => {
+          event.preventDefault();
+          openPrompt();
+        }}
+      >
         <FileCode2 size={18} />
       </button>
-      <button type="button" title="Model outputs" aria-label="Model outputs" data-tooltip="Model outputs" onClick={showModels}>
+      <button
+        type="button"
+        title="Model outputs"
+        aria-label="Model outputs"
+        data-tooltip="Model outputs"
+        onPointerDownCapture={(event) => {
+          event.preventDefault();
+          showModels();
+        }}
+      >
         <Bot size={18} />
       </button>
-      <button type="button" title="Run settings" aria-label="Run settings" data-tooltip="Run settings" onClick={openSettings}>
+      <button
+        type="button"
+        title="Run settings"
+        aria-label="Run settings"
+        data-tooltip="Run settings"
+        onPointerDownCapture={(event) => {
+          event.preventDefault();
+          openSettings();
+        }}
+      >
         <SlidersHorizontal size={18} />
       </button>
     </div>
@@ -2712,7 +2751,10 @@ function ScreenSwitchRail({
             title={item.label}
             aria-label={item.label}
             data-tooltip={item.label}
-            onClick={() => setActiveScreen(item.screen)}
+            onPointerDownCapture={(event) => {
+              event.preventDefault();
+              setActiveScreen(item.screen);
+            }}
           >
             <Icon size={17} />
           </button>
