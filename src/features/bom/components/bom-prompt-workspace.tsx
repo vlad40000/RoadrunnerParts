@@ -93,6 +93,7 @@ type BomJob = {
 };
 
 type WorkspaceView = "studio" | "mission";
+type WorkbenchScreen = "canvas" | "browser" | "models" | "supervisor";
 
 type PromptAttachmentKind = "image" | "document" | "file";
 
@@ -287,6 +288,17 @@ const MODES: Array<{
   { mode: "pricing", label: "Pricing", icon: DollarSign },
   { mode: "validation", label: "Validate", icon: ShieldCheck },
   { mode: "export_review", label: "Export", icon: Upload },
+];
+
+const WORKBENCH_SCREENS: Array<{
+  screen: WorkbenchScreen;
+  label: string;
+  icon: typeof Monitor;
+}> = [
+  { screen: "canvas", label: "Project canvas", icon: Boxes },
+  { screen: "browser", label: "Browser windows", icon: Monitor },
+  { screen: "models", label: "Model outputs", icon: Bot },
+  { screen: "supervisor", label: "Playwright supervisor", icon: Globe2 },
 ];
 
 const TASK_TO_SCENARIO: Record<"diagrams" | "bom" | "pricing", PromptScenarioType> = {
@@ -674,10 +686,12 @@ export function BomPromptWorkspace({
   const [browserFrameUrl, setBrowserFrameUrl] = useState("");
   const [browserSupplier, setBrowserSupplier] = useState<SupplierId>("encompass");
   const [captures, setCaptures] = useState<BrowserSourceCapture[]>([]);
+  const [workbenchScreen, setWorkbenchScreen] = useState<WorkbenchScreen>("canvas");
   const [promptDrawerOpen, setPromptDrawerOpen] = useState(false);
+  const [workspaceDrawerOpen, setWorkspaceDrawerOpen] = useState(false);
   const [railExpanded, setRailExpanded] = useState(false);
   const [modelDrawerSlot, setModelDrawerSlot] = useState<ModelSlot["id"] | null>(null);
-  const [missionSettingsOpen, setMissionSettingsOpen] = useState(true);
+  const [missionSettingsOpen, setMissionSettingsOpen] = useState(false);
   const [missionSettingsSlot, setMissionSettingsSlot] = useState<ModelSlot["id"]>("slot_a");
   const [modelSearch, setModelSearch] = useState("");
   const [modelFilter, setModelFilter] = useState<(typeof MODEL_FILTERS)[number]>("All");
@@ -986,6 +1000,8 @@ export function BomPromptWorkspace({
       runPolicy: `Do not navigate, search, extract, or execute until the operator presses Run. URL Context may include up to ${MAX_URL_CONTEXT_URLS} source URLs. Function calling is not capped by call count; obey stage-specific allowed-tool policy.`,
     });
     setActiveMode(TASK_TO_MODE[task]);
+    setWorkbenchScreen("browser");
+    setWorkspaceDrawerOpen(true);
   }
 
   function queueCapture(kind: BrowserSourceCapture["captureKind"], label: string) {
@@ -1101,9 +1117,9 @@ export function BomPromptWorkspace({
     return (
       <main className="bom-cockpit h-screen overflow-hidden">
         <div className="bom-cockpit-super">
-          <button type="button" className="bom-cockpit-super-icon" onClick={() => setWorkspaceView("studio")} title="Switch to Gemini AI Studio">
-            <Bot size={14} />
-          </button>
+          <span className="bom-cockpit-window-dot red" />
+          <span className="bom-cockpit-window-dot yellow" />
+          <span className="bom-cockpit-window-dot green" />
           <span className="bom-cockpit-version">MISSION COCKPIT</span>
           <div className="flex items-center gap-3">
             <span className="bom-cockpit-job">{model || job?.model || "no model"}</span>
@@ -1118,96 +1134,96 @@ export function BomPromptWorkspace({
           </div>
           <div className="ml-auto flex items-center gap-2">
             <ScenarioWorkflowSelect scenarios={scenarios} selectedScenario={selectedScenario} loadScenario={loadScenario} />
-            <button type="button" className="bom-cockpit-copy" onClick={() => setPromptDrawerOpen((open) => !open)}>
-              Prompt Cockpit
+            <button type="button" className="bom-cockpit-super-icon" data-tooltip="Prompt drawer" aria-label="Prompt drawer" onClick={() => setPromptDrawerOpen((open) => !open)}>
+              <FileCode2 size={14} />
             </button>
-            <button type="button" className="bom-cockpit-publish" onClick={() => setWorkspaceView("studio")}>
-              Gemini Studio
+            <button type="button" className="bom-cockpit-super-icon" data-tooltip="Model settings" aria-label="Model settings" onClick={() => setMissionSettingsOpen((open) => !open)}>
+              <SlidersHorizontal size={14} />
             </button>
           </div>
         </div>
         <div className="bom-cockpit-top">
           <div className="bom-cockpit-brand">
-            <Link href="/" className="bom-cockpit-home" title="Home">
+            <Link href="/" className="bom-cockpit-home" data-tooltip="Home" aria-label="Home">
               <Home size={14} />
             </Link>
             <div className="bom-cockpit-logo">
-              Roadrunner <span>Mission</span>
+              Roadrunner <span>Cockpit</span>
             </div>
           </div>
-          <div className="bom-cockpit-tabs">
-            {MODES.map((item) => (
-              <button
-                key={item.mode}
-                type="button"
-                className={`bom-cockpit-tab ${activeMode === item.mode ? "active" : ""}`}
-                onClick={() => setActiveMode(item.mode)}
-              >
-                {item.label}
-              </button>
-            ))}
+          <div className="bom-cockpit-window-title">
+            <Monitor size={14} />
+            <span>{WORKBENCH_SCREENS.find((item) => item.screen === workbenchScreen)?.label || "Project canvas"}</span>
           </div>
           <div className="bom-cockpit-top-actions">
             <span className="bom-cockpit-pulse" />
-            <button type="button" className="bom-cockpit-icon-button" title="Prompt cockpit" onClick={() => setPromptDrawerOpen((open) => !open)}>
+            <button type="button" className="bom-cockpit-icon-button" data-tooltip="Prompt drawer" aria-label="Prompt drawer" onClick={() => setPromptDrawerOpen((open) => !open)}>
               <FileCode2 size={14} />
             </button>
             <button
               type="button"
               className={`bom-cockpit-icon-button ${missionSettingsOpen ? "on" : ""}`}
-              title="Run settings"
+              data-tooltip="Run settings"
+              aria-label="Run settings"
               onClick={() => setMissionSettingsOpen((open) => !open)}
             >
               <SlidersHorizontal size={14} />
             </button>
-            <button type="button" className="bom-cockpit-icon-button" title="Gemini AI Studio" onClick={() => setWorkspaceView("studio")}>
+            <button type="button" className="bom-cockpit-icon-button" data-tooltip="Model outputs" aria-label="Model outputs" onClick={() => setWorkbenchScreen("models")}>
               <Bot size={14} />
             </button>
           </div>
         </div>
         <div className="bom-cockpit-body">
-          <CockpitRail activeMode={activeMode} expanded={railExpanded} setActiveMode={setActiveMode} setExpanded={setRailExpanded} />
-          <WorkspaceDrawer
-            activeMode={activeMode}
-            model={model}
-            serial={serial}
-            job={job}
-            jobIdInput={jobIdInput}
-            jobBusy={jobBusy}
-            jobError={jobError}
-            scenarios={scenarios}
-            selectedScenario={selectedScenario}
-            lastRun={lastRun}
-            lastValidation={lastValidation}
-            runHistory={runHistory}
-            finalRows={finalRows}
-            rawRows={rawRows}
-            captures={captures}
-            suppliers={SUPPLIERS}
-            setModel={setModel}
-            setSerial={setSerial}
-            setJobIdInput={setJobIdInput}
-            createOrLoadJob={createOrLoadJob}
-            loadScenario={loadScenario}
-            selectSupplierAction={selectSupplierAction}
-            validateLatestRun={validateLatestRun}
-            setActiveMode={setActiveMode}
-          />
+          <CockpitRail activeMode={activeMode} setActiveMode={setActiveMode} setWorkbenchScreen={setWorkbenchScreen} setWorkspaceDrawerOpen={setWorkspaceDrawerOpen} />
+          {workspaceDrawerOpen ? (
+            <WorkspaceDrawer
+              activeMode={activeMode}
+              model={model}
+              serial={serial}
+              job={job}
+              jobIdInput={jobIdInput}
+              jobBusy={jobBusy}
+              jobError={jobError}
+              scenarios={scenarios}
+              selectedScenario={selectedScenario}
+              lastRun={lastRun}
+              lastValidation={lastValidation}
+              runHistory={runHistory}
+              finalRows={finalRows}
+              rawRows={rawRows}
+              captures={captures}
+              suppliers={SUPPLIERS}
+              setModel={setModel}
+              setSerial={setSerial}
+              setJobIdInput={setJobIdInput}
+              createOrLoadJob={createOrLoadJob}
+              loadScenario={loadScenario}
+              selectSupplierAction={selectSupplierAction}
+              validateLatestRun={validateLatestRun}
+              setActiveMode={setActiveMode}
+              onClose={() => setWorkspaceDrawerOpen(false)}
+            />
+          ) : null}
           <section className="bom-cockpit-center">
-            {activeMode === "browser_tool" ? (
-              <ComputerUseSupervisor jobId={jobId} model={model} />
-            ) : (
-              <BrowserCanvas
-                browserFrameUrl={browserFrameUrl}
-                browserUrl={browserUrl}
-                browserSupplier={browserSupplier}
-                model={model}
-                lastRun={lastRun}
-                captures={captures}
-                modelSlots={modelSlots}
-                jobId={jobId}
-              />
-            )}
+            <ScreenSwitchRail activeScreen={workbenchScreen} setActiveScreen={setWorkbenchScreen} />
+            <WorkbenchStage
+              screen={workbenchScreen}
+              browserFrameUrl={browserFrameUrl}
+              browserUrl={browserUrl}
+              browserSupplier={browserSupplier}
+              model={model}
+              serial={serial}
+              job={job}
+              jobId={jobId}
+              selectedScenario={selectedScenario}
+              lastRun={lastRun}
+              lastValidation={lastValidation}
+              captures={captures}
+              modelSlots={modelSlots}
+              activeMode={activeMode}
+              runHistory={runHistory}
+            />
             <PromptCockpitDrawer
               open={promptDrawerOpen}
               scenarios={scenarios}
@@ -1229,31 +1245,39 @@ export function BomPromptWorkspace({
               runScenario={runScenario}
               saveWinningPrompt={saveWinningPrompt}
             />
-            <MissionPromptComposer
-              selectedScenario={selectedScenario}
-              promptText={composerPrompt}
-              inputError={inputPayload.error}
-              runBusy={runBusy}
-              runError={runError}
-              savedPromptStatus={savedPromptStatus}
-              instructionChips={instructionChips}
-              instructionWarnings={instructionWarnings}
-              toolsPopoverSlot={toolsPopoverSlot}
-              activeSlot={modelSlots.find((slot) => slot.id === toolsPopoverSlot) || activeSlots[0] || modelSlots[0]}
-              attachments={promptAttachments}
-              suppliers={SUPPLIERS}
-              setPromptText={setComposerPrompt}
-              runScenario={runScenario}
-              updateSlot={updateSlot}
-              setToolsPopoverSlot={setToolsPopoverSlot}
-              addPromptAttachments={addPromptAttachments}
-              removePromptAttachment={removePromptAttachment}
-              createOrLoadJob={createOrLoadJob}
-              queueCapture={queueCapture}
-              selectSupplierAction={selectSupplierAction}
-              validateLatestRun={validateLatestRun}
-              activeSlotsCount={activeSlots.length}
-            />
+            {promptDrawerOpen ? (
+              <MissionPromptComposer
+                selectedScenario={selectedScenario}
+                promptText={composerPrompt}
+                inputError={inputPayload.error}
+                runBusy={runBusy}
+                runError={runError}
+                savedPromptStatus={savedPromptStatus}
+                instructionChips={instructionChips}
+                instructionWarnings={instructionWarnings}
+                toolsPopoverSlot={toolsPopoverSlot}
+                activeSlot={modelSlots.find((slot) => slot.id === toolsPopoverSlot) || activeSlots[0] || modelSlots[0]}
+                attachments={promptAttachments}
+                suppliers={SUPPLIERS}
+                setPromptText={setComposerPrompt}
+                runScenario={runScenario}
+                updateSlot={updateSlot}
+                setToolsPopoverSlot={setToolsPopoverSlot}
+                addPromptAttachments={addPromptAttachments}
+                removePromptAttachment={removePromptAttachment}
+                createOrLoadJob={createOrLoadJob}
+                queueCapture={queueCapture}
+                selectSupplierAction={selectSupplierAction}
+                validateLatestRun={validateLatestRun}
+                activeSlotsCount={activeSlots.length}
+              />
+            ) : (
+              <CanvasQuickDock
+                openPrompt={() => setPromptDrawerOpen(true)}
+                openSettings={() => setMissionSettingsOpen(true)}
+                showModels={() => setWorkbenchScreen("models")}
+              />
+            )}
           </section>
           {missionSettingsOpen ? (
             <MissionRunSettingsRail
@@ -2464,6 +2488,7 @@ function WorkspaceDrawer(props: {
   selectSupplierAction: (supplier: SupplierCard, task: "diagrams" | "bom" | "pricing") => void;
   validateLatestRun: () => void;
   setActiveMode: (mode: BomWorkspaceMode) => void;
+  onClose: () => void;
 }) {
   const activeLabel =
     {
@@ -2482,6 +2507,9 @@ function WorkspaceDrawer(props: {
     <aside className="bom-cockpit-drawer">
       <div className="bom-cockpit-drawer-head">
         <span>{activeLabel}</span>
+        <button type="button" title="Close drawer" aria-label="Close drawer" onClick={props.onClose}>
+          <X size={13} />
+        </button>
       </div>
       <div className="bom-cockpit-drawer-body">
         {props.activeMode === "identity" ? (
@@ -2638,6 +2666,248 @@ function DrawerTable({ rows }: { rows: Array<Record<string, unknown>> }) {
         ))}
       </tbody>
     </table>
+  );
+}
+
+function CanvasQuickDock({
+  openPrompt,
+  openSettings,
+  showModels,
+}: {
+  openPrompt: () => void;
+  openSettings: () => void;
+  showModels: () => void;
+}) {
+  return (
+    <div className="canvas-quick-dock" aria-label="Canvas quick actions">
+      <button type="button" title="Prompt drawer" aria-label="Prompt drawer" data-tooltip="Prompt drawer" onClick={openPrompt}>
+        <FileCode2 size={18} />
+      </button>
+      <button type="button" title="Model outputs" aria-label="Model outputs" data-tooltip="Model outputs" onClick={showModels}>
+        <Bot size={18} />
+      </button>
+      <button type="button" title="Run settings" aria-label="Run settings" data-tooltip="Run settings" onClick={openSettings}>
+        <SlidersHorizontal size={18} />
+      </button>
+    </div>
+  );
+}
+
+function ScreenSwitchRail({
+  activeScreen,
+  setActiveScreen,
+}: {
+  activeScreen: WorkbenchScreen;
+  setActiveScreen: (screen: WorkbenchScreen) => void;
+}) {
+  return (
+    <div className="bom-screen-rail" aria-label="Screen switcher">
+      {WORKBENCH_SCREENS.map((item) => {
+        const Icon = item.icon;
+        return (
+          <button
+            key={item.screen}
+            type="button"
+            className={activeScreen === item.screen ? "on" : ""}
+            title={item.label}
+            aria-label={item.label}
+            data-tooltip={item.label}
+            onClick={() => setActiveScreen(item.screen)}
+          >
+            <Icon size={17} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function WorkbenchStage(props: {
+  screen: WorkbenchScreen;
+  browserFrameUrl: string;
+  browserUrl: string;
+  browserSupplier: SupplierId;
+  model: string;
+  serial: string;
+  job: BomJob | null;
+  jobId: string;
+  selectedScenario: PromptScenario | undefined;
+  lastRun: PromptRun | null;
+  lastValidation: PromptValidationResult | null;
+  captures: BrowserSourceCapture[];
+  modelSlots: ModelSlot[];
+  activeMode: BomWorkspaceMode;
+  runHistory: PromptRun[];
+}) {
+  if (props.screen === "browser") {
+    return (
+      <BrowserCanvas
+        browserFrameUrl={props.browserFrameUrl}
+        browserUrl={props.browserUrl}
+        browserSupplier={props.browserSupplier}
+        model={props.model}
+        lastRun={props.lastRun}
+        captures={props.captures}
+        modelSlots={props.modelSlots}
+        jobId={props.jobId}
+      />
+    );
+  }
+
+  if (props.screen === "supervisor") {
+    return (
+      <div className="bom-supervisor-screen">
+        <ComputerUseSupervisor jobId={props.jobId} model={props.model} sourceUrl={props.browserFrameUrl || props.browserUrl} />
+      </div>
+    );
+  }
+
+  if (props.screen === "models") {
+    return (
+      <ModelOutputDesk
+        modelSlots={props.modelSlots}
+        lastRun={props.lastRun}
+        lastValidation={props.lastValidation}
+        runHistory={props.runHistory}
+      />
+    );
+  }
+
+  return (
+    <div className="bom-project-canvas-screen">
+      <CanvasViewport
+        label="Project Canvas"
+        sourceLabel={props.model || props.job?.model || props.selectedScenario?.name || "Roadrunner"}
+        active
+      >
+        <ProjectCanvasBoard
+          model={props.model || props.job?.model || ""}
+          serial={props.serial || props.job?.serial || ""}
+          job={props.job}
+          jobId={props.jobId}
+          selectedScenario={props.selectedScenario}
+          lastRun={props.lastRun}
+          lastValidation={props.lastValidation}
+          captures={props.captures}
+          activeMode={props.activeMode}
+          browserUrl={props.browserFrameUrl || props.browserUrl}
+        />
+      </CanvasViewport>
+    </div>
+  );
+}
+
+function ProjectCanvasBoard(props: {
+  model: string;
+  serial: string;
+  job: BomJob | null;
+  jobId: string;
+  selectedScenario: PromptScenario | undefined;
+  lastRun: PromptRun | null;
+  lastValidation: PromptValidationResult | null;
+  captures: BrowserSourceCapture[];
+  activeMode: BomWorkspaceMode;
+  browserUrl: string;
+}) {
+  const rows = props.job?.uniqueRowCount ?? props.lastValidation?.acceptedRows.length ?? 0;
+  const rawRows = props.job?.rawRowCount ?? 0;
+  const nodes: Array<{
+    id: string;
+    label: string;
+    detail: string;
+    tone: "green" | "cyan" | "violet" | "amber" | "red";
+    icon: typeof Bot;
+    x: number;
+    y: number;
+    w: number;
+  }> = [
+    { id: "job", label: props.model || "Model intake", detail: props.serial || props.jobId || "Load or create a job", tone: "green", icon: Fingerprint, x: 350, y: 380, w: 260 },
+    { id: "sources", label: "Source windows", detail: props.browserUrl || "Supplier URLs staged in drawer", tone: "cyan", icon: Globe2, x: 690, y: 220, w: 270 },
+    { id: "prompts", label: "Prompt stack", detail: props.selectedScenario?.name || "Select a scenario", tone: "violet", icon: FileCode2, x: 690, y: 520, w: 270 },
+    { id: "models", label: "Model A / Model B", detail: props.lastRun ? `${props.lastRun.outputs.length} output windows` : "Ready for split run", tone: "amber", icon: Bot, x: 1030, y: 360, w: 290 },
+    { id: "evidence", label: "Evidence capture", detail: `${props.captures.length} capture${props.captures.length === 1 ? "" : "s"} staged`, tone: "cyan", icon: ImageIcon, x: 1370, y: 220, w: 260 },
+    { id: "bom", label: "BOM rows", detail: `${rows} accepted / ${rawRows} raw`, tone: "green", icon: Table2, x: 1370, y: 510, w: 260 },
+    { id: "gate", label: "Validation gate", detail: props.lastValidation ? (props.lastValidation.valid ? "valid" : "needs review") : "No gate run", tone: props.lastValidation?.valid ? "green" : "red", icon: ShieldCheck, x: 1650, y: 360, w: 250 },
+  ];
+  const lines = [["job", "sources"], ["job", "prompts"], ["sources", "models"], ["prompts", "models"], ["models", "evidence"], ["models", "bom"], ["evidence", "gate"], ["bom", "gate"]];
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+
+  return (
+    <div className="project-canvas-board">
+      <svg className="project-canvas-links" viewBox="0 0 2200 980" aria-hidden="true">
+        {lines.map(([from, to]) => {
+          const start = nodeMap.get(from);
+          const end = nodeMap.get(to);
+          if (!start || !end) return null;
+          const x1 = start.x + start.w;
+          const y1 = start.y + 36;
+          const x2 = end.x;
+          const y2 = end.y + 36;
+          const mid = x1 + Math.max(90, (x2 - x1) / 2);
+          return <path key={`${from}-${to}`} d={`M ${x1} ${y1} C ${mid} ${y1}, ${mid} ${y2}, ${x2} ${y2}`} />;
+        })}
+      </svg>
+      {nodes.map((node) => {
+        const Icon = node.icon;
+        return (
+          <div key={node.id} className={`project-canvas-node ${node.tone}`} style={{ left: node.x, top: node.y, width: node.w }}>
+            <Icon size={17} />
+            <div>
+              <strong>{node.label}</strong>
+              <span>{node.detail}</span>
+            </div>
+          </div>
+        );
+      })}
+      <div className="project-canvas-status">
+        <span>{props.job?.retrievalState || "workspace"}</span>
+        <span>{props.lastRun ? props.lastRun.id.slice(0, 8) : "no run"}</span>
+        <span>{props.selectedScenario?.type || "no scenario"}</span>
+      </div>
+    </div>
+  );
+}
+
+function ModelOutputDesk({
+  modelSlots,
+  lastRun,
+  lastValidation,
+  runHistory,
+}: {
+  modelSlots: ModelSlot[];
+  lastRun: PromptRun | null;
+  lastValidation: PromptValidationResult | null;
+  runHistory: PromptRun[];
+}) {
+  const visibleSlots = modelSlots.filter((slot) => slot.enabled).slice(0, 2);
+  return (
+    <div className="model-output-desk">
+      <div className="model-output-grid">
+        {visibleSlots.map((slot) => {
+          const output = lastRun?.outputs.find((item) => item.slotId === slot.id) || null;
+          return (
+            <section key={slot.id} className="model-output-window">
+              <header>
+                <span>{slot.id === "slot_a" ? "Model A" : "Model B"}</span>
+                <strong>{slot.modelName}</strong>
+                <small>{output?.validationStatus || "idle"}</small>
+              </header>
+              {output ? <ModelOutputView output={output} /> : (
+                <div className="model-output-empty">
+                  <Bot size={28} />
+                  <span>No output in this window</span>
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
+      <aside className="model-output-side">
+        <div><span>Gate</span><strong>{lastValidation ? (lastValidation.valid ? "valid" : "review") : "idle"}</strong></div>
+        <div><span>Accepted</span><strong>{lastValidation?.acceptedRows.length ?? 0}</strong></div>
+        <div><span>History</span><strong>{runHistory.length}</strong></div>
+      </aside>
+    </div>
   );
 }
 
@@ -2957,26 +3227,31 @@ function IdentityPanel(props: {
 
 function CockpitRail({
   activeMode,
-  expanded,
   setActiveMode,
-  setExpanded,
+  setWorkbenchScreen,
+  setWorkspaceDrawerOpen,
 }: {
   activeMode: BomWorkspaceMode;
-  expanded: boolean;
   setActiveMode: (mode: BomWorkspaceMode) => void;
-  setExpanded: (expanded: boolean) => void;
+  setWorkbenchScreen: (screen: WorkbenchScreen) => void;
+  setWorkspaceDrawerOpen: (open: boolean) => void;
 }) {
   const primaryItems: Array<{
     mode: BomWorkspaceMode;
     label: string;
     title: string;
     icon: React.ReactNode;
+    screen?: WorkbenchScreen;
   }> = [
-    { mode: "prompt_scenarios", label: "Playground", title: "Prompt playground", icon: <Bot size={18} /> },
-    { mode: "supplier_runs", label: "Suppliers", title: "Supplier runs", icon: <Boxes size={18} /> },
-    { mode: "validation", label: "Review", title: "Review lock", icon: <ShieldCheck size={18} /> },
-    { mode: "browser_tool", label: "Browser", title: "Browser tool", icon: <Globe2 size={18} /> },
-    { mode: "pricing", label: "Pricing", title: "Pricing", icon: <DollarSign size={18} /> },
+    { mode: "identity", label: "Job", title: "Job setup", icon: <Fingerprint size={18} />, screen: "canvas" },
+    { mode: "prompt_scenarios", label: "Prompts", title: "Prompt scenarios", icon: <FileCode2 size={18} />, screen: "canvas" },
+    { mode: "supplier_runs", label: "Suppliers", title: "Supplier runs", icon: <Boxes size={18} />, screen: "browser" },
+    { mode: "browser_tool", label: "Browser", title: "Playwright browser", icon: <Globe2 size={18} />, screen: "supervisor" },
+    { mode: "diagram_context", label: "Diagrams", title: "Diagram context", icon: <ImageIcon size={18} />, screen: "browser" },
+    { mode: "bom_extraction", label: "BOM", title: "BOM rows", icon: <Table2 size={18} />, screen: "canvas" },
+    { mode: "pricing", label: "Pricing", title: "Pricing", icon: <DollarSign size={18} />, screen: "canvas" },
+    { mode: "validation", label: "Validate", title: "Validation", icon: <ShieldCheck size={18} />, screen: "models" },
+    { mode: "export_review", label: "History", title: "Run history", icon: <History size={18} />, screen: "models" },
   ];
 
   const externalItems = [
@@ -2985,54 +3260,44 @@ function CockpitRail({
   ];
 
   return (
-    <aside className={`bom-cockpit-rail ${expanded ? "wide" : "slim"}`}>
-      <button
-        className="bom-cockpit-rail-toggle"
-        type="button"
-        onClick={() => setExpanded(!expanded)}
-        title={expanded ? "Collapse navigation" : "Expand navigation"}
-      >
-        {expanded ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-        <span>Menu</span>
-      </button>
-
+    <aside className="bom-cockpit-rail" aria-label="Workspace navigation">
       <div className="bom-cockpit-rail-group">
         {primaryItems.map((item) => (
           <button
             key={item.mode}
             type="button"
             title={item.title}
-            onClick={() => setActiveMode(item.mode)}
+            aria-label={item.title}
+            data-tooltip={item.title}
+            onClick={() => {
+              setActiveMode(item.mode);
+              if (item.screen) setWorkbenchScreen(item.screen);
+              setWorkspaceDrawerOpen(true);
+            }}
             className={`bom-cockpit-rail-button ${activeMode === item.mode ? "on" : ""}`}
           >
             {item.icon}
-            <span>{item.label}</span>
           </button>
         ))}
       </div>
 
       <div className="bom-cockpit-rail-group external">
         {externalItems.map((item) => (
-          <Link key={item.label} href={item.href} className="bom-cockpit-rail-button" title={item.label}>
+          <Link key={item.label} href={item.href} className="bom-cockpit-rail-button" title={item.label} aria-label={item.label} data-tooltip={item.label}>
             {item.icon}
-            <span>{item.label}</span>
-            <ExternalLink className="external-mark" size={13} />
           </Link>
         ))}
       </div>
 
       <div className="bom-cockpit-rail-bottom">
-        <button className="bom-cockpit-rail-button" type="button" title="What's new">
+        <button className="bom-cockpit-rail-button" type="button" title="What's new" aria-label="What's new" data-tooltip="What's new">
           <Hammer size={18} />
-          <span>What's new</span>
         </button>
-        <button className="bom-cockpit-rail-button" type="button" title="Settings">
+        <button className="bom-cockpit-rail-button" type="button" title="Settings" aria-label="Settings" data-tooltip="Settings">
           <Settings2 size={18} />
-          <span>Settings</span>
         </button>
-        <button className="bom-cockpit-rail-button profile" type="button" title="Operator profile">
+        <button className="bom-cockpit-rail-button profile" type="button" title="Operator profile" aria-label="Operator profile" data-tooltip="Operator">
           <UserCircle size={19} />
-          <span>Operator</span>
         </button>
       </div>
     </aside>
