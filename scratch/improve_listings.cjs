@@ -14,6 +14,22 @@ const SYMPTOM_MAP = {
     'Switch': 'Fixes issues with the dryer not starting when the door is closed or the button is pushed.'
 };
 
+const ROADRUNNER_FOOTER = `
+<br><br>
+<hr>
+<b>Shipping & Handling:</b>
+All orders are processed and shipped Monday through Friday. Most OEM components ship within 1-3 business days. We utilize USPS, UPS, and FedEx to ensure the fastest delivery to your door.
+
+<b>Need Help? Model Verification:</b>
+Not sure if this part fits your appliance? Please send us a message with your <b>Model Number</b> and <b>Serial Number</b> before purchasing. Our team will verify compatibility to ensure you get the right part the first time.
+
+<b>Returns & Quality:</b>
+This part has been professionally inspected and prepared for resale. To keep our prices low and ensure quality, we do not accept returns. If there is any issue with your order, please contact us immediately via eBay messages and we will make it right.
+
+<b>Disclaimer:</b>
+RoadrunnerParts is an independent distributor. We are not affiliated with or endorsed by the original manufacturers. All brand names and logos are the property of their respective owners and are used for identification purposes only.
+`;
+
 let raw = fs.readFileSync(path, 'utf8').trim();
 if (!raw.endsWith('}')) raw += '\n}';
 
@@ -23,13 +39,10 @@ const improved = data.listings.map(listing => {
     let description = listing.description || '';
     
     // 1. Fix Truncations
-    // Pattern: "- This 6" followed by "- 0 cubic foot" or similar
     description = description.replace(/- This 6\s*\n\s*- 0/g, '- This 6.0');
     description = description.replace(/- This 6$/gm, '- This high-quality replacement component.');
-    
-    // Clean up trailing dashes or weird sentence ends
     description = description.replace(/-\s*$/gm, '');
-
+    
     // 2. Add Symptom Logic
     const type = listing.specs.type || '';
     let symptomNote = '';
@@ -44,9 +57,9 @@ const improved = data.listings.map(listing => {
         description += `\n\n<b>Common Symptoms Fixed:</b>\n${symptomNote}`;
     }
 
-    // 3. Add Condition & Quality Note
-    if (!description.includes('Professional Refurbished')) {
-        description += `\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.`;
+    // 3. Add Professional Policy Footer
+    if (!description.includes('RoadrunnerParts')) {
+        description += ROADRUNNER_FOOTER;
     }
 
     // 4. Update Specs
@@ -64,4 +77,5 @@ const improved = data.listings.map(listing => {
 });
 
 fs.writeFileSync(path, JSON.stringify({ listings: improved }, null, 2));
-console.log(`Successfully improved ${improved.length} listings.`);
+console.log(`Successfully improved ${improved.length} listings with Roadrunner policies.`);
+

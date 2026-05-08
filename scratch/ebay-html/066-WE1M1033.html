@@ -4,224 +4,221 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dryer Door Hinge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #162033;
+      --accent: #3b82f6;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+    }
     body {
       margin: 0;
-      padding: 20px;
-      background: #f5f7fa;
-      color: #1f2937;
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.55;
-    }
-    .container {
-      max-width: 860px;
-      margin: 0 auto;
-      background: #fff;
-      border: 1px solid #d7dee8;
-    }
-    .header {
-      padding: 22px 28px;
-      background: #162033;
-      color: #fff;
-      border-bottom: 4px solid #2563eb;
-    }
-    .brand {
-      font-size: 26px;
-      font-weight: 800;
-    }
-    .brand span {
-      color: #60a5fa;
-    }
-    .content {
-      padding: 28px;
-    }
-    h1 {
-      margin: 0 0 18px;
-      font-size: 24px;
-      line-height: 1.25;
-      color: #111827;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0 0 24px;
-    }
-    th, td {
-      border: 1px solid #d7dee8;
-      padding: 10px 12px;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      width: 180px;
-      background: #f1f5f9;
-      color: #334155;
-    }
-    .section-title {
-      margin: 22px 0 10px;
-      font-size: 18px;
-      font-weight: 700;
-      color: #111827;
-    }
-    .description p {
-      margin: 0 0 14px;
-    }
-    .description ul {
-      margin: 0 0 14px 20px;
       padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
     }
-    .image-gallery {
+    .top-nav {
+      background: var(--secondary);
+      padding: 12px 20px;
       display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 24px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
     }
-    .main-image {
-      background: #f8fafc;
-      border: 1px solid #d7dee8;
-      padding: 20px;
-      text-align: center;
-      min-height: 350px;
+    .back-btn {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
       border-radius: 8px;
+      transition: background 0.2s;
     }
-    .main-image img {
-      max-width: 100%;
-      max-height: 450px;
-      object-fit: contain;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    .brand { font-family: 'Outfit', sans-serif; font-weight: 800; color: white; font-size: 20px; }
+    .brand span { color: var(--primary); }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
     }
-    .thumbnails {
+
+    .listing-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      background: var(--card);
+      padding: 40px;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
     }
-    .thumbnail {
+
+    @media (max-width: 900px) {
+      .listing-grid { grid-template-columns: 1fr; }
+    }
+
+    .gallery-col { display: flex; flex-direction: column; gap: 20px; }
+    .main-image-box {
       aspect-ratio: 1;
-      border: 1px solid #d7dee8;
-      padding: 8px;
-      background: #fff;
-      cursor: pointer;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s;
-      border-radius: 4px;
+      padding: 40px;
+      overflow: hidden;
     }
-    .thumbnail:hover {
-      border-color: #2563eb;
-      background: #f1f5f9;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    }
-    .thumbnail img {
+    .main-image-box img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
+      filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+      transition: transform 0.3s ease;
     }
-    .no-image {
-      color: #94a3b8;
-      font-style: italic;
+    .main-image-box:hover img { transform: scale(1.05); }
+
+    .thumbnails {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
     }
-    .policy {
-      margin-top: 18px;
-      padding: 14px 16px;
-      background: #f8fafc;
-      border-left: 4px solid #2563eb;
+    .thumb {
+      aspect-ratio: 1;
+      border: 2px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 6px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .thumb:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .thumb.watermark-review { border-color: #f59e0b; background: #fffbeb; }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+
+    .details-col { display: flex; flex-direction: column; }
+    .part-tag {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 20px;
+      line-height: 1.2;
+      color: var(--secondary);
+    }
+
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    .specs-table th {
+      text-align: left;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      width: 140px;
+    }
+    .specs-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 600;
       font-size: 14px;
-      color: #334155;
     }
-    .policy a {
-      color: #2563eb;
-      text-decoration: none;
-    }
-    .policy a:hover {
-      text-decoration: underline;
-    }
-    .footer {
-      padding: 18px 28px;
+
+    .description-box {
       background: #f8fafc;
-      border-top: 1px solid #d7dee8;
-      color: #64748b;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
+    }
+    .description-box h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      margin: 0 0 16px;
+    }
+    .description-content { font-size: 15px; color: #475569; }
+    .description-content ul { padding-left: 20px; margin: 16px 0; }
+    .description-content li { margin-bottom: 8px; }
+
+    .audit-meta {
+      margin-top: 30px;
+      padding: 16px;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .audit-meta strong { color: #b45309; }
+    .audit-meta.watermark-review {
+      background: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      color: var(--text-muted);
       font-size: 13px;
     }
   </style>
 </head>
 <body>
+  <nav class="top-nav">
+    <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="brand">Roadrunner<span>Parts</span></div>
+    <div style="width: 140px"></div>
+  </nav>
+
   <div class="container">
-    <div class="header">
-      <div class="brand">Roadrunner<span>Parts</span></div>
-    </div>
-    <div class="content">
-      <h1>Dryer Door Hinge</h1>
-      
-      <div class="image-gallery">
-        <div class="main-image" id="mainImage">
-          <img src="https://static.reliableparts.com/media/catalog/product/2/6/26a8be6d-32e2-4c9b-a517-75824afc77d3.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="Dryer Door Hinge">
+    <div class="listing-grid">
+      <div class="gallery-col">
+        <div class="main-image-box" id="mainImage">
+          <div style="color: #cbd5e1; font-weight: 700;">IMAGE PENDING</div>
         </div>
         
         
-        <div class="thumbnails">
-          
-            <div class="thumbnail" 
-                 title="Score: 235 | Source: reliableparts.com"
-                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://static.reliableparts.com/media/catalog/product/2/6/26a8be6d-32e2-4c9b-a517-75824afc77d3.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://static.reliableparts.com/media/catalog/product/2/6/26a8be6d-32e2-4c9b-a517-75824afc77d3.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image'>' }">
-              <img src="https://static.reliableparts.com/media/catalog/product/2/6/26a8be6d-32e2-4c9b-a517-75824afc77d3.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="Candidate 1">
-            </div>
-          
+      </div>
 
-            <div class="thumbnail" 
-                 title="Score: 179 | Source: geapplianceparts.com"
-                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://products-salsify.geappliances.com/image/upload/s--25cwld3g--/712fc07f9b754451a455eae70af59619daf8df70.jpg' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://products-salsify.geappliances.com/image/upload/s--25cwld3g--/712fc07f9b754451a455eae70af59619daf8df70.jpg'>' }">
-              <img src="https://products-salsify.geappliances.com/image/upload/s--25cwld3g--/712fc07f9b754451a455eae70af59619daf8df70.jpg" alt="Candidate 2">
-            </div>
-          
-
-            <div class="thumbnail" 
-                 title="Score: 173 | Source: geapplianceparts.com"
-                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://products-salsify.geappliances.com/image/upload/s--LysF9dKp--/w_480,h_500/646be465e0e8e00a5d77677d89b8115892511d4a.jpg' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://products-salsify.geappliances.com/image/upload/s--LysF9dKp--/w_480,h_500/646be465e0e8e00a5d77677d89b8115892511d4a.jpg'>' }">
-              <img src="https://products-salsify.geappliances.com/image/upload/s--LysF9dKp--/w_480,h_500/646be465e0e8e00a5d77677d89b8115892511d4a.jpg" alt="Candidate 3">
-            </div>
-          
-
-            <div class="thumbnail" 
-                 title="Score: 173 | Source: geapplianceparts.com"
-                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://products-salsify.geappliances.com/image/upload/s--ZGe5xTDi--/w_480,h_500/e08d324957b612fe585f8e224a97b71479eed504.jpg' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://products-salsify.geappliances.com/image/upload/s--ZGe5xTDi--/w_480,h_500/e08d324957b612fe585f8e224a97b71479eed504.jpg'>' }">
-              <img src="https://products-salsify.geappliances.com/image/upload/s--ZGe5xTDi--/w_480,h_500/e08d324957b612fe585f8e224a97b71479eed504.jpg" alt="Candidate 4">
-            </div>
-          
-
-            <div class="thumbnail" 
-                 title="Score: 173 | Source: geapplianceparts.com"
-                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://products-salsify.geappliances.com/image/upload/s--oYPsQYLJ--/w_480,h_500/2d80298c04cea4b675eaee09bbf1240c7ee1cf2b.jpg' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://products-salsify.geappliances.com/image/upload/s--oYPsQYLJ--/w_480,h_500/2d80298c04cea4b675eaee09bbf1240c7ee1cf2b.jpg'>' }">
-              <img src="https://products-salsify.geappliances.com/image/upload/s--oYPsQYLJ--/w_480,h_500/2d80298c04cea4b675eaee09bbf1240c7ee1cf2b.jpg" alt="Candidate 5">
-            </div>
-          
-
-            <div class="thumbnail" 
-                 title="Score: 134 | Source: reliableparts.com"
-                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://d2923bgwwiylbi.cloudfront.net/media/wysiwyg/enhanced/images-ge/14.png' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://d2923bgwwiylbi.cloudfront.net/media/wysiwyg/enhanced/images-ge/14.png'>' }">
-              <img src="https://d2923bgwwiylbi.cloudfront.net/media/wysiwyg/enhanced/images-ge/14.png" alt="Candidate 6">
-            </div>
-          
-        </div>
+      <div class="details-col">
+        <div class="part-tag">Appliance Component</div>
+        <h1>Dryer Door Hinge</h1>
         
-      </div>
-
-      
-      <div class="policy">
-        <strong>Image Source Mapping:</strong> Found 6 candidate(s) from 
-        <a href="https://www.reliableparts.com/gen-we1m1033.html" target="_blank" rel="noreferrer">
-          reliableparts.com
-        </a>. 
-        Top score: 235. 
-        <em>Note: Operator approval and image-use rights are still required before live marketplace use.</em>
-      </div>
-
-      <table>
-        <tbody>
+        <table class="specs-table">
+          <tbody>
+            
           <tr>
             <th>Part Number</th>
             <td>WE1M1033</td>
@@ -242,18 +239,23 @@
             <th>Condition</th>
             <td>Used</td>
           </tr>
-        </tbody>
-      </table>
-      <div class="section-title">Item Description</div>
-      <div class="description">
-        <p>This genuine OEM dryer door hinge (Diagram ID: 3051) is designed to support the dryer door on the front panel, allowing it to pivot smoothly when opening and closing. Constructed from durable metal with a satin/chrome finish, this hinge is essential for ensuring the proper function and stability of your dryer door. Please verify your dryer&#39;s model number to confirm compatibility before purchasing. Screws are not included.</p>
+          </tbody>
+        </table>
+
+        <div class="description-box">
+          <h2>Product Insights</h2>
+          <div class="description-content">
+            <p>This genuine OEM dryer door hinge (Diagram ID: 3051) is designed to support the dryer door on the front panel, allowing it to pivot smoothly when opening and closing. Constructed from durable metal with a satin/chrome finish, this hinge is essential for ensuring the proper function and stability of your dryer door. Please verify your dryer&#39;s model number to confirm compatibility before purchasing. Screws are not included.</p>
+          </div>
+        </div>
+
+        
       </div>
-      <div class="section-title">Shipping & Handling</div>
-      <div class="policy">Professionally packed for shipment. Shipping options and final handling terms are controlled by the eBay listing setup.</div>
-      <div class="section-title">Returns</div>
-      <div class="policy">Returns are handled under the return terms shown on the eBay listing. Do not treat this local preview as a live marketplace policy.</div>
     </div>
-    <div class="footer">Local RoadrunnerParts HTML preview. Not deployed to eBay.</div>
   </div>
+
+  <footer>
+    RoadrunnerParts Internal Audit Tool &bull; Local Preview &bull; 2026
+  </footer>
 </body>
 </html>
