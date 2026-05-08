@@ -268,7 +268,6 @@ function candidateSearchText(candidate) {
 function candidateMatchesPartNumber(partNumber, candidate) {
   const part = String(partNumber || "").trim().toUpperCase();
   if (!part) return false;
-  if (String(candidate?.sourceDomain || "") === "local-scratch") return true;
   return candidateSearchText(candidate).includes(part);
 }
 
@@ -298,12 +297,19 @@ function candidateHasWatermarkRisk(candidate) {
 }
 
 function candidateIsApprovedForPreview(candidate) {
-  return String(candidate?.sourceDomain || "") === "local-scratch";
+  const sourceDomain = String(candidate?.sourceDomain || "").toLowerCase();
+  const reviewStatus = String(candidate?.reviewStatus || "").toLowerCase();
+  if (sourceDomain === "local-scratch") {
+    return trustLocalPartImages && reviewStatus === "operator_approved_exact";
+  }
+  return sourceDomain === "geapplianceparts.com" || sourceDomain === "geappliances.com";
 }
 
 function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, approvedImageMap, fromDir) {
   const approved = preferredLocalImageCandidate(partNumber, approvedImageMap, fromDir);
-  const preferred = approved || (trustLocalPartImages ? preferredLocalImageCandidate(partNumber, localImageMap, fromDir) : null);
+  const preferred = trustLocalPartImages
+    ? (approved || preferredLocalImageCandidate(partNumber, localImageMap, fromDir))
+    : null;
   const resolvedRemote = resolveLocalImageCandidates(remoteCandidates, localImageMap, fromDir);
   
   const cleanExact = resolvedRemote.filter((candidate) =>
@@ -316,6 +322,22 @@ function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, appro
   const seen = new Set();
 
   return merged.filter((candidate) => {
+    const key = imageCandidateKey(candidate);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function safeImageCandidates(partNumber, listingCandidates, fallbackCandidates) {
+  const strictCandidates = (Array.isArray(listingCandidates) ? listingCandidates : []).filter((candidate) =>
+    candidateMatchesPartNumber(partNumber, candidate)
+    && !candidateHasWatermarkRisk(candidate)
+    && candidateIsApprovedForPreview(candidate),
+  );
+  const candidates = strictCandidates.length > 0 ? strictCandidates : fallbackCandidates;
+  const seen = new Set();
+  return candidates.filter((candidate) => {
     const key = imageCandidateKey(candidate);
     if (!key || seen.has(key)) return false;
     seen.add(key);
@@ -979,15 +1001,14 @@ const approvedImageMap = loadLocalImageMap(approvedImageRoot);
 
 const records = listings.map((listing, index) => {
   const partNumber = String(listing.partNumber || `listing-${index + 1}`);
-  const imageCandidates = (listing.imageCandidates && listing.imageCandidates.length > 0)
-    ? listing.imageCandidates 
-    : mergeImageCandidates(
-        partNumber,
-        imageCandidateMap.get(partNumber.toUpperCase()) || [],
-        localImageMap,
-        approvedImageMap,
-        outputDir,
-      );
+  const fallbackImageCandidates = mergeImageCandidates(
+    partNumber,
+    imageCandidateMap.get(partNumber.toUpperCase()) || [],
+    localImageMap,
+    approvedImageMap,
+    outputDir,
+  );
+  const imageCandidates = safeImageCandidates(partNumber, listing.imageCandidates, fallbackImageCandidates);
   const listingForHtml = {
     ...listing,
     imageUrl: imageCandidates[0]?.imageUrl || listing.imageUrl || null,
@@ -1024,15 +1045,14 @@ if (batchSize > 0 && records.length > batchSize) {
 fs.writeFileSync(normalizedJsonPath, JSON.stringify({
   listings: listings.map((listing) => {
     const partNumber = String(listing.partNumber || "").toUpperCase();
-    const candidates = (listing.imageCandidates && listing.imageCandidates.length > 0)
-      ? listing.imageCandidates
-      : mergeImageCandidates(
-          partNumber,
-          imageCandidateMap.get(partNumber) || [],
-          localImageMap,
-          approvedImageMap,
-          outputDir,
-        );
+    const fallbackCandidates = mergeImageCandidates(
+      partNumber,
+      imageCandidateMap.get(partNumber) || [],
+      localImageMap,
+      approvedImageMap,
+      outputDir,
+    );
+    const candidates = safeImageCandidates(partNumber, listing.imageCandidates, fallbackCandidates);
     const imageCandidate = candidates.find(c => candidateMatchesPartNumber(partNumber, c)) || candidates[0] || null;
     return {
       ...listing,

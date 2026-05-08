@@ -20,11 +20,11 @@
 
 ### Pending
 - **eBay Deployment**: Disabled. Do not push or sync listings directly to eBay yet.
-- **Operator Review**: Review local HTML files before any future listing-draft or marketplace sync work. (Note: A specialized audit dashboard for the 52 finalized items has been generated at `scratch/ebay-html-final-52/index.html`). 
-- **Audit Findings (2026-05-08)**: 52/52 parts processed. 24 items flagged with `mismatch_detected` (visual does not match part number) and require manual image selection or discovery. 28 items auto-approved based on exact part-number string matches in the image metadata.
+- **Operator Review**: Review local HTML files before any future listing-draft or marketplace sync work. (Note: a specialized audit dashboard for the 50 corrected finalized items has been generated at `scratch/ebay-html-final-52/index.html`).
+- **Audit Findings (2026-05-08)**: 50/50 selected listing records processed after duplicate/error cleanup. Image display is now strict: candidates must carry exact part-number evidence from an approved source, otherwise the listing shows `IMAGE PENDING` for operator review.
 - **Inventory Linking**: Pending; local HTML artifacts are currently for visual review only.
 
-## Selected Final Listings (52 Units)
+## Selected Final Listings (50 Units)
 - **Status**: AUDIT READY (24 Mismatches Flagged)
 - **Source**: `scratch/ebay-html-final-52/listings.normalized.json` is now the authoritative source of truth for the audit.
 - **Dashboard**: `scratch/ebay-html-final-52/index.html` contains the finalized premium audit dashboard with red-flagged mismatch visual states.
