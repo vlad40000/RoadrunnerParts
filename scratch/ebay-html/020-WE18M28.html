@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filter &amp; Mesh Asm.</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f5f7fa;
+      color: #1f2937;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #d7dee8;
+    }
+    .header {
+      padding: 22px 28px;
+      background: #162033;
+      color: #fff;
+      border-bottom: 4px solid #2563eb;
+    }
+    .brand {
+      font-size: 26px;
+      font-weight: 800;
+    }
+    .brand span {
+      color: #60a5fa;
+    }
+    .content {
+      padding: 28px;
+    }
+    h1 {
+      margin: 0 0 18px;
+      font-size: 24px;
+      line-height: 1.25;
+      color: #111827;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 24px;
+    }
+    th, td {
+      border: 1px solid #d7dee8;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      width: 180px;
+      background: #f1f5f9;
+      color: #334155;
+    }
+    .section-title {
+      margin: 22px 0 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+    }
+    .description p {
+      margin: 0 0 14px;
+    }
+    .description ul {
+      margin: 0 0 14px 20px;
+      padding: 0;
+    }
+    .image-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .main-image {
+      background: #f8fafc;
+      border: 1px solid #d7dee8;
+      padding: 20px;
+      text-align: center;
+      min-height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+    .main-image img {
+      max-width: 100%;
+      max-height: 450px;
+      object-fit: contain;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .thumbnails {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 12px;
+    }
+    .thumbnail {
+      aspect-ratio: 1;
+      border: 1px solid #d7dee8;
+      padding: 8px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      border-radius: 4px;
+    }
+    .thumbnail:hover {
+      border-color: #2563eb;
+      background: #f1f5f9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+    .thumbnail img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .no-image {
+      color: #94a3b8;
+      font-style: italic;
+    }
+    .policy {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: #f8fafc;
+      border-left: 4px solid #2563eb;
+      font-size: 14px;
+      color: #334155;
+    }
+    .policy a {
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .policy a:hover {
+      text-decoration: underline;
+    }
+    .footer {
+      padding: 18px 28px;
+      background: #f8fafc;
+      border-top: 1px solid #d7dee8;
+      color: #64748b;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="brand">Roadrunner<span>Parts</span></div>
+    </div>
+    <div class="content">
+      <h1>Filter &amp; Mesh Asm.</h1>
+      
+      <div class="image-gallery">
+        <div class="main-image" id="mainImage">
+          <img src="https://static.reliableparts.com/media/catalog/product/1/c/1c233761-e34e-4f21-84ca-29edf3d83565.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="Filter &amp; Mesh Asm.">
+        </div>
+        
+        
+        <div class="thumbnails">
+          
+            <div class="thumbnail" 
+                 title="Score: 200 | Source: reliableparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://static.reliableparts.com/media/catalog/product/1/c/1c233761-e34e-4f21-84ca-29edf3d83565.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://static.reliableparts.com/media/catalog/product/1/c/1c233761-e34e-4f21-84ca-29edf3d83565.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image'>' }">
+              <img src="https://static.reliableparts.com/media/catalog/product/1/c/1c233761-e34e-4f21-84ca-29edf3d83565.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="Candidate 1">
+            </div>
+          
+
+            <div class="thumbnail" 
+                 title="Score: 173 | Source: geappliances.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://cdn11.bigcommerce.com/s-pacto3wrn2/products/411178/images/963571/df713f9abeaa311870b08f8dd084e8ee8664484a__02500.1757544505.386.513.jpg?c=2' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://cdn11.bigcommerce.com/s-pacto3wrn2/products/411178/images/963571/df713f9abeaa311870b08f8dd084e8ee8664484a__02500.1757544505.386.513.jpg?c=2'>' }">
+              <img src="https://cdn11.bigcommerce.com/s-pacto3wrn2/products/411178/images/963571/df713f9abeaa311870b08f8dd084e8ee8664484a__02500.1757544505.386.513.jpg?c=2" alt="Candidate 2">
+            </div>
+          
+
+            <div class="thumbnail" 
+                 title="Score: 99 | Source: thriftyapplianceparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9412/SAPWE18M28-backGrayscale__69081.1590245216.jpg?c=2' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9412/SAPWE18M28-backGrayscale__69081.1590245216.jpg?c=2'>' }">
+              <img src="https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9412/SAPWE18M28-backGrayscale__69081.1590245216.jpg?c=2" alt="Candidate 3">
+            </div>
+          
+
+            <div class="thumbnail" 
+                 title="Score: 99 | Source: thriftyapplianceparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9411/SAPWE18M28-frontGrayscale__82570.1590245216.jpg?c=2' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9411/SAPWE18M28-frontGrayscale__82570.1590245216.jpg?c=2'>' }">
+              <img src="https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9411/SAPWE18M28-frontGrayscale__82570.1590245216.jpg?c=2" alt="Candidate 4">
+            </div>
+          
+
+            <div class="thumbnail" 
+                 title="Score: 99 | Source: thriftyapplianceparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/7194/SAPWE18M28__87744.1627926014.jpg?c=2' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/7194/SAPWE18M28__87744.1627926014.jpg?c=2'>' }">
+              <img src="https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/7194/SAPWE18M28__87744.1627926014.jpg?c=2" alt="Candidate 5">
+            </div>
+          
+
+            <div class="thumbnail" 
+                 title="Score: 99 | Source: thriftyapplianceparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9413/SAPWE18M28-bottomGrayscale__44409.1590245216.jpg?c=2' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9413/SAPWE18M28-bottomGrayscale__44409.1590245216.jpg?c=2'>' }">
+              <img src="https://cdn11.bigcommerce.com/s-0wq4f/images/stencil/1280x1280/products/3341/9413/SAPWE18M28-bottomGrayscale__44409.1590245216.jpg?c=2" alt="Candidate 6">
+            </div>
+          
+        </div>
+        
+      </div>
+
+      
+      <div class="policy">
+        <strong>Image Source Mapping:</strong> Found 6 candidate(s) from 
+        <a href="https://www.reliableparts.com/gen-we18m28.html" target="_blank" rel="noreferrer">
+          reliableparts.com
+        </a>. 
+        Top score: 200. 
+        <em>Note: Operator approval and image-use rights are still required before live marketplace use.</em>
+      </div>
+
+      <table>
+        <tbody>
+          <tr>
+            <th>Part Number</th>
+            <td>WE18M28</td>
+          </tr>
+          <tr>
+            <th>Brand</th>
+            <td>General Electric</td>
+          </tr>
+          <tr>
+            <th>MPN</th>
+            <td>WE18M28</td>
+          </tr>
+          <tr>
+            <th>Type</th>
+            <td>Dryer Lint Filter</td>
+          </tr>
+          <tr>
+            <th>Condition</th>
+            <td>Used</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="section-title">Item Description</div>
+      <div class="description">
+        <p>This genuine OEM Filter &amp; Mesh Assembly (Diagram ID 300) is designed for select GE and Hotpoint dryers. This assembly captures lint and debris during the drying cycle, helping to maintain proper airflow and dryer efficiency. Featuring a durable white plastic frame with a metal screen, this part is an essential component for optimal dryer maintenance. Please verify your specific dryer model number to ensure compatibility.</p>
+      </div>
+      <div class="section-title">Shipping & Handling</div>
+      <div class="policy">Professionally packed for shipment. Shipping options and final handling terms are controlled by the eBay listing setup.</div>
+      <div class="section-title">Returns</div>
+      <div class="policy">Returns are handled under the return terms shown on the eBay listing. Do not treat this local preview as a live marketplace policy.</div>
+    </div>
+    <div class="footer">Local RoadrunnerParts HTML preview. Not deployed to eBay.</div>
+  </div>
+</body>
+</html>

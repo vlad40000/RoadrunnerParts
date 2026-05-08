@@ -15,6 +15,8 @@ const inputPath = String(args.get("input") || DEFAULT_INPUT);
 const outputDir = String(args.get("output-dir") || DEFAULT_OUTPUT_DIR);
 const normalizedJsonPath = String(args.get("normalized-json") || path.join(outputDir, "listings.normalized.json"));
 const imageManifestPath = args.get("image-manifest") ? String(args.get("image-manifest")) : "";
+const limitArg = args.get("limit");
+const partArg = args.get("part");
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -64,9 +66,8 @@ function loadImageCandidateMap(filePath) {
 
   for (const record of records) {
     const partNumber = String(record.partNumber || "").trim().toUpperCase();
-    const candidate = Array.isArray(record.candidates) ? record.candidates[0] : null;
-    if (partNumber && candidate?.imageUrl) {
-      map.set(partNumber, candidate);
+    if (partNumber && Array.isArray(record.candidates) && record.candidates.length > 0) {
+      map.set(partNumber, record.candidates);
     }
   }
 
@@ -103,7 +104,7 @@ function renderSpecsRows(listing) {
     ["Brand", specs.brand],
     ["MPN", specs.mpn || listing.partNumber],
     ["Type", specs.type],
-    ["Condition", specs.condition],
+    ["Condition", "Used"],
     ["Compatible Models", Array.isArray(specs.compatibleModels) ? specs.compatibleModels.join(", ") : ""],
   ].filter(([, value]) => String(value || "").trim());
 
@@ -119,7 +120,9 @@ function renderSpecsRows(listing) {
 function renderListingHtml(listing) {
   const title = String(listing.title || `${listing.partNumber} Appliance Part`).trim();
   const descriptionHtml = formatDescription(listing.description);
-  const imageCandidate = listing.imageCandidate || null;
+  const primaryImageCandidate = listing.imageCandidates?.[0] || null;
+  const primaryImageReviewStatus = String(primaryImageCandidate?.reviewStatus || "");
+  const primaryNeedsWatermarkReview = primaryImageReviewStatus.includes("watermark");
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -127,201 +130,518 @@ function renderListingHtml(listing) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #162033;
+      --accent: #3b82f6;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+    }
     body {
       margin: 0;
-      padding: 20px;
-      background: #f5f7fa;
-      color: #1f2937;
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.55;
-    }
-    .container {
-      max-width: 860px;
-      margin: 0 auto;
-      background: #fff;
-      border: 1px solid #d7dee8;
-    }
-    .header {
-      padding: 22px 28px;
-      background: #162033;
-      color: #fff;
-      border-bottom: 4px solid #2563eb;
-    }
-    .brand {
-      font-size: 26px;
-      font-weight: 800;
-    }
-    .brand span {
-      color: #60a5fa;
-    }
-    .content {
-      padding: 28px;
-    }
-    h1 {
-      margin: 0 0 18px;
-      font-size: 24px;
-      line-height: 1.25;
-      color: #111827;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0 0 24px;
-    }
-    th, td {
-      border: 1px solid #d7dee8;
-      padding: 10px 12px;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      width: 180px;
-      background: #f1f5f9;
-      color: #334155;
-    }
-    .section-title {
-      margin: 22px 0 10px;
-      font-size: 18px;
-      font-weight: 700;
-      color: #111827;
-    }
-    .description p {
-      margin: 0 0 14px;
-    }
-    .description ul {
-      margin: 0 0 14px 20px;
       padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
     }
-    .image-container {
-      margin-bottom: 24px;
-      text-align: center;
+    .top-nav {
+      background: var(--secondary);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .back-btn {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    .brand { font-family: 'Outfit', sans-serif; font-weight: 800; color: white; font-size: 20px; }
+    .brand span { color: var(--primary); }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .listing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      background: var(--card);
+      padding: 40px;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 900px) {
+      .listing-grid { grid-template-columns: 1fr; }
+    }
+
+    .gallery-col { display: flex; flex-direction: column; gap: 20px; }
+    .main-image-box {
+      aspect-ratio: 1;
       background: #f8fafc;
-      border: 1px solid #d7dee8;
-      padding: 20px;
-      min-height: 300px;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      overflow: hidden;
+    }
+    .main-image-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+      transition: transform 0.3s ease;
+    }
+    .main-image-box:hover img { transform: scale(1.05); }
+
+    .thumbnails {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
+    }
+    .thumb {
+      aspect-ratio: 1;
+      border: 2px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 6px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .image-container img {
-      max-width: 100%;
-      max-height: 400px;
-      object-fit: contain;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    .thumb:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .thumb.watermark-review { border-color: #f59e0b; background: #fffbeb; }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+
+    .details-col { display: flex; flex-direction: column; }
+    .part-tag {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
     }
-    .no-image {
-      color: #94a3b8;
-      font-style: italic;
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 20px;
+      line-height: 1.2;
+      color: var(--secondary);
     }
-    .policy {
-      margin-top: 18px;
-      padding: 14px 16px;
+
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    .specs-table th {
+      text-align: left;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      width: 140px;
+    }
+    .specs-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .description-box {
       background: #f8fafc;
-      border-left: 4px solid #2563eb;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
     }
-    .footer {
-      padding: 18px 28px;
-      background: #f8fafc;
-      border-top: 1px solid #d7dee8;
-      color: #64748b;
+    .description-box h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      margin: 0 0 16px;
+    }
+    .description-content { font-size: 15px; color: #475569; }
+    .description-content ul { padding-left: 20px; margin: 16px 0; }
+    .description-content li { margin-bottom: 8px; }
+
+    .audit-meta {
+      margin-top: 30px;
+      padding: 16px;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .audit-meta strong { color: #b45309; }
+    .audit-meta.watermark-review {
+      background: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      color: var(--text-muted);
       font-size: 13px;
     }
   </style>
 </head>
 <body>
+  <nav class="top-nav">
+    <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="brand">Roadrunner<span>Parts</span></div>
+    <div style="width: 140px"></div>
+  </nav>
+
   <div class="container">
-    <div class="header">
-      <div class="brand">Roadrunner<span>Parts</span></div>
-    </div>
-    <div class="content">
-      <h1>${escapeHtml(title)}</h1>
-      <div class="image-container">
-        ${listing.imageUrl 
-          ? `<img src="${escapeHtml(listing.imageUrl)}" alt="${escapeHtml(title)}">` 
-          : `<div class="no-image">Product image pending review</div>`
-        }
+    <div class="listing-grid">
+      <div class="gallery-col">
+        <div class="main-image-box" id="mainImage">
+          ${listing.imageUrl 
+            ? `<img src="${escapeHtml(listing.imageUrl)}" alt="${escapeHtml(title)}">` 
+            : `<div style="color: #cbd5e1; font-weight: 700;">IMAGE PENDING</div>`
+          }
+        </div>
+        
+        ${listing.imageCandidates && listing.imageCandidates.length > 1 ? `
+        <div class="thumbnails">
+          ${listing.imageCandidates.map((cand, i) => `
+            <div class="thumb ${String(cand.reviewStatus || "").includes("watermark") ? "watermark-review" : ""}" 
+                 title="Score: ${cand.score} | Domain: ${escapeHtml(cand.sourceDomain)} | Status: ${escapeHtml(cand.reviewStatus || "review")}"
+                 data-image-url="${escapeHtml(cand.imageUrl)}"
+                 onclick="const box = document.querySelector('#mainImage'); const img = box.querySelector('img') || box.appendChild(document.createElement('img')); img.src = this.dataset.imageUrl;">
+              <img src="${escapeHtml(cand.imageUrl)}" alt="Candidate ${i + 1}">
+            </div>
+          `).join("\n")}
+        </div>
+        ` : ""}
       </div>
-      ${imageCandidate ? `<div class="policy">Image candidate source: <a href="${escapeHtml(imageCandidate.pageUrl || imageCandidate.imageUrl)}" target="_blank" rel="noreferrer">${escapeHtml(imageCandidate.sourceDomain || "source page")}</a>. Candidate score ${escapeHtml(imageCandidate.score)}. Operator approval and image-use rights are still required before live marketplace use.</div>` : ""}
-      <table>
-        <tbody>${renderSpecsRows(listing)}
-        </tbody>
-      </table>
-      <div class="section-title">Item Description</div>
-      <div class="description">
-        ${descriptionHtml}
+
+      <div class="details-col">
+        <div class="part-tag">Appliance Component</div>
+        <h1>${escapeHtml(title)}</h1>
+        
+        <table class="specs-table">
+          <tbody>
+            ${renderSpecsRows(listing)}
+          </tbody>
+        </table>
+
+        <div class="description-box">
+          <h2>Product Insights</h2>
+          <div class="description-content">
+            ${descriptionHtml}
+          </div>
+        </div>
+
+        ${listing.imageCandidates && listing.imageCandidates.length > 0 ? `
+        <div class="audit-meta ${primaryNeedsWatermarkReview ? "watermark-review" : ""}">
+          <strong>Audit Insight:</strong> Top visual candidate from <strong>${escapeHtml(listing.imageCandidates[0].sourceDomain)}</strong> 
+          with a quality score of <strong>${listing.imageCandidates[0].score}</strong>. 
+          Status: <strong>${escapeHtml(primaryImageReviewStatus || "candidate_needs_operator_review")}</strong>. 
+          ${primaryNeedsWatermarkReview ? "ReliableParts is mixed-trust; verify this image has no visible watermark before final staging." : "Verify for watermarks before final staging."}
+        </div>` : ""}
       </div>
-      <div class="section-title">Shipping & Handling</div>
-      <div class="policy">Professionally packed for shipment. Shipping options and final handling terms are controlled by the eBay listing setup.</div>
-      <div class="section-title">Returns</div>
-      <div class="policy">Returns are handled under the return terms shown on the eBay listing. Do not treat this local preview as a live marketplace policy.</div>
     </div>
-    <div class="footer">Local RoadrunnerParts HTML preview. Not deployed to eBay.</div>
   </div>
+
+  <footer>
+    RoadrunnerParts Internal Audit Tool &bull; Local Preview &bull; 2026
+  </footer>
 </body>
 </html>
 `;
 }
 
 function renderIndexHtml(records) {
-  const links = records
-    .map((record) => `
-      <tr>
-        <td><a href="./${escapeHtml(record.fileName)}">${escapeHtml(record.partNumber)}</a></td>
-        <td>${escapeHtml(record.title)}</td>
-        <td>${record.imageSource ? escapeHtml(record.imageSource) : "Pending"}</td>
-      </tr>`)
+  const cards = records
+    .map((record, i) => {
+      const hasImage = !!record.imageSource;
+      const needsWatermarkReview = String(record.imageReviewStatus || "").includes("watermark");
+      const delay = (i % 20) * 0.05;
+      return `
+      <div class="card ${hasImage ? "has-image" : "missing-image"}" onclick="location.href='./${escapeHtml(record.fileName)}'" style="animation-delay: ${delay}s">
+        <div class="card-image">
+           ${hasImage ? `<img src="${escapeHtml(record.thumbnailUrl || "")}" alt="${escapeHtml(record.partNumber)}" onerror="this.src='https://placehold.co/200x200?text=No+Image'">` : `<div class="placeholder">NO IMAGE</div>`}
+        </div>
+        <div class="card-body">
+          <div class="part-num">${escapeHtml(record.partNumber)}</div>
+          <div class="part-title">${escapeHtml(record.title)}</div>
+          <div class="source-badge ${record.imageSource && !needsWatermarkReview ? "success" : "warning"}">
+            ${record.imageSource ? `${needsWatermarkReview ? "Watermark Review" : "Source"}: ${escapeHtml(record.imageSource)}` : "Pending Scan"}
+          </div>
+        </div>
+      </div>`;
+    })
     .join("");
+
+  const imageCount = records.filter(r => r.imageSource).length;
+  const watermarkReviewCount = records.filter(r => String(r.imageReviewStatus || "").includes("watermark")).length;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RoadrunnerParts eBay HTML Previews</title>
+  <title>RoadrunnerParts Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    body { margin: 0; padding: 24px; background: #f5f7fa; color: #1f2937; font-family: Arial, Helvetica, sans-serif; }
-    main { max-width: 1000px; margin: 0 auto; background: #fff; border: 1px solid #d7dee8; padding: 24px; }
-    h1 { margin: 0 0 8px; font-size: 26px; }
-    p { color: #475569; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #d7dee8; padding: 10px 12px; text-align: left; }
-    th { background: #f1f5f9; }
-    a { color: #1d4ed8; font-weight: 700; }
+    :root {
+      --primary: #2563eb;
+      --secondary: #162033;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --glass: rgba(255, 255, 255, 0.8);
+    }
+    body { 
+      margin: 0; 
+      background: var(--bg); 
+      color: var(--text); 
+      font-family: 'Inter', sans-serif; 
+      line-height: 1.5; 
+    }
+    header {
+      background: var(--secondary);
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 4px solid var(--primary);
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-content {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { 
+      font-family: 'Outfit', sans-serif;
+      margin: 0 0 10px; 
+      font-size: 42px; 
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    h1 span { color: var(--primary); }
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 24px;
+    }
+    .stat {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .stat span { color: var(--primary); font-weight: 800; font-size: 16px; }
+
+    main { 
+      max-width: 1240px; 
+      margin: -40px auto 80px; 
+      padding: 0 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      opacity: 0;
+    }
+    .card:hover {
+      transform: translateY(-12px);
+      box-shadow: 0 25px 30px -10px rgba(0,0,0,0.15), 0 15px 15px -10px rgba(0,0,0,0.05);
+      border-color: var(--primary);
+    }
+
+    .card-image {
+      aspect-ratio: 1;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      position: relative;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .card-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+    }
+    .card-image .placeholder {
+      font-weight: 800;
+      color: #cbd5e1;
+      font-size: 20px;
+      letter-spacing: 2px;
+    }
+
+    .card-body {
+      padding: 24px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .part-num {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--secondary);
+      margin-bottom: 6px;
+    }
+    .part-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 40px;
+      line-height: 1.6;
+    }
+
+    .source-badge {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-top: auto;
+      letter-spacing: 0.5px;
+    }
+    .source-badge.success { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+    .source-badge.warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+
+    footer {
+      text-align: center;
+      padding: 60px 40px;
+      color: var(--text-muted);
+      font-size: 13px;
+      background: #f1f5f9;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    /* Animation */
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9) translateY(30px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .card { animation: fadeInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
   </style>
 </head>
 <body>
+  <header>
+    <div class="header-content">
+      <h1>Roadrunner<span>Parts</span> Audit</h1>
+      <p>Next-Gen Appliance Inventory & Market Signal Intelligence</p>
+      <div class="stats-bar">
+        <div class="stat"><span>88</span> Backlog Parts</div>
+        <div class="stat"><span>${imageCount}</span> Visuals Discovered</div>
+        <div class="stat"><span>${watermarkReviewCount}</span> Watermark Review</div>
+        <div class="stat">Pipeline: <span>LOCAL REVIEW ONLY</span></div>
+      </div>
+    </div>
+  </header>
   <main>
-    <h1>RoadrunnerParts eBay HTML Previews</h1>
-    <p>${records.length} local listing HTML files generated. These are review artifacts only and are not deployed to eBay.</p>
-    <table>
-      <thead>
-        <tr>
-          <th>Part Number</th>
-          <th>Title</th>
-          <th>Top Image Source</th>
-        </tr>
-      </thead>
-      <tbody>${links}
-      </tbody>
-    </table>
+    <div class="grid">${cards}</div>
   </main>
+  <footer>
+    &copy; 2026 RoadrunnerParts Advanced Systems. Built for serialized appliance resale.
+  </footer>
 </body>
 </html>
 `;
 }
 
-const listings = parseListingsArtifact(fs.readFileSync(inputPath, "utf8"));
+let listings = parseListingsArtifact(fs.readFileSync(inputPath, "utf8"));
+if (partArg) {
+  listings = listings.filter(l => String(l.partNumber || "").toUpperCase() === partArg.toUpperCase());
+}
+if (limitArg) {
+  listings = listings.slice(0, Number(limitArg));
+}
 const imageCandidateMap = loadImageCandidateMap(imageManifestPath);
 fs.mkdirSync(outputDir, { recursive: true });
 
 const records = listings.map((listing, index) => {
   const partNumber = String(listing.partNumber || `listing-${index + 1}`);
-  const imageCandidate = imageCandidateMap.get(partNumber.toUpperCase()) || null;
+  const imageCandidates = imageCandidateMap.get(partNumber.toUpperCase()) || [];
   const listingForHtml = {
     ...listing,
-    imageUrl: imageCandidate?.imageUrl || listing.imageUrl || null,
-    imageCandidate,
+    imageUrl: imageCandidates[0]?.imageUrl || listing.imageUrl || null,
+    imageCandidates,
   };
   const fileName = `${String(index + 1).padStart(3, "0")}-${sanitizeFilename(partNumber)}.html`;
   fs.writeFileSync(path.join(outputDir, fileName), renderListingHtml(listingForHtml));
@@ -329,7 +649,9 @@ const records = listings.map((listing, index) => {
     partNumber,
     title: String(listing.title || ""),
     fileName,
-    imageSource: imageCandidate?.sourceDomain || "",
+    imageSource: imageCandidates[0]?.sourceDomain || "",
+    imageReviewStatus: imageCandidates[0]?.reviewStatus || "",
+    thumbnailUrl: imageCandidates[0]?.thumbnailUrl || imageCandidates[0]?.imageUrl || "",
   };
 });
 
@@ -337,7 +659,8 @@ fs.writeFileSync(path.join(outputDir, "index.html"), renderIndexHtml(records));
 fs.writeFileSync(normalizedJsonPath, JSON.stringify({
   listings: listings.map((listing) => {
     const partNumber = String(listing.partNumber || "").toUpperCase();
-    const imageCandidate = imageCandidateMap.get(partNumber) || null;
+    const candidates = imageCandidateMap.get(partNumber) || [];
+    const imageCandidate = candidates[0] || null;
     return {
       ...listing,
       imageCandidate: imageCandidate
@@ -350,6 +673,7 @@ fs.writeFileSync(normalizedJsonPath, JSON.stringify({
             reviewStatus: imageCandidate.reviewStatus,
           }
         : null,
+      imageCandidates: candidates,
     };
   }),
 }, null, 2));

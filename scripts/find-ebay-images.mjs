@@ -16,19 +16,44 @@ const outputDir = String(args.get("output-dir") || DEFAULT_OUTPUT_DIR);
 const limitArg = args.get("limit");
 const maxCandidates = Number(args.get("max-candidates") || 6);
 const delayMs = Number(args.get("delay-ms") || 700);
+const filterPart = args.get("part");
 
 const preferredDomains = [
   "geapplianceparts.com",
   "geappliances.com",
+  "reliableparts.com",
+  "reliableparts.ca",
   "genuinereplacementparts.com",
   "searspartsdirect.com",
-  "partselect.com",
+  "encompass.com",
+];
+
+const watermarkedDomains = [
+  "partsdr.com",
   "appliancepartspros.com",
   "repairclinic.com",
-  "partsdr.com",
+  "partselect.com",
+  "partswarehouse.com",
   "fix.com",
-  "encompass.com",
   "ereplacementparts.com",
+  "searspartsdirect.com",
+];
+
+const watermarkTextPatterns = [
+  /watermark/i,
+  /watermarked/i,
+  /parts\s*dr/i,
+  /partsdr/i,
+  /appliance\s*parts\s*pros/i,
+  /appliancepartspros/i,
+  /repair\s*clinic/i,
+  /repairclinic/i,
+  /part\s*select/i,
+  /partselect/i,
+  /parts\s*warehouse/i,
+  /partswarehouse/i,
+  /grid\s*represents/i,
+  /gridrepresents/i,
 ];
 
 const blockedDomains = [
@@ -41,6 +66,72 @@ const blockedDomains = [
   "aliexpress.",
   "temu.",
 ];
+
+function candidateSourceText(candidate) {
+  return [
+    candidate.sourceDomain,
+    candidate.pageUrl,
+    candidate.imageUrl,
+    candidate.thumbnailUrl,
+    candidate.title,
+  ].join(" ").toLowerCase();
+}
+
+function isReliablePartsCandidate(candidate) {
+  const host = candidate.sourceDomain || hostFromUrl(candidate.pageUrl) || hostFromUrl(candidate.imageUrl);
+  return host.includes("reliableparts.com") || host.includes("reliableparts.ca");
+}
+
+function isOfficialGECandidate(candidate) {
+  const host = candidate.sourceDomain || hostFromUrl(candidate.pageUrl) || hostFromUrl(candidate.imageUrl);
+  return host.includes("geapplianceparts.com") || host.includes("geappliances.com");
+}
+
+function isWatermarkedCandidate(candidate) {
+  const sourceText = candidateSourceText(candidate);
+
+  return (
+    watermarkedDomains.some((domain) => sourceText.includes(domain)) ||
+    watermarkTextPatterns.some((pattern) => pattern.test(sourceText))
+  );
+}
+
+function reviewStatusForCandidate(candidate) {
+  if (blockedDomains.some((domain) => candidate.sourceDomain.includes(domain))) {
+    return "blocked_marketplace_or_social";
+  }
+
+  if (isReliablePartsCandidate(candidate)) {
+    return "candidate_needs_watermark_review";
+  }
+
+  if (!isOfficialGECandidate(candidate)) {
+    return "candidate_needs_source_review";
+  }
+
+  return "candidate_needs_operator_review";
+}
+
+function isGenericNonProductImage(candidate) {
+  const sourceText = [
+    candidate.imageUrl,
+    candidate.thumbnailUrl,
+    candidate.title,
+  ].join(" ").toLowerCase();
+
+  if (/logo|favicon|icon|android-chrome|apple-touch-icon|banner|brands\.png|mega-menu|wysiwyg\/enhanced|categories|store-locator|diyrepair|btn-call|parts-hob-lockup|common\/icons|\/icons\//.test(sourceText)) {
+    return true;
+  }
+
+  // GE/Salsify thumbnail transforms at this size are often site thumbnails or
+  // generic gallery scrape noise, not usable eBay listing images.
+  if (/\/w_(\d+),h_(\d+)\//.test(sourceText)) {
+    const [, width, height] = sourceText.match(/\/w_(\d+),h_(\d+)\//) || [];
+    if (Number(width) < 300 || Number(height) < 300) return true;
+  }
+
+  return false;
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -92,14 +183,23 @@ function scoreCandidate(candidate, listing) {
   if (title.includes(part)) score += 35;
   if (pageUrl.includes(part)) score += 30;
   if (imageUrl.includes(part)) score += 20;
-  if (preferredDomains.some((domain) => host.includes(domain))) score += 25;
-  if (blockedDomains.some((domain) => host.includes(domain))) score -= 50;
+  if (host.includes("geapplianceparts.com") || host.includes("geappliances.com")) score += 110;
+  if (host.includes("reliableparts.com") || host.includes("reliableparts.ca")) score += 20;
+  if (preferredDomains.some((domain) => host.includes(domain))) score += 20;
+  if (candidate.source === "reliableparts-direct") score += 10;
+  
+  if (blockedDomains.some((domain) => host.includes(domain))) score -= 200;
+  
   if (candidate.width && candidate.height) {
     const minSide = Math.min(Number(candidate.width), Number(candidate.height));
     if (minSide >= 300) score += 8;
     if (minSide >= 800) score += 6;
   }
-  if (/diagram|schematic|logo|manual|pdf/i.test(`${candidate.title} ${candidate.imageUrl}`)) score -= 25;
+  
+  if (isReliablePartsCandidate(candidate)) score -= 20;
+  if (!isOfficialGECandidate(candidate) && !isReliablePartsCandidate(candidate)) score -= 15;
+  if (/diagram|schematic|logo|manual|pdf|grid|watermark/i.test(`${candidate.title} ${candidate.imageUrl}`)) score -= 50;
+
 
   return score;
 }
@@ -123,8 +223,18 @@ function normalizeCandidates(rawCandidates, listing) {
       };
     })
     .filter((candidate) => candidate.imageUrl && /^https?:\/\//i.test(candidate.imageUrl))
+    .filter((candidate) => !isWatermarkedCandidate(candidate))
+    .filter((candidate) => !isGenericNonProductImage(candidate))
     .filter((candidate) => {
-      const key = candidate.imageUrl.toLowerCase();
+      // Deduplicate by base URL to avoid same image in different sizes
+      let key = candidate.imageUrl.toLowerCase();
+      try {
+        const urlObj = new URL(candidate.imageUrl);
+        key = (urlObj.origin + urlObj.pathname).toLowerCase();
+      } catch {
+        // Fallback to full URL if invalid
+      }
+      
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -132,9 +242,7 @@ function normalizeCandidates(rawCandidates, listing) {
     .map((candidate) => ({
       ...candidate,
       score: scoreCandidate(candidate, listing),
-      reviewStatus: blockedDomains.some((domain) => candidate.sourceDomain.includes(domain))
-        ? "blocked_marketplace_or_social"
-        : "candidate_needs_operator_review",
+      reviewStatus: reviewStatusForCandidate(candidate),
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, maxCandidates);
@@ -202,6 +310,120 @@ async function searchBingImages(query) {
   return candidates;
 }
 
+async function searchGEAppliancesDirect(listing) {
+  const part = String(listing.partNumber || "").trim().toUpperCase();
+  if (!part) return [];
+
+  const pageUrl = `https://www.geapplianceparts.com/store/parts/spec/${part}`;
+  const html = await fetchText(pageUrl);
+  if (!html.toUpperCase().includes(part)) return [];
+
+  const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+  const pageTitle = titleMatch ? htmlDecode(titleMatch[1]) : `${listing.partNumber} GE Appliances`;
+
+  const candidates = [];
+  
+  // Extract main image
+  const ogImage = htmlDecode(html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i)?.[1] || "");
+  if (ogImage && !/logo|favicon|icon/i.test(ogImage)) {
+    candidates.push({
+      title: pageTitle,
+      imageUrl: ogImage.startsWith("//") ? `https:${ogImage}` : ogImage,
+      thumbnailUrl: ogImage.startsWith("//") ? `https:${ogImage}` : ogImage,
+      pageUrl,
+      sourceDomain: "geapplianceparts.com",
+      source: "ge-appliances-direct",
+      score: 195,
+      reviewStatus: "candidate_needs_operator_review",
+    });
+  }
+
+  // Look for additional gallery images
+  const imgRegex = /data-fullurl=["']([^"']+)["']/g;
+  let match;
+  let pos = 1;
+  while ((match = imgRegex.exec(html)) !== null) {
+    let imgUrl = match[1];
+    if (imgUrl.startsWith("//")) imgUrl = `https:${imgUrl}`;
+    
+    if (!candidates.find(c => c.imageUrl === imgUrl)) {
+      candidates.push({
+        title: `${pageTitle} (View ${pos++})`,
+        imageUrl: imgUrl,
+        thumbnailUrl: imgUrl,
+        pageUrl,
+        sourceDomain: "geapplianceparts.com",
+        source: "ge-appliances-direct",
+        score: 190,
+        reviewStatus: "candidate_needs_operator_review",
+      });
+    }
+  }
+
+  return candidates;
+}
+
+async function searchReliablePartsDirect(listing) {
+  const part = String(listing.partNumber || "").trim().toLowerCase();
+  if (!part) return [];
+
+  const pageUrl = `https://www.reliableparts.com/gen-${part}.html`;
+  const html = await fetchText(pageUrl);
+  if (!html.toUpperCase().includes(part.toUpperCase())) return [];
+
+  const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+  const pageTitle = titleMatch ? htmlDecode(titleMatch[1]) : `${listing.partNumber} Reliable Parts`;
+
+  // Try multiple gallery JSON patterns
+  const galleryMatch = html.match(/\[data-role=gallery-placeholder\]\":\s*({[\s\S]*?})\s*}/);
+  const imagesMatch = html.match(/\"images\":\s*(\[[\s\S]*?\])/);
+  const dataMatch = html.match(/"data":\s*(\[.*?\])/);
+  
+  let rawImages = [];
+  try {
+    if (galleryMatch) {
+      const data = JSON.parse(galleryMatch[1]);
+      rawImages = data.images || [];
+    } else if (imagesMatch) {
+      rawImages = JSON.parse(imagesMatch[1]);
+    } else if (dataMatch) {
+      rawImages = JSON.parse(dataMatch[1].replace(/\\/g, ""));
+    }
+  } catch (e) {
+    // Fallback to basic scrape if JSON fails
+  }
+
+  if (rawImages.length > 0) {
+    return rawImages
+      .filter(img => (img.full || img.img || img.url || img.main?.url))
+      .map((img, i) => ({
+        title: `${pageTitle} (Image ${img.position || i + 1})`,
+        imageUrl: img.full || img.img || img.url || img.main?.url,
+        thumbnailUrl: img.thumb || img.img || img.url || img.main?.url,
+        pageUrl,
+        sourceDomain: "reliableparts.com",
+        source: "reliableparts-direct",
+        score: 185,
+        reviewStatus: "candidate_needs_operator_review",
+      }));
+  }
+
+  // Final fallback to og:image
+  const imageUrl = htmlDecode(html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i)?.[1] || "");
+  if (!imageUrl || /logo|favicon|icon/i.test(imageUrl)) return [];
+  
+  return [{
+    title: pageTitle,
+    imageUrl,
+    thumbnailUrl: imageUrl,
+    pageUrl,
+    sourceDomain: "reliableparts.com",
+    source: "reliableparts-direct",
+    score: 180,
+    reviewStatus: "candidate_needs_operator_review",
+  }];
+}
+
 async function findCandidates(listing) {
   const part = String(listing.partNumber || "").trim();
   const type = String(listing.specs?.type || "").trim();
@@ -212,6 +434,26 @@ async function findCandidates(listing) {
 
   const raw = [];
   const errors = [];
+
+  try {
+    raw.push(...await searchGEAppliancesDirect(listing));
+  } catch (error) {
+    errors.push({
+      source: "ge-appliances-direct",
+      query: `https://www.geapplianceparts.com/store/parts/spec/${String(part).toUpperCase()}`,
+      error: error.message,
+    });
+  }
+
+  try {
+    raw.push(...await searchReliablePartsDirect(listing));
+  } catch (error) {
+    errors.push({
+      source: "reliableparts-direct",
+      query: `https://www.reliableparts.com/gen-${String(part).toLowerCase()}.html`,
+      error: error.message,
+    });
+  }
 
   for (const query of queries) {
     try {
@@ -247,7 +489,7 @@ function renderGallery(records) {
       <li>
         <a href="${escapeHtml(candidate.pageUrl || candidate.imageUrl)}" target="_blank" rel="noreferrer">${escapeHtml(candidate.sourceDomain || "source")}</a>
         <span>score ${escapeHtml(candidate.score)}</span>
-        <span>${escapeHtml(candidate.reviewStatus)}</span>
+        <span class="${candidate.reviewStatus === "candidate_needs_watermark_review" ? "watermark-review" : ""}">${escapeHtml(candidate.reviewStatus)}</span>
       </li>`).join("");
 
     return `
@@ -284,12 +526,13 @@ function renderGallery(records) {
     li { margin-bottom: 5px; }
     a { color: #1d4ed8; font-weight: 700; }
     span { margin-left: 6px; color: #64748b; }
+    .watermark-review { color: #b45309; font-weight: 700; }
   </style>
 </head>
 <body>
   <header>
     <h1>RoadrunnerParts Image Candidate Review</h1>
-    <p class="note">${records.length} parts processed. These are source-discovered image candidates for operator review, not approved eBay listing photos. Prefer your own part photos before any live marketplace use.</p>
+    <p class="note">${records.length} parts processed. These are source-discovered image candidates for operator review, not approved eBay listing photos. Known watermarked sources and watermark text are excluded. ReliableParts is mixed-trust and any remaining ReliableParts candidate is marked for watermark review instead of being auto-approved.</p>
   </header>
   <main class="grid">${cards}
   </main>
@@ -299,16 +542,21 @@ function renderGallery(records) {
 }
 
 const listings = loadListings();
+const filteredListings = filterPart 
+  ? listings.filter(l => String(l.partNumber || "").toUpperCase() === filterPart.toUpperCase())
+  : listings;
+
 fs.mkdirSync(outputDir, { recursive: true });
 
 const records = [];
-for (let i = 0; i < listings.length; i += 1) {
-  const listing = listings[i];
+for (let i = 0; i < filteredListings.length; i += 1) {
+  const listing = filteredListings[i];
   const part = listing.partNumber || `listing-${i + 1}`;
-  console.log(`[${i + 1}/${listings.length}] Finding image candidates for ${part}`);
+  console.log(`[${i + 1}/${filteredListings.length}] Finding image candidates for ${part}`);
   records.push(await findCandidates(listing));
-  await sleep(delayMs);
+  if (filteredListings.length > 1) await sleep(delayMs);
 }
+
 
 const manifest = {
   generatedAt: new Date().toISOString(),

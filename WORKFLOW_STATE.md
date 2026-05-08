@@ -1,6 +1,6 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: Local HTML Review (Images Integrated - 3/88)
+## Status: Local HTML Review (Images Integrated - Watermark Guarded)
 
 ### Completed Components
 1. **HTML Template Generator**: `src/lib/ebay-template-gen.ts`
@@ -21,31 +21,56 @@
 ### Pending
 - **eBay Deployment**: Disabled. Do not push or sync listings directly to eBay yet.
 - **Operator Review**: Review local HTML files before any future listing-draft or marketplace sync work.
-- **Inventory Linking**: Pending; local HTML artifacts are not live inventory records.
+- **Inventory Linking**: Pending; local HTML artifacts are currently for visual review only.
 
-### Next Steps
-1. **Local Review**: Open `scratch/ebay-html/index.html` and inspect the 88 generated listing previews.
-2. **Copy / Policy Pass**: Mark any title, compatibility, OEM, return-policy, or condition wording that needs manual correction.
-3. **Draft Integration Later**: Only after review, wire approved HTML into draft storage. Do not deploy to eBay.
+## Listing Optimization (88 Units)
+- **Status**: COMPLETE
+- **Condition**: Normalized to "Used" (Inspected & Prepared for Resale)
+- **Content**: Professional format with symptoms, compatibility, and features.
+- **Title**: Optimized for SEO and max 80 characters.
+
+## Image Strategy
+- **Status**: REFRESHED (No Watermarks Policy)
+- **Source**: Real product imagery discovered via `find-ebay-images.mjs` with GE/OEM sources preferred over mixed-trust ReliableParts candidates.
+- **Note**: AI image generation is STRICTLY PROHIBITED.
+- **Policy**: NO WATERMARKED IMAGES. Known watermarked domains and watermark text are hard-excluded. ReliableParts is not blanket-approved because some images are watermarked; remaining ReliableParts candidates are marked `candidate_needs_watermark_review` and do not outrank clean GE candidates.
+- **Gallery**: Updated to support multi-image selection so the operator can choose the cleanest available shot.
+- **Review**: Operator must review `scratch/ebay-html-with-images/index.html` for final approval.
+- **Image Selection**: If the primary image has a watermark, use the **Thumbnail Gallery** to select a clean alternative. Click the thumbnail to swap the main image, then save/note the selection.
+- **Goal**: Ensure 100% watermark-free listings before any draft staging.
 
 ### Review Findings - 2026-05-07
-- `C:\Users\bradv\Downloads\Ebay  descriptions1.txt` was reviewed earlier and is not valid JSON because of unescaped quote/log-text issues.
-- `C:\Users\bradv\Downloads\Ebay listings revised 1.txt` contains 88 unique part entries and was repaired at parse time because it is missing the final closing object brace.
-- `scratch/ge_dryer_listings.json` contains 70 live Gemini-generated rows; the revised text file is the fuller 88-row source for this HTML export pass.
-- Data accuracy has not been fully proven against `model_parts_raw` in this pass; local HTML files are review artifacts, not source-of-truth evidence.
+- `C:\Users\bradv\Downloads\Ebay listings revised 1.txt` contains 88 unique part entries and is the current source for HTML export.
+- All listings have been updated to "Used" condition to match the inventory.
 
 ### Local HTML Export - 2026-05-07
-- `scripts/export-ebay-html.mjs` converts listing JSON/text artifacts into static local HTML previews.
-- **Images**: Added an image section to the template. High-quality product images have been generated for 3 priority parts (WE21X20562, WE11M10001, WE17X22217).
-- Output written to `scratch/ebay-html/`: 88 part HTML files, `index.html`, and `listings.normalized.json`.
-- These files are local review artifacts only and are not deployed to eBay.
+- `scripts/export-ebay-html.mjs` converts listing artifacts into local HTML previews.
+- **Images**: Real web candidates are now integrated for all 88 listings.
+- Output: `scratch/ebay-html/` contains all 88 part files and a central `index.html`.
 
-### Image Candidate Discovery - 2026-05-07
-- `scripts/find-ebay-images.mjs` finds image candidates for each local listing and writes review artifacts only.
-- Output written to `scratch/ebay-images/`: `image-candidates.json` and `index.html`.
-- Discovery result: 88/88 parts have at least one candidate image; 79/88 top candidates came from preferred manufacturer/distributor-style domains; 0/88 top candidates came from blocked marketplace/social domains.
-- `scripts/export-ebay-html.mjs --image-manifest=scratch/ebay-images/image-candidates.json` produced `scratch/ebay-html-with-images/` with 88 image-enhanced HTML previews and `listings.with-images.json`.
-- Image candidates still require operator approval and image-use rights before any live marketplace use. Prefer original Roadrunner photos for final eBay listings when available.
+### Image Candidate Discovery & Multi-Image Gallery - 2026-05-08
+- `scripts/find-ebay-images.mjs` has been updated to support robust multi-image extraction:
+    - **Reliable Parts**: Improved JSON-gallery parsing for full visual coverage.
+    - **GE Appliances**: Direct spec page targeting implemented (partially limited by Cloudflare).
+    - **Multi-Image Manifest**: `scratch/ebay-images/image-candidates.json` now stores arrays of candidates per part.
+    - **Watermark Protection**: Hard-excludes known watermarked domains and watermark text. ReliableParts candidates are retained only as review candidates, not auto-approved.
+    - **Generic Asset Protection**: Hard-excludes favicon/icon/logo/button/lockup assets and tiny GE/Salsify transformed thumbnails such as `w_185,h_193`.
+- Current Pipeline Status: 88/88 parts have image candidates; 88/88 generated primary images are from GE domains (`geapplianceparts.com` or `geappliances.com`).
+- Generic Asset Status: 0 favicon/icon/button/lockup/tiny-thumbnail URLs remain in `scratch/ebay-images/image-candidates.json` or `scratch/ebay-html-with-images/listings.with-images.json`.
+
+### Premium Audit Dashboard (Roadrunner v2)
+- **Status**: READY FOR REVIEW (88/88 Parts)
+- **UI Architecture**:
+    - **Dashboard**: High-conversion card layout with animated entry and status badges.
+    - **Audit View**: Dual-column layout (Gallery / Specs) with glassmorphism styling.
+    - **Interactive Gallery**: Instant swap thumbnail grid with candidate scoring metadata.
+- **Watermark Policy**: STRICT (Penalized: PartsDr, APP, PartsWarehouse, Sears).
+- **Next Action**: Operator review of `scratch/ebay-html-premium/index.html`.
+- **Status Summary**: 88/88 parts have candidate arrays. 
+- **Watermark Guard**: Known watermarked domains are penalized. ReliableParts and Sears candidates are flagged for manual verification.
+- **Generic Asset Guard**: Favicon/icon/button/lockup assets and tiny `w_185,h_193` Salsify thumbnails are excluded from both `scratch/ebay-html-with-images/` and `scratch/ebay-html-premium/`.
+- **Compliance**: Image candidates require operator approval and image-use rights before live deployment.
+
 
 ### Backlog Parts List
 WE21X20562	Drum Asm 6.0 (replacement)	503

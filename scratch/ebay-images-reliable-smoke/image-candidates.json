@@ -1,0 +1,252 @@
+{
+  "generatedAt": "2026-05-08T00:11:11.343Z",
+  "sourceInput": "scratch/ebay-html/listings.normalized.json",
+  "usageBoundary": "Candidate/reference images only. Do not deploy to eBay without operator approval and image-use rights.",
+  "totalParts": 3,
+  "partsWithCandidates": 3,
+  "records": [
+    {
+      "partNumber": "WE21X20562",
+      "title": "GE Genuine OEM WE21X20562 Drum Asm 6.0 - Dryer Drum Assembly",
+      "candidates": [
+        {
+          "title": "WE21X20562&#x20;GE&#x20;Drum&#x20;Assembly",
+          "imageUrl": "https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0.webp",
+          "thumbnailUrl": "https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0.webp",
+          "pageUrl": "https://www.reliableparts.com/gen-we21x20562.html",
+          "sourceDomain": "reliableparts.com",
+          "width": null,
+          "height": null,
+          "source": "reliableparts-direct",
+          "score": 125,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 Drum Asm | Genuine Ge OEM In Stock",
+          "imageUrl": "https://cdn.appliancepartspros.com/images/product/cache/ge-drum-asm-we21x20562-ap5807056_03_l.jpg",
+          "thumbnailUrl": "https://ts3.mm.bing.net/th?id=OIP.7YeonXeKKrkNbOEasYiuwgHaFj&pid=15.1",
+          "pageUrl": "https://www.appliancepartspros.com/ge-drum-asm-we21x20562-ap5807056.html",
+          "sourceDomain": "appliancepartspros.com",
+          "width": null,
+          "height": null,
+          "source": "bing",
+          "score": 110,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 Drum Asm | Genuine Ge OEM In Stock",
+          "imageUrl": "https://cdn.appliancepartspros.com/images/product/cache/ge-drum-asm-we21x20562-ap5807056_01_l.jpg",
+          "thumbnailUrl": "https://ts2.mm.bing.net/th?id=OIP.diegEU-a4_sdryD5YD2WMgHaFj&pid=15.1",
+          "pageUrl": "https://www.appliancepartspros.com/ge-drum-asm-we21x20562-ap5807056.html",
+          "sourceDomain": "appliancepartspros.com",
+          "width": null,
+          "height": null,
+          "source": "bing",
+          "score": 110,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 Drum Asm | Genuine Ge OEM In Stock",
+          "imageUrl": "https://cdn.appliancepartspros.com/images/product/cache/ge-drum-asm-we21x20562-ap5807056_02_x.jpg",
+          "thumbnailUrl": "https://ts1.mm.bing.net/th?id=OIP.Ztm9cFVhW_tJ3eDB8FTP8QHaFj&pid=15.1",
+          "pageUrl": "https://www.appliancepartspros.com/ge-drum-asm-we21x20562-ap5807056.html",
+          "sourceDomain": "appliancepartspros.com",
+          "width": null,
+          "height": null,
+          "source": "bing",
+          "score": 110,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 | DRUM ASM | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--qkW5fRMI--/e72a4171ede6fb73a02d854751949de8c41ca851.jpg",
+          "thumbnailUrl": "https://ts4.mm.bing.net/th?id=OIP.-VdBzbYsCZh7jJzDK4JRTQHaHt&pid=15.1",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE21X20562",
+          "sourceDomain": "geapplianceparts.com",
+          "width": null,
+          "height": null,
+          "source": "bing",
+          "score": 90,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562 | DRUM ASM | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--1EvLfBh3--/w_480,h_500/24165547caa341b549b3d934be708ed1a6deaa88.jpg",
+          "thumbnailUrl": "https://ts3.mm.bing.net/th?id=OIP.e7Npazr46SLyQVo1YMcjYAHaHt&pid=15.1",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE21X20562",
+          "sourceDomain": "geapplianceparts.com",
+          "width": null,
+          "height": null,
+          "source": "bing",
+          "score": 90,
+          "reviewStatus": "candidate_needs_operator_review"
+        }
+      ],
+      "errors": [
+        {
+          "source": "duckduckgo",
+          "query": "WE21X20562 GE appliance part image",
+          "error": "fetch failed"
+        }
+      ]
+    },
+    {
+      "partNumber": "WE21X20407",
+      "title": "GE Genuine OEM WE21X20407 Drum Asm 6.0 Cu.ft - Dryer Drum Assembly",
+      "candidates": [
+        {
+          "title": "General Electric Drum Assembly 6.0 Cu.Ft Wh #GEH-WE21X20407 - Appliance ...",
+          "imageUrl": "https://s3.us-central-1.wasabisys.com/partswarehouse/photos/GEH-WE21X20407-2.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.JA55OyMPiULK38ry7dD8kQHaHa?pid=Api",
+          "pageUrl": "https://www.partswarehouse.com/GE-Haier-Hotpoint-Drum-Assembly-GEH-WE21X20562-p/geh-we21x20407.htm",
+          "sourceDomain": "partswarehouse.com",
+          "width": 500,
+          "height": 500,
+          "source": "duckduckgo",
+          "score": 93,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE21X20562&#x20;GE&#x20;Drum&#x20;Assembly",
+          "imageUrl": "https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0.webp",
+          "thumbnailUrl": "https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0.webp",
+          "pageUrl": "https://www.reliableparts.com/gen-we21x20407.html",
+          "sourceDomain": "reliableparts.com",
+          "width": null,
+          "height": null,
+          "source": "reliableparts-direct",
+          "score": 90,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "Official GE GFE28GSKFSS bottom-mount refrigerator parts | Sears PartsDirect",
+          "imageUrl": "https://c.searspartsdirect.com/img/PLDM/G2105330-00007?f=png",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.WuH7wDj_JjDVwS8tiEfGBAHaJl?pid=Api",
+          "pageUrl": "https://www.searspartsdirect.com/model/68zjnnowzr-000432/ge-gfe28gskfss-bottom-mount-refrigerator-parts",
+          "sourceDomain": "searspartsdirect.com",
+          "width": 2448,
+          "height": 3168,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "Assembly View for DRUM | GTDX180ED4WW",
+          "imageUrl": "http://assets.geappliances.io/parts/00100000/00109200/00109212.p04_2325.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.aRc1Ji5_1Lc99LDVE_Y4WgHaH4?pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/ModelSectionParts/GTDX180ED4WW/4/0/0/0/DRUM",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2325,
+          "height": 2475,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "GE Appliance Parts - OEM & Fast Shipping | Reliable Parts",
+          "imageUrl": "https://d2923bgwwiylbi.cloudfront.net/media/wysiwyg/enhanced/images-ge/8_1.png",
+          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.UQUuaL4DIyo4GvpAKiwzkAHaF8?pid=Api",
+          "pageUrl": "https://www.reliableparts.com/cat/ge.html",
+          "sourceDomain": "reliableparts.com",
+          "width": 1494,
+          "height": 1200,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "GE Appliance Parts - OEM & Fast Shipping | Reliable Parts",
+          "imageUrl": "https://d2923bgwwiylbi.cloudfront.net/media/wysiwyg/enhanced/images-ge/14.png",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.we6p-TRHBLwtSRo4JviCPQHaF8?pid=Api",
+          "pageUrl": "https://www.reliableparts.com/cat/ge.html",
+          "sourceDomain": "reliableparts.com",
+          "width": 1494,
+          "height": 1200,
+          "source": "duckduckgo",
+          "score": 39,
+          "reviewStatus": "candidate_needs_operator_review"
+        }
+      ],
+      "errors": []
+    },
+    {
+      "partNumber": "WE19M1713",
+      "title": "GE Genuine OEM WE19M1713 Backsplash Graphics Asm - Dryer Control Graphics Panel",
+      "candidates": [
+        {
+          "title": "WE19M1713&#x20;GE&#x20;Backsplash&#x20;Graphics&#x20;Assembly",
+          "imageUrl": "https://cdn.amplifi.pattern.com/ffe78d3d-12b9-4381-b762-22b5c604f939.webp",
+          "thumbnailUrl": "https://cdn.amplifi.pattern.com/ffe78d3d-12b9-4381-b762-22b5c604f939.webp",
+          "pageUrl": "https://www.reliableparts.com/gen-we19m1713.html",
+          "sourceDomain": "reliableparts.com",
+          "width": null,
+          "height": null,
+          "source": "reliableparts-direct",
+          "score": 125,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE19M1713 Dryer Control Panel Backsplash Decal | Genuine Ge OEM In Stock",
+          "imageUrl": "https://cdn.appliancepartspros.com/images/product/cache/ge-backsplash-graphics-we19m1713-ap5672305_01_l.jpg",
+          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.a_rflNMZ8k76e0iwIvNc2QHaFj?r=0&pid=Api",
+          "pageUrl": "https://www.appliancepartspros.com/ge-backsplash-graphics-we19m1713-ap5672305.html",
+          "sourceDomain": "appliancepartspros.com",
+          "width": 640,
+          "height": 480,
+          "source": "duckduckgo",
+          "score": 118,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE19M1713 - GE Dryer Control Panel Assembly | Parts Dr",
+          "imageUrl": "https://media.partsdr.com/large/GEHWE19M1713_3.jpg",
+          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.yhitfxLrFRWzAaYb1clMNQHaFj?r=0&pid=Api",
+          "pageUrl": "https://partsdr.com/part/we19m1713-control-panel-assembly",
+          "sourceDomain": "partsdr.com",
+          "width": 800,
+          "height": 600,
+          "source": "duckduckgo",
+          "score": 118,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE19M1713 - GE Dryer Control Panel Assembly | Parts Dr",
+          "imageUrl": "https://media.partsdr.com/large/GEHWE19M1713_6.jpg",
+          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.A-JBWEjBt2ukU5f37yORrAHaFj?r=0&pid=Api",
+          "pageUrl": "https://partsdr.com/part/we19m1713-control-panel-assembly",
+          "sourceDomain": "partsdr.com",
+          "width": 800,
+          "height": 600,
+          "source": "duckduckgo",
+          "score": 118,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE19M1713 - GE Dryer Control Panel Assembly | Parts Dr",
+          "imageUrl": "https://media.partsdr.com/large/GEHWE19M1713_5.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.bPJBw-Vb3FZfqsJw5ujWYAHaFj?r=0&pid=Api",
+          "pageUrl": "https://partsdr.com/part/we19m1713-control-panel-assembly",
+          "sourceDomain": "partsdr.com",
+          "width": 800,
+          "height": 600,
+          "source": "duckduckgo",
+          "score": 118,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WE19M1713 | BACKSPLASH GRAPHICS ASM | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--23mCr2AL--/c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg",
+          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.OdS42sRwzQvDIGvC43rAqgHaHt?r=0&pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE19M1713",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 104,
+          "reviewStatus": "candidate_needs_operator_review"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

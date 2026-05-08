@@ -4,121 +4,260 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #162033;
+      --accent: #3b82f6;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+    }
     body {
       margin: 0;
-      padding: 20px;
-      background: #f5f7fa;
-      color: #1f2937;
-      font-family: Arial, Helvetica, sans-serif;
-      line-height: 1.55;
-    }
-    .container {
-      max-width: 860px;
-      margin: 0 auto;
-      background: #fff;
-      border: 1px solid #d7dee8;
-    }
-    .header {
-      padding: 22px 28px;
-      background: #162033;
-      color: #fff;
-      border-bottom: 4px solid #2563eb;
-    }
-    .brand {
-      font-size: 26px;
-      font-weight: 800;
-    }
-    .brand span {
-      color: #60a5fa;
-    }
-    .content {
-      padding: 28px;
-    }
-    h1 {
-      margin: 0 0 18px;
-      font-size: 24px;
-      line-height: 1.25;
-      color: #111827;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 0 0 24px;
-    }
-    th, td {
-      border: 1px solid #d7dee8;
-      padding: 10px 12px;
-      text-align: left;
-      vertical-align: top;
-    }
-    th {
-      width: 180px;
-      background: #f1f5f9;
-      color: #334155;
-    }
-    .section-title {
-      margin: 22px 0 10px;
-      font-size: 18px;
-      font-weight: 700;
-      color: #111827;
-    }
-    .description p {
-      margin: 0 0 14px;
-    }
-    .description ul {
-      margin: 0 0 14px 20px;
       padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
     }
-    .image-container {
-      margin-bottom: 24px;
-      text-align: center;
+    .top-nav {
+      background: var(--secondary);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .back-btn {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    .brand { font-family: 'Outfit', sans-serif; font-weight: 800; color: white; font-size: 20px; }
+    .brand span { color: var(--primary); }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .listing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      background: var(--card);
+      padding: 40px;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 900px) {
+      .listing-grid { grid-template-columns: 1fr; }
+    }
+
+    .gallery-col { display: flex; flex-direction: column; gap: 20px; }
+    .main-image-box {
+      aspect-ratio: 1;
       background: #f8fafc;
-      border: 1px solid #d7dee8;
-      padding: 20px;
-      min-height: 300px;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      overflow: hidden;
+    }
+    .main-image-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+      transition: transform 0.3s ease;
+    }
+    .main-image-box:hover img { transform: scale(1.05); }
+
+    .thumbnails {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
+    }
+    .thumb {
+      aspect-ratio: 1;
+      border: 2px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 6px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .image-container img {
-      max-width: 100%;
-      max-height: 400px;
-      object-fit: contain;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    .thumb:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+
+    .details-col { display: flex; flex-direction: column; }
+    .part-tag {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
     }
-    .no-image {
-      color: #94a3b8;
-      font-style: italic;
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 20px;
+      line-height: 1.2;
+      color: var(--secondary);
     }
-    .policy {
-      margin-top: 18px;
-      padding: 14px 16px;
+
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    .specs-table th {
+      text-align: left;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      width: 140px;
+    }
+    .specs-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .description-box {
       background: #f8fafc;
-      border-left: 4px solid #2563eb;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
     }
-    .footer {
-      padding: 18px 28px;
-      background: #f8fafc;
-      border-top: 1px solid #d7dee8;
-      color: #64748b;
+    .description-box h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      margin: 0 0 16px;
+    }
+    .description-content { font-size: 15px; color: #475569; }
+    .description-content ul { padding-left: 20px; margin: 16px 0; }
+    .description-content li { margin-bottom: 8px; }
+
+    .audit-meta {
+      margin-top: 30px;
+      padding: 16px;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .audit-meta strong { color: #b45309; }
+
+    footer {
+      margin-top: 60px;
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      color: var(--text-muted);
       font-size: 13px;
     }
   </style>
 </head>
 <body>
+  <nav class="top-nav">
+    <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="brand">Roadrunner<span>Parts</span></div>
+    <div style="width: 140px"></div>
+  </nav>
+
   <div class="container">
-    <div class="header">
-      <div class="brand">Roadrunner<span>Parts</span></div>
-    </div>
-    <div class="content">
-      <h1>GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat</h1>
-      <div class="image-container">
-        <div class="no-image">Product image pending review</div>
+    <div class="listing-grid">
+      <div class="gallery-col">
+        <div class="main-image-box" id="mainImage">
+          <img src="https://static.reliableparts.com/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat">
+        </div>
+        
+        
+        <div class="thumbnails">
+          
+            <div class="thumb" 
+                 title="Score: 235 | Domain: reliableparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://static.reliableparts.com/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://static.reliableparts.com/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image'>' }">
+              <img src="https://static.reliableparts.com/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="Candidate 1">
+            </div>
+          
+
+            <div class="thumb" 
+                 title="Score: 193 | Domain: reliableparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://d2923bgwwiylbi.cloudfront.net/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=600&amp;height=600&amp;store=reliableparts&amp;image-type=image' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://d2923bgwwiylbi.cloudfront.net/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=600&amp;height=600&amp;store=reliableparts&amp;image-type=image'>' }">
+              <img src="https://d2923bgwwiylbi.cloudfront.net/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=600&amp;height=600&amp;store=reliableparts&amp;image-type=image" alt="Candidate 2">
+            </div>
+          
+
+            <div class="thumb" 
+                 title="Score: 179 | Domain: geapplianceparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://products-salsify.geappliances.com/image/upload/s--M__Ekith--/6cde22c13f5fe7b77a4542b9600207a304987375.jpg' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://products-salsify.geappliances.com/image/upload/s--M__Ekith--/6cde22c13f5fe7b77a4542b9600207a304987375.jpg'>' }">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--M__Ekith--/6cde22c13f5fe7b77a4542b9600207a304987375.jpg" alt="Candidate 3">
+            </div>
+          
+
+            <div class="thumb" 
+                 title="Score: 179 | Domain: geapplianceparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://products-salsify.geappliances.com/image/upload/s--1-jka5Gq--/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://products-salsify.geappliances.com/image/upload/s--1-jka5Gq--/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg'>' }">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--1-jka5Gq--/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg" alt="Candidate 4">
+            </div>
+          
+
+            <div class="thumb" 
+                 title="Score: 179 | Domain: geapplianceparts.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://products-salsify.geappliances.com/image/upload/s--3khOJNy9--/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://products-salsify.geappliances.com/image/upload/s--3khOJNy9--/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg'>' }">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--3khOJNy9--/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg" alt="Candidate 5">
+            </div>
+          
+
+            <div class="thumb" 
+                 title="Score: 119 | Domain: encompass.com"
+                 onclick="const img = document.querySelector('#mainImage img'); if(img) { img.src='https://partstown.sirv.com/products/GE/GEWE4M181/GEWE4M181-01-01.jpg?thumbnail=1024' } else { document.querySelector('#mainImage').innerHTML = '<img src='https://partstown.sirv.com/products/GE/GEWE4M181/GEWE4M181-01-01.jpg?thumbnail=1024'>' }">
+              <img src="https://partstown.sirv.com/products/GE/GEWE4M181/GEWE4M181-01-01.jpg?thumbnail=1024" alt="Candidate 6">
+            </div>
+          
+        </div>
+        
       </div>
-      
-      <table>
-        <tbody>
+
+      <div class="details-col">
+        <div class="part-tag">Appliance Component</div>
+        <h1>GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat</h1>
+        
+        <table class="specs-table">
+          <tbody>
+            
           <tr>
             <th>Part Number</th>
             <td>WE4M181</td>
@@ -137,29 +276,41 @@
           </tr>
           <tr>
             <th>Condition</th>
-            <td>New</td>
+            <td>Used</td>
           </tr>
           <tr>
             <th>Compatible Models</th>
             <td>GE Electric Dryers, Frigidaire, Kenmore</td>
           </tr>
-        </tbody>
-      </table>
-      <div class="section-title">Item Description</div>
-      <div class="description">
-        <p><b>Genuine GE OEM WE4M181 Dryer Operating Thermostat</b></p>
+          </tbody>
+        </table>
+
+        <div class="description-box">
+          <h2>Product Insights</h2>
+          <div class="description-content">
+            <p><b>Genuine GE OEM WE4M181 Dryer Operating Thermostat</b></p>
 <p>RoadrunnerParts Genuine GE WE4M181 Cycling Thermostat (Diagram ID 506)</p>
 <p><b>Diagram ID:</b> 506</p>
 <p><b>Product Features:</b><br>- This 4-wire thermostat monitors and regulates the internal drum temperature by cycling the heating element on and off<br>- It prevents clothing damage by ensuring a consistent, safe heat level throughout the drying cycle</p>
 <p><b>Compatibility:</b><br>Fits various models including: GE Electric Dryers, Frigidaire, Kenmore</p>
 <p><b>Professional Quality from RoadrunnerParts</b><br>We specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.</p>
+<p><b>Common Symptoms Fixed:</b><br>Addresses dryers that won&#39;t heat, stop prematurely, or have a blown thermal fuse.</p>
+<p><b>Quality Assurance:</b><br>This part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.</p>
+          </div>
+        </div>
+
+        
+        <div class="audit-meta">
+          <strong>Audit Insight:</strong> Top visual candidate from <strong>reliableparts.com</strong> 
+          with a quality score of <strong>235</strong>. 
+          Verify for watermarks before final staging.
+        </div>
       </div>
-      <div class="section-title">Shipping & Handling</div>
-      <div class="policy">Professionally packed for shipment. Shipping options and final handling terms are controlled by the eBay listing setup.</div>
-      <div class="section-title">Returns</div>
-      <div class="policy">Returns are handled under the return terms shown on the eBay listing. Do not treat this local preview as a live marketplace policy.</div>
     </div>
-    <div class="footer">Local RoadrunnerParts HTML preview. Not deployed to eBay.</div>
   </div>
+
+  <footer>
+    RoadrunnerParts Internal Audit Tool &bull; Local Preview &bull; 2026
+  </footer>
 </body>
 </html>

@@ -1,0 +1,99 @@
+{
+  "generatedAt": "2026-05-08T00:37:35.668Z",
+  "sourceInput": "scratch/ebay-html/listings.normalized.json",
+  "usageBoundary": "Candidate/reference images only. Do not deploy to eBay without operator approval and image-use rights.",
+  "totalParts": 1,
+  "partsWithCandidates": 1,
+  "records": [
+    {
+      "partNumber": "WE14X20392",
+      "title": "GE Genuine OEM WE14X20392 Dryer Blower Housing - Dryer Blower Housing",
+      "candidates": [
+        {
+          "title": "BLOWER HOUSING ASM - WE14X20392 - GE Appliances",
+          "imageUrl": "https://cdn11.bigcommerce.com/s-pacto3wrn2/products/405667/images/963418/f28e26400b16b2c77d04aace51aa6dd846ab9d99__32683.1757544249.386.513.jpg?c=2",
+          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.i0mkCVkkFbT9eXziuD3sDAAAAA?r=0&pid=Api",
+          "pageUrl": "https://www.geappliances.com/appliance/BLOWER-HOUSING-ASM-WE14X20392",
+          "sourceDomain": "geappliances.com",
+          "width": 386,
+          "height": 402,
+          "source": "duckduckgo",
+          "score": 173,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "General Electric GTX18ESSJ0WW Parts List | Reliable Parts",
+          "imageUrl": "https://d2923bgwwiylbi.cloudfront.net/media/catalog/product/8/c/8cb5d806-91cc-4311-8f53-3c00b0e3dca0.jpg",
+          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.dmuyMYfqRhby2ZwcpUbLuAHaHt?r=0&pid=Api",
+          "pageUrl": "https://www.reliableparts.com/modelproduct/index/view/id/GTX18ESSJ0WW",
+          "sourceDomain": "reliableparts.com",
+          "width": 576,
+          "height": 600,
+          "source": "duckduckgo",
+          "score": 128,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "GE Appliance Parts - Original GE Replacement Parts Online | Reliable Parts",
+          "imageUrl": "https://cdn.amplifi.pattern.com/da0bfd94-61c7-4783-a423-23d1f731d2d6_small.webp",
+          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.EcrUuNlsYX1RtQw36VYUgAAAAA?r=0&pid=Api",
+          "pageUrl": "https://www.reliableparts.com/brands/ge.html",
+          "sourceDomain": "reliableparts.com",
+          "width": 422,
+          "height": 429,
+          "source": "duckduckgo",
+          "score": 128,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WH01X32866 | LID LOCK STRIKER | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--xEuvuEs4--/ja6yz4mqqdqdbhix5yhh.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.D5TWyQb-svn_GkC8GPHh_wHaHt?r=0&pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WH01X32866",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 114,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WR32X22584 | SHELF GLASS FZ ASM | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--UwOobClL--/c5594ecfe201752b083a87c5380fa16dfa271fd0.jpg",
+          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.aBdEE74TEdjrGK27LjT_pgHaHt?r=0&pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WR32X22584",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 114,
+          "reviewStatus": "candidate_needs_operator_review"
+        },
+        {
+          "title": "WH01X35710 | HANDLE-FILTER | GE Appliances Parts",
+          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--tLmJEE_h--/tluwz1zkt2vnojrzrdr9.jpg",
+          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.GixiWvRBJvWkHzewFFxTXwHaHt?r=0&pid=Api",
+          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WH01X35710",
+          "sourceDomain": "geapplianceparts.com",
+          "width": 2400,
+          "height": 2500,
+          "source": "duckduckgo",
+          "score": 114,
+          "reviewStatus": "candidate_needs_operator_review"
+        }
+      ],
+      "errors": [
+        {
+          "source": "ge-appliances-direct",
+          "query": "https://www.geapplianceparts.com/store/parts/spec/WE14X20392",
+          "error": "403 Forbidden"
+        },
+        {
+          "source": "reliableparts-direct",
+          "query": "https://www.reliableparts.com/gen-we14x20392.html",
+          "error": "404 Not Found"
+        }
+      ]
+    }
+  ]
+}
