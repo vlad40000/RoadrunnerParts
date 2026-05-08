@@ -19,6 +19,7 @@
    - Unit tests pass for all core template logic.
 
 ### Pending
+- **Tomorrow's Priority**: Go over the Obsidian durable memory architecture integration.
 - **eBay Deployment**: Disabled. Do not push or sync listings directly to eBay yet.
 - **Operator Review**: Review local HTML files before any future listing-draft or marketplace sync work. (Note: a specialized audit dashboard for the 50 corrected finalized items has been generated at `scratch/ebay-html-final-52/index.html`).
 - **Audit Findings (2026-05-08)**: 50/50 selected listing records processed after duplicate/error cleanup. Image display is now strict: candidates must carry exact part-number evidence from an approved source, otherwise the listing shows `IMAGE PENDING` for operator review.
