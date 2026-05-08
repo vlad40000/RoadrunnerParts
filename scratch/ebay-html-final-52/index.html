@@ -17,6 +17,7 @@
       --text-muted: #64748b;
       --success: #10b981;
       --warning: #f59e0b;
+      --danger: #ef4444;
       --glass: rgba(255, 255, 255, 0.8);
     }
     body { 
@@ -166,8 +167,35 @@
       margin-top: auto;
       letter-spacing: 0.5px;
     }
-    .source-badge.success { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+    .source-badge.success { background: #ecfdf5; color: #065f46; border: 1px solid #dcfce7; }
     .source-badge.warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+    .source-badge.danger { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+    .batch-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 24px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+    }
+    .batch-nav a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .batch-nav a.active {
+      color: white;
+      border-color: var(--primary);
+      background: var(--primary);
+    }
 
     footer {
       text-align: center;
@@ -190,9 +218,10 @@
   <header>
     <div class="header-content">
       <h1>Roadrunner<span>Parts</span> Audit</h1>
-      <p>Next-Gen Appliance Inventory & Market Signal Intelligence</p>
+      <p>Review Batch - local image collection review</p>
       <div class="stats-bar">
-        <div class="stat"><span>88</span> Backlog Parts</div>
+        <div class="stat"><span>52</span> In This Batch</div>
+        <div class="stat"><span>52</span> Total Parts</div>
         <div class="stat"><span>52</span> Visuals Discovered</div>
         <div class="stat"><span>0</span> Watermark Review</div>
         <div class="stat">Pipeline: <span>LOCAL REVIEW ONLY</span></div>
@@ -200,14 +229,16 @@
     </div>
   </header>
   <main>
+    
     <div class="grid">
       <div class="card has-image" onclick="location.href='./001-WE21X20562.html'" style="animation-delay: 0s">
         <div class="card-image">
            <img src="https://tse1.mm.bing.net/th/id/OIP.-VdBzbYsCZh7jJzDK4JRTQHaHt?r=0&amp;pid=Api" alt="WE21X20562" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#1</div>
           <div class="part-num">WE21X20562</div>
-          <div class="part-title">GE Genuine OEM WE21X20562 Drum Asm 6.0 - Dryer Drum Assembly</div>
+          <div class="part-title">Drum Asm 6.0 (replacement)</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
@@ -218,10 +249,11 @@
            <img src="https://tse2.mm.bing.net/th/id/OIP.JCeYIBjXxrUDDXate_HpowHaHt?pid=Api" alt="WE21X20407" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#2</div>
           <div class="part-num">WE21X20407</div>
-          <div class="part-title">GE Genuine OEM WE21X20407 Drum Asm 6.0 Cu.ft - Dryer Drum Assembly</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Drum Asm 6.0 Cu.ft Wh</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
@@ -230,8 +262,9 @@
            <img src="https://tse4.mm.bing.net/th/id/OIP.OdS42sRwzQvDIGvC43rAqgHaHt?r=0&amp;pid=Api" alt="WE19M1713" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#3</div>
           <div class="part-num">WE19M1713</div>
-          <div class="part-title">GE Genuine OEM WE19M1713 Backsplash Graphics Asm - Dryer Control Graphics Panel</div>
+          <div class="part-title">Backsplash Graphics Asm</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
@@ -242,586 +275,635 @@
            <img src="https://tse4.mm.bing.net/th/id/OIP.LwMISkiW3mIFZMWKdZua0wHaHt?pid=Api" alt="WE11M10001" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#4</div>
           <div class="part-num">WE11M10001</div>
-          <div class="part-title">GE Genuine OEM WE11M10001 Dryer Heating Element - Dryer Heating Element</div>
+          <div class="part-title">Dryer Heating Element</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./005-WE11X20397.html'" style="animation-delay: 0.2s">
-        <div class="card-image">
-           <img src="https://tse1.mm.bing.net/th/id/OIP.8tQ2SwsaIEMr7LnT_Asl6AHaHt?r=0&amp;pid=Api" alt="WE11X20397" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE11X20397</div>
-          <div class="part-title">GE OEM WE11X20397 G.e. Dryer Heating Element</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./006-WE17X22217.html'" style="animation-delay: 0.25s">
-        <div class="card-image">
-           <img src="https://tse4.mm.bing.net/th/id/OIP.SDFwDHOlcOGg88uVkeIJjwHaHt?r=0&amp;pid=Api" alt="WE17X22217" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE17X22217</div>
-          <div class="part-title">GE Genuine OEM WE17X22217 Dryer Drive Motor With Pulley - Dryer Drive Motor</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./007-WE17M66.html'" style="animation-delay: 0.30000000000000004s">
+      <div class="card has-image" onclick="location.href='./005-WE17M66.html'" style="animation-delay: 0.2s">
         <div class="card-image">
            <img src="https://tse4.mm.bing.net/th/id/OIP.hW6E6V-elevRrFYeACQodgHaHt?pid=Api" alt="WE17M66" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#5</div>
           <div class="part-num">WE17M66</div>
-          <div class="part-title">GE Genuine OEM WE17M66 Motor - Dryer Drive Motor</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Motor</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./008-WE20X20596.html'" style="animation-delay: 0.35000000000000003s">
+      <div class="card has-image" onclick="location.href='./006-WE20X20596.html'" style="animation-delay: 0.25s">
         <div class="card-image">
            <img src="https://tse2.mm.bing.net/th/id/OIP.t7a7Y1vu443xKoarM-Y84QHaHt?pid=Api" alt="WE20X20596" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#6</div>
           <div class="part-num">WE20X20596</div>
-          <div class="part-title">GE Genuine OEM WE20X20596 Panel - Dryer Cabinet Panel</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Panel</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./009-WE4M160.html'" style="animation-delay: 0.4s">
-        <div class="card-image">
-           <img src="https://tse2.mm.bing.net/th/id/OIP.wMn8OGWHLGXdxPkUOSJp7QHaHt?pid=Api" alt="WE4M160" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M160</div>
-          <div class="part-title">GE Genuine OEM WE4M160 Dryer Safety Thermostat - Dryer Safety Thermostat</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./010-WE4M532.html'" style="animation-delay: 0.45s">
+      <div class="card has-image" onclick="location.href='./007-WE4M532.html'" style="animation-delay: 0.30000000000000004s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.kjFo7MlMXE54EKrE5DmThAHaHt?pid=Api" alt="WE4M532" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#7</div>
           <div class="part-num">WE4M532</div>
-          <div class="part-title">GE Genuine OEM WE4M532 Dryer Timer - Dryer Timer</div>
+          <div class="part-title">Dryer Timer</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./011-WE49X22295.html'" style="animation-delay: 0.5s">
+      <div class="card has-image" onclick="location.href='./008-WE49X22295.html'" style="animation-delay: 0.35000000000000003s">
         <div class="card-image">
            <img src="https://tse4.mm.bing.net/th/id/OIP.7OsYy6iT1Gw4z9wHARZ7bwHaHt?pid=Api" alt="WE49X22295" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#8</div>
           <div class="part-num">WE49X22295</div>
-          <div class="part-title">GE Genuine OEM WE49X22295 Dryer Door Inner Panel - Dryer Door &amp; Panel Kit</div>
+          <div class="part-title">Dryer Door Inner Panel</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./012-WE10X20418.html'" style="animation-delay: 0.55s">
+      <div class="card has-image" onclick="location.href='./009-WE10X20418.html'" style="animation-delay: 0.4s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.waeTvRia30Ig0KHww_GXfwHaJk?r=0&amp;pid=Api" alt="WE10X20418" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#9</div>
           <div class="part-num">WE10X20418</div>
-          <div class="part-title">GE Genuine OEM WE10X20418 Inner Door Asm ite - Dryer Inner Door Liner</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Inner Door Asm White</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./013-WE20X20409.html'" style="animation-delay: 0.6000000000000001s">
+      <div class="card has-image" onclick="location.href='./010-WE20X20409.html'" style="animation-delay: 0.45s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.XPhXug20rEyPAV_HWUWrKwHaHt?pid=Api" alt="WE20X20409" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#10</div>
           <div class="part-num">WE20X20409</div>
-          <div class="part-title">GE Genuine OEM WE20X20409 Front Panel ite - Dryer Front Cabinet Panel</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Front Panel &quot;White&quot;</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./014-WE20X20412.html'" style="animation-delay: 0.65s">
+      <div class="card has-image" onclick="location.href='./011-WE20X20412.html'" style="animation-delay: 0.5s">
         <div class="card-image">
-           <img src="https://tse1.mm.bing.net/th/id/OIP.rcvk5N84WtTtS8nfWeE4kgAAAA?pid=Api" alt="WE20X20412" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+           <img src="https://tse1.mm.bing.net/th/id/OIP.PWDgv3exibQZCps8_vj85QHaHt?pid=Api" alt="WE20X20412" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#11</div>
           <div class="part-num">WE20X20412</div>
-          <div class="part-title">GE Genuine OEM WE20X20412 Bottom Cover - Dryer Bottom Cover</div>
-          <div class="source-badge success">
-            Source: geappliances.com
+          <div class="part-title">Bottom Cover</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./015-WE03X20434.html'" style="animation-delay: 0.7000000000000001s">
-        <div class="card-image">
-           <img src="https://tse4.mm.bing.net/th/id/OIP.TvCvyMkGPHAqGl_60b8yMAHaHt?pid=Api" alt="WE03X20434" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE03X20434</div>
-          <div class="part-title">GE Genuine OEM WE03X20434 Dryer Idler Pulley Arm - Dryer Idler Arm</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./016-WE20X20417.html'" style="animation-delay: 0.75s">
+      <div class="card has-image" onclick="location.href='./012-WE20X20417.html'" style="animation-delay: 0.55s">
         <div class="card-image">
            <img src="https://tse4.mm.bing.net/th/id/OIP.-xZgJUo6PZPdpk6TQP39AwHaHt?pid=Api" alt="WE20X20417" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#12</div>
           <div class="part-num">WE20X20417</div>
-          <div class="part-title">GE Genuine OEM WE20X20417 Dryer Top Panel - Dryer Top Cabinet Panel</div>
+          <div class="part-title">Dryer Top Panel</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./017-WE20X20396.html'" style="animation-delay: 0.8s">
+      <div class="card has-image" onclick="location.href='./013-WE20X20396.html'" style="animation-delay: 0.6000000000000001s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.tPsfDbFuCSOdkXPr5iWubQHaHt?r=0&amp;pid=Api" alt="WE20X20396" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#13</div>
           <div class="part-num">WE20X20396</div>
-          <div class="part-title">GE Genuine OEM WE20X20396 Rear Panel - Dryer Rear Panel</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Rear Panel</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./018-WE4M137.html'" style="animation-delay: 0.8500000000000001s">
-        <div class="card-image">
-           <img src="https://tse3.mm.bing.net/th/id/OIP.Cel5LCElVSOTNg6Q2KAAZAHaHt?pid=Api" alt="WE4M137" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M137</div>
-          <div class="part-title">GE Genuine OEM WE4M137 Dryer High-limit Thermostat - Dryer Thermostat</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./019-WE20X20391.html'" style="animation-delay: 0.9s">
+      <div class="card has-image" onclick="location.href='./014-WE20X20391.html'" style="animation-delay: 0.65s">
         <div class="card-image">
            <img src="https://tse1.mm.bing.net/th/id/OIP.vE5XEnzE3Y-MnBcSm1YwJgHaHt?pid=Api" alt="WE20X20391" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#14</div>
           <div class="part-num">WE20X20391</div>
-          <div class="part-title">GE Genuine OEM WE20X20391 Chassis Base - Dryer Chassis Base</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Chassis Base</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./020-WE49X22294.html'" style="animation-delay: 0.9500000000000001s">
+      <div class="card has-image" onclick="location.href='./015-WE49X22294.html'" style="animation-delay: 0.7000000000000001s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.FYcnz5pG8lahM5yvpgUD2AHaHt?pid=Api" alt="WE49X22294" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#15</div>
           <div class="part-num">WE49X22294</div>
-          <div class="part-title">GE Genuine OEM WE49X22294 End Cap Rh W - Dryer Console End Cap</div>
+          <div class="part-title">End Cap Rh W</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./021-WE14X20392.html'" style="animation-delay: 0s">
+      <div class="card has-image" onclick="location.href='./016-WE10X20468.html'" style="animation-delay: 0.75s">
         <div class="card-image">
-           <img src="https://tse2.mm.bing.net/th/id/OIP.i0mkCVkkFbT9eXziuD3sDAAAAA?r=0&amp;pid=Api" alt="WE14X20392" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+           <img src="https://tse4.mm.bing.net/th/id/OIP.0qWGXlQ6Eq1ezHjgXLgyowHaH5?r=0&amp;pid=Api" alt="WE10X20468" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
-          <div class="part-num">WE14X20392</div>
-          <div class="part-title">GE Genuine OEM WE14X20392 Dryer Blower Housing - Dryer Blower Housing</div>
-          <div class="source-badge success">
-            Source: geappliances.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./022-WE19M1481.html'" style="animation-delay: 0.05s">
-        <div class="card-image">
-           <img src="https://tse2.mm.bing.net/th/id/OIP.mOMnrt-rRiDq2UNTRu8mhwHaHt?pid=Api" alt="WE19M1481" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE19M1481</div>
-          <div class="part-title">GE Genuine OEM WE19M1481 Dryer Control Panel Cover, Rear - Dryer Console Cover</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./023-WE10X20468.html'" style="animation-delay: 0.1s">
-        <div class="card-image">
-           <img src="https://tse4.mm.bing.net/th/id/OIP._9b-ga6F82ojuCasqC4iAAAAAA?r=0&amp;pid=Api" alt="WE10X20468" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
+          <div class="part-title">#16</div>
           <div class="part-num">WE10X20468</div>
-          <div class="part-title">GE Genuine OEM WE10X20468 Dryer Door Outer Panel - Dryer Outer Door Panel</div>
-          <div class="source-badge success">
-            Source: geappliances.com
+          <div class="part-title">Dryer Door Outer Panel (white) - Diag ID 307</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./024-WE4M181.html'" style="animation-delay: 0.15000000000000002s">
+      <div class="card has-image" onclick="location.href='./017-WE4M181.html'" style="animation-delay: 0.8s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.XD3J1lOYlF-sEWJa4Ph63QHaHt?r=0&amp;pid=Api" alt="WE4M181" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#17</div>
           <div class="part-num">WE4M181</div>
-          <div class="part-title">GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat</div>
+          <div class="part-title">Dryer Operating Thermostat</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./025-WE19M1478.html'" style="animation-delay: 0.2s">
+      <div class="card has-image" onclick="location.href='./018-WE19M1478.html'" style="animation-delay: 0.8500000000000001s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.XPhXug20rEyPAV_HWUWrKwHaHt?pid=Api" alt="WE19M1478" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#18</div>
           <div class="part-num">WE19M1478</div>
-          <div class="part-title">GE Genuine OEM WE19M1478 End Cap Lh - Dryer Console End Cap</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">End Cap Lh Wh</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./026-WE16X20393.html'" style="animation-delay: 0.25s">
+      <div class="card has-image" onclick="location.href='./019-WE16X20393.html'" style="animation-delay: 0.9s">
         <div class="card-image">
            <img src="https://tse2.mm.bing.net/th/id/OIP.qAF6gT49ZxwXBUk0X1DNKwHaHt?pid=Api" alt="WE16X20393" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#19</div>
           <div class="part-num">WE16X20393</div>
-          <div class="part-title">GE Genuine OEM WE16X20393 Laundry Center Dryer Blower eel - Dryer Blower Wheel</div>
+          <div class="part-title">Laundry Center Dryer Blower Wheel</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./027-WE18X25100.html'" style="animation-delay: 0.30000000000000004s">
+      <div class="card has-image" onclick="location.href='./020-WE18M28.html'" style="animation-delay: 0.9500000000000001s">
         <div class="card-image">
-           <img src="https://tse3.mm.bing.net/th/id/OIP.bg5XX90anqhqDM5g-ZIjCgHaHt?r=0&amp;pid=Api" alt="WE18X25100" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+           <img src="https://tse4.mm.bing.net/th/id/OIP.p2iOna5ndT_Hf1P3c1tq5wHaDv?pid=Api" alt="WE18M28" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
-          <div class="part-num">WE18X25100</div>
-          <div class="part-title">GE Genuine OEM WE18X25100 Dryer Lint Screen - Dryer Lint Filter</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./028-WE18M28.html'" style="animation-delay: 0.35000000000000003s">
-        <div class="card-image">
-           <img src="https://tse1.mm.bing.net/th/id/OIP.MrwdI3PubJ1lsu1WaBdnVgAAAA?pid=Api" alt="WE18M28" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
+          <div class="part-title">#20</div>
           <div class="part-num">WE18M28</div>
-          <div class="part-title">GE Genuine OEM WE18M28 Filter &amp; Mesh Asm. - Dryer Lint Filter Assembly</div>
+          <div class="part-title">Filter &amp; Mesh Asm.</div>
           <div class="source-badge success">
-            Source: geappliances.com
+            Source: amresupply.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./029-WE14X20425.html'" style="animation-delay: 0.4s">
+      <div class="card has-image" onclick="location.href='./021-WE14X20425.html'" style="animation-delay: 0s">
         <div class="card-image">
            <img src="https://tse1.mm.bing.net/th/id/OIP.ra4M0minNm3l5neGxQL7YQHaH4?pid=Api" alt="WE14X20425" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#21</div>
           <div class="part-num">WE14X20425</div>
-          <div class="part-title">GE Genuine OEM WE14X20425 Trap Duct - Dryer Lint Trap Duct</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Trap Duct</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./030-WE13M39.html'" style="animation-delay: 0.45s">
+      <div class="card has-image" onclick="location.href='./022-WE20X20406.html'" style="animation-delay: 0.05s">
         <div class="card-image">
-           <img src="https://tse3.mm.bing.net/th/id/OIP.qZFMAO5Ed9verlwOox5UuAHaHt?pid=Api" alt="WE13M39" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+           <img src="https://thfvnext.bing.com/th/id/OIP.GixiWvRBJvWkHzewFFxTXwHaHt?r=0&amp;cb=thfvnext&amp;pid=Api" alt="WE20X20406" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
-          <div class="part-num">WE13M39</div>
-          <div class="part-title">GE Genuine OEM WE13M39 Motor Support - Dryer Motor Support Bracket</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./031-WE20X20406.html'" style="animation-delay: 0.5s">
-        <div class="card-image">
-           <img src="https://thfvnext.bing.com/th/id/OIP.TUhUH0vKx_pTtZwhabGbZQAAAA?r=0&amp;cb=thfvnext&amp;pid=Api" alt="WE20X20406" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
+          <div class="part-title">#22</div>
           <div class="part-num">WE20X20406</div>
-          <div class="part-title">GE Genuine OEM WE20X20406 Dryer Side Panel - Dryer Side Cabinet Panel</div>
-          <div class="source-badge success">
-            Source: geappliances.com
+          <div class="part-title">Dryer Side Panel (white) Diag ID 404</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./032-WE1M1002.html'" style="animation-delay: 0.55s">
+      <div class="card has-image" onclick="location.href='./023-WE1M1002.html'" style="animation-delay: 0.1s">
         <div class="card-image">
            <img src="https://tse2.mm.bing.net/th/id/OIP.CMtKWKOz-Ds2vl3STVu7_gHaHt?pid=Api" alt="WE1M1002" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#23</div>
           <div class="part-num">WE1M1002</div>
-          <div class="part-title">GE Genuine OEM WE1M1002 Fuse Cemr 30 Amp 120V - Dryer Power Fuse</div>
+          <div class="part-title">Fuse Cemr 30 Amp 120V</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./033-WE1X921.html'" style="animation-delay: 0.6000000000000001s">
+      <div class="card has-image" onclick="location.href='./024-WE1X921.html'" style="animation-delay: 0.15000000000000002s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.HUiEw4__9IOCxU-fG0r61QHaHt?pid=Api" alt="WE1X921" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#24</div>
           <div class="part-num">WE1X921</div>
-          <div class="part-title">GE Genuine OEM WE1X921 Motor Strap - Dryer Motor Mounting Strap</div>
+          <div class="part-title">Motor Strap</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./034-WE1M300.html'" style="animation-delay: 0.65s">
-        <div class="card-image">
-           <img src="https://tse4.mm.bing.net/th/id/OIP.9irzbojNW0Te10yMPzaJRQHaHt?pid=Api" alt="WE1M300" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M300</div>
-          <div class="part-title">GE Genuine OEM WE1M300 Dryer Drum Bearing Bracket - Dryer Bearing Retainer</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./035-WE03X29897.html'" style="animation-delay: 0.7000000000000001s">
-        <div class="card-image">
-           <img src="https://tse4.mm.bing.net/th/id/OIP.a_AXefoSeNa_jXyOeyYutwHaHt?r=0&amp;pid=Api" alt="WE03X29897" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE03X29897</div>
-          <div class="part-title">GE Genuine OEM WE03X29897 Dryer Drum Belt - Dryer Drive Belt</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./036-WE4M404.html'" style="animation-delay: 0.75s">
+      <div class="card has-image" onclick="location.href='./025-WE4M404.html'" style="animation-delay: 0.2s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.aQ_cobZKM65tToe4lKKPfgHaHt?pid=Api" alt="WE4M404" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#25</div>
           <div class="part-num">WE4M404</div>
-          <div class="part-title">GE OEM WE4M404 Dryer Temperature Switch</div>
+          <div class="part-title">Dryer Temperature Switch</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./037-WE12X21574.html'" style="animation-delay: 0.8s">
+      <div class="card has-image" onclick="location.href='./026-WE12X21574.html'" style="animation-delay: 0.25s">
         <div class="card-image">
-           <img src="https://tse2.mm.bing.net/th/id/OIP.yL4mg-P3aK4hGmEvGyj51QAAAA?r=0&amp;pid=Api" alt="WE12X21574" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+           <img src="https://tse3.mm.bing.net/th/id/OIP.waeTvRia30Ig0KHww_GXfwHaJk?r=0&amp;pid=Api" alt="WE12X21574" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#26</div>
           <div class="part-num">WE12X21574</div>
-          <div class="part-title">GE Genuine OEM WE12X21574 Belt Drive - Dryer Drive Belt</div>
+          <div class="part-title">Belt Drive</div>
           <div class="source-badge success">
-            Source: geappliances.com
+            Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./038-WE1M1003.html'" style="animation-delay: 0.8500000000000001s">
+      <div class="card has-image" onclick="location.href='./027-WE1M1003.html'" style="animation-delay: 0.30000000000000004s">
         <div class="card-image">
            <img src="https://tse1.mm.bing.net/th/id/OIP.d6NHeUhcJi1gZs1uUoIBhQHaHt?r=0&amp;pid=Api" alt="WE1M1003" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#27</div>
           <div class="part-num">WE1M1003</div>
-          <div class="part-title">GE Genuine OEM WE1M1003 Dryer Fuse Holder - Dryer Fuse Holder</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Dryer Fuse Holder</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./039-WE4M255.html'" style="animation-delay: 0.9s">
+      <div class="card has-image" onclick="location.href='./028-WE4M255.html'" style="animation-delay: 0.35000000000000003s">
         <div class="card-image">
            <img src="https://tse1.mm.bing.net/th/id/OIP.7vUALhPAFHbkZdAZCgMShwHaHt?pid=Api" alt="WE4M255" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#28</div>
           <div class="part-num">WE4M255</div>
-          <div class="part-title">GE Genuine OEM WE4M255 Kenmore Dryer Timer Resistor - Dryer Timer Resistor</div>
+          <div class="part-title">Kenmore Dryer Timer Resistor</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./040-WE13X30697.html'" style="animation-delay: 0.9500000000000001s">
+      <div class="card has-image" onclick="location.href='./029-WE13X30697.html'" style="animation-delay: 0.4s">
         <div class="card-image">
            <img src="https://tse4.mm.bing.net/th/id/OIP.VV_4xhgRUsYoJ11vbAd5BQHaH5?r=0&amp;pid=Api" alt="WE13X30697" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#29</div>
           <div class="part-num">WE13X30697</div>
-          <div class="part-title">GE Genuine OEM WE13X30697 Dryer Motor Clamp - Dryer Motor Clamp</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Dryer Motor Clamp</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./041-WE11X29438.html'" style="animation-delay: 0s">
+      <div class="card has-image" onclick="location.href='./030-WE11X29438.html'" style="animation-delay: 0.45s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.yvEerPaO8GOr-W0Is5qjkgHaHt?pid=Api" alt="WE11X29438" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#30</div>
           <div class="part-num">WE11X29438</div>
-          <div class="part-title">GE Genuine OEM WE11X29438 Dryer Drum Rear Cover - Dryer Rear Drum Panel/Diffuser</div>
+          <div class="part-title">Dryer Drum Rear Cover</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./042-WE14X20421.html'" style="animation-delay: 0.05s">
+      <div class="card has-image" onclick="location.href='./031-WE14X20421.html'" style="animation-delay: 0.5s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.tPsfDbFuCSOdkXPr5iWubQHaHt?pid=Api" alt="WE14X20421" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#31</div>
           <div class="part-num">WE14X20421</div>
-          <div class="part-title">GE Genuine OEM WE14X20421 Dryer Exhaust Duct - Dryer Internal Exhaust Duct</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Dryer Exhaust Duct</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./043-WE1M1007.html'" style="animation-delay: 0.1s">
+      <div class="card has-image" onclick="location.href='./032-WE1M1007.html'" style="animation-delay: 0.55s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.O8Ew61_URme7l_XEGekUCAHaHt?r=0&amp;pid=Api" alt="WE1M1007" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#32</div>
           <div class="part-num">WE1M1007</div>
-          <div class="part-title">GE Genuine OEM WE1M1007 Cover Fuse Terminal - Dryer Fuse Cover</div>
+          <div class="part-title">Cover Fuse Terminal</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./044-WE3M56.html'" style="animation-delay: 0.15000000000000002s">
+      <div class="card has-image" onclick="location.href='./033-WE3M56.html'" style="animation-delay: 0.6000000000000001s">
         <div class="card-image">
            <img src="https://tse2.mm.bing.net/th/id/OIP.NwG2TEJ9BI5YMHbzrcj4UgHaJk?pid=Api" alt="WE3M56" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#33</div>
           <div class="part-num">WE3M56</div>
-          <div class="part-title">GE Genuine OEM WE3M56 Bearing - Dryer Drum Top Bearing</div>
+          <div class="part-title">General Electric Dryer Upper Drum Bearing - Diag ID 313</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./045-WE03X20228.html'" style="animation-delay: 0.2s">
+      <div class="card has-image" onclick="location.href='./034-WE03X20228.html'" style="animation-delay: 0.65s">
         <div class="card-image">
            <img src="https://tse2.mm.bing.net/th/id/OIP.rU79GCr6aX4jj_gHACNsSgHaJk?r=0&amp;pid=Api" alt="WE03X20228" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#34</div>
           <div class="part-num">WE03X20228</div>
-          <div class="part-title">GE Genuine OEM WE03X20228 Top Bearing - Dryer Drum Bearing</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Top Bearing</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./046-WE4M415.html'" style="animation-delay: 0.25s">
-        <div class="card-image">
-           <img src="https://thfvnext.bing.com/th/id/OIP.8jJG764FOpjGEA-vtrmTDAHaHt?r=0&amp;cb=thfvnext&amp;pid=Api" alt="WE4M415" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M415</div>
-          <div class="part-title">GE Genuine OEM WE4M415 Dryer Door Switch - Dryer Door Interlock Switch</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
-          </div>
-        </div>
-      </div>
-      <div class="card has-image" onclick="location.href='./047-WE1M462.html'" style="animation-delay: 0.30000000000000004s">
+      <div class="card has-image" onclick="location.href='./035-WE1M462.html'" style="animation-delay: 0.7000000000000001s">
         <div class="card-image">
            <img src="https://thf.bing.com/th/id/OIP.TZqgTLWDfE1ZCQoiFtQ_QgHaHt?cb=thfc1&amp;pid=Api" alt="WE1M462" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#35</div>
           <div class="part-num">WE1M462</div>
-          <div class="part-title">GE Genuine OEM WE1M462 Kenmore Dryer Rear Bearing - Dryer Drum Bearing Sleeve</div>
+          <div class="part-title">Kenmore Dryer Rear Bearing</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./048-WE11X20400.html'" style="animation-delay: 0.35000000000000003s">
+      <div class="card has-image" onclick="location.href='./036-WE11X20400.html'" style="animation-delay: 0.75s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.8dZ64inaGK4C0k1m8dn5WwHaHt?r=0&amp;pid=Api" alt="WE11X20400" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#36</div>
           <div class="part-num">WE11X20400</div>
-          <div class="part-title">GE Genuine OEM WE11X20400 Heater Housing - Dryer Heating Chamber Housing</div>
-          <div class="source-badge success">
-            Source: geapplianceparts.com
+          <div class="part-title">Heater Housing</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./049-WE01X20419.html'" style="animation-delay: 0.4s">
+      <div class="card has-image" onclick="location.href='./037-WE01X20419.html'" style="animation-delay: 0.8s">
         <div class="card-image">
            <img src="https://tse3.mm.bing.net/th/id/OIP.I_raV0nLV_U6azUyroPi8wHaHt?r=0&amp;pid=Api" alt="WE01X20419" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#37</div>
           <div class="part-num">WE01X20419</div>
-          <div class="part-title">GE Genuine OEM WE01X20419 Dryer Door Handle - Dryer Door Handle</div>
+          <div class="part-title">Dryer Door Handle (white)</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./050-WE4M416.html'" style="animation-delay: 0.45s">
+      <div class="card has-image" onclick="location.href='./038-WE4M416.html'" style="animation-delay: 0.8500000000000001s">
         <div class="card-image">
            <img src="https://thfvnext.bing.com/th/id/OIP.lKwssGXMX7Jw6X15JRa-MAHaHt?r=0&amp;cb=thfvnext&amp;pid=Api" alt="WE4M416" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#38</div>
           <div class="part-num">WE4M416</div>
-          <div class="part-title">GE Genuine OEM WE4M416 Dryer Push-to-start Switch - Dryer Start Switch</div>
+          <div class="part-title">Dryer Push-to-start Switch</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./051-WE4M127.html'" style="animation-delay: 0.5s">
+      <div class="card has-image" onclick="location.href='./039-WE4M127.html'" style="animation-delay: 0.9s">
         <div class="card-image">
-           <img src="https://tse2.mm.bing.net/th/id/OIP.c6Hfgoe2a06y5bTRYEIMFAHaHt?pid=Api" alt="WE4M127" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+           <img src="https://tse3.mm.bing.net/th/id/OIP.XPhXug20rEyPAV_HWUWrKwHaHt?pid=Api" alt="WE4M127" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#39</div>
           <div class="part-num">WE4M127</div>
-          <div class="part-title">GE Genuine OEM WE4M127 Dryer Operating Thermostat - Dryer Cycling Thermostat</div>
-          <div class="source-badge success">
-            Source: geappliances.com
+          <div class="part-title">Dryer Operating Thermostat</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div>
-      <div class="card has-image" onclick="location.href='./052-WE4M525.html'" style="animation-delay: 0.55s">
+      <div class="card has-image" onclick="location.href='./040-WE4M525.html'" style="animation-delay: 0.9500000000000001s">
         <div class="card-image">
            <img src="https://tse4.mm.bing.net/th/id/OIP.BCv7G7zs7_gBMr0KYtFL4wHaHt?pid=Api" alt="WE4M525" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
         </div>
         <div class="card-body">
+          <div class="part-title">#40</div>
           <div class="part-num">WE4M525</div>
-          <div class="part-title">GE Genuine OEM WE4M525 4 Term Blk &amp; Grnd Strap - Dryer Terminal Block</div>
+          <div class="part-title">4 Term Blk &amp; Grnd Strap</div>
           <div class="source-badge success">
             Source: geapplianceparts.com
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./041-WD21X10261.html'" style="animation-delay: 0s">
+        <div class="card-image">
+           <img src="https://tse2.mm.bing.net/th/id/OIP.3zHc_G2b7gWYgzqoYtS0pgHaHt?pid=Api" alt="WD21X10261" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#41</div>
+          <div class="part-num">WD21X10261</div>
+          <div class="part-title">Interlock Switch</div>
+          <div class="source-badge success">
+            Source: geapplianceparts.com
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./042-WD21X557.html'" style="animation-delay: 0.05s">
+        <div class="card-image">
+           <img src="https://tse3.mm.bing.net/th/id/OIP.y-R0qOILkcjI5hTtAqFeEAHaJk?pid=Api" alt="WD21X557" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#42</div>
+          <div class="part-num">WD21X557</div>
+          <div class="part-title">Interlock Sw</div>
+          <div class="source-badge success">
+            Source: geapplianceparts.com
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./043-WE1M1030.html'" style="animation-delay: 0.1s">
+        <div class="card-image">
+           <img src="https://tse1.mm.bing.net/th/id/OIP.D5TWyQb-svn_GkC8GPHh_wHaHt?pid=Api" alt="WE1M1030" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#43</div>
+          <div class="part-num">WE1M1030</div>
+          <div class="part-title">GE WE1M1030 Shield Bottom Cover</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./044-WH2M270.html'" style="animation-delay: 0.15000000000000002s">
+        <div class="card-image">
+           <img src="https://tse4.mm.bing.net/th/id/OIP.cafr--k-D7jpIWdXZ9V7fwHaHt?pid=Api" alt="WH2M270" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#44</div>
+          <div class="part-num">WH2M270</div>
+          <div class="part-title">We2x328 Screw</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./045-WE1M650.html'" style="animation-delay: 0.2s">
+        <div class="card-image">
+           <img src="https://tse3.mm.bing.net/th/id/OIP.tPsfDbFuCSOdkXPr5iWubQHaHt?r=0&amp;pid=Api" alt="WE1M650" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#45</div>
+          <div class="part-num">WE1M650</div>
+          <div class="part-title">Dryer Motor Wire Harness Connector</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./046-WE13X20394.html'" style="animation-delay: 0.25s">
+        <div class="card-image">
+           <img src="https://thfvnext.bing.com/th/id/OIP.LvmJ1qYpFyRkxdxKkI4V3wHaHt?cb=thfvnext&amp;pid=Api" alt="WE13X20394" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#46</div>
+          <div class="part-num">WE13X20394</div>
+          <div class="part-title">Motor Plate</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./047-WE1M652.html'" style="animation-delay: 0.30000000000000004s">
+        <div class="card-image">
+           <img src="https://tse4.mm.bing.net/th/id/OIP.5zRJlDwiv3fHUh-lq2l17gHaHt?pid=Api" alt="WE1M652" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#47</div>
+          <div class="part-num">WE1M652</div>
+          <div class="part-title">Dryer Control Knob</div>
+          <div class="source-badge success">
+            Source: geapplianceparts.com
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./048-WE09X20441.html'" style="animation-delay: 0.35000000000000003s">
+        <div class="card-image">
+           <img src="https://tse3.mm.bing.net/th/id/OIP.PZNxRbWhCn1PRUCq0HQd4wHaJk?pid=Api" alt="WE09X20441" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#48</div>
+          <div class="part-num">WE09X20441</div>
+          <div class="part-title">Felt Trap Duct</div>
+          <div class="source-badge success">
+            Source: geapplianceparts.com
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./049-WE1M1015.html'" style="animation-delay: 0.4s">
+        <div class="card-image">
+           <img src="https://tse4.mm.bing.net/th/id/OIP.5_faLCQPOXQ1eHKtP0jfYAHaHt?pid=Api" alt="WE1M1015" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#49</div>
+          <div class="part-num">WE1M1015</div>
+          <div class="part-title">Ground Strap Asm</div>
+          <div class="source-badge success">
+            Source: geapplianceparts.com
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./050-WE03X37319.html'" style="animation-delay: 0.45s">
+        <div class="card-image">
+           <img src="https://thfvnext.bing.com/th/id/OIP.PZNxRbWhCn1PRUCq0HQd4wHaJk?cb=thfvnext&amp;pid=Api" alt="WE03X37319" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#50</div>
+          <div class="part-num">WE03X37319</div>
+          <div class="part-title">Dryer Drum Glide Bearing</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./051-WE3M51.html'" style="animation-delay: 0.5s">
+        <div class="card-image">
+           <img src="https://thf.bing.com/th/id/OIP.ATC6hiJwrX2IhAC82GG-XAHaJk?r=0&amp;cb=thfc1&amp;pid=Api" alt="WE3M51" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#51</div>
+          <div class="part-num">WE3M51</div>
+          <div class="part-title">Bearing Slide</div>
+          <div class="source-badge success">
+            Source: geapplianceparts.com
+          </div>
+        </div>
+      </div>
+      <div class="card has-image" onclick="location.href='./052-WE2M96.html'" style="animation-delay: 0.55s">
+        <div class="card-image">
+           <img src="https://thf.bing.com/th/id/OIP.LvmJ1qYpFyRkxdxKkI4V3wHaHt?cb=thfc1&amp;pid=Api" alt="WE2M96" onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+        </div>
+        <div class="card-body">
+          <div class="part-title">#52</div>
+          <div class="part-num">WE2M96</div>
+          <div class="part-title">Cap Nut</div>
+          <div class="source-badge danger">
+            ❌ Mismatch
           </div>
         </div>
       </div></div>

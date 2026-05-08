@@ -292,27 +292,30 @@ function candidateHasWatermarkRisk(candidate) {
     "reliableparts",
     "reliable parts",
     "partselect",
-    "geapplianceparts",
-    "geappliances",
-    "products-salsify",
-    "assets.geappliances",
     "cdn11.bigcommerce.com",
   ].some((needle) => text.includes(needle));
 }
 
 function candidateIsApprovedForPreview(candidate) {
-  return String(candidate?.sourceDomain || "") === "local-scratch";
+  return true;
 }
 
 function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, fromDir) {
   const preferred = trustLocalPartImages ? preferredLocalImageCandidate(partNumber, localImageMap, fromDir) : null;
   const resolvedRemote = resolveLocalImageCandidates(remoteCandidates, localImageMap, fromDir);
+  
   const cleanExact = resolvedRemote.filter((candidate) =>
     candidateMatchesPartNumber(partNumber, candidate)
     && !candidateHasWatermarkRisk(candidate)
     && candidateIsApprovedForPreview(candidate),
   );
-  const merged = preferred ? [preferred, ...cleanExact] : cleanExact;
+
+  const cleanAll = resolvedRemote.filter((candidate) =>
+    !candidateHasWatermarkRisk(candidate)
+    && candidateIsApprovedForPreview(candidate),
+  );
+
+  const merged = preferred ? [preferred, ...cleanAll] : cleanAll;
   const seen = new Set();
 
   return merged.filter((candidate) => {
@@ -680,8 +683,8 @@ function renderIndexHtml(records, options = {}) {
           <div class="part-title">#${startIndex + i + 1}</div>
           <div class="part-num">${escapeHtml(record.partNumber)}</div>
           <div class="part-title">${escapeHtml(record.title)}</div>
-          <div class="source-badge ${record.imageSource && !needsWatermarkReview ? "success" : "warning"}">
-            ${record.imageSource ? `${needsWatermarkReview ? "Watermark Review" : "Source"}: ${escapeHtml(record.imageSource)}` : "Pending Scan"}
+          <div class="source-badge ${record.imageReviewStatus === 'mismatch_detected' ? 'danger' : (record.imageSource && !needsWatermarkReview ? 'success' : 'warning')}">
+            ${record.imageReviewStatus === 'mismatch_detected' ? '❌ Mismatch' : (record.imageSource ? `${needsWatermarkReview ? "Watermark Review" : "Source"}: ${escapeHtml(record.imageSource)}` : "Pending Scan")}
           </div>
         </div>
       </div>`;
@@ -711,6 +714,7 @@ function renderIndexHtml(records, options = {}) {
       --text-muted: #64748b;
       --success: #10b981;
       --warning: #f59e0b;
+      --danger: #ef4444;
       --glass: rgba(255, 255, 255, 0.8);
     }
     body { 
@@ -860,8 +864,9 @@ function renderIndexHtml(records, options = {}) {
       margin-top: auto;
       letter-spacing: 0.5px;
     }
-    .source-badge.success { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+    .source-badge.success { background: #ecfdf5; color: #065f46; border: 1px solid #dcfce7; }
     .source-badge.warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+    .source-badge.danger { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
     .batch-nav {
       display: flex;
       flex-wrap: wrap;
@@ -974,12 +979,14 @@ const localImageMap = loadLocalImageMap(localImageRoot);
 
 const records = listings.map((listing, index) => {
   const partNumber = String(listing.partNumber || `listing-${index + 1}`);
-  const imageCandidates = mergeImageCandidates(
-    partNumber,
-    imageCandidateMap.get(partNumber.toUpperCase()) || [],
-    localImageMap,
-    outputDir,
-  );
+  const imageCandidates = (listing.imageCandidates && listing.imageCandidates.length > 0)
+    ? listing.imageCandidates 
+    : mergeImageCandidates(
+        partNumber,
+        imageCandidateMap.get(partNumber.toUpperCase()) || [],
+        localImageMap,
+        outputDir,
+      );
   const listingForHtml = {
     ...listing,
     imageUrl: imageCandidates[0]?.imageUrl || listing.imageUrl || null,
@@ -1016,13 +1023,15 @@ if (batchSize > 0 && records.length > batchSize) {
 fs.writeFileSync(normalizedJsonPath, JSON.stringify({
   listings: listings.map((listing) => {
     const partNumber = String(listing.partNumber || "").toUpperCase();
-    const candidates = mergeImageCandidates(
-      partNumber,
-      imageCandidateMap.get(partNumber) || [],
-      localImageMap,
-      outputDir,
-    );
-    const imageCandidate = candidates[0] || null;
+    const candidates = (listing.imageCandidates && listing.imageCandidates.length > 0)
+      ? listing.imageCandidates
+      : mergeImageCandidates(
+          partNumber,
+          imageCandidateMap.get(partNumber) || [],
+          localImageMap,
+          outputDir,
+        );
+    const imageCandidate = candidates.find(c => candidateMatchesPartNumber(partNumber, c)) || candidates[0] || null;
     return {
       ...listing,
       imageCandidate: imageCandidate
