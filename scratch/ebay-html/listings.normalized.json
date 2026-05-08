@@ -718,11 +718,15 @@
     },
     {
       "partNumber": "WE11X20400",
+      "originalPartNumber": "WE11X20400",
+      "currentServicePartNumber": "WE11M10002",
       "title": "Heater Housing",
-      "description": "This is a genuine GE Appliances replacement Heater Housing. Designed for durability and performance, this component corresponds to Diagram ID 513. Please verify your specific appliance model number to ensure compatibility before purchasing.",
+      "description": "This is a genuine GE Appliances replacement Heater Housing. Original part WE11X20400 is replaced by current service part WE11M10002. Designed for durability and performance, this component corresponds to Diagram ID 513. Please verify your specific appliance model number to ensure compatibility before purchasing.",
       "specs": {
         "brand": "GE Appliances",
         "mpn": "WE11X20400",
+        "originalPartNumber": "WE11X20400",
+        "currentServicePartNumber": "WE11M10002",
         "type": "Heater Housing",
         "compatibleModels": [],
         "condition": "New"

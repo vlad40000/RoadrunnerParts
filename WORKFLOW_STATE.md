@@ -123,7 +123,7 @@ WE3M56	Bearing	313
 WE03X20228	Top Bearing (replaced by WE3M56)	313
 WE4M415	Dryer Door Switch	380
 WE1M462	Kenmore Dryer Rear Bearing	3106
-WE11X20400	Heater Housing	513
+WE11X20400	Heater Housing (replaced by WE11M10002)	513
 WE01X20419	Dryer Door Handle (white)	603
 WE4M416	Dryer Push-to-start Switch	35
 WE4M127	Dryer Operating Thermostat	230

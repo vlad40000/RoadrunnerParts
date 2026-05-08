@@ -1170,11 +1170,15 @@
     },
     {
       "partNumber": "WE11X20400",
+      "originalPartNumber": "WE11X20400",
+      "currentServicePartNumber": "WE11M10002",
       "title": "Heater Housing",
-      "description": "<b>Genuine GE OEM WE11X20400 Heater Housing</b>\n\nRoadrunnerParts Genuine GE WE11X20400 Heating Element Housing (Diagram ID 513)\n\n<b>Diagram ID:</b> 513\n\n<b>Product Features:</b>\n- This protective metal assembly contains and supports the dryer's heating element\n- It ensures that heat is effectively contained and directed toward the drum for safe and efficient laundry drying\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "description": "<b>Genuine GE OEM WE11X20400 Heater Housing</b>\n\nRoadrunnerParts Genuine GE WE11X20400 Heating Element Housing (Diagram ID 513). WE11X20400 is replaced by current service part WE11M10002.\n\n<b>Diagram ID:</b> 513\n\n<b>Product Features:</b>\n- This protective metal assembly contains and supports the dryer's heating element\n- It ensures that heat is effectively contained and directed toward the drum for safe and efficient laundry drying\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE11X20400",
+        "originalPartNumber": "WE11X20400",
+        "currentServicePartNumber": "WE11M10002",
         "type": "Heating Chamber Housing",
         "compatibleModels": [
           "GE Electric Dryers",
@@ -1185,7 +1189,7 @@
         "retail": "$33.95",
         "ebayBuyNow": "$15.28"
       },
-      "originalTitle": "GE Genuine OEM WE11X20400 Heater Housing - Dryer Heating Chamber Housing",
+      "originalTitle": "GE Genuine OEM WE11X20400 Heater Housing - Replaced by WE11M10002",
       "partTitle": "Heater Housing",
       "diagId": "513",
       "retail": "$33.95",
