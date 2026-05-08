@@ -17,6 +17,7 @@
       --text-muted: #64748b;
       --success: #10b981;
       --warning: #f59e0b;
+      --danger: #ef4444;
       --glass: rgba(255, 255, 255, 0.8);
     }
     body { 
@@ -166,8 +167,35 @@
       margin-top: auto;
       letter-spacing: 0.5px;
     }
-    .source-badge.success { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+    .source-badge.success { background: #ecfdf5; color: #065f46; border: 1px solid #dcfce7; }
     .source-badge.warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+    .source-badge.danger { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+    .batch-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 24px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+    }
+    .batch-nav a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .batch-nav a.active {
+      color: white;
+      border-color: var(--primary);
+      background: var(--primary);
+    }
 
     footer {
       text-align: center;
@@ -190,9 +218,10 @@
   <header>
     <div class="header-content">
       <h1>Roadrunner<span>Parts</span> Audit</h1>
-      <p>Next-Gen Appliance Inventory & Market Signal Intelligence</p>
+      <p>Batch 1 of 4 - local image collection review</p>
       <div class="stats-bar">
-        <div class="stat"><span>70</span> Review Parts</div>
+        <div class="stat"><span>20</span> In This Batch</div>
+        <div class="stat"><span>68</span> Total Parts</div>
         <div class="stat"><span>0</span> Visuals Discovered</div>
         <div class="stat"><span>0</span> Watermark Review</div>
         <div class="stat">Pipeline: <span>LOCAL REVIEW ONLY</span></div>
@@ -200,12 +229,17 @@
     </div>
   </header>
   <main>
+    
+    <nav class="batch-nav" aria-label="Listing batches">
+      <a class="active" href="index.html">Batch 1</a><a class="" href="batch-02.html">Batch 2</a><a class="" href="batch-03.html">Batch 3</a><a class="" href="batch-04.html">Batch 4</a>
+    </nav>
     <div class="grid">
       <div class="card missing-image" onclick="location.href='./001-WE21X20562.html'" style="animation-delay: 0s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#1</div>
           <div class="part-num">WE21X20562</div>
           <div class="part-title">Drum Asm 6.0 (replacement)</div>
           <div class="source-badge warning">
@@ -218,6 +252,7 @@
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#2</div>
           <div class="part-num">WE21X20407</div>
           <div class="part-title">Drum Asm 6.0 Cu.ft Wh</div>
           <div class="source-badge warning">
@@ -230,6 +265,7 @@
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#3</div>
           <div class="part-num">WE19M1713</div>
           <div class="part-title">Backsplash Graphics Asm</div>
           <div class="source-badge warning">
@@ -242,6 +278,7 @@
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#4</div>
           <div class="part-num">WE11M10001</div>
           <div class="part-title">Dryer Heating Element</div>
           <div class="source-badge warning">
@@ -249,35 +286,25 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./005-WE17M66.html'" style="animation-delay: 0.2s">
+      <div class="card missing-image" onclick="location.href='./005-WE17X22217.html'" style="animation-delay: 0.2s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
-          <div class="part-num">WE17M66</div>
-          <div class="part-title">Motor</div>
+          <div class="part-title">#5</div>
+          <div class="part-num">WE17X22217</div>
+          <div class="part-title">Kit Motor &amp; Pulley</div>
           <div class="source-badge warning">
             Pending Scan
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./006-WE20X20596.html'" style="animation-delay: 0.25s">
+      <div class="card missing-image" onclick="location.href='./006-WE4M532.html'" style="animation-delay: 0.25s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
-          <div class="part-num">WE20X20596</div>
-          <div class="part-title">Panel</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./007-WE4M532.html'" style="animation-delay: 0.30000000000000004s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
+          <div class="part-title">#6</div>
           <div class="part-num">WE4M532</div>
           <div class="part-title">Dryer Timer</div>
           <div class="source-badge warning">
@@ -285,23 +312,25 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./008-WE49X22295.html'" style="animation-delay: 0.35000000000000003s">
+      <div class="card missing-image" onclick="location.href='./007-WE49X22295.html'" style="animation-delay: 0.30000000000000004s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#7</div>
           <div class="part-num">WE49X22295</div>
-          <div class="part-title">Dryer Door Inner Panel</div>
+          <div class="part-title">Kit Front Panel and Inner Door</div>
           <div class="source-badge warning">
             Pending Scan
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./009-WE10X20418.html'" style="animation-delay: 0.4s">
+      <div class="card missing-image" onclick="location.href='./008-WE10X20418.html'" style="animation-delay: 0.35000000000000003s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#8</div>
           <div class="part-num">WE10X20418</div>
           <div class="part-title">Inner Door Asm White</div>
           <div class="source-badge warning">
@@ -309,23 +338,25 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./010-WE20X20409.html'" style="animation-delay: 0.45s">
+      <div class="card missing-image" onclick="location.href='./009-WE20X20409.html'" style="animation-delay: 0.4s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#9</div>
           <div class="part-num">WE20X20409</div>
-          <div class="part-title">Front Panel &quot;White&quot;</div>
+          <div class="part-title">Dryer Front Panel</div>
           <div class="source-badge warning">
             Pending Scan
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./011-WE20X20412.html'" style="animation-delay: 0.5s">
+      <div class="card missing-image" onclick="location.href='./010-WE20X20412.html'" style="animation-delay: 0.45s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#10</div>
           <div class="part-num">WE20X20412</div>
           <div class="part-title">Bottom Cover</div>
           <div class="source-badge warning">
@@ -333,11 +364,12 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./012-WE20X20417.html'" style="animation-delay: 0.55s">
+      <div class="card missing-image" onclick="location.href='./011-WE20X20417.html'" style="animation-delay: 0.5s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#11</div>
           <div class="part-num">WE20X20417</div>
           <div class="part-title">Dryer Top Panel</div>
           <div class="source-badge warning">
@@ -345,11 +377,12 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./013-WE20X20396.html'" style="animation-delay: 0.6000000000000001s">
+      <div class="card missing-image" onclick="location.href='./012-WE20X20396.html'" style="animation-delay: 0.55s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#12</div>
           <div class="part-num">WE20X20396</div>
           <div class="part-title">Rear Panel</div>
           <div class="source-badge warning">
@@ -357,11 +390,12 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./014-WE20X20391.html'" style="animation-delay: 0.65s">
+      <div class="card missing-image" onclick="location.href='./013-WE20X20391.html'" style="animation-delay: 0.6000000000000001s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#13</div>
           <div class="part-num">WE20X20391</div>
           <div class="part-title">Chassis Base</div>
           <div class="source-badge warning">
@@ -369,23 +403,25 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./015-WE49X22294.html'" style="animation-delay: 0.7000000000000001s">
+      <div class="card missing-image" onclick="location.href='./014-WE49X22294.html'" style="animation-delay: 0.65s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#14</div>
           <div class="part-num">WE49X22294</div>
-          <div class="part-title">End Cap Rh W</div>
+          <div class="part-title">Kit Of Servi</div>
           <div class="source-badge warning">
             Pending Scan
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./016-WE10X20468.html'" style="animation-delay: 0.75s">
+      <div class="card missing-image" onclick="location.href='./015-WE10X20468.html'" style="animation-delay: 0.7000000000000001s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#15</div>
           <div class="part-num">WE10X20468</div>
           <div class="part-title">Dryer Door Outer Panel (white) - Diag ID 307</div>
           <div class="source-badge warning">
@@ -393,35 +429,38 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./017-WE4M181.html'" style="animation-delay: 0.8s">
+      <div class="card missing-image" onclick="location.href='./016-WE4M181.html'" style="animation-delay: 0.75s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#16</div>
           <div class="part-num">WE4M181</div>
-          <div class="part-title">Dryer Operating Thermostat</div>
+          <div class="part-title">Dryer Cycling Thermostat</div>
           <div class="source-badge warning">
             Pending Scan
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./018-WE19M1478.html'" style="animation-delay: 0.8500000000000001s">
+      <div class="card missing-image" onclick="location.href='./017-WE19M1478.html'" style="animation-delay: 0.8s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#17</div>
           <div class="part-num">WE19M1478</div>
-          <div class="part-title">End Cap Lh Wh</div>
+          <div class="part-title">End Cap Lh W</div>
           <div class="source-badge warning">
             Pending Scan
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./019-WE16X20393.html'" style="animation-delay: 0.9s">
+      <div class="card missing-image" onclick="location.href='./018-WE16X20393.html'" style="animation-delay: 0.8500000000000001s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#18</div>
           <div class="part-num">WE16X20393</div>
           <div class="part-title">Laundry Center Dryer Blower Wheel</div>
           <div class="source-badge warning">
@@ -429,11 +468,12 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./020-WE18M28.html'" style="animation-delay: 0.9500000000000001s">
+      <div class="card missing-image" onclick="location.href='./019-WE18M28.html'" style="animation-delay: 0.9s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#19</div>
           <div class="part-num">WE18M28</div>
           <div class="part-title">Filter &amp; Mesh Asm.</div>
           <div class="source-badge warning">
@@ -441,601 +481,14 @@
           </div>
         </div>
       </div>
-      <div class="card missing-image" onclick="location.href='./021-WE14X20425.html'" style="animation-delay: 0s">
+      <div class="card missing-image" onclick="location.href='./020-WE14X20425.html'" style="animation-delay: 0.9500000000000001s">
         <div class="card-image">
            <div class="placeholder">NO IMAGE</div>
         </div>
         <div class="card-body">
+          <div class="part-title">#20</div>
           <div class="part-num">WE14X20425</div>
           <div class="part-title">Trap Duct</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./022-WE20X20406.html'" style="animation-delay: 0.05s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE20X20406</div>
-          <div class="part-title">Dryer Side Panel (white) Diag ID 404</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./023-WE1M1002.html'" style="animation-delay: 0.1s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M1002</div>
-          <div class="part-title">Fuse Cemr 30 Amp 120V</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./024-WE1X921.html'" style="animation-delay: 0.15000000000000002s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1X921</div>
-          <div class="part-title">Motor Strap</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./025-WE4M404.html'" style="animation-delay: 0.2s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M404</div>
-          <div class="part-title">Dryer Temperature Switch</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./026-WE12X21574.html'" style="animation-delay: 0.25s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE12X21574</div>
-          <div class="part-title">Belt Drive</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./027-WE1M1003.html'" style="animation-delay: 0.30000000000000004s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M1003</div>
-          <div class="part-title">Dryer Fuse Holder</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./028-WE4M255.html'" style="animation-delay: 0.35000000000000003s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M255</div>
-          <div class="part-title">Kenmore Dryer Timer Resistor</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./029-WE13X30697.html'" style="animation-delay: 0.4s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE13X30697</div>
-          <div class="part-title">Dryer Motor Clamp</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./030-WE11X29438.html'" style="animation-delay: 0.45s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE11X29438</div>
-          <div class="part-title">Dryer Drum Rear Cover</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./031-WE14X20421.html'" style="animation-delay: 0.5s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE14X20421</div>
-          <div class="part-title">Dryer Exhaust Duct</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./032-WE1M1007.html'" style="animation-delay: 0.55s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M1007</div>
-          <div class="part-title">Cover Fuse Terminal</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./033-WE3M56.html'" style="animation-delay: 0.6000000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE3M56</div>
-          <div class="part-title">General Electric Dryer Upper Drum Bearing - Diag ID 313</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./034-WE03X20228.html'" style="animation-delay: 0.65s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE03X20228</div>
-          <div class="part-title">Top Bearing</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./035-WE1M462.html'" style="animation-delay: 0.7000000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M462</div>
-          <div class="part-title">Kenmore Dryer Rear Bearing</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./036-WE11X20400.html'" style="animation-delay: 0.75s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE11X20400</div>
-          <div class="part-title">Heater Housing</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./037-WE01X20419.html'" style="animation-delay: 0.8s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE01X20419</div>
-          <div class="part-title">Dryer Door Handle (white)</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./038-WE4M416.html'" style="animation-delay: 0.8500000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M416</div>
-          <div class="part-title">Dryer Push-to-start Switch</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./039-WE4M127.html'" style="animation-delay: 0.9s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M127</div>
-          <div class="part-title">Dryer Operating Thermostat</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./040-WE4M525.html'" style="animation-delay: 0.9500000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE4M525</div>
-          <div class="part-title">4 Term Blk &amp; Grnd Strap</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./041-WD21X10261.html'" style="animation-delay: 0s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WD21X10261</div>
-          <div class="part-title">Interlock Switch</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./042-WD21X557.html'" style="animation-delay: 0.05s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WD21X557</div>
-          <div class="part-title">Interlock Sw</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./043-WE1M1030.html'" style="animation-delay: 0.1s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M1030</div>
-          <div class="part-title">GE WE1M1030 Shield Bottom Cover</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./044-WH2M270.html'" style="animation-delay: 0.15000000000000002s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WH2M270</div>
-          <div class="part-title">We2x328 Screw</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./045-WE1M650.html'" style="animation-delay: 0.2s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M650</div>
-          <div class="part-title">Dryer Motor Wire Harness Connector</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./046-WE13X20394.html'" style="animation-delay: 0.25s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE13X20394</div>
-          <div class="part-title">Motor Plate</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./047-WE1M652.html'" style="animation-delay: 0.30000000000000004s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M652</div>
-          <div class="part-title">Dryer Control Knob</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./048-WE09X20441.html'" style="animation-delay: 0.35000000000000003s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE09X20441</div>
-          <div class="part-title">Felt Trap Duct</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./049-WE1M1015.html'" style="animation-delay: 0.4s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M1015</div>
-          <div class="part-title">Ground Strap Asm</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./050-WE03X37319.html'" style="animation-delay: 0.45s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE03X37319</div>
-          <div class="part-title">Dryer Drum Glide Bearing</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./051-WE3M51.html'" style="animation-delay: 0.5s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE3M51</div>
-          <div class="part-title">Bearing Slide</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./052-WE2M96.html'" style="animation-delay: 0.55s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE2M96</div>
-          <div class="part-title">Cap Nut</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./053-WE1M659.html'" style="animation-delay: 0.6000000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M659</div>
-          <div class="part-title">Push/ Start Button Grey</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./054-WE1M1101.html'" style="animation-delay: 0.65s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M1101</div>
-          <div class="part-title">Levelling Leg</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./055-WE14X20426.html'" style="animation-delay: 0.7000000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE14X20426</div>
-          <div class="part-title">Baffle</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./056-WE1M461.html'" style="animation-delay: 0.75s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M461</div>
-          <div class="part-title">Kenmore Dryer Rear Bearing O-ring</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./057-WE1M780.html'" style="animation-delay: 0.8s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M780</div>
-          <div class="part-title">Dryer Heating Element Bracket</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./058-WE1M825.html'" style="animation-delay: 0.8500000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M825</div>
-          <div class="part-title">a , Gasket (Seal) 39 Inch</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./059-WE01X20423.html'" style="animation-delay: 0.9s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE01X20423</div>
-          <div class="part-title">Dryer Power Cord Access Bracket</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./060-WE03X37320.html'" style="animation-delay: 0.9500000000000001s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE03X37320</div>
-          <div class="part-title">Dryer Drum Glide Bearing, Upper</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./061-WE1M934.html'" style="animation-delay: 0s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M934</div>
-          <div class="part-title">Door Reversal Plug</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./062-WE3M52.html'" style="animation-delay: 0.05s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE3M52</div>
-          <div class="part-title">Bearing Slide</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./063-WE12X20395.html'" style="animation-delay: 0.1s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE12X20395</div>
-          <div class="part-title">Idler Pulley</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./064-WE1M966.html'" style="animation-delay: 0.15000000000000002s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M966</div>
-          <div class="part-title">Blower Gasket (Exhaust)</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./065-WE1M536.html'" style="animation-delay: 0.2s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M536</div>
-          <div class="part-title">Genuine GE Dryer Door Latch (Diagram ID 327)</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./066-WE1M1033.html'" style="animation-delay: 0.25s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M1033</div>
-          <div class="part-title">Dryer Door Hinge</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./067-WE1M505.html'" style="animation-delay: 0.30000000000000004s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE1M505</div>
-          <div class="part-title">Hinge</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./068-WE2M196.html'" style="animation-delay: 0.35000000000000003s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE2M196</div>
-          <div class="part-title">Ground Screw</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./069-WZ05X0158.html'" style="animation-delay: 0.4s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WZ05X0158</div>
-          <div class="part-title">Screw 8-32X3/8 Grd Scr</div>
-          <div class="source-badge warning">
-            Pending Scan
-          </div>
-        </div>
-      </div>
-      <div class="card missing-image" onclick="location.href='./070-WE00X181L.html'" style="animation-delay: 0.45s">
-        <div class="card-image">
-           <div class="placeholder">NO IMAGE</div>
-        </div>
-        <div class="card-body">
-          <div class="part-num">WE00X181L</div>
-          <div class="part-title">Shaft</div>
           <div class="source-badge warning">
             Pending Scan
           </div>

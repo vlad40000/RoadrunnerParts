@@ -87,25 +87,25 @@ WE11X20397	GE Dryer Heating Element	512
 WE17X22217	Kit Motor & Pulley (current; original GE WE17M66)	630
 WE4M160	Dryer Safety Thermostat	505
 WE4M532	Dryer Timer	100
-WE49X22295	Dryer Door Inner Panel	305
+WE49X22295	Kit Front Panel and Inner Door	305
 WE10X20418	Inner Door Asm White	305
-WE20X20409	Front Panel "White"	301
+WE20X20409	Dryer Front Panel (replaced by WE49X22295)	301
 WE20X20412	Bottom Cover	222
 WE03X20434	Dryer Idler Pulley Arm	215
 WE20X20417	Dryer Top Panel	401
 WE20X20396	Rear Panel	420
 WE4M137	Dryer High-limit Thermostat	507
 WE20X20391	Chassis Base	408
-WE49X22294	End Cap Rh W	4
+WE49X22294	Kit Of Servi	4
 WE14X20392	Dryer Blower Housing	219
 WE19M1481	Dryer Control Panel Cover, Rear	72
 WE10X20468	Dryer Door Outer Panel (white)	307
 WE4M181	Dryer Cycling Thermostat	506
-WE19M1478	End Cap Lh Wh	3
+WE19M1478	End Cap Lh W (replaced by WE49X22294)	3
 WE16X20393	Laundry Center Dryer Blower Wheel	201
 WE18X25100	Dryer Lint Screen	300
 WE18M28	Filter & Mesh Asm.	300
-WE14X20425	Trap Duct	311
+WE14X20425	Trap Duct (replaced by WE14X25080)	311
 WE13M39	Motor Support	205
 WE20X20406	Dryer Side Panel (white)	404
 WE1M1002	Fuse Cemr 30 Amp 120V	418
@@ -118,10 +118,9 @@ WE1M1003	Dryer Fuse Holder	417
 WE4M255	Kenmore Dryer Timer Resistor	80
 WE13X30697	Dryer Motor Clamp	203
 WE11X29438	Dryer Drum Rear Cover	504
-WE14X20421	Dryer Exhaust Duct	228
 WE1M1007	Cover Fuse Terminal	430
 WE3M56	Bearing	313
-WE03X20228	Top Bearing	313
+WE03X20228	Top Bearing (replaced by WE3M56)	313
 WE4M415	Dryer Door Switch	380
 WE1M462	Kenmore Dryer Rear Bearing	3106
 WE11X20400	Heater Housing	513

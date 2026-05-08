@@ -134,8 +134,8 @@
     },
     {
       "partNumber": "WE49X22295",
-      "title": "GE Genuine OEM WE49X22295 Dryer Door Inner Panel - Dryer Door & Panel Kit",
-      "description": "<b>Genuine GE OEM WE49X22295 Dryer Door Inner Panel</b>\n\nRoadrunnerParts Genuine GE WE49X22295 Front Panel and Inner Door Kit (Diagram ID 305)\n\n<b>Diagram ID:</b> 305\n\n<b>Product Features:</b>\n- This comprehensive kit restores the sealing capability and appearance of your dryer\n- It includes the white front cabinet panel and the matching inner door liner to ensure a safe closure and proper airflow containment\n\n<b>Compatibility:</b>\nFits various models including: DBXR463EB0WW, GE White Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "title": "GE Genuine OEM WE49X22295 Kit Front Panel and Inner Door",
+      "description": "<b>Genuine GE OEM WE49X22295 Kit Front Panel and Inner Door</b>\n\nRoadrunnerParts Genuine GE WE49X22295 front panel and inner door kit (Diagram ID 305).\n\n<b>Diagram ID:</b> 305\n\n<b>Product Features:</b>\n- This kit restores the sealing capability and appearance of your dryer\n- It includes the white front cabinet panel and matching inner door liner to support safe closure and proper airflow containment\n\n<b>Compatibility:</b>\nFits various models including: DBXR463EB0WW, GE White Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE49X22295",
@@ -164,11 +164,15 @@
     },
     {
       "partNumber": "WE20X20409",
-      "title": "GE Genuine OEM WE20X20409 Front Panel ite - Dryer Front Cabinet Panel",
-      "description": "<b>Genuine GE OEM WE20X20409 Front Panel ite</b>\n\nRoadrunnerParts Genuine GE WE20X20409 White Front Panel (Diagram ID 301)\n\n<b>Diagram ID:</b> 301\n\n<b>Product Features:</b>\n- This structural piece forms the front face of the dryer cabinet and houses the door opening\n- Replace this part if the original panel is scratched, dented, or warped to restore the appliance's factory finish\n\n<b>Compatibility:</b>\nFits various models including: GE Profile, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "originalPartNumber": "WE20X20409",
+      "currentServicePartNumber": "WE49X22295",
+      "title": "GE Genuine OEM WE20X20409 Dryer Front Panel - Replaced by WE49X22295",
+      "description": "<b>Genuine GE OEM WE20X20409 Dryer Front Panel</b>\n\nRoadrunnerParts Genuine GE WE20X20409 white dryer front panel (Diagram ID 301). WE20X20409 is replaced by current service part WE49X22295.\n\n<b>Diagram ID:</b> 301\n\n<b>Product Features:</b>\n- This structural piece forms the front face of the dryer cabinet and houses the door opening\n- Replace this part if the original panel is scratched, dented, or warped to restore the appliance's factory finish\n\n<b>Compatibility:</b>\nFits various models including: GE Profile, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE20X20409",
+        "originalPartNumber": "WE20X20409",
+        "currentServicePartNumber": "WE49X22295",
         "type": "Front Cabinet Panel",
         "compatibleModels": [
           "GE Profile",
@@ -274,8 +278,8 @@
     },
     {
       "partNumber": "WE49X22294",
-      "title": "GE Genuine OEM WE49X22294 End Cap Rh W - Dryer Console End Cap",
-      "description": "<b>Genuine GE OEM WE49X22294 End Cap Rh W</b>\n\nRoadrunnerParts Genuine GE WE49X22294 End Cap Service Kit (Diagram ID 4)\n\n<b>Diagram ID:</b> 4\n\n<b>Product Features:</b>\n- This right-hand white end cap restores the appearance and stability of the control console\n- It protects internal control switches and helps maintain proper console alignment on GE and Hotpoint dryer models\n\n<b>Compatibility:</b>\nFits various models including: DBLR333EG1WW, GTDX200EM0WW, GTDP520ED3WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "title": "GE Genuine OEM WE49X22294 Kit Of Servi",
+      "description": "<b>Genuine GE OEM WE49X22294 Kit Of Servi</b>\n\nRoadrunnerParts Genuine GE WE49X22294 Kit Of Servi (Diagram ID 4).\n\n<b>Diagram ID:</b> 4\n\n<b>Product Features:</b>\n- This service kit restores the appearance and stability of the control console\n- It protects internal control switches and helps maintain proper console alignment on GE and Hotpoint dryer models\n\n<b>Compatibility:</b>\nFits various models including: DBLR333EG1WW, GTDX200EM0WW, GTDP520ED3WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE49X22294",
@@ -354,11 +358,15 @@
     },
     {
       "partNumber": "WE19M1478",
-      "title": "GE Genuine OEM WE19M1478 End Cap Lh - Dryer Console End Cap",
-      "description": "<b>Genuine GE OEM WE19M1478 End Cap Lh</b>\n\nRoadrunnerParts Genuine GE WE19M1478 Left-Hand White End Cap (Diagram ID 3)\n\n<b>Diagram ID:</b> 3\n\n<b>Product Features:</b>\n- This original equipment replacement part fits on the left side of the dryer's control console\n- It ensures a finished appearance and protects the electronic components housed within the control area\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, RCA models\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "originalPartNumber": "WE19M1478",
+      "currentServicePartNumber": "WE49X22294",
+      "title": "GE Genuine OEM WE19M1478 End Cap Lh W - Replaced by WE49X22294",
+      "description": "<b>Genuine GE OEM WE19M1478 End Cap Lh W</b>\n\nRoadrunnerParts Genuine GE WE19M1478 left-hand white end cap (Diagram ID 3). WE19M1478 is replaced by current service part WE49X22294.\n\n<b>Diagram ID:</b> 3\n\n<b>Product Features:</b>\n- This original equipment replacement part fits on the left side of the dryer's control console\n- It ensures a finished appearance and protects the electronic components housed within the control area\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers, RCA models\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE19M1478",
+        "originalPartNumber": "WE19M1478",
+        "currentServicePartNumber": "WE49X22294",
         "type": "Console End Cap",
         "compatibleModels": [
           "GE Dryers",
@@ -418,11 +426,15 @@
     },
     {
       "partNumber": "WE14X20425",
-      "title": "GE Genuine OEM WE14X20425 Trap Duct - Dryer Lint Trap Duct",
-      "description": "<b>Genuine GE OEM WE14X20425 Trap Duct</b>\n\nRoadrunnerParts Genuine OEM WE14X20425 Trap Duct Assembly (Diagram ID 311)\n\n<b>Diagram ID:</b> 311\n\n<b>Product Features:</b>\n- This component guides hot, moist air into the lint filter area\n- It plays a critical role in directing airflow and preventing excessive lint buildup inside the dryer cabinet\n- Replace if cracked or warped to restore venting efficiency\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, GE Gas Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "originalPartNumber": "WE14X20425",
+      "currentServicePartNumber": "WE14X25080",
+      "title": "GE Genuine OEM WE14X20425 Trap Duct - Replaced by WE14X25080",
+      "description": "<b>Genuine GE OEM WE14X20425 Trap Duct</b>\n\nRoadrunnerParts Genuine OEM WE14X20425 Trap Duct Assembly (Diagram ID 311). WE14X20425 is replaced by current service part WE14X25080.\n\n<b>Diagram ID:</b> 311\n\n<b>Product Features:</b>\n- This component guides hot, moist air into the lint filter area\n- It plays a critical role in directing airflow and preventing excessive lint buildup inside the dryer cabinet\n- Replace if cracked or warped to restore venting efficiency\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, GE Gas Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE14X20425",
+        "originalPartNumber": "WE14X20425",
+        "currentServicePartNumber": "WE14X25080",
         "type": "Lint Trap Duct",
         "compatibleModels": [
           "GE Electric Dryers",
@@ -433,11 +445,23 @@
     },
     {
       "partNumber": "WE13M39",
+      "previousPartNumbers": [
+        "WE13M36",
+        "WE13M22",
+        "WE13M0036",
+        "WE13M0039"
+      ],
       "title": "GE Genuine OEM WE13M39 Motor Support - Dryer Motor Support Bracket",
-      "description": "<b>Genuine GE OEM WE13M39 Motor Support</b>\n\nRoadrunnerParts Genuine GE WE13M39 Motor Support Bracket (Diagram ID 205)\n\n<b>Diagram ID:</b> 205\n\n<b>Product Features:</b>\n- This essential metal bracket secures the drive motor to the base of the dryer\n- It helps minimize vibration and maintains the alignment of the motor with the drive belt and blower wheel for quiet, reliable performance\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, DPSR475EW0WW, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Common Symptoms Fixed:</b>\nFixes dryers that won't start, motor humming but not turning, or intermittent stopping.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "description": "<b>Genuine GE OEM WE13M39 Motor Support</b>\n\nRoadrunnerParts Genuine GE WE13M39 Motor Support Bracket (Diagram ID 205). Replaces previous part numbers: WE13M36, WE13M22, WE13M0036, WE13M0039.\n\n<b>Diagram ID:</b> 205\n\n<b>Product Features:</b>\n- This essential metal bracket secures the drive motor to the base of the dryer\n- It helps minimize vibration and maintains the alignment of the motor with the drive belt and blower wheel for quiet, reliable performance\n\n<b>Compatibility:</b>\nFits various models including: DDE8500RFM, DPSR475EW0WW, HTDX100EM8WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Common Symptoms Fixed:</b>\nFixes dryers that won't start, motor humming but not turning, or intermittent stopping.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE13M39",
+        "previousPartNumbers": [
+          "WE13M36",
+          "WE13M22",
+          "WE13M0036",
+          "WE13M0039"
+        ],
         "type": "Motor Support Bracket",
         "compatibleModels": [
           "DDE8500RFM",
@@ -622,22 +646,6 @@
       }
     },
     {
-      "partNumber": "WE14X20421",
-      "title": "GE Genuine OEM WE14X20421 Dryer Exhaust Duct - Dryer Internal Exhaust Duct",
-      "description": "<b>Genuine GE OEM WE14X20421 Dryer Exhaust Duct</b>\n\nRoadrunnerParts Genuine GE WE14X20421 Dryer Exhaust Duct (Diagram ID 228)\n\n<b>Diagram ID:</b> 228\n\n<b>Product Features:</b>\n- This metal pipe routes hot air from the blower housing to the home vent\n- Measuring approximately 17-1/2 inches, it ensures proper venting and airflow for efficient drying and moisture removal\n\n<b>Compatibility:</b>\nFits various models including: DHDSR46EG5WW, DBXR463GB0WW, DDSR475ET6WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
-      "specs": {
-        "brand": "GE",
-        "mpn": "WE14X20421",
-        "type": "Internal Exhaust Duct",
-        "compatibleModels": [
-          "DHDSR46EG5WW",
-          "DBXR463GB0WW",
-          "DDSR475ET6WW"
-        ],
-        "condition": "Used"
-      }
-    },
-    {
       "partNumber": "WE1M1007",
       "title": "GE Genuine OEM WE1M1007 Cover Fuse Terminal - Dryer Fuse Cover",
       "description": "<b>Genuine GE OEM WE1M1007 Cover Fuse Terminal</b>\n\nRoadrunnerParts Genuine OEM WE1M1007 Fuse Terminal Cover (Diagram ID 430)\n\n<b>Diagram ID:</b> 430\n\n<b>Product Features:</b>\n- This metal cover shields and insulates the fuse terminal connections inside the dryer\n- It protects the electrical contacts from accidental contact, arcing, and debris, ensuring a safe and consistent power supply\n\n<b>Compatibility:</b>\nFits various models including: GFD40ESCM0WW, GFDL110EH0WW, GFDN110ED3WW\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Common Symptoms Fixed:</b>\nA vital safety component that restores power to the dryer when it won't start due to overheating.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
@@ -671,11 +679,15 @@
     },
     {
       "partNumber": "WE03X20228",
-      "title": "GE Genuine OEM WE03X20228 Top Bearing - Dryer Drum Bearing",
-      "description": "<b>Genuine GE OEM WE03X20228 Top Bearing</b>\n\nRoadrunnerParts Genuine OEM WE03X20228 Top Drum Bearing (Diagram ID 313)\n\n<b>Diagram ID:</b> 313\n\n<b>Product Features:</b>\n- This structural component supports the front part of the dryer drum as it spins\n- By providing a low-friction surface, it maintains drum alignment and prevents loud mechanical noises caused by metal-on-metal contact\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Common Symptoms Fixed:</b>\nReduces mechanical noise and restores smooth rotation to the dryer drum.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "originalPartNumber": "WE03X20228",
+      "currentServicePartNumber": "WE3M56",
+      "title": "GE Genuine OEM WE03X20228 Top Bearing - Replaced by WE3M56",
+      "description": "<b>Genuine GE OEM WE03X20228 Top Bearing</b>\n\nRoadrunnerParts Genuine OEM WE03X20228 Top Drum Bearing (Diagram ID 313). WE03X20228 is replaced by current service part WE3M56.\n\n<b>Diagram ID:</b> 313\n\n<b>Product Features:</b>\n- This structural component supports the front part of the dryer drum as it spins\n- By providing a low-friction surface, it maintains drum alignment and prevents loud mechanical noises caused by metal-on-metal contact\n\n<b>Compatibility:</b>\nFits various models including: GE Dryers, Hotpoint Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Common Symptoms Fixed:</b>\nReduces mechanical noise and restores smooth rotation to the dryer drum.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
       "specs": {
         "brand": "GE",
         "mpn": "WE03X20228",
+        "originalPartNumber": "WE03X20228",
+        "currentServicePartNumber": "WE3M56",
         "type": "Drum Bearing",
         "compatibleModels": [
           "GE Dryers",

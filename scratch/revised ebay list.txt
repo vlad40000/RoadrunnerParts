@@ -7,21 +7,21 @@ WE11X20397	GE Dryer Heating Element	512	$146.95	$50.00
 WE17X22217	Kit Motor & Pulley (original GE WE17M66)	630	$145.95	$60.00
 WE4M160	Dryer Safety Thermostat	505	$119.95	$30.00
 WE4M532	Dryer Timer	100	$96.95	$35.00
-WE49X22295	Dryer Door Inner Panel	305	$87.95	$50.00
+WE49X22295	Kit Front Panel and Inner Door	305	$87.95	$50.00
 WE10X20418	Inner Door Asm White	305	$87.95	$36.94
-WE20X20409	Front Panel "White"	301	$81.95	$34.42
+WE20X20409	Dryer Front Panel	301	$81.95	$34.42
 WE20X20412	Bottom Cover	222	$80.95	$34.00
 WE03X20434	Dryer Idler Pulley Arm	215	$77.95	$30.00
 WE20X20417	Dryer Top Panel	401	$75.95	$31.90
 WE20X20396	Rear Panel	420	$75.95	$31.90
 WE4M137	Dryer High-limit Thermostat	507	$74.95	$15.00
 WE20X20391	Chassis Base	408	$72.95	$32.83
-WE49X22294	End Cap Rh W	4	$69.63	$31.33
+WE49X22294	Kit Of Servi	4	$69.63	$31.33
 WE14X20392	Dryer Blower Housing	219	$64.95	$29.23
 WE19M1481	Dryer Control Panel Cover, Rear	72	$62.95	$28.33
 WE10X20468	Dryer Door Outer Panel (white)	307	$59.95	$26.98
 WE4M181	Dryer Cycling Thermostat	506	$58.95	$26.53
-WE19M1478	End Cap Lh Wh	3	$56.95	$25.63
+WE19M1478	End Cap Lh W	3	$56.95	$25.63
 WE16X20393	Laundry Center Dryer Blower Wheel	201	$53.95	$24.28
 WE18X25100	Dryer Lint Screen	300	$52.95	$23.83
 WE18M28	Filter & Mesh Asm.	300	$52.95	$23.83
@@ -38,7 +38,6 @@ WE1M1003	Dryer Fuse Holder	417	$44.95	$20.23
 WE4M255	Kenmore Dryer Timer Resistor	80	$39.95	$17.98
 WE13X30697	Dryer Motor Clamp	203	$39.56	$17.80
 WE11X29438	Dryer Drum Rear Cover	504	$39.43	$17.74
-WE14X20421	Dryer Exhaust Duct	228	$37.95	$17.08
 WE1M1007	Cover Fuse Terminal	430	$37.95	$17.08
 WE3M56	Bearing	313	$37.95	$17.08
 WE03X20228	Top Bearing	313	$37.95	$17.08
