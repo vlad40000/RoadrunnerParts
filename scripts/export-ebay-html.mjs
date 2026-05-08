@@ -16,6 +16,7 @@ const outputDir = String(args.get("output-dir") || DEFAULT_OUTPUT_DIR);
 const normalizedJsonPath = String(args.get("normalized-json") || path.join(outputDir, "listings.normalized.json"));
 const imageManifestPath = args.get("image-manifest") ? String(args.get("image-manifest")) : "";
 const localImageRoot = args.get("local-image-root") ? String(args.get("local-image-root")) : "";
+const listingSheetPath = args.get("listing-sheet") ? String(args.get("listing-sheet")) : "";
 const limitArg = args.get("limit");
 const partArg = args.get("part");
 
@@ -73,6 +74,81 @@ function loadImageCandidateMap(filePath) {
   }
 
   return map;
+}
+
+function normalizeHeader(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function parseDelimitedLine(line, delimiter) {
+  if (delimiter === "\t") return line.split("\t").map((value) => value.trim());
+
+  const values = [];
+  let current = "";
+  let quoted = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    const next = line[i + 1];
+    if (char === "\"" && quoted && next === "\"") {
+      current += "\"";
+      i += 1;
+      continue;
+    }
+    if (char === "\"") {
+      quoted = !quoted;
+      continue;
+    }
+    if (char === "," && !quoted) {
+      values.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+
+  values.push(current.trim());
+  return values;
+}
+
+function loadListingSheet(filePath) {
+  if (!filePath) return null;
+
+  const raw = fs.readFileSync(filePath, "utf8").trim();
+  if (!raw) return null;
+
+  const lines = raw.split(/\r?\n/).filter((line) => line.trim());
+  const delimiter = lines[0].includes("\t") ? "\t" : ",";
+  const headers = parseDelimitedLine(lines[0], delimiter).map(normalizeHeader);
+  const rows = [];
+  const byPartNumber = new Map();
+
+  for (const line of lines.slice(1)) {
+    const values = parseDelimitedLine(line, delimiter);
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] || "";
+    });
+
+    const partNumber = String(row.partnumber || row.part || row.mpn || "").trim().toUpperCase();
+    if (!partNumber) continue;
+
+    const normalized = {
+      partNumber,
+      partTitle: String(row.parttitle || row.title || "").trim(),
+      diagId: String(row.diagid || row.diagramid || "").trim(),
+      retail: String(row.retail || row.retailprice || "").trim(),
+      ebayBuyNow: String(row.ebaybuynow || row.ebayprice || row.buynow || "").trim(),
+    };
+
+    rows.push(normalized);
+    byPartNumber.set(partNumber, normalized);
+  }
+
+  return { rows, byPartNumber };
 }
 
 function imageBasename(value) {
@@ -143,6 +219,51 @@ function resolveLocalImageCandidates(candidates, localImageMap, fromDir) {
       localImagePath,
       reviewStatus: candidate.reviewStatus || "local_operator_image",
     };
+  });
+}
+
+function preferredLocalImageCandidate(partNumber, localImageMap, fromDir) {
+  if (!localImageMap.size) return null;
+
+  const base = String(partNumber || "").trim().toLowerCase();
+  if (!base) return null;
+
+  for (const ext of [".jpg", ".jpeg", ".png", ".webp", ".gif"]) {
+    const localImagePath = localImageMap.get(`${base}${ext}`);
+    if (!localImagePath) continue;
+
+    const localUrl = toHtmlPath(localImagePath, fromDir);
+    return {
+      title: `${partNumber} local operator image`,
+      imageUrl: localUrl,
+      thumbnailUrl: localUrl,
+      pageUrl: "",
+      sourceDomain: "local-scratch",
+      source: "local_operator_drop",
+      score: 1000,
+      reviewStatus: "local_operator_image",
+      localImagePath,
+    };
+  }
+
+  return null;
+}
+
+function imageCandidateKey(candidate) {
+  return String(candidate?.imageUrl || candidate?.remoteImageUrl || "").trim();
+}
+
+function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, fromDir) {
+  const preferred = preferredLocalImageCandidate(partNumber, localImageMap, fromDir);
+  const resolvedRemote = resolveLocalImageCandidates(remoteCandidates, localImageMap, fromDir);
+  const merged = preferred ? [preferred, ...resolvedRemote] : resolvedRemote;
+  const seen = new Set();
+
+  return merged.filter((candidate) => {
+    const key = imageCandidateKey(candidate);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 }
 
@@ -709,6 +830,35 @@ function renderIndexHtml(records) {
 }
 
 let listings = parseListingsArtifact(fs.readFileSync(inputPath, "utf8"));
+const listingSheet = loadListingSheet(listingSheetPath);
+if (listingSheet) {
+  const listingByPartNumber = new Map(
+    listings.map((listing) => [String(listing.partNumber || "").trim().toUpperCase(), listing]),
+  );
+
+  listings = listingSheet.rows
+    .map((sheetRow) => {
+      const listing = listingByPartNumber.get(sheetRow.partNumber);
+      if (!listing) return null;
+
+      return {
+        ...listing,
+        originalTitle: listing.title,
+        title: sheetRow.partTitle || listing.title,
+        partTitle: sheetRow.partTitle,
+        diagId: sheetRow.diagId,
+        retail: sheetRow.retail,
+        ebayBuyNow: sheetRow.ebayBuyNow,
+        specs: {
+          ...(listing.specs || {}),
+          diagramId: sheetRow.diagId,
+          retail: sheetRow.retail,
+          ebayBuyNow: sheetRow.ebayBuyNow,
+        },
+      };
+    })
+    .filter(Boolean);
+}
 if (partArg) {
   listings = listings.filter(l => String(l.partNumber || "").toUpperCase() === partArg.toUpperCase());
 }
@@ -721,7 +871,8 @@ const localImageMap = loadLocalImageMap(localImageRoot);
 
 const records = listings.map((listing, index) => {
   const partNumber = String(listing.partNumber || `listing-${index + 1}`);
-  const imageCandidates = resolveLocalImageCandidates(
+  const imageCandidates = mergeImageCandidates(
+    partNumber,
     imageCandidateMap.get(partNumber.toUpperCase()) || [],
     localImageMap,
     outputDir,
@@ -747,7 +898,8 @@ fs.writeFileSync(path.join(outputDir, "index.html"), renderIndexHtml(records));
 fs.writeFileSync(normalizedJsonPath, JSON.stringify({
   listings: listings.map((listing) => {
     const partNumber = String(listing.partNumber || "").toUpperCase();
-    const candidates = resolveLocalImageCandidates(
+    const candidates = mergeImageCandidates(
+      partNumber,
       imageCandidateMap.get(partNumber) || [],
       localImageMap,
       outputDir,
