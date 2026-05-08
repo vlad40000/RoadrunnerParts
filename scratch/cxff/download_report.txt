@@ -1,0 +1,100 @@
+================================================================================
+                      IMAGE EXTRACTOR - DOWNLOAD REPORT
+================================================================================
+Page URL:   https://www.geapplianceparts.com/store/parts/spec/WE11X20397
+Base Name:  images
+Started:    2026-05-08 14:36
+Completed:  2026-05-08 14:36
+
+================================================================================
+                                 SUMMARY
+================================================================================
+Total Selected:     20
+Downloaded:         20
+
+================================================================================
+                     DOWNLOADED FILES - FILENAME → URL
+================================================================================
+1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg
+  → https://images.salsify.com/image/upload/s--a-adSOae--/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg
+
+0114049986d843507f65567109a6606107856b6f.jpg
+  → https://images.salsify.com/image/upload/s--W2hOkjW0--/0114049986d843507f65567109a6606107856b6f.jpg
+
+1e2157575f2a75e82ecff97f56aca07698224655.jpg
+  → https://images.salsify.com/image/upload/s--4kRFq2Xc--/1e2157575f2a75e82ecff97f56aca07698224655.jpg
+
+sprite-social_media-2x.png
+  → https://www.geappliances.com/content/migrated-assets/images/common/icons/sprite-social_media-2x.png
+
+7055ccdf8b46bab7d2a79b420d1d83902ba2b55e.jpg
+  → https://images.salsify.com/image/upload/s--XJeJbtFu--/7055ccdf8b46bab7d2a79b420d1d83902ba2b55e.jpg
+
+f980f6ff0ef6c1c6e6a7573bc3dbb3e121b74259.jpg
+  → https://images.salsify.com/image/upload/s--gjDviMFr--/f980f6ff0ef6c1c6e6a7573bc3dbb3e121b74259.jpg
+
+1240474e1c035fc5c5e863c563ce299e1ca968b3.jpg
+  → https://images.salsify.com/image/upload/s--xbGsBC3A--/1240474e1c035fc5c5e863c563ce299e1ca968b3.jpg
+
+22c33f2197bfaff8654379d0fb668d4d0ae545ae.jpg
+  → https://images.salsify.com/image/upload/s--eUdW43L_--/22c33f2197bfaff8654379d0fb668d4d0ae545ae.jpg
+
+ibvtym3xzjuh9rkjvmtn.jpg
+  → https://images.salsify.com/image/upload/s--9_sJBk_K--/ibvtym3xzjuh9rkjvmtn.jpg
+
+755879c6462a6ce57d9abcf35cebb70035129ad9.jpg
+  → https://images.salsify.com/image/upload/s--jP-XHgQC--/755879c6462a6ce57d9abcf35cebb70035129ad9.jpg
+
+owezphkldwv8bfw44se9.jpg
+  → https://images.salsify.com/image/upload/s--lmdjkBOl--/owezphkldwv8bfw44se9.jpg
+
+ujxhnjmjtvllqk3gpxhx.jpg
+  → https://images.salsify.com/image/upload/s--tmW6RdZn--/ujxhnjmjtvllqk3gpxhx.jpg
+
+eb93ff7b1eb1551950006d2107b2a93e9f1dbed7.jpg
+  → https://products-salsify.geappliances.com/image/upload/s--Cm67aqkx--/eb93ff7b1eb1551950006d2107b2a93e9f1dbed7.jpg?_gl=1*16q6w7*_ga*MTQ4MTkwMzgxMS4xNzc0NzA1MzQw*_ga_QEC75X7XEX*czE3NzgyNDUzNDEkbzYkZzEkdDE3NzgyNTA4OTMkajExJGwwJGgxOTgxNzE0MDA3*_fplc*Nk1wRER1VUVMRW5SSXAlMkZOVkhLT25ValM4QmF6c0pVV0tFWVphQ2k1VGdOWVhkUmt1SXc4Y3pta01OSkZ3QWEya1VGS0FIUVByJTJGZnFjT0JPNUt3cXJ0V1ZuNWtHZ0dhWW02N0t3S0JneG9UdFhXNzc4ejdXcnNRSFRWb3JrUSUzRCUzRA..
+
+32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg
+  → https://products-salsify.geappliances.com/image/upload/s--ZozOVRs8--/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg
+
+b056b959bed95fd2ca40356c235d1622316987b9.jpg
+  → https://images.salsify.com/image/upload/s--UsSnbZ8g--/b056b959bed95fd2ca40356c235d1622316987b9.jpg
+
+9e06c71b26f612e9475273e5be72f482227aa6d6.jpg
+  → https://images.salsify.com/image/upload/s--YC73VbwE--/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg
+
+6b70edcd30234f3842916d0340b5849b18df0ee2.jpg
+  → https://images.salsify.com/image/upload/s--xuy6bLij--/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg
+
+f86f199e7f174144805754251f3ca24fd39ffe00.jpg
+  → https://images.salsify.com/image/upload/s--iM-DxUrQ--/f86f199e7f174144805754251f3ca24fd39ffe00.jpg
+
+7ccae1b732d6ae2f91d7ee5661122ef8b01e69c3.jpg
+  → https://images.salsify.com/image/upload/s--jAO4zn5x--/7ccae1b732d6ae2f91d7ee5661122ef8b01e69c3.jpg
+
+b0d94d918247101ebb0c4d64b2e88e45c325dfb1.jpg
+  → https://images.salsify.com/image/upload/s--Y0yeAs5I--/b0d94d918247101ebb0c4d64b2e88e45c325dfb1.jpg
+
+================================================================================
+                       COPY-PASTE URLS (DOWNLOADED)
+================================================================================
+https://images.salsify.com/image/upload/s--a-adSOae--/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg
+https://images.salsify.com/image/upload/s--W2hOkjW0--/0114049986d843507f65567109a6606107856b6f.jpg
+https://images.salsify.com/image/upload/s--4kRFq2Xc--/1e2157575f2a75e82ecff97f56aca07698224655.jpg
+https://www.geappliances.com/content/migrated-assets/images/common/icons/sprite-social_media-2x.png
+https://images.salsify.com/image/upload/s--XJeJbtFu--/7055ccdf8b46bab7d2a79b420d1d83902ba2b55e.jpg
+https://images.salsify.com/image/upload/s--gjDviMFr--/f980f6ff0ef6c1c6e6a7573bc3dbb3e121b74259.jpg
+https://images.salsify.com/image/upload/s--xbGsBC3A--/1240474e1c035fc5c5e863c563ce299e1ca968b3.jpg
+https://images.salsify.com/image/upload/s--eUdW43L_--/22c33f2197bfaff8654379d0fb668d4d0ae545ae.jpg
+https://images.salsify.com/image/upload/s--9_sJBk_K--/ibvtym3xzjuh9rkjvmtn.jpg
+https://images.salsify.com/image/upload/s--jP-XHgQC--/755879c6462a6ce57d9abcf35cebb70035129ad9.jpg
+https://images.salsify.com/image/upload/s--lmdjkBOl--/owezphkldwv8bfw44se9.jpg
+https://images.salsify.com/image/upload/s--tmW6RdZn--/ujxhnjmjtvllqk3gpxhx.jpg
+https://products-salsify.geappliances.com/image/upload/s--Cm67aqkx--/eb93ff7b1eb1551950006d2107b2a93e9f1dbed7.jpg?_gl=1*16q6w7*_ga*MTQ4MTkwMzgxMS4xNzc0NzA1MzQw*_ga_QEC75X7XEX*czE3NzgyNDUzNDEkbzYkZzEkdDE3NzgyNTA4OTMkajExJGwwJGgxOTgxNzE0MDA3*_fplc*Nk1wRER1VUVMRW5SSXAlMkZOVkhLT25ValM4QmF6c0pVV0tFWVphQ2k1VGdOWVhkUmt1SXc4Y3pta01OSkZ3QWEya1VGS0FIUVByJTJGZnFjT0JPNUt3cXJ0V1ZuNWtHZ0dhWW02N0t3S0JneG9UdFhXNzc4ejdXcnNRSFRWb3JrUSUzRCUzRA..
+https://products-salsify.geappliances.com/image/upload/s--ZozOVRs8--/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg
+https://images.salsify.com/image/upload/s--UsSnbZ8g--/b056b959bed95fd2ca40356c235d1622316987b9.jpg
+https://images.salsify.com/image/upload/s--YC73VbwE--/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg
+https://images.salsify.com/image/upload/s--xuy6bLij--/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg
+https://images.salsify.com/image/upload/s--iM-DxUrQ--/f86f199e7f174144805754251f3ca24fd39ffe00.jpg
+https://images.salsify.com/image/upload/s--jAO4zn5x--/7ccae1b732d6ae2f91d7ee5661122ef8b01e69c3.jpg
+https://images.salsify.com/image/upload/s--Y0yeAs5I--/b0d94d918247101ebb0c4d64b2e88e45c325dfb1.jpg

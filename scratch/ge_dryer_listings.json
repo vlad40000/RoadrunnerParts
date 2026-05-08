@@ -48,25 +48,17 @@
     }
   },
   {
-    "partNumber": "WE17M66",
-    "title": "Motor",
-    "description": "Genuine GE Appliances drive motor for dryers. This part is identified as Diagram ID 630 in the backsplash, blower, and motor assembly. Please verify your dryer's model number to confirm compatibility, as this part may have been replaced by manufacturer substitution part WE17X22217.",
+    "partNumber": "WE17X22217",
+    "originalPartNumber": "WE17M66",
+    "currentServicePartNumber": "WE17X22217",
+    "title": "Kit Motor & Pulley",
+    "description": "Genuine GE Appliances WE17X22217 Kit Motor & Pulley. This is the current service part for original GE part WE17M66. It is identified as Diagram ID 630 in the backsplash, blower, and drive assembly. Please verify your dryer's model number to confirm compatibility before purchase.",
     "specs": {
       "brand": "GE",
-      "mpn": "WE17M66",
+      "mpn": "WE17X22217",
+      "originalPartNumber": "WE17M66",
+      "currentServicePartNumber": "WE17X22217",
       "type": "Dryer Drive Motor",
-      "compatibleModels": [],
-      "condition": "New"
-    }
-  },
-  {
-    "partNumber": "WE20X20596",
-    "title": "Panel",
-    "description": "Replacement panel for your appliance. This part is identified as Diagram ID 420 in the manufacturer's diagram.",
-    "specs": {
-      "brand": null,
-      "mpn": "WE20X20596",
-      "type": "Panel",
       "compatibleModels": [],
       "condition": "New"
     }
@@ -221,7 +213,7 @@
   },
   {
     "partNumber": "WE4M181",
-    "title": "Dryer Operating Thermostat",
+    "title": "Dryer Cycling Thermostat",
     "description": "This genuine OEM dryer operating thermostat (cycling thermostat), associated with Diagram ID 506, is a 4-wire component designed to regulate the internal temperature of your electric dryer. It cycles the heating element on and off during the drying process to maintain consistent heat levels and prevent overheating. If your dryer is experiencing issues such as failing to heat or overheating, this replacement part can help restore efficient and safe operation.",
     "specs": {
       "brand": "GE Appliances",

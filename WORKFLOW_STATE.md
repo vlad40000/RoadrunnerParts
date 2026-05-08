@@ -83,10 +83,8 @@ WE21X20562	Drum Asm 6.0 (replacement)	503
 WE21X20407	Drum Asm 6.0 Cu.ft Wh	503
 WE19M1713	Backsplash Graphics Asm	13
 WE11M10001	Dryer Heating Element	514
-WE11X20397	G.e. Dryer Heating Element	512
-WE17X22217	Dryer Drive Motor With Pulley	630
-WE17M66	Motor	630
-WE20X20596	Panel	420
+WE11X20397	GE Dryer Heating Element	512
+WE17X22217	Kit Motor & Pulley (current; original GE WE17M66)	630
 WE4M160	Dryer Safety Thermostat	505
 WE4M532	Dryer Timer	100
 WE49X22295	Dryer Door Inner Panel	305
@@ -102,7 +100,7 @@ WE49X22294	End Cap Rh W	4
 WE14X20392	Dryer Blower Housing	219
 WE19M1481	Dryer Control Panel Cover, Rear	72
 WE10X20468	Dryer Door Outer Panel (white)	307
-WE4M181	Dryer Operating Thermostat	506
+WE4M181	Dryer Cycling Thermostat	506
 WE19M1478	End Cap Lh Wh	3
 WE16X20393	Laundry Center Dryer Blower Wheel	201
 WE18X25100	Dryer Lint Screen	300

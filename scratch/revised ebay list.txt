@@ -3,10 +3,8 @@ WE21X20562	Drum Asm 6.0 (replacement)	503	$275.95	$200.00
 WE21X20407	Drum Asm 6.0 Cu.ft Wh	503	$275.95	$200.00
 WE19M1713	Backsplash Graphics Asm	13	$158.95	$100.00
 WE11M10001	Dryer Heating Element	514	$146.95	$40.00
-WE11X20397	G.e. Dryer Heating Element	512	$146.95	$50.00
-WE17X22217	Dryer Drive Motor With Pulley	630	$145.95	$60.00
-WE17M66	Motor	630	$145.95	$60.00
-WE20X20596	Panel	420	$133.16	$50.00
+WE11X20397	GE Dryer Heating Element	512	$146.95	$50.00
+WE17X22217	Kit Motor & Pulley (original GE WE17M66)	630	$145.95	$60.00
 WE4M160	Dryer Safety Thermostat	505	$119.95	$30.00
 WE4M532	Dryer Timer	100	$96.95	$35.00
 WE49X22295	Dryer Door Inner Panel	305	$87.95	$50.00
@@ -22,7 +20,7 @@ WE49X22294	End Cap Rh W	4	$69.63	$31.33
 WE14X20392	Dryer Blower Housing	219	$64.95	$29.23
 WE19M1481	Dryer Control Panel Cover, Rear	72	$62.95	$28.33
 WE10X20468	Dryer Door Outer Panel (white)	307	$59.95	$26.98
-WE4M181	Dryer Operating Thermostat	506	$58.95	$26.53
+WE4M181	Dryer Cycling Thermostat	506	$58.95	$26.53
 WE19M1478	End Cap Lh Wh	3	$56.95	$25.63
 WE16X20393	Laundry Center Dryer Blower Wheel	201	$53.95	$24.28
 WE18X25100	Dryer Lint Screen	300	$52.95	$23.83

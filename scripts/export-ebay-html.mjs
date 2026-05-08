@@ -16,6 +16,7 @@ const outputDir = String(args.get("output-dir") || DEFAULT_OUTPUT_DIR);
 const normalizedJsonPath = String(args.get("normalized-json") || path.join(outputDir, "listings.normalized.json"));
 const imageManifestPath = args.get("image-manifest") ? String(args.get("image-manifest")) : "";
 const localImageRoot = args.get("local-image-root") ? String(args.get("local-image-root")) : "";
+const approvedImageRoot = args.get("approved-image-root") ? String(args.get("approved-image-root")) : "";
 const listingSheetPath = args.get("listing-sheet") ? String(args.get("listing-sheet")) : "";
 const trustLocalPartImages = String(args.get("trust-local-part-images") || "").toLowerCase() === "true";
 const batchSize = Math.max(0, Number(args.get("batch-size") || 0));
@@ -297,11 +298,12 @@ function candidateHasWatermarkRisk(candidate) {
 }
 
 function candidateIsApprovedForPreview(candidate) {
-  return true;
+  return String(candidate?.sourceDomain || "") === "local-scratch";
 }
 
-function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, fromDir) {
-  const preferred = trustLocalPartImages ? preferredLocalImageCandidate(partNumber, localImageMap, fromDir) : null;
+function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, approvedImageMap, fromDir) {
+  const approved = preferredLocalImageCandidate(partNumber, approvedImageMap, fromDir);
+  const preferred = approved || (trustLocalPartImages ? preferredLocalImageCandidate(partNumber, localImageMap, fromDir) : null);
   const resolvedRemote = resolveLocalImageCandidates(remoteCandidates, localImageMap, fromDir);
   
   const cleanExact = resolvedRemote.filter((candidate) =>
@@ -310,12 +312,7 @@ function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, fromD
     && candidateIsApprovedForPreview(candidate),
   );
 
-  const cleanAll = resolvedRemote.filter((candidate) =>
-    !candidateHasWatermarkRisk(candidate)
-    && candidateIsApprovedForPreview(candidate),
-  );
-
-  const merged = preferred ? [preferred, ...cleanAll] : cleanAll;
+  const merged = preferred ? [preferred, ...cleanExact] : cleanExact;
   const seen = new Set();
 
   return merged.filter((candidate) => {
@@ -361,6 +358,8 @@ function renderSpecsRows(listing) {
   const specs = listing.specs || {};
   const rows = [
     ["Part Number", listing.partNumber],
+    ["Current Service Part", firstNonEmpty(listing.currentServicePartNumber, listing.current_service_part_number, specs.currentServicePartNumber, specs.current_service_part_number)],
+    ["Original Part Number", firstNonEmpty(listing.originalPartNumber, listing.original_part_number, specs.originalPartNumber, specs.original_part_number)],
     ["Diagram ID", firstNonEmpty(listing.diagId, listing.diagramId, listing.diagram_id, specs.diagId, specs.diagramId)],
     ["Retail", firstNonEmpty(listing.retail, listing.retailPrice, listing.retail_price, specs.retail, specs.retailPrice)],
     ["eBay Buy Now", firstNonEmpty(listing.ebayBuyNow, listing.ebay_buy_now, listing.ebayBuyNowPrice, listing.buyNowPrice, specs.ebayBuyNow)],
@@ -976,6 +975,7 @@ if (limitArg) {
 const imageCandidateMap = loadImageCandidateMap(imageManifestPath);
 fs.mkdirSync(outputDir, { recursive: true });
 const localImageMap = loadLocalImageMap(localImageRoot);
+const approvedImageMap = loadLocalImageMap(approvedImageRoot);
 
 const records = listings.map((listing, index) => {
   const partNumber = String(listing.partNumber || `listing-${index + 1}`);
@@ -985,6 +985,7 @@ const records = listings.map((listing, index) => {
         partNumber,
         imageCandidateMap.get(partNumber.toUpperCase()) || [],
         localImageMap,
+        approvedImageMap,
         outputDir,
       );
   const listingForHtml = {
@@ -1029,6 +1030,7 @@ fs.writeFileSync(normalizedJsonPath, JSON.stringify({
           partNumber,
           imageCandidateMap.get(partNumber) || [],
           localImageMap,
+          approvedImageMap,
           outputDir,
         );
     const imageCandidate = candidates.find(c => candidateMatchesPartNumber(partNumber, c)) || candidates[0] || null;
