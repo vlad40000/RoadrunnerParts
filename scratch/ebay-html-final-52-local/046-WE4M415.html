@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GE Genuine OEM WE4M415 Dryer Door Switch - Dryer Door Interlock Switch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #162033;
+      --accent: #3b82f6;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+    }
+    .top-nav {
+      background: var(--secondary);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .back-btn {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .back-btn:hover { background: rgba(255,255,255,0.2); }
+    .brand { font-family: 'Outfit', sans-serif; font-weight: 800; color: white; font-size: 20px; }
+    .brand span { color: var(--primary); }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .listing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      background: var(--card);
+      padding: 40px;
+      border-radius: 24px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 900px) {
+      .listing-grid { grid-template-columns: 1fr; }
+    }
+
+    .gallery-col { display: flex; flex-direction: column; gap: 20px; }
+    .main-image-box {
+      aspect-ratio: 1;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      overflow: hidden;
+    }
+    .main-image-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+      transition: transform 0.3s ease;
+    }
+    .main-image-box:hover img { transform: scale(1.05); }
+
+    .thumbnails {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
+    }
+    .thumb {
+      aspect-ratio: 1;
+      border: 2px solid #f1f5f9;
+      border-radius: 10px;
+      padding: 6px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .thumb:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .thumb.watermark-review { border-color: #f59e0b; background: #fffbeb; }
+    .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+
+    .details-col { display: flex; flex-direction: column; }
+    .part-tag {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 20px;
+      line-height: 1.2;
+      color: var(--secondary);
+    }
+
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    .specs-table th {
+      text-align: left;
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      width: 140px;
+    }
+    .specs-table td {
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .description-box {
+      background: #f8fafc;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #f1f5f9;
+    }
+    .description-box h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      margin: 0 0 16px;
+    }
+    .description-content { font-size: 15px; color: #475569; }
+    .description-content ul { padding-left: 20px; margin: 16px 0; }
+    .description-content li { margin-bottom: 8px; }
+
+    .audit-meta {
+      margin-top: 30px;
+      padding: 16px;
+      background: #fffbeb;
+      border: 1px solid #fef3c7;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #92400e;
+    }
+    .audit-meta strong { color: #b45309; }
+    .audit-meta.watermark-review {
+      background: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid #e2e8f0;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="top-nav">
+    <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    <div class="brand">Roadrunner<span>Parts</span></div>
+    <div style="width: 140px"></div>
+  </nav>
+
+  <div class="container">
+    <div class="listing-grid">
+      <div class="gallery-col">
+        <div class="main-image-box" id="mainImage">
+          <img src="https://products-salsify.geappliances.com/image/upload/s--72T4AVwP--/3695d9f239d722bcc94370a883a909fc202f9606.jpg" alt="GE Genuine OEM WE4M415 Dryer Door Switch - Dryer Door Interlock Switch">
+        </div>
+        
+        
+        <div class="thumbnails">
+          
+            <div class="thumb " 
+                 title="Score: 209 | Domain: geapplianceparts.com | Status: candidate_needs_operator_review"
+                 data-image-url="https://products-salsify.geappliances.com/image/upload/s--72T4AVwP--/3695d9f239d722bcc94370a883a909fc202f9606.jpg"
+                 onclick="const box = document.querySelector('#mainImage'); const img = box.querySelector('img') || box.appendChild(document.createElement('img')); img.src = this.dataset.imageUrl;">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--72T4AVwP--/3695d9f239d722bcc94370a883a909fc202f9606.jpg" alt="Candidate 1">
+            </div>
+          
+
+            <div class="thumb " 
+                 title="Score: 209 | Domain: geapplianceparts.com | Status: candidate_needs_operator_review"
+                 data-image-url="https://products-salsify.geappliances.com/image/upload/s--7hySyi9J--/bda4be4d34e76794103f6517aaa25ae1e1587e0c.jpg"
+                 onclick="const box = document.querySelector('#mainImage'); const img = box.querySelector('img') || box.appendChild(document.createElement('img')); img.src = this.dataset.imageUrl;">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--7hySyi9J--/bda4be4d34e76794103f6517aaa25ae1e1587e0c.jpg" alt="Candidate 2">
+            </div>
+          
+
+            <div class="thumb " 
+                 title="Score: 203 | Domain: geapplianceparts.com | Status: candidate_needs_operator_review"
+                 data-image-url="https://products-salsify.geappliances.com/image/upload/s--vlaFxG2y--/w_480,h_500/1bd2297d80129fc2c3fa8a15a2e49bb0803e64e9.jpg"
+                 onclick="const box = document.querySelector('#mainImage'); const img = box.querySelector('img') || box.appendChild(document.createElement('img')); img.src = this.dataset.imageUrl;">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--vlaFxG2y--/w_480,h_500/1bd2297d80129fc2c3fa8a15a2e49bb0803e64e9.jpg" alt="Candidate 3">
+            </div>
+          
+
+            <div class="thumb " 
+                 title="Score: 203 | Domain: geapplianceparts.com | Status: candidate_needs_operator_review"
+                 data-image-url="https://products-salsify.geappliances.com/image/upload/s--0KkwABVY--/w_480,h_500/01f6dfd573184fa70ea05515a90725aed1e6a43c.jpg"
+                 onclick="const box = document.querySelector('#mainImage'); const img = box.querySelector('img') || box.appendChild(document.createElement('img')); img.src = this.dataset.imageUrl;">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--0KkwABVY--/w_480,h_500/01f6dfd573184fa70ea05515a90725aed1e6a43c.jpg" alt="Candidate 4">
+            </div>
+          
+
+            <div class="thumb " 
+                 title="Score: 203 | Domain: geapplianceparts.com | Status: candidate_needs_operator_review"
+                 data-image-url="https://products-salsify.geappliances.com/image/upload/s--xeEP6e23--/w_480,h_500/24495edc2f96f0afdd1f8a99e877efaa9b774272.jpg"
+                 onclick="const box = document.querySelector('#mainImage'); const img = box.querySelector('img') || box.appendChild(document.createElement('img')); img.src = this.dataset.imageUrl;">
+              <img src="https://products-salsify.geappliances.com/image/upload/s--xeEP6e23--/w_480,h_500/24495edc2f96f0afdd1f8a99e877efaa9b774272.jpg" alt="Candidate 5">
+            </div>
+          
+
+            <div class="thumb " 
+                 title="Score: 144 | Domain: geapplianceparts.com | Status: candidate_needs_operator_review"
+                 data-image-url="https://assets.geappliances.io/parts/00100000/00164600/00164654.p02_2325.jpg"
+                 onclick="const box = document.querySelector('#mainImage'); const img = box.querySelector('img') || box.appendChild(document.createElement('img')); img.src = this.dataset.imageUrl;">
+              <img src="https://assets.geappliances.io/parts/00100000/00164600/00164654.p02_2325.jpg" alt="Candidate 6">
+            </div>
+          
+        </div>
+        
+      </div>
+
+      <div class="details-col">
+        <div class="part-tag">Appliance Component</div>
+        <h1>GE Genuine OEM WE4M415 Dryer Door Switch - Dryer Door Interlock Switch</h1>
+        
+        <table class="specs-table">
+          <tbody>
+            
+          <tr>
+            <th>Part Number</th>
+            <td>WE4M415</td>
+          </tr>
+          <tr>
+            <th>Brand</th>
+            <td>GE</td>
+          </tr>
+          <tr>
+            <th>MPN</th>
+            <td>WE4M415</td>
+          </tr>
+          <tr>
+            <th>Type</th>
+            <td>Door Interlock Switch</td>
+          </tr>
+          <tr>
+            <th>Condition</th>
+            <td>Used</td>
+          </tr>
+          <tr>
+            <th>Compatible Models</th>
+            <td>GUD27ESSJ1WW, DCXR453EV0AA, DPSR483GA0WW</td>
+          </tr>
+          </tbody>
+        </table>
+
+        <div class="description-box">
+          <h2>Product Insights</h2>
+          <div class="description-content">
+            <p><b>Genuine GE OEM WE4M415 Dryer Door Switch</b></p>
+<p>RoadrunnerParts Genuine GE WE4M415 Door Switch (Diagram ID 380)</p>
+<p><b>Diagram ID:</b> 380</p>
+<p><b>Product Features:</b><br>- This safety switch detects when the dryer door is closed and prohibits the motor from running if the door is open<br>- Replace this part if your dryer fails to start or the drum continues to spin while the door is open</p>
+<p><b>Compatibility:</b><br>Fits various models including: GUD27ESSJ1WW, DCXR453EV0AA, DPSR483GA0WW</p>
+<p><b>Professional Quality from RoadrunnerParts</b><br>We specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.</p>
+<p><b>Common Symptoms Fixed:</b><br>Fixes issues with the dryer not starting when the door is closed or the button is pushed.</p>
+<p><b>Quality Assurance:</b><br>This part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.</p>
+          </div>
+        </div>
+
+        
+        <div class="audit-meta ">
+          <strong>Audit Insight:</strong> Top visual candidate from <strong>geapplianceparts.com</strong> 
+          with a quality score of <strong>209</strong>. 
+          Status: <strong>candidate_needs_operator_review</strong>. 
+          Verify for watermarks before final staging.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    RoadrunnerParts Internal Audit Tool &bull; Local Preview &bull; 2026
+  </footer>
+</body>
+</html>
