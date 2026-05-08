@@ -17,6 +17,7 @@ const normalizedJsonPath = String(args.get("normalized-json") || path.join(outpu
 const imageManifestPath = args.get("image-manifest") ? String(args.get("image-manifest")) : "";
 const localImageRoot = args.get("local-image-root") ? String(args.get("local-image-root")) : "";
 const listingSheetPath = args.get("listing-sheet") ? String(args.get("listing-sheet")) : "";
+const trustLocalPartImages = String(args.get("trust-local-part-images") || "").toLowerCase() === "true";
 const limitArg = args.get("limit");
 const partArg = args.get("part");
 
@@ -253,10 +254,54 @@ function imageCandidateKey(candidate) {
   return String(candidate?.imageUrl || candidate?.remoteImageUrl || "").trim();
 }
 
+function candidateSearchText(candidate) {
+  return [
+    candidate?.title,
+    candidate?.pageUrl,
+    candidate?.imageUrl,
+    candidate?.remoteImageUrl,
+  ].map((value) => String(value || "").toUpperCase()).join(" ");
+}
+
+function candidateMatchesPartNumber(partNumber, candidate) {
+  const part = String(partNumber || "").trim().toUpperCase();
+  if (!part) return false;
+  if (String(candidate?.sourceDomain || "") === "local-scratch") return true;
+  return candidateSearchText(candidate).includes(part);
+}
+
+function candidateHasWatermarkRisk(candidate) {
+  const text = [
+    candidate?.sourceDomain,
+    candidate?.title,
+    candidate?.pageUrl,
+    candidate?.imageUrl,
+    candidate?.remoteImageUrl,
+    candidate?.reviewStatus,
+  ].map((value) => String(value || "").toLowerCase()).join(" ");
+
+  return [
+    "watermark",
+    "partsdr",
+    "parts dr",
+    "partswarehouse",
+    "parts warehouse",
+    "searspartsdirect",
+    "sears",
+    "reliableparts",
+    "reliable parts",
+    "partselect",
+    "cdn11.bigcommerce.com",
+  ].some((needle) => text.includes(needle));
+}
+
 function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, fromDir) {
-  const preferred = preferredLocalImageCandidate(partNumber, localImageMap, fromDir);
+  const preferred = trustLocalPartImages ? preferredLocalImageCandidate(partNumber, localImageMap, fromDir) : null;
   const resolvedRemote = resolveLocalImageCandidates(remoteCandidates, localImageMap, fromDir);
-  const merged = preferred ? [preferred, ...resolvedRemote] : resolvedRemote;
+  const cleanExact = resolvedRemote.filter((candidate) =>
+    candidateMatchesPartNumber(partNumber, candidate) && !candidateHasWatermarkRisk(candidate),
+  );
+  const merged = preferred ? [preferred, ...cleanExact] : cleanExact;
   const seen = new Set();
 
   return merged.filter((candidate) => {
