@@ -24,40 +24,8 @@
       "diagId": "503",
       "retail": "$275.95",
       "ebayBuyNow": "$200.00",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--qkW5fRMI--/e72a4171ede6fb73a02d854751949de8c41ca851.jpg",
-        "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.-VdBzbYsCZh7jJzDK4JRTQHaHt?r=0&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE21X20562",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE21X20562 | DRUM ASM | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--qkW5fRMI--/e72a4171ede6fb73a02d854751949de8c41ca851.jpg",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.-VdBzbYsCZh7jJzDK4JRTQHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE21X20562",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE21X20562 | DRUM ASM | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--1EvLfBh3--/w_480,h_500/24165547caa341b549b3d934be708ed1a6deaa88.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.e7Npazr46SLyQVo1YMcjYAHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE21X20562",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE21X20407",
@@ -107,32 +75,8 @@
       "diagId": "13",
       "retail": "$158.95",
       "ebayBuyNow": "$100.00",
-      "imageCandidate": {
-        "imageUrl": "../HTDX100ED3WW%20_more%208/c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg",
-        "thumbnailUrl": "../HTDX100ED3WW%20_more%208/c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE19M1713",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--23mCr2AL--/c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg",
-        "localImagePath": "scratch\\HTDX100ED3WW _more 8\\c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE19M1713 | BACKSPLASH GRAPHICS ASM | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%208/c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%208/c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE19M1713",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--23mCr2AL--/c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 8\\c24bd2136fd4e3bee07d489e217967620e6c59a7.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE11M10001",
@@ -157,68 +101,8 @@
       "diagId": "514",
       "retail": "$146.95",
       "ebayBuyNow": "$40.00",
-      "imageCandidate": {
-        "imageUrl": "../images%20(1)/51025c2d63bead202a3df09d51c19b06ce3efb41.jpg",
-        "thumbnailUrl": "../images%20(1)/51025c2d63bead202a3df09d51c19b06ce3efb41.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE11M10001",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--rTXvHium--/51025c2d63bead202a3df09d51c19b06ce3efb41.jpg",
-        "localImagePath": "scratch\\images (1)\\51025c2d63bead202a3df09d51c19b06ce3efb41.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE11M10001 | MICA HEATER | GE Appliances Parts",
-          "imageUrl": "../images%20(1)/51025c2d63bead202a3df09d51c19b06ce3efb41.jpg",
-          "thumbnailUrl": "../images%20(1)/51025c2d63bead202a3df09d51c19b06ce3efb41.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE11M10001",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--rTXvHium--/51025c2d63bead202a3df09d51c19b06ce3efb41.jpg",
-          "localImagePath": "scratch\\images (1)\\51025c2d63bead202a3df09d51c19b06ce3efb41.jpg"
-        },
-        {
-          "title": "WE11M10001 GE Mica Heater",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE11M10001/GEWE11M10001-01-02.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.iYN8HaVbgX-ZcZEbF_3u7AHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/10077723/GE/WE11M10001/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE11M10001 GE Mica Heater",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE11M10001/GEWE11M10001-01-01.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.8BsH1WixMzV3C_6Jw6zlKQHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/10077723/GE/WE11M10001/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "GE DRYER HEATER ELEMENT W/MICA - Part# WE11M10001 | Appliance Parts ...",
-          "imageUrl": "https://www.partsips.com/content/images/thumbs/0101617_dryer-heater-element-wmica-part-we11m10001_550.jpeg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.uWVG_n8c9QMsdCO8nSxOsgHaHa?pid=Api",
-          "pageUrl": "https://www.partsips.com/dryer-heater-element-wmica-part-we11m10001",
-          "sourceDomain": "partsips.com",
-          "width": 550,
-          "height": 550,
-          "source": "duckduckgo",
-          "score": 78,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE11X20397",
@@ -243,40 +127,8 @@
       "diagId": "512",
       "retail": "$146.95",
       "ebayBuyNow": "$50.00",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--zt75Ejk2--/024b1149eee450c9675c3503b1f6d96ae0eecb34.jpg",
-        "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.8tQ2SwsaIEMr7LnT_Asl6AHaHt?r=0&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE11X20397",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE11X20397 | MICA HEATER & HOUSING AS | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--zt75Ejk2--/024b1149eee450c9675c3503b1f6d96ae0eecb34.jpg",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.8tQ2SwsaIEMr7LnT_Asl6AHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE11X20397",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE11X20397 | MICA HEATER & HOUSING AS | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--FOkiVeSx--/339b5d18339f463b63d5e0ef33428d98c83a9f70.jpg",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.-6-bcnZn-TXZpnRejX5KKQHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE11X20397",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE17X22217",
@@ -301,52 +153,8 @@
       "diagId": "630",
       "retail": "$145.95",
       "ebayBuyNow": "$60.00",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--q291FrZx--/639cd111c2e7a487b694c92ae8144c5abdf32d4c.jpg",
-        "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.SDFwDHOlcOGg88uVkeIJjwHaHt?r=0&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE17X22217",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE17X22217 | DRYER DRIVE MOTOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--q291FrZx--/639cd111c2e7a487b694c92ae8144c5abdf32d4c.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.SDFwDHOlcOGg88uVkeIJjwHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE17X22217",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE17X22217 | DRYER DRIVE MOTOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--lC9H-5sB--/ba29997b8f9bda7ca2ddcecb7c2e1e440bd03ed8.jpg",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.ew8kagrb-uOM6a0eJGELOAHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE17X22217",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE17X22217 | DRYER DRIVE MOTOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--lTnqdOnB--/557531e70d7a32e77b358357a9c7d5fb937d3b2f.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.KDNxhILB4uJOpzkkLwQ9kwHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE17X22217",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE17M66",
@@ -421,46 +229,8 @@
       "diagId": "505",
       "retail": "$119.95",
       "ebayBuyNow": "$30.00",
-      "imageCandidate": {
-        "imageUrl": "../images/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg",
-        "thumbnailUrl": "../images/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M160",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--IrQeEnxG--/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg",
-        "localImagePath": "scratch\\images\\6b70edcd30234f3842916d0340b5849b18df0ee2.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M160 | THERMOSTAT SAFETY LEFT | GE Appliances Parts",
-          "imageUrl": "../images/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg",
-          "thumbnailUrl": "../images/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M160",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--IrQeEnxG--/6b70edcd30234f3842916d0340b5849b18df0ee2.jpg",
-          "localImagePath": "scratch\\images\\6b70edcd30234f3842916d0340b5849b18df0ee2.jpg"
-        },
-        {
-          "title": "WE4M160 | THERMOSTAT SAFETY LEFT | GE Appliances Parts",
-          "imageUrl": "../images/7ccae1b732d6ae2f91d7ee5661122ef8b01e69c3.jpg",
-          "thumbnailUrl": "../images/7ccae1b732d6ae2f91d7ee5661122ef8b01e69c3.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M160",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--nz-wcXpa--/7ccae1b732d6ae2f91d7ee5661122ef8b01e69c3.jpg",
-          "localImagePath": "scratch\\images\\7ccae1b732d6ae2f91d7ee5661122ef8b01e69c3.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M532",
@@ -485,68 +255,8 @@
       "diagId": "100",
       "retail": "$96.95",
       "ebayBuyNow": "$35.00",
-      "imageCandidate": {
-        "imageUrl": "../HTDX100ED3WW%20_more%206/ec83ba92b392f3cdeff9c7f528042dd306844278.jpg",
-        "thumbnailUrl": "../HTDX100ED3WW%20_more%206/ec83ba92b392f3cdeff9c7f528042dd306844278.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M532",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--VPTHcZa---/ec83ba92b392f3cdeff9c7f528042dd306844278.jpg",
-        "localImagePath": "scratch\\HTDX100ED3WW _more 6\\ec83ba92b392f3cdeff9c7f528042dd306844278.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M532 | Dryer Timer | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%206/ec83ba92b392f3cdeff9c7f528042dd306844278.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%206/ec83ba92b392f3cdeff9c7f528042dd306844278.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M532",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--VPTHcZa---/ec83ba92b392f3cdeff9c7f528042dd306844278.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 6\\ec83ba92b392f3cdeff9c7f528042dd306844278.jpg"
-        },
-        {
-          "title": "WE4M532 GE Timer",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M532/GEWE4M532-01-09.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.8jLdaK1mE-ChkXZMh2c1IwHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/10079840/GE/WE4M532/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE4M532 GE Timer",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M532/GEWE4M532-01-07.jpg?thumbnail=500",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.kL4TZlIgEAQKmLo41Y0xzQHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/10079840/GE/WE4M532/",
-          "sourceDomain": "encompass.com",
-          "width": 500,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 98,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE4M532 GE Timer",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M532/GEWE4M532-01-02.jpg?thumbnail=75",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.RXo92DZ3HMdZo-mtDrPB6AAAAA?pid=Api",
-          "pageUrl": "https://encompass.com/item/10079840/GE/WE4M532/",
-          "sourceDomain": "encompass.com",
-          "width": 75,
-          "height": 75,
-          "source": "duckduckgo",
-          "score": 90,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE49X22295",
@@ -570,52 +280,8 @@
       "diagId": "305",
       "retail": "$87.95",
       "ebayBuyNow": "$50.00",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--_cCWHUV5--/baba20232acffffd0f51b8bff9540414970a5189.jpg",
-        "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.7OsYy6iT1Gw4z9wHARZ7bwHaHt?pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE49X22295",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE49X22295 | KIT FRONT PANEL AND INNER DOOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--_cCWHUV5--/baba20232acffffd0f51b8bff9540414970a5189.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.7OsYy6iT1Gw4z9wHARZ7bwHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE49X22295",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE49X22295 | KIT FRONT PANEL AND INNER DOOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--DG-T4phA--/e804218690e945f98ae8d4fcf758923cb02187de.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.Ll_7KjiDjrEUC1b59S2vewHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE49X22295",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE49X22295 | KIT FRONT PANEL AND INNER DOOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--cR_95-rc--/6314b7d482cd540efe904903b9d6d07c7eaa7fdf.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.fdMMKryPOhfas4n430c_1AHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE49X22295",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE10X20418",
@@ -742,46 +408,8 @@
       "diagId": "401",
       "retail": "$75.95",
       "ebayBuyNow": "$31.90",
-      "imageCandidate": {
-        "imageUrl": "../HTDX100ED3WW%20_more%204/cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg",
-        "thumbnailUrl": "../HTDX100ED3WW%20_more%204/cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE20X20417",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--m6C_hCe4--/cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg",
-        "localImagePath": "scratch\\HTDX100ED3WW _more 4\\cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE20X20417 | DRYER ACCESS PANEL- WHITE | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%204/cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%204/cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE20X20417",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--m6C_hCe4--/cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 4\\cf67034ceb89b19dedbbd9e4c1b7d91a35737030.jpg"
-        },
-        {
-          "title": "WE20X20417 | DRYER ACCESS PANEL- WHITE | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%204/848c4335077812d4fb5e9e06569b8a9cbb20c5f9.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%204/848c4335077812d4fb5e9e06569b8a9cbb20c5f9.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE20X20417",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--69RvuaRh--/848c4335077812d4fb5e9e06569b8a9cbb20c5f9.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 4\\848c4335077812d4fb5e9e06569b8a9cbb20c5f9.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE20X20396",
@@ -831,94 +459,8 @@
       "diagId": "507",
       "retail": "$74.95",
       "ebayBuyNow": "$15.00",
-      "imageCandidate": {
-        "imageUrl": "../images/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg",
-        "thumbnailUrl": "../images/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M137",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--tRZqYeA9--/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg",
-        "localImagePath": "scratch\\images\\32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M137 | DRYER THERMOSTAT | GE Appliances Parts",
-          "imageUrl": "../images/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg",
-          "thumbnailUrl": "../images/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M137",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--tRZqYeA9--/32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg",
-          "localImagePath": "scratch\\images\\32801655f74a6a91bbcef103b3fabe1cb7bb2b5f.jpg"
-        },
-        {
-          "title": "WE4M137 | DRYER THERMOSTAT | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--rZdiKHkz--/c36890c45a17fa4a9a0e67020ad2c43b1ec49ad4.jpg",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.6lMYFDNTHcV7LbC1V8NMpQHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M137",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M137 | DRYER THERMOSTAT | GE Appliances Parts",
-          "imageUrl": "../images/eb93ff7b1eb1551950006d2107b2a93e9f1dbed7.jpg",
-          "thumbnailUrl": "../images/eb93ff7b1eb1551950006d2107b2a93e9f1dbed7.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M137",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--Cm67aqkx--/eb93ff7b1eb1551950006d2107b2a93e9f1dbed7.jpg",
-          "localImagePath": "scratch\\images\\eb93ff7b1eb1551950006d2107b2a93e9f1dbed7.jpg"
-        },
-        {
-          "title": "WE4M137 GE Thermostat Hi-limit",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M137/GEWE4M137-01-08.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.PimOT5irgKzOohNWn6K5BAHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/6884518/GE/WE4M137/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE4M137 GE Thermostat Hi-limit",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M137/GEWE4M137-01-02.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.3GwkfAI65ZTOWGynPDor4wHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/6884518/GE/WE4M137/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE4M137 GE Thermostat Hi-limit",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M137/GEWE4M137-01-04.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.ODllNOKF2-b5Gc8GRCz7rQHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/6884518/GE/WE4M137/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE20X20391",
@@ -969,28 +511,8 @@
       "diagId": "4",
       "retail": "$69.63",
       "ebayBuyNow": "$31.33",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--L3K3-sgU--/2ae4db532663dd6d46d26e7eb4ee7209617aacd6.jpg",
-        "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.FYcnz5pG8lahM5yvpgUD2AHaHt?pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE49X22294",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE49X22294 | KIT OF SERVICE END CAP | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--L3K3-sgU--/2ae4db532663dd6d46d26e7eb4ee7209617aacd6.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.FYcnz5pG8lahM5yvpgUD2AHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE49X22294",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE14X20392",
@@ -1041,28 +563,8 @@
       "diagId": "72",
       "retail": "$62.95",
       "ebayBuyNow": "$28.33",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--U4zpr_xS--/aca76a19763c531d40ee233f5a976e8073612776.jpg",
-        "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.mOMnrt-rRiDq2UNTRu8mhwHaHt?pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE19M1481",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE19M1481 | PANEL BACK | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--U4zpr_xS--/aca76a19763c531d40ee233f5a976e8073612776.jpg",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.mOMnrt-rRiDq2UNTRu8mhwHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE19M1481",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE10X20468",
@@ -1113,84 +615,8 @@
       "diagId": "506",
       "retail": "$58.95",
       "ebayBuyNow": "$26.53",
-      "imageCandidate": {
-        "imageUrl": "../images/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg",
-        "thumbnailUrl": "../images/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M181",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--1-jka5Gq--/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg",
-        "localImagePath": "scratch\\images\\9e06c71b26f612e9475273e5be72f482227aa6d6.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M181 | Dryer Cycling Thermostat - 4-wire | GE Appliances Parts",
-          "imageUrl": "../images/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg",
-          "thumbnailUrl": "../images/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M181",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--1-jka5Gq--/9e06c71b26f612e9475273e5be72f482227aa6d6.jpg",
-          "localImagePath": "scratch\\images\\9e06c71b26f612e9475273e5be72f482227aa6d6.jpg"
-        },
-        {
-          "title": "WE4M181 | Dryer Cycling Thermostat - 4-wire | GE Appliances Parts",
-          "imageUrl": "../images/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg",
-          "thumbnailUrl": "../images/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M181",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--3khOJNy9--/1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg",
-          "localImagePath": "scratch\\images\\1aec36a436f9d889e2781d3e3e44e0b2eb4f558b.jpg"
-        },
-        {
-          "title": "WE4M181 | Dryer Cycling Thermostat - 4-wire | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%209/6cde22c13f5fe7b77a4542b9600207a304987375.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%209/6cde22c13f5fe7b77a4542b9600207a304987375.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M181",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--M__Ekith--/w_480,h_500/6cde22c13f5fe7b77a4542b9600207a304987375.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 9\\6cde22c13f5fe7b77a4542b9600207a304987375.jpg"
-        },
-        {
-          "title": "WE4M181 GE Thermostat Bias Ctr Inlt",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M181/GEWE4M181-01-03.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.DoYjVkFdEq05UyuTCPtVeQHaHa?r=0&pid=Api",
-          "pageUrl": "https://encompass.com/item/6884536/GE/WE4M181/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE4M181 GE Thermostat Bias Ctr Inlt",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M181/GEWE4M181-01-01.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.mvKXmOaTAEwHtUrmNpYKjwHaHa?r=0&pid=Api",
-          "pageUrl": "https://encompass.com/item/6884536/GE/WE4M181/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE19M1478",
@@ -1241,40 +667,8 @@
       "diagId": "201",
       "retail": "$53.95",
       "ebayBuyNow": "$24.28",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--YjLjrjTT--/99ad932a44f7d0407431e2003866ebcbf16ab48a.jpg",
-        "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.qAF6gT49ZxwXBUk0X1DNKwHaHt?pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE16X20393",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE16X20393 | BLOWER WHEEL | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--YjLjrjTT--/99ad932a44f7d0407431e2003866ebcbf16ab48a.jpg",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.qAF6gT49ZxwXBUk0X1DNKwHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE16X20393",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE16X20393 | BLOWER WHEEL | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--VOxtSZ-9--/w_480,h_500/9cca122c7ec76654e36294c1ea98d04443933f10.jpg",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.aqbYcWjMntwmCBGUjcGVDAHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE16X20393",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE18X25100",
@@ -1299,64 +693,8 @@
       "diagId": "300",
       "retail": "$52.95",
       "ebayBuyNow": "$23.83",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--OpbzLzHd--/w_480,h_500/78952526f6e8ac0b13ab986c16f66b1300236fe5.jpg",
-        "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.bg5XX90anqhqDM5g-ZIjCgHaHt?r=0&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE18X25100",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 203,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE18X25100 | DRYER LINT FILTER | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--OpbzLzHd--/w_480,h_500/78952526f6e8ac0b13ab986c16f66b1300236fe5.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.bg5XX90anqhqDM5g-ZIjCgHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE18X25100",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE18X25100 GE Dryer Lint Filter",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE18X25100/GEWE18X25100-01-02.jpg?thumbnail=75",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.rvm_B4iJ1uiFPl4BYL6CigAAAA?r=0&pid=Api",
-          "pageUrl": "https://encompass.com/item/11451985/GE/WE18X25100/",
-          "sourceDomain": "encompass.com",
-          "width": 75,
-          "height": 75,
-          "source": "duckduckgo",
-          "score": 90,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE18X25100 GE Dryer Lint Filter",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE18X25100/GEWE18X25100-01-03.jpg?thumbnail=75",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.lbxHMxlLp8bP0wTJm5uunwAAAA?r=0&pid=Api",
-          "pageUrl": "https://encompass.com/item/11451985/GE/WE18X25100/",
-          "sourceDomain": "encompass.com",
-          "width": 75,
-          "height": 75,
-          "source": "duckduckgo",
-          "score": 90,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "GE FILTER & MESH ASSY - Part# WE18X25100 | Appliance Parts - PartsIPS",
-          "imageUrl": "https://www.partsips.com/content/images/thumbs/0116426_filter-mesh-assy-part-we18x25100.jpeg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.GCz9b8T0bLerVEUoEr0zHgHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.partsips.com/filter-mesh-assy-part-we18x25100",
-          "sourceDomain": "partsips.com",
-          "width": 1901,
-          "height": 1980,
-          "source": "duckduckgo",
-          "score": 84,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE18M28",
@@ -1381,28 +719,8 @@
       "diagId": "300",
       "retail": "$52.95",
       "ebayBuyNow": "$23.83",
-      "imageCandidate": {
-        "imageUrl": "https://www.amresupply.com/thumbnail/product/980274/625/469/980274-WE18M28-GE-DRYER-LINT-SCREEN.jpg",
-        "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.p2iOna5ndT_Hf1P3c1tq5wHaDv?pid=Api",
-        "pageUrl": "https://www.amresupply.com/part/WE18M28-G-E-DR-FILTER-MESH-ASSM",
-        "sourceDomain": "amresupply.com",
-        "score": 78,
-        "reviewStatus": "candidate_needs_source_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE18M28 : G.E. DRYER LINT SCREEN | AMRE Supply",
-          "imageUrl": "https://www.amresupply.com/thumbnail/product/980274/625/469/980274-WE18M28-GE-DRYER-LINT-SCREEN.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.p2iOna5ndT_Hf1P3c1tq5wHaDv?pid=Api",
-          "pageUrl": "https://www.amresupply.com/part/WE18M28-G-E-DR-FILTER-MESH-ASSM",
-          "sourceDomain": "amresupply.com",
-          "width": 625,
-          "height": 316,
-          "source": "duckduckgo",
-          "score": 78,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE14X20425",
@@ -1503,44 +821,8 @@
       "diagId": "418",
       "retail": "$50.95",
       "ebayBuyNow": "$22.93",
-      "imageCandidate": {
-        "imageUrl": "../HTDX100ED3WW%20_more%204/b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg",
-        "thumbnailUrl": "../HTDX100ED3WW%20_more%204/b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M1002",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--wxtLM_3_--/b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg",
-        "localImagePath": "scratch\\HTDX100ED3WW _more 4\\b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE1M1002 | Dryer Power Fuse 30 Amp 120 Volt | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%204/b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%204/b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M1002",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--wxtLM_3_--/b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 4\\b47bcd9aaff598a5411e79a2b1cc75afcd0d330c.jpg"
-        },
-        {
-          "title": "WE1M1002 | Dryer Power Fuse 30 Amp 120 Volt | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--A845qDMV--/db5a54eabe505068828d609b13e1a751ff4736a8.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.wkrdFEqdWJjW1w-qc4LIsQHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M1002",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1X921",
@@ -1565,44 +847,8 @@
       "diagId": "204",
       "retail": "$48.95",
       "ebayBuyNow": "$22.03",
-      "imageCandidate": {
-        "imageUrl": "../HTDX100ED3WW%20_more%208/7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg",
-        "thumbnailUrl": "../HTDX100ED3WW%20_more%208/7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1X921",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--FTswtb9T--/7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg",
-        "localImagePath": "scratch\\HTDX100ED3WW _more 8\\7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE1X921 | Dryer Motor Strap | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%208/7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%208/7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1X921",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--FTswtb9T--/7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 8\\7847bfb53946ccae719e5c9d62715c5a7a65671f.jpg"
-        },
-        {
-          "title": "WE1X921 | Dryer Motor Strap | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--nQAA2kax--/7baab8bf33baa8f276f8da2cec13315e9d5dac06.jpg",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.not0I_e_YvyjFTnjc8-KSwHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1X921",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1M300",
@@ -1627,60 +873,8 @@
       "diagId": "3102",
       "retail": "$46.95",
       "ebayBuyNow": "$21.13",
-      "imageCandidate": {
-        "imageUrl": "../images%20(1)/dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg",
-        "thumbnailUrl": "../images%20(1)/dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M300",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--PRKxqhrJ--/dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg",
-        "localImagePath": "scratch\\images (1)\\dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE1M300 | Dryer Bearing Retainer Plate | GE Appliances Parts",
-          "imageUrl": "../images%20(1)/dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg",
-          "thumbnailUrl": "../images%20(1)/dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M300",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--PRKxqhrJ--/dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg",
-          "localImagePath": "scratch\\images (1)\\dff7d449a1c612fa2fb63dd72d09f339f3a1b4ac.jpg"
-        },
-        {
-          "title": "WE1M300 | Dryer Bearing Retainer Plate | GE Appliances Parts",
-          "imageUrl": "../images%20(1)/307e89f80bdced477cfea36b38b267af4f5fac94.jpg",
-          "thumbnailUrl": "../images%20(1)/307e89f80bdced477cfea36b38b267af4f5fac94.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M300",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--X786K1HM--/307e89f80bdced477cfea36b38b267af4f5fac94.jpg",
-          "localImagePath": "scratch\\images (1)\\307e89f80bdced477cfea36b38b267af4f5fac94.jpg"
-        },
-        {
-          "title": "WE1M300 | Dryer Bearing Retainer Plate | GE Appliances Parts",
-          "imageUrl": "../images%20(1)/57784b09bc2567ec00fd32f468656d5794b01879.jpg",
-          "thumbnailUrl": "../images%20(1)/57784b09bc2567ec00fd32f468656d5794b01879.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M300",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--g6CP1Mwh--/57784b09bc2567ec00fd32f468656d5794b01879.jpg",
-          "localImagePath": "scratch\\images (1)\\57784b09bc2567ec00fd32f468656d5794b01879.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE03X29897",
@@ -1705,64 +899,8 @@
       "diagId": "213",
       "retail": "$45.95",
       "ebayBuyNow": "$20.68",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--LAj6jFcd--/uxdmcsavdjjntynvasvn.jpg",
-        "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.a_AXefoSeNa_jXyOeyYutwHaHt?r=0&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE03X29897",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE03X29897 | BELT DRIVE | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--LAj6jFcd--/uxdmcsavdjjntynvasvn.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.a_AXefoSeNa_jXyOeyYutwHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE03X29897",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE03X29897 | BELT DRIVE | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--MwOLo2Iy--/w_480,h_500/08c977e6d8161ed37237977ee05214e21691a1c7.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.AeXw01biA61Ftvk2PAI5TgHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE03X29897",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE03X29897 | BELT DRIVE | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--1jrXT2mv--/w_480,h_500/joqh9x7zrl4rf1djjkpi.jpg",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.kEnv96aIYN703flP5F31PwHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE03X29897",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE03X29897 GE Belt Drive",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE03X29897/gewe03x29897_R01_C04.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.E499kba0zmeQRDTMYKSH4QHaHa?r=0&pid=Api",
-          "pageUrl": "https://encompass.com/item/12641172/GE/WE03X29897/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M404",
@@ -1787,28 +925,8 @@
       "diagId": "87",
       "retail": "$45.95",
       "ebayBuyNow": "$20.68",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--xBSM2Lox--/4f0faa77b18158a02fcfd1d594e23834df86e8e4.jpg",
-        "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.aQ_cobZKM65tToe4lKKPfgHaHt?pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M404",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M404 | ROTARY SWITCH 3TEMP ELEC | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--xBSM2Lox--/4f0faa77b18158a02fcfd1d594e23834df86e8e4.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.aQ_cobZKM65tToe4lKKPfgHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M404",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE12X21574",
@@ -1833,28 +951,8 @@
       "diagId": "213",
       "retail": "$45.95",
       "ebayBuyNow": "$20.68",
-      "imageCandidate": {
-        "imageUrl": "https://images.marcone.com/remote/DigitalMedia/geh/geh-we12x21574/geh-we12x21574_dryer_drum_belt-default.jpg?mode=crop",
-        "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.E1yRNAMuLgtFs16nqGjHswHaHa?r=0&pid=Api",
-        "pageUrl": "https://www.apwagner.com/appliance-part/geh/we12x21574",
-        "sourceDomain": "apwagner.com",
-        "score": 84,
-        "reviewStatus": "candidate_needs_source_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "Use Geh We12m29 | WE12X21574 | General Electric",
-          "imageUrl": "https://images.marcone.com/remote/DigitalMedia/geh/geh-we12x21574/geh-we12x21574_dryer_drum_belt-default.jpg?mode=crop",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.E1yRNAMuLgtFs16nqGjHswHaHa?r=0&pid=Api",
-          "pageUrl": "https://www.apwagner.com/appliance-part/geh/we12x21574",
-          "sourceDomain": "apwagner.com",
-          "width": 2000,
-          "height": 2000,
-          "source": "duckduckgo",
-          "score": 84,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1M1003",
@@ -1905,64 +1003,8 @@
       "diagId": "80",
       "retail": "$39.95",
       "ebayBuyNow": "$17.98",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--LlCQsQL3--/4c01a53a1bcbe8d10db65d0ac5c44b778bae7a11.jpg",
-        "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.7vUALhPAFHbkZdAZCgMShwHaHt?pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M255",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M255 | RESISTOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--LlCQsQL3--/4c01a53a1bcbe8d10db65d0ac5c44b778bae7a11.jpg",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.7vUALhPAFHbkZdAZCgMShwHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M255",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M255 | RESISTOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--ewFsyxHY--/38c2720d09f7ce8d5141f9f01be7457ad8c99270.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.T3YHEitckh0F9-9EMkTBRQHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M255",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M255 | RESISTOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--vwqvOJHN--/932ee9b084273f016b9330917741c4f8f259328d.jpg",
-          "thumbnailUrl": "https://tse4.mm.bing.net/th/id/OIP.h_gc6CKTsXNP8R5f0xjMkwHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M255",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M255 | RESISTOR | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--KtSysrBk--/w_480,h_500/ebb4e3e26c262c0b9ab09b145b61b9dd6116e0d1.jpg",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.In1KxPpK-J0q8w-sSbJ3AQHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M255",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE13X30697",
@@ -2012,28 +1054,8 @@
       "diagId": "504",
       "retail": "$39.43",
       "ebayBuyNow": "$17.74",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--gfRJwb6a--/c0c0686e3401aea1843092720873b40c697bcdfd.jpg",
-        "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.yvEerPaO8GOr-W0Is5qjkgHaHt?pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE11X29438",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE11X29438 | DIFFUSER | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--gfRJwb6a--/c0c0686e3401aea1843092720873b40c697bcdfd.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.yvEerPaO8GOr-W0Is5qjkgHaHt?pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE11X29438",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE14X20421",
@@ -2084,40 +1106,8 @@
       "diagId": "430",
       "retail": "$37.95",
       "ebayBuyNow": "$17.08",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--CJW85RCq--/6560bbe85ebb59eaf0ef5111e5d1e469e5441f32.jpg",
-        "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.O8Ew61_URme7l_XEGekUCAHaHt?r=0&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M1007",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE1M1007 | COVER FUSE TERMINAL | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--CJW85RCq--/6560bbe85ebb59eaf0ef5111e5d1e469e5441f32.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.O8Ew61_URme7l_XEGekUCAHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M1007",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE1M1007 | COVER FUSE TERMINAL | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--zvf4TUUp--/w_480,h_500/785aa90ce96097bd9750e23679b7dd1de458691c.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.MWQivYUeTWd7MLqCLLTWuwHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M1007",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE3M56",
@@ -2142,28 +1132,8 @@
       "diagId": "313",
       "retail": "$37.95",
       "ebayBuyNow": "$17.08",
-      "imageCandidate": {
-        "imageUrl": "https://partstown.sirv.com/products/GE/GEWE3M56/GEWE3M56-01-02.jpg?thumbnail=1024",
-        "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.EqSPjLEHXXQKB_Sl8fd-RQHaHa?pid=Api",
-        "pageUrl": "https://encompass.com/item/10072884/GE/WE3M56/",
-        "sourceDomain": "encompass.com",
-        "score": 104,
-        "reviewStatus": "candidate_needs_source_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE3M56 GE Bearing Top",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE3M56/GEWE3M56-01-02.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.EqSPjLEHXXQKB_Sl8fd-RQHaHa?pid=Api",
-          "pageUrl": "https://encompass.com/item/10072884/GE/WE3M56/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE03X20228",
@@ -2213,76 +1183,8 @@
       "diagId": "380",
       "retail": "$36.95",
       "ebayBuyNow": "$16.63",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--72T4AVwP--/3695d9f239d722bcc94370a883a909fc202f9606.jpg",
-        "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.8jJG764FOpjGEA-vtrmTDAHaHt?r=0&cb=thfvnext&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M415",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M415 | Dryer Door Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--72T4AVwP--/3695d9f239d722bcc94370a883a909fc202f9606.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.8jJG764FOpjGEA-vtrmTDAHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M415",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M415 | Dryer Door Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--7hySyi9J--/bda4be4d34e76794103f6517aaa25ae1e1587e0c.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.jHSETX-Xgwq8l_pkaofapgHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M415",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M415 | Dryer Door Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--vlaFxG2y--/w_480,h_500/1bd2297d80129fc2c3fa8a15a2e49bb0803e64e9.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.K6EGom7lG5Bkt6vGhZxGbwHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M415",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M415 | Dryer Door Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--0KkwABVY--/w_480,h_500/01f6dfd573184fa70ea05515a90725aed1e6a43c.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.eFpUOKAxZampSemIdVNJVAHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M415",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M415 | Dryer Door Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--xeEP6e23--/w_480,h_500/24495edc2f96f0afdd1f8a99e877efaa9b774272.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.yQpIGs65gl7ET4LFV57GYAHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M415",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1M462",
@@ -2307,58 +1209,8 @@
       "diagId": "3106",
       "retail": "$35.95",
       "ebayBuyNow": "$16.18",
-      "imageCandidate": {
-        "imageUrl": "../images%20(1)/28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg",
-        "thumbnailUrl": "../images%20(1)/28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M462",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--kpAT1Ak0--/28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg",
-        "localImagePath": "scratch\\images (1)\\28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE1M462 | DRYER DRUM SLEEVE | GE Appliances Parts",
-          "imageUrl": "../images%20(1)/28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg",
-          "thumbnailUrl": "../images%20(1)/28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M462",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--kpAT1Ak0--/28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg",
-          "localImagePath": "scratch\\images (1)\\28c84bf68fca6c87460fb136c07eaa6729d8c9b8.jpg"
-        },
-        {
-          "title": "WE1M462 | DRYER DRUM SLEEVE | GE Appliances Parts",
-          "imageUrl": "../images%20(1)/0bcdb17149a3075ad2641e741f03f9963cf851a2.jpg",
-          "thumbnailUrl": "../images%20(1)/0bcdb17149a3075ad2641e741f03f9963cf851a2.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M462",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--0MWcdf0r--/0bcdb17149a3075ad2641e741f03f9963cf851a2.jpg",
-          "localImagePath": "scratch\\images (1)\\0bcdb17149a3075ad2641e741f03f9963cf851a2.jpg"
-        },
-        {
-          "title": "WE1M462 | DRYER DRUM SLEEVE | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--U8v6qhuv--/d36a0ddbb242abc44454a4f856f8d1debcdf0d66.jpg",
-          "thumbnailUrl": "https://thf.bing.com/th/id/OIP.b4M1JoGkhIsoQXmVEvOpRgHaHt?cb=thfc1&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE1M462",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE11X20400",
@@ -2408,52 +1260,8 @@
       "diagId": "603",
       "retail": "$32.95",
       "ebayBuyNow": "$14.83",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--1poPGOSV--/7cbee870b12664038acf86b6d1e0ec07b4041f29.jpg",
-        "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.I_raV0nLV_U6azUyroPi8wHaHt?r=0&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE01X20419",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE01X20419 | HANDLE WHITE | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--1poPGOSV--/7cbee870b12664038acf86b6d1e0ec07b4041f29.jpg",
-          "thumbnailUrl": "https://tse3.mm.bing.net/th/id/OIP.I_raV0nLV_U6azUyroPi8wHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE01X20419",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE01X20419 | HANDLE WHITE | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--fSC_pUyF--/w_480,h_500/27413b3dbfc29ff185038d09e54a1c747b1a545a.jpg",
-          "thumbnailUrl": "https://tse1.mm.bing.net/th/id/OIP.s3_abmEXow6S4pYT3QGwNgHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE01X20419",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE01X20419 | HANDLE WHITE | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--wDhv10sE--/w_480,h_500/e66e03ccceaf17b07621b1afbd50ffa378d7d1b1.jpg",
-          "thumbnailUrl": "https://tse2.mm.bing.net/th/id/OIP.meAciqfSqGoJOxeugR-sAQHaHt?r=0&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE01X20419",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M416",
@@ -2478,90 +1286,8 @@
       "diagId": "35",
       "retail": "$30.95",
       "ebayBuyNow": "$13.93",
-      "imageCandidate": {
-        "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--BZ4FpmT6--/59a0ecd9038ab0b8c7a515f3ab4969abaf979140.jpg",
-        "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.lKwssGXMX7Jw6X15JRa-MAHaHt?r=0&cb=thfvnext&pid=Api",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M416",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M416 | Dryer Push To Start Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--BZ4FpmT6--/59a0ecd9038ab0b8c7a515f3ab4969abaf979140.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.lKwssGXMX7Jw6X15JRa-MAHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M416",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M416 | Dryer Push To Start Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--Hm9IbzyQ--/49215e677d72331410c6dd95e58b19591737f7b8.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.2WMjfPseoBGzddAqQhl2pAHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M416",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M416 | Dryer Push To Start Switch | GE Appliances Parts",
-          "imageUrl": "https://products-salsify.geappliances.com/image/upload/s--CfWy4wR8--/w_480,h_500/3331538284e309dee71fb236575d747c118552b3.jpg",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.U10d1rD47WThctXGWo6KuwHaHt?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M416",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review"
-        },
-        {
-          "title": "WE4M416 | Dryer Push To Start Switch | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%208/2d19ee2e94e9d75de54a3c624707573ffc17d005.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%208/2d19ee2e94e9d75de54a3c624707573ffc17d005.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M416",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--Eyamf4qZ--/w_480,h_500/2d19ee2e94e9d75de54a3c624707573ffc17d005.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 8\\2d19ee2e94e9d75de54a3c624707573ffc17d005.jpg"
-        },
-        {
-          "title": "WE4M416 GE Push To Start Switch",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M416/GEWE4M416-01-01.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP._0aZOgkxwQLGCcgF4btxHAHaHa?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://encompass.com/item/9333924/GE/WE4M416/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        },
-        {
-          "title": "WE4M416 GE Push To Start Switch",
-          "imageUrl": "https://partstown.sirv.com/products/GE/GEWE4M416/GEWE4M416-01-07.jpg?thumbnail=1024",
-          "thumbnailUrl": "https://thfvnext.bing.com/th/id/OIP.HLf4OrnPKxjTc1HHOyZ5PQHaHa?r=0&cb=thfvnext&pid=Api",
-          "pageUrl": "https://encompass.com/item/9333924/GE/WE4M416/",
-          "sourceDomain": "encompass.com",
-          "width": 1024,
-          "height": 1024,
-          "source": "duckduckgo",
-          "score": 104,
-          "reviewStatus": "candidate_needs_source_review"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M127",
@@ -2612,46 +1338,8 @@
       "diagId": "419",
       "retail": "$29.95",
       "ebayBuyNow": "$13.48",
-      "imageCandidate": {
-        "imageUrl": "../HTDX100ED3WW%20_more%204/792c36b703dbc8a265e23d167a0952d43a9bb344.jpg",
-        "thumbnailUrl": "../HTDX100ED3WW%20_more%204/792c36b703dbc8a265e23d167a0952d43a9bb344.jpg",
-        "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M525",
-        "sourceDomain": "geapplianceparts.com",
-        "score": 209,
-        "reviewStatus": "candidate_needs_operator_review",
-        "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--zPyb2RI6--/792c36b703dbc8a265e23d167a0952d43a9bb344.jpg",
-        "localImagePath": "scratch\\HTDX100ED3WW _more 4\\792c36b703dbc8a265e23d167a0952d43a9bb344.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M525 | Dryer terminal block and grand strap | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%204/792c36b703dbc8a265e23d167a0952d43a9bb344.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%204/792c36b703dbc8a265e23d167a0952d43a9bb344.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M525",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 2400,
-          "height": 2500,
-          "source": "duckduckgo",
-          "score": 209,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--zPyb2RI6--/792c36b703dbc8a265e23d167a0952d43a9bb344.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 4\\792c36b703dbc8a265e23d167a0952d43a9bb344.jpg"
-        },
-        {
-          "title": "WE4M525 | Dryer terminal block and grand strap | GE Appliances Parts",
-          "imageUrl": "../HTDX100ED3WW%20_more%204/d9fdcd02758d9be8f54dc42e6cf1835bd5183cf2.jpg",
-          "thumbnailUrl": "../HTDX100ED3WW%20_more%204/d9fdcd02758d9be8f54dc42e6cf1835bd5183cf2.jpg",
-          "pageUrl": "https://www.geapplianceparts.com/store/parts/spec/WE4M525",
-          "sourceDomain": "geapplianceparts.com",
-          "width": 480,
-          "height": 500,
-          "source": "duckduckgo",
-          "score": 203,
-          "reviewStatus": "candidate_needs_operator_review",
-          "remoteImageUrl": "https://products-salsify.geappliances.com/image/upload/s--ElqAfqeJ--/w_480,h_500/d9fdcd02758d9be8f54dc42e6cf1835bd5183cf2.jpg",
-          "localImagePath": "scratch\\HTDX100ED3WW _more 4\\d9fdcd02758d9be8f54dc42e6cf1835bd5183cf2.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     }
   ]
 }

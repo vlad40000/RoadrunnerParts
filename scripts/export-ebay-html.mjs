@@ -18,6 +18,7 @@ const imageManifestPath = args.get("image-manifest") ? String(args.get("image-ma
 const localImageRoot = args.get("local-image-root") ? String(args.get("local-image-root")) : "";
 const listingSheetPath = args.get("listing-sheet") ? String(args.get("listing-sheet")) : "";
 const trustLocalPartImages = String(args.get("trust-local-part-images") || "").toLowerCase() === "true";
+const batchSize = Math.max(0, Number(args.get("batch-size") || 0));
 const limitArg = args.get("limit");
 const partArg = args.get("part");
 
@@ -291,15 +292,25 @@ function candidateHasWatermarkRisk(candidate) {
     "reliableparts",
     "reliable parts",
     "partselect",
+    "geapplianceparts",
+    "geappliances",
+    "products-salsify",
+    "assets.geappliances",
     "cdn11.bigcommerce.com",
   ].some((needle) => text.includes(needle));
+}
+
+function candidateIsApprovedForPreview(candidate) {
+  return String(candidate?.sourceDomain || "") === "local-scratch";
 }
 
 function mergeImageCandidates(partNumber, remoteCandidates, localImageMap, fromDir) {
   const preferred = trustLocalPartImages ? preferredLocalImageCandidate(partNumber, localImageMap, fromDir) : null;
   const resolvedRemote = resolveLocalImageCandidates(remoteCandidates, localImageMap, fromDir);
   const cleanExact = resolvedRemote.filter((candidate) =>
-    candidateMatchesPartNumber(partNumber, candidate) && !candidateHasWatermarkRisk(candidate),
+    candidateMatchesPartNumber(partNumber, candidate)
+    && !candidateHasWatermarkRisk(candidate)
+    && candidateIsApprovedForPreview(candidate),
   );
   const merged = preferred ? [preferred, ...cleanExact] : cleanExact;
   const seen = new Set();
@@ -637,7 +648,24 @@ function renderListingHtml(listing) {
 `;
 }
 
-function renderIndexHtml(records) {
+function renderBatchNav(currentPage, totalPages) {
+  if (totalPages <= 1) return "";
+
+  return `
+    <nav class="batch-nav" aria-label="Listing batches">
+      ${Array.from({ length: totalPages }, (_, index) => {
+        const page = index + 1;
+        const fileName = page === 1 ? "index.html" : `batch-${String(page).padStart(2, "0")}.html`;
+        return `<a class="${page === currentPage ? "active" : ""}" href="${fileName}">Batch ${page}</a>`;
+      }).join("")}
+    </nav>`;
+}
+
+function renderIndexHtml(records, options = {}) {
+  const totalCount = Number(options.totalCount || records.length);
+  const currentPage = Number(options.currentPage || 1);
+  const totalPages = Number(options.totalPages || 1);
+  const startIndex = Number(options.startIndex || 0);
   const cards = records
     .map((record, i) => {
       const hasImage = !!record.thumbnailUrl;
@@ -649,6 +677,7 @@ function renderIndexHtml(records) {
            ${hasImage ? `<img src="${escapeHtml(record.thumbnailUrl || "")}" alt="${escapeHtml(record.partNumber)}" onerror="this.src='https://placehold.co/200x200?text=No+Image'">` : `<div class="placeholder">NO IMAGE</div>`}
         </div>
         <div class="card-body">
+          <div class="part-title">#${startIndex + i + 1}</div>
           <div class="part-num">${escapeHtml(record.partNumber)}</div>
           <div class="part-title">${escapeHtml(record.title)}</div>
           <div class="source-badge ${record.imageSource && !needsWatermarkReview ? "success" : "warning"}">
@@ -661,6 +690,7 @@ function renderIndexHtml(records) {
 
   const imageCount = records.filter(r => r.imageSource).length;
   const watermarkReviewCount = records.filter(r => String(r.imageReviewStatus || "").includes("watermark")).length;
+  const batchTitle = totalPages > 1 ? `Batch ${currentPage} of ${totalPages}` : "Review Batch";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -832,6 +862,32 @@ function renderIndexHtml(records) {
     }
     .source-badge.success { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
     .source-badge.warning { background: #fffbeb; color: #92400e; border: 1px solid #fef3c7; }
+    .batch-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 24px;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.04);
+    }
+    .batch-nav a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .batch-nav a.active {
+      color: white;
+      border-color: var(--primary);
+      background: var(--primary);
+    }
 
     footer {
       text-align: center;
@@ -854,9 +910,10 @@ function renderIndexHtml(records) {
   <header>
     <div class="header-content">
       <h1>Roadrunner<span>Parts</span> Audit</h1>
-      <p>Next-Gen Appliance Inventory & Market Signal Intelligence</p>
+      <p>${escapeHtml(batchTitle)} - local image collection review</p>
       <div class="stats-bar">
-        <div class="stat"><span>${records.length}</span> Review Parts</div>
+        <div class="stat"><span>${records.length}</span> In This Batch</div>
+        <div class="stat"><span>${totalCount}</span> Total Parts</div>
         <div class="stat"><span>${imageCount}</span> Visuals Discovered</div>
         <div class="stat"><span>${watermarkReviewCount}</span> Watermark Review</div>
         <div class="stat">Pipeline: <span>LOCAL REVIEW ONLY</span></div>
@@ -864,6 +921,7 @@ function renderIndexHtml(records) {
     </div>
   </header>
   <main>
+    ${renderBatchNav(currentPage, totalPages)}
     <div class="grid">${cards}</div>
   </main>
   <footer>
@@ -939,7 +997,22 @@ const records = listings.map((listing, index) => {
   };
 });
 
-fs.writeFileSync(path.join(outputDir, "index.html"), renderIndexHtml(records));
+if (batchSize > 0 && records.length > batchSize) {
+  const totalPages = Math.ceil(records.length / batchSize);
+  for (let pageIndex = 0; pageIndex < totalPages; pageIndex += 1) {
+    const startIndex = pageIndex * batchSize;
+    const pageRecords = records.slice(startIndex, startIndex + batchSize);
+    const fileName = pageIndex === 0 ? "index.html" : `batch-${String(pageIndex + 1).padStart(2, "0")}.html`;
+    fs.writeFileSync(path.join(outputDir, fileName), renderIndexHtml(pageRecords, {
+      totalCount: records.length,
+      currentPage: pageIndex + 1,
+      totalPages,
+      startIndex,
+    }));
+  }
+} else {
+  fs.writeFileSync(path.join(outputDir, "index.html"), renderIndexHtml(records));
+}
 fs.writeFileSync(normalizedJsonPath, JSON.stringify({
   listings: listings.map((listing) => {
     const partNumber = String(listing.partNumber || "").toUpperCase();
