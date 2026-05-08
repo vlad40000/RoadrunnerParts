@@ -15,6 +15,7 @@ const inputPath = String(args.get("input") || DEFAULT_INPUT);
 const outputDir = String(args.get("output-dir") || DEFAULT_OUTPUT_DIR);
 const normalizedJsonPath = String(args.get("normalized-json") || path.join(outputDir, "listings.normalized.json"));
 const imageManifestPath = args.get("image-manifest") ? String(args.get("image-manifest")) : "";
+const localImageRoot = args.get("local-image-root") ? String(args.get("local-image-root")) : "";
 const limitArg = args.get("limit");
 const partArg = args.get("part");
 
@@ -74,6 +75,85 @@ function loadImageCandidateMap(filePath) {
   return map;
 }
 
+function imageBasename(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  try {
+    const parsed = new URL(raw);
+    return path.basename(parsed.pathname).toLowerCase();
+  } catch {
+    return path.basename(raw.split(/[?#]/)[0]).toLowerCase();
+  }
+}
+
+function toHtmlPath(filePath, fromDir) {
+  const relative = path.relative(fromDir, filePath) || path.basename(filePath);
+  return relative
+    .split(path.sep)
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+function loadLocalImageMap(rootDir) {
+  const map = new Map();
+  if (!rootDir || !fs.existsSync(rootDir)) return map;
+
+  const allowedExts = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif"]);
+  const stack = [rootDir];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const fullPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(fullPath);
+        continue;
+      }
+
+      const ext = path.extname(entry.name).toLowerCase();
+      if (!allowedExts.has(ext)) continue;
+
+      const key = entry.name.toLowerCase();
+      const existing = map.get(key);
+      if (!existing || fullPath.length < existing.length) {
+        map.set(key, fullPath);
+      }
+    }
+  }
+
+  return map;
+}
+
+function resolveLocalImageCandidates(candidates, localImageMap, fromDir) {
+  if (!localImageMap.size) return candidates;
+
+  return candidates.map((candidate) => {
+    const imageKey = imageBasename(candidate.imageUrl);
+    const thumbnailKey = imageBasename(candidate.thumbnailUrl);
+    const localImagePath = localImageMap.get(imageKey) || localImageMap.get(thumbnailKey) || "";
+    if (!localImagePath) return candidate;
+
+    const localUrl = toHtmlPath(localImagePath, fromDir);
+    return {
+      ...candidate,
+      remoteImageUrl: candidate.imageUrl,
+      imageUrl: localUrl,
+      thumbnailUrl: localUrl,
+      localImagePath,
+      reviewStatus: candidate.reviewStatus || "local_operator_image",
+    };
+  });
+}
+
+function firstNonEmpty(...values) {
+  for (const value of values) {
+    const text = String(value ?? "").trim();
+    if (text) return text;
+  }
+  return "";
+}
+
 function formatDescription(description) {
   const raw = String(description || "").trim();
   if (!raw) return "<p>No generated description was provided.</p>";
@@ -101,6 +181,9 @@ function renderSpecsRows(listing) {
   const specs = listing.specs || {};
   const rows = [
     ["Part Number", listing.partNumber],
+    ["Diagram ID", firstNonEmpty(listing.diagId, listing.diagramId, listing.diagram_id, specs.diagId, specs.diagramId)],
+    ["Retail", firstNonEmpty(listing.retail, listing.retailPrice, listing.retail_price, specs.retail, specs.retailPrice)],
+    ["eBay Buy Now", firstNonEmpty(listing.ebayBuyNow, listing.ebay_buy_now, listing.ebayBuyNowPrice, listing.buyNowPrice, specs.ebayBuyNow)],
     ["Brand", specs.brand],
     ["MPN", specs.mpn || listing.partNumber],
     ["Type", specs.type],
@@ -391,7 +474,7 @@ function renderListingHtml(listing) {
 function renderIndexHtml(records) {
   const cards = records
     .map((record, i) => {
-      const hasImage = !!record.imageSource;
+      const hasImage = !!record.thumbnailUrl;
       const needsWatermarkReview = String(record.imageReviewStatus || "").includes("watermark");
       const delay = (i % 20) * 0.05;
       return `
@@ -607,7 +690,7 @@ function renderIndexHtml(records) {
       <h1>Roadrunner<span>Parts</span> Audit</h1>
       <p>Next-Gen Appliance Inventory & Market Signal Intelligence</p>
       <div class="stats-bar">
-        <div class="stat"><span>88</span> Backlog Parts</div>
+        <div class="stat"><span>${records.length}</span> Review Parts</div>
         <div class="stat"><span>${imageCount}</span> Visuals Discovered</div>
         <div class="stat"><span>${watermarkReviewCount}</span> Watermark Review</div>
         <div class="stat">Pipeline: <span>LOCAL REVIEW ONLY</span></div>
@@ -634,10 +717,15 @@ if (limitArg) {
 }
 const imageCandidateMap = loadImageCandidateMap(imageManifestPath);
 fs.mkdirSync(outputDir, { recursive: true });
+const localImageMap = loadLocalImageMap(localImageRoot);
 
 const records = listings.map((listing, index) => {
   const partNumber = String(listing.partNumber || `listing-${index + 1}`);
-  const imageCandidates = imageCandidateMap.get(partNumber.toUpperCase()) || [];
+  const imageCandidates = resolveLocalImageCandidates(
+    imageCandidateMap.get(partNumber.toUpperCase()) || [],
+    localImageMap,
+    outputDir,
+  );
   const listingForHtml = {
     ...listing,
     imageUrl: imageCandidates[0]?.imageUrl || listing.imageUrl || null,
@@ -659,7 +747,11 @@ fs.writeFileSync(path.join(outputDir, "index.html"), renderIndexHtml(records));
 fs.writeFileSync(normalizedJsonPath, JSON.stringify({
   listings: listings.map((listing) => {
     const partNumber = String(listing.partNumber || "").toUpperCase();
-    const candidates = imageCandidateMap.get(partNumber) || [];
+    const candidates = resolveLocalImageCandidates(
+      imageCandidateMap.get(partNumber) || [],
+      localImageMap,
+      outputDir,
+    );
     const imageCandidate = candidates[0] || null;
     return {
       ...listing,

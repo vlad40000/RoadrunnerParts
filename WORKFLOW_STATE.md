@@ -20,8 +20,13 @@
 
 ### Pending
 - **eBay Deployment**: Disabled. Do not push or sync listings directly to eBay yet.
-- **Operator Review**: Review local HTML files before any future listing-draft or marketplace sync work.
+- **Operator Review**: Review local HTML files before any future listing-draft or marketplace sync work. (Note: A specialized audit dashboard for the 52 finalized items has been generated at `scratch/ebay-html-final-52/index.html`).
 - **Inventory Linking**: Pending; local HTML artifacts are currently for visual review only.
+
+## Selected Final Listings (52 Units)
+- **Status**: FILTERED & READY FOR REVIEW
+- **Source**: `scratch/finalized_52_listings.json` (filtered down from the original 88 items based on manual selection).
+- **Dashboard**: `scratch/ebay-html-final-52/index.html` contains the finalized premium audit dashboard for these 52 parts.
 
 ## Listing Optimization (88 Units)
 - **Status**: COMPLETE
