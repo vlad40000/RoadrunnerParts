@@ -1,0 +1,902 @@
+[
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "1",
+        "part_number": "39-90406-1",
+        "description": "Use & Care ( Hotpoint )",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "",
+        "part_number": "31-16719",
+        "description": "Pm Install Instructions",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "",
+        "part_number": "31-16282",
+        "description": "Wiring Diagram (front Si",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3",
+        "part_number": "WE19M1478",
+        "description": "End Cap Lh Wh",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "4",
+        "part_number": "WE49X22294",
+        "description": "End Cap Rh Wh",
+        "supersedes": "WE19M1477",
+        "price": "$57.17",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "7",
+        "part_number": "WE1M652",
+        "description": "Timer Knob Asm Wh",
+        "supersedes": "",
+        "price": "$9.72",
+        "availability": "121 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "13",
+        "part_number": "WE19M1713",
+        "description": "Backsplash Graphics Asm",
+        "supersedes": "",
+        "price": "$154.05",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "19",
+        "part_number": "WH01X10313",
+        "description": "Knob & Clip Asm",
+        "supersedes": "",
+        "price": "$6.28",
+        "availability": "20 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "35",
+        "part_number": "WE4M416",
+        "description": "Switch Pts",
+        "supersedes": "",
+        "price": "$28.63",
+        "availability": "199 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "72",
+        "part_number": "WE19M1481",
+        "description": "Panel Back",
+        "supersedes": "",
+        "price": "$69.70",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "75",
+        "part_number": "WE2M173",
+        "description": "Screw",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "87",
+        "part_number": "WE4M404",
+        "description": "Rotary Switch 3temp Elec",
+        "supersedes": "",
+        "price": "$36.43",
+        "availability": "1 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "100",
+        "part_number": "WE4M532",
+        "description": "Timer",
+        "supersedes": "",
+        "price": "$107.52",
+        "availability": "52 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "201",
+        "part_number": "WE16X20393",
+        "description": "Blower Wheel",
+        "supersedes": "",
+        "price": "$47.80",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "203",
+        "part_number": "WE13X200",
+        "description": "Strap Motor",
+        "supersedes": "",
+        "price": "$8.55",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "204",
+        "part_number": "WE1X921",
+        "description": "Strap Motor",
+        "supersedes": "",
+        "price": "$43.78",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "205",
+        "part_number": "WE13M39",
+        "description": "Motor Support",
+        "supersedes": "",
+        "price": "$44.70",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "213",
+        "part_number": "WE03X29897",
+        "description": "Belt Drive",
+        "supersedes": "WE12X21574",
+        "price": "$49.10",
+        "availability": "490 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "215",
+        "part_number": "WE03X20434",
+        "description": "Idler Arm",
+        "supersedes": "",
+        "price": "$105.97",
+        "availability": "2 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "216",
+        "part_number": "WE03X31620",
+        "description": "Idler Pulley",
+        "supersedes": "WE12X20395",
+        "price": "$29.98",
+        "availability": "41 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "218",
+        "part_number": "WE09X27636",
+        "description": "Blower Gasket (exhaust)",
+        "supersedes": "WE1M966",
+        "price": "$8.55",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "219",
+        "part_number": "WE14X20392",
+        "description": "Blower Housing Asm",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "223",
+        "part_number": "WE2M189",
+        "description": "Screws",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "228",
+        "part_number": "WE14X20421",
+        "description": "Exhaust Duct",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "230",
+        "part_number": "WE4M127",
+        "description": "Thermostat Drum Out",
+        "supersedes": "",
+        "price": "$24.82",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "231",
+        "part_number": "WE2M187",
+        "description": "Screw",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "232",
+        "part_number": "WE2M202",
+        "description": "Screw",
+        "supersedes": "",
+        "price": "$9.53",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "233",
+        "part_number": "WE13X20394",
+        "description": "Motor Plate",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "234",
+        "part_number": "WE2M96",
+        "description": "Cap Nut",
+        "supersedes": "",
+        "price": "$9.20",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "235",
+        "part_number": "WE2M307",
+        "description": "Scr 10-16 X 1/2 Ab",
+        "supersedes": "",
+        "price": "$7.44",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "237",
+        "part_number": "WD02X10057",
+        "description": "Screw",
+        "supersedes": "WE2M154",
+        "price": "$7.60",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "239",
+        "part_number": "WR2X9260",
+        "description": "Screws",
+        "supersedes": "WE2M167",
+        "price": "$28.77",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "240",
+        "part_number": "WE1M280",
+        "description": "Screw",
+        "supersedes": "",
+        "price": "$9.50",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "461",
+        "part_number": "WZ05X0158",
+        "description": "Screw 8-32x3/8 Grd Scr",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "502",
+        "part_number": "WE2M174",
+        "description": "Screw # 10",
+        "supersedes": "",
+        "price": "$9.53",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "630",
+        "part_number": "WE17X22217",
+        "description": "Motor",
+        "supersedes": "WE17M66",
+        "price": "$160.98",
+        "availability": "5 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "631",
+        "part_number": "WE1M650",
+        "description": "Connector Motor",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "803",
+        "part_number": "WD21X10261",
+        "description": "Switch Interlock",
+        "supersedes": "WD21X557",
+        "price": "$22.38",
+        "availability": "43 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "2232",
+        "part_number": "WE1M659",
+        "description": "Push/ Start Button Grey",
+        "supersedes": "",
+        "price": "$9.00",
+        "availability": "16 ea",
+        "diagram_section_id": "1603327"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "112",
+        "part_number": "WE1M934",
+        "description": "Plug Button White",
+        "supersedes": "",
+        "price": "$7.65",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "300",
+        "part_number": "WE18X25100",
+        "description": "Lint Filter",
+        "supersedes": "WE18M28",
+        "price": "$71.50",
+        "availability": "57 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "301",
+        "part_number": "WE20X20409",
+        "description": "Front Panel \"white\"",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "305",
+        "part_number": "WE49X22295",
+        "description": "Inner Door Asm White",
+        "supersedes": "WE10X20418",
+        "price": "$161.87",
+        "availability": "1 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "307",
+        "part_number": "WE10X20468",
+        "description": "Outer Door Wh",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "311",
+        "part_number": "WE14X25080",
+        "description": "Trap Duct",
+        "supersedes": "WE14X20425",
+        "price": "$90.45",
+        "availability": "34 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "312",
+        "part_number": "WE09X27634",
+        "description": "Felt Trap Duct",
+        "supersedes": "WE09X20441",
+        "price": "$30.27",
+        "availability": "40 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "313",
+        "part_number": "WE3M56",
+        "description": "Top Bearing",
+        "supersedes": "WE03X20228",
+        "price": "$40.88",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "316",
+        "part_number": "WE03X37320",
+        "description": "Bearing Slide",
+        "supersedes": "WE3M52",
+        "price": "$16.05",
+        "availability": "146 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "317",
+        "part_number": "WE03X37319",
+        "description": "Bearing Slide",
+        "supersedes": "WE3M51",
+        "price": "$9.38",
+        "availability": "188 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "319",
+        "part_number": "WD21M131",
+        "description": "Screw Ground Front",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "325",
+        "part_number": "WE1M825",
+        "description": "Gasket (seal) 39 Inch",
+        "supersedes": "",
+        "price": "$8.63",
+        "availability": "4 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "327",
+        "part_number": "WE1M1011",
+        "description": "Latch",
+        "supersedes": "WE1M536",
+        "price": "$12.00",
+        "availability": "9 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "380",
+        "part_number": "WE4M415",
+        "description": "Door Switch",
+        "supersedes": "",
+        "price": "$27.85",
+        "availability": "53 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "507",
+        "part_number": "WE4M137",
+        "description": "Thermostat Hi-limit",
+        "supersedes": "",
+        "price": "$90.45",
+        "availability": "57 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "603",
+        "part_number": "WE01X20419",
+        "description": "Handle White",
+        "supersedes": "",
+        "price": "$20.90",
+        "availability": "132 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3046",
+        "part_number": "WE2M196",
+        "description": "Screw #8",
+        "supersedes": "",
+        "price": "$9.50",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3049",
+        "part_number": "WE1X1192",
+        "description": "Strike Door",
+        "supersedes": "",
+        "price": "$7.70",
+        "availability": "15 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3051",
+        "part_number": "WE1M1033",
+        "description": "Hinge",
+        "supersedes": "WE1M505",
+        "price": "$8.45",
+        "availability": "1 ea",
+        "diagram_section_id": "1603328"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "2",
+        "part_number": "WE02X20422",
+        "description": "Screw 8-18x7 16",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "80",
+        "part_number": "WE4M255",
+        "description": "Resistor",
+        "supersedes": "",
+        "price": "$30.23",
+        "availability": "16 ea",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "222",
+        "part_number": "WE20X20412",
+        "description": "Bottom Cover",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "236",
+        "part_number": "WE01X29357",
+        "description": "Levelling Foot",
+        "supersedes": "WE1M1101",
+        "price": "$16.05",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "250",
+        "part_number": "WE2M223",
+        "description": "Screw",
+        "supersedes": "",
+        "price": "$7.60",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "271",
+        "part_number": "WE1M1030",
+        "description": "Shield Bottom Cover",
+        "supersedes": "",
+        "price": "$13.73",
+        "availability": "1 ea",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "401",
+        "part_number": "WE20X20417",
+        "description": "Cover White",
+        "supersedes": "",
+        "price": "$76.52",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "403",
+        "part_number": "WE2M160",
+        "description": "Screw #8",
+        "supersedes": "",
+        "price": "$7.60",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "404",
+        "part_number": "WE20X20406",
+        "description": "Side Panel White",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "408",
+        "part_number": "WE20X20391",
+        "description": "Chassis Base",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "417",
+        "part_number": "WE1M1003",
+        "description": "Holder Fuse",
+        "supersedes": "",
+        "price": "$35.96",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "418",
+        "part_number": "WE1M1002",
+        "description": "Fuse Ccmr  30 Amp 120v",
+        "supersedes": "",
+        "price": "$45.23",
+        "availability": "25 ea",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "419",
+        "part_number": "WE4M525",
+        "description": "Term Blk & Grnd Strap",
+        "supersedes": "",
+        "price": "$18.88",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "420",
+        "part_number": "WE20X20396",
+        "description": "Rear Panel",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "430",
+        "part_number": "WE1M1007",
+        "description": "Cover Fuse Terminal",
+        "supersedes": "",
+        "price": "$28.93",
+        "availability": "2 ea",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "431",
+        "part_number": "WE01X20423",
+        "description": "Strain Relief Bracket El",
+        "supersedes": "",
+        "price": "$7.75",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3204",
+        "part_number": "WZ4X241D",
+        "description": "Scr",
+        "supersedes": "WH2M270",
+        "price": "$22.20",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603329"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "503",
+        "part_number": "WE21X20562",
+        "description": "Drum Asm 6.0 Cu.ft Wh",
+        "supersedes": "WE21X20407",
+        "price": "$454.60",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "504",
+        "part_number": "WE11X29438",
+        "description": "Diffuser",
+        "supersedes": "WE14X20408",
+        "price": "$36.80",
+        "availability": "2 ea",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "505",
+        "part_number": "WE4M160",
+        "description": "Thermostat Safety Left",
+        "supersedes": "",
+        "price": "$132.01",
+        "availability": "11 ea",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "506",
+        "part_number": "WE4M181",
+        "description": "Thermostat Bias Ctr Inlt",
+        "supersedes": "",
+        "price": "$65.75",
+        "availability": "22 ea",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "508",
+        "part_number": "WE0X181L",
+        "description": "Shaft",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "509",
+        "part_number": "WE14X20426",
+        "description": "Baffle",
+        "supersedes": "",
+        "price": "",
+        "availability": "",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "510",
+        "part_number": "WE1M780",
+        "description": "Protection Bracket",
+        "supersedes": "",
+        "price": "$8.60",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "512",
+        "part_number": "WE11X20397",
+        "description": "Mica Heater & Housing As",
+        "supersedes": "",
+        "price": "$142.39",
+        "availability": "15 ea",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "513",
+        "part_number": "WE11M10002",
+        "description": "Heater Housing",
+        "supersedes": "WE11X20400",
+        "price": "$33.35",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "514",
+        "part_number": "WE11M10001",
+        "description": "Mica Heater",
+        "supersedes": "",
+        "price": "$142.62",
+        "availability": "25 ea",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "515",
+        "part_number": "WE1M1015",
+        "description": "Ground Strap Asm",
+        "supersedes": "",
+        "price": "$10.67",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "534",
+        "part_number": "WE2M163",
+        "description": "Screw #10",
+        "supersedes": "",
+        "price": "$8.55",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3102",
+        "part_number": "WE1M300",
+        "description": "Bearing Retainer",
+        "supersedes": "",
+        "price": "$41.15",
+        "availability": "4 ea",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3106",
+        "part_number": "WE1M462",
+        "description": "Sleeve Drum",
+        "supersedes": "",
+        "price": "$19.93",
+        "availability": "58 ea",
+        "diagram_section_id": "1603330"
+    },
+    {
+        "model_number": "HTDX100ED3WW",
+        "diagram_item": "3127",
+        "part_number": "WE1M461",
+        "description": "O Ring",
+        "supersedes": "",
+        "price": "$8.63",
+        "availability": "Out of Stock - Call For Quote",
+        "diagram_section_id": "1603330"
+    }
+]

@@ -78,6 +78,17 @@
 - **Generic Asset Guard**: Favicon/icon/button/lockup assets and tiny `w_185,h_193` Salsify thumbnails are excluded from both `scratch/ebay-html-with-images/` and `scratch/ebay-html-premium/`.
 - **Compliance**: Image candidates require operator approval and image-use rights before live deployment.
 
+### BOM Extraction (D&L Parts Co)
+- **Status**: COMPLETE (2026-05-09)
+- **Source**: `https://www.dlpartscolookup.com/lookup/`
+- **Output**: `BOM_HTDX100ED3WW_ALL.json` (90 parts extracted)
+- **Notes**: Verified that the base lookup URL only provides parts for the first diagram. A multi-diagram Python script (`extract_dlparts_bom_all.py`) was developed to scrape the full 90-part BOM by iterating through all available diagram endpoints.
+
+### BOM Extraction (Encompass)
+- **Status**: COMPLETE (2026-05-09)
+- **Source**: `https://encompass.com/search` & `https://encompass.com/model/`
+- **Output**: `Encompass_BOM_HTDX100ED3WW.json` (88 parts extracted)
+- **Notes**: Encompass utilizes a Next.js App Router (React Server Components) architecture. Parts lists are not rendered in the raw HTML DOM. A Python script (`fetch_encompass.py`) was rewritten to bypass brittle HTML parsing by resolving the canonical `modelID` via search, and then directly parsing the RSC JSON payload embedded in the `<script>` tags (`self.__next_f.push`) to successfully extract all 88 parts natively.
 
 ### Backlog Parts List
 WE21X20562	Drum Asm 6.0 (replacement)	503
