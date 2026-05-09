@@ -1,6 +1,16 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: Local HTML Review (Images Integrated - Watermark Guarded)
+## Status: Pipeline Operational (Stealth Layer Active - 2026-05-09)
+
+### Playwright Stealth Integration (2026-05-09)
+- **Package**: `playwright-stealth` v2.0.3 installed globally.
+- **API**: Uses `Stealth().use_sync(sync_playwright())` context manager wrapper — automatically applies all evasion scripts to every page created in the session.
+- **Files Updated**: `ebay_extraction_pipeline.py`, `fetch_fix_com.py`.
+- **Validation**: 4/4 Fix.com section URLs extracted successfully with full 40,000-char payloads. Zero "Access Denied" blocks from Akamai WAF.
+- **Output**: `HTDX100ED3WW_ebay_templates.json` — 4 listings with Trust Shards, HTML blocks, images, and retail prices.
+- **Pattern for new scripts**: `from playwright_stealth import Stealth` + `with Stealth().use_sync(sync_playwright()) as p:`
+
+### Previous Status: Local HTML Review (Images Integrated - Watermark Guarded)
 
 ### Completed Components
 1. **HTML Template Generator**: `src/lib/ebay-template-gen.ts`

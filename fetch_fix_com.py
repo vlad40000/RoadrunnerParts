@@ -1,7 +1,8 @@
 from playwright.sync_api import sync_playwright
+from playwright_stealth import Stealth
 
 def get_fix_com_html(url: str) -> str:
-    with sync_playwright() as p:
+    with Stealth().use_sync(sync_playwright()) as p:
         # headless=False is great for debugging to ensure no CAPTCHAs block you
         browser = p.chromium.launch(headless=False) 
         context = browser.new_context(

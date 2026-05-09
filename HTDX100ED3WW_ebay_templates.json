@@ -1,6 +1,6 @@
 [
   {
-    "title": "General Electric Dryer Timer WE4M532 for Hotpoint HTDX100ED3WW",
+    "title": "GE Dryer Timer WE4M532 for Hotpoint HTDX100ED3WW",
     "brand": "General Electric",
     "oem_part_number": "WE4M532",
     "donor_machine_model": "HTDX100ED3WW",
@@ -8,8 +8,9 @@
     "symptoms_fixed": [
       "Timer will not advance",
       "Dryer will not start",
-      "Dryer shuts off too soon",
-      "Dryer runs continuously and will not shut off"
+      "Shuts off too soon",
+      "Runs for too long",
+      "Will not shut off"
     ],
     "compatible_models": [
       "HTDX100ED3WW"
@@ -18,45 +19,45 @@
     "image_urls": [
       "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8746223_1_S.jpg"
     ],
-    "consumer_description": "This is a genuine OEM Dryer Timer, part number WE4M532, designed to control your dryer's heating and tumbling cycles. The timer dictates the duration of each function, from drying to cool-down. If your dryer's cycles are not advancing or operating correctly, this timer is often the component that needs replacement.",
-    "expert_trust_shard": "Before you begin the repair, disconnect the dryer from its power source. When removing the old timer, take a clear photo of the wire harness connections with your smartphone before unplugging them. The terminals are lettered and numbered, but a quick photo provides a foolproof reference to prevent mis-wiring the new timer.",
-    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\"><h2 style=\"color: #005999;\">Genuine OEM General Electric Dryer Timer WE4M532</h2><p style=\"margin-bottom: 15px;\">This is a genuine OEM Dryer Timer, part number WE4M532, designed to control your dryer's heating and tumbling cycles. The timer dictates the duration of each function, from drying to cool-down. If your dryer's cycles are not advancing or operating correctly, this timer is often the component that needs replacement.</p><h3 style=\"color: #005999; border-bottom: 1px solid #ccc; padding-bottom: 5px;\">Fixes These Common Issues:</h3><ul style=\"margin-left: 20px; list-style-type: disc;\"><li>Timer will not advance through cycles</li><li>Dryer fails to start</li><li>Dryer shuts off prematurely</li><li>Dryer runs continuously and will not shut off</li></ul><div style=\"background-color: #f0f8ff; border: 1px solid #b0e0e6; padding: 10px; border-radius: 5px; margin-top: 20px;\"><h4 style=\"color: #005999; margin-top: 0;\">Expert Installation Tip:</h4><p style=\"margin-bottom: 0;\">Before you begin the repair, disconnect the dryer from its power source. When removing the old timer, take a clear photo of the wire harness connections with your smartphone before unplugging them. The terminals are lettered and numbered, but a quick photo provides a foolproof reference to prevent mis-wiring the new timer.</p></div></div>",
+    "consumer_description": "This genuine OEM Dryer Timer, part number WE4M532, is the brain of your dryer's cycle selection. It is a mechanical component that controls the duration of the drying, heating, and tumbling functions based on your settings. If your dryer's timer is not advancing or cycles are ending prematurely, this is the likely replacement part needed.",
+    "expert_trust_shard": "Before replacing the timer, always disconnect the dryer from its power source. When you access the old timer, take a clear photo of the wire connections with your smartphone before disconnecting them. This simple step is a lifesaver, ensuring each wire goes back to the correct terminal on the new timer, preventing electrical issues.",
+    "html_description_block": "<div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'><h3 style='color: #2E4053; border-bottom: 2px solid #2E4053; padding-bottom: 5px;'>Genuine GE Dryer Timer WE4M532</h3><p style='margin-bottom: 15px;'>This genuine OEM Dryer Timer, part number WE4M532, is the brain of your dryer's cycle selection. It is a mechanical component that controls the duration of the drying, heating, and tumbling functions based on your settings. If your dryer's timer is not advancing or cycles are ending prematurely, this is the likely replacement part needed.</p><h4 style='color: #2E4053;'>Common Symptoms Fixed:</h4><ul style='list-style-type: disc; margin-left: 20px;'><li>Timer will not advance</li><li>Dryer will not start</li><li>Shuts off too soon</li><li>Runs for too long</li><li>Will not shut off</li></ul><div style='background-color: #F8F9F9; border: 1px solid #D5DBDB; border-radius: 5px; padding: 10px; margin-top: 20px;'><h4 style='color: #196F3D; margin-top: 0;'>Expert Installation Tip:</h4><p style='margin-bottom: 0;'>Before replacing the timer, always disconnect the dryer from its power source. When you access the old timer, take a clear photo of the wire connections with your smartphone before disconnecting them. This simple step is a lifesaver, ensuring each wire goes back to the correct terminal on the new timer, preventing electrical issues.</p></div></div>",
     "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863267/backsplash-blower-AND-drive-assembly/"
   },
   {
-    "title": "General Electric Dryer Fuse Holder WE1M1003",
+    "title": "GE Dryer Timer Resistor WE4M255 for Hotpoint HTDX100ED3WW",
     "brand": "General Electric",
-    "oem_part_number": "WE1M1003",
+    "oem_part_number": "WE4M255",
     "donor_machine_model": "HTDX100ED3WW",
     "replaces_part_numbers": [],
     "symptoms_fixed": [
-      "Dryer will not start",
-      "No power to the dryer",
-      "Timer does not advance"
+      "Timer will not advance",
+      "Dryer runs continuously",
+      "Dryer will not shut off automatically"
     ],
     "compatible_models": [
       "HTDX100ED3WW"
     ],
-    "retail_price_usd": 48.21,
+    "retail_price_usd": 39.63,
     "image_urls": [
-      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/3501365_1_S.jpg"
+      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267964_1_S.jpg"
     ],
-    "consumer_description": "This is a genuine OEM Fuse Holder, part number WE1M1003, for General Electric and Hotpoint dryers. It is designed to securely house the appliance's fuse, protecting the electrical system from power surges and overloads. This component is crucial for the safe operation of your dryer.",
-    "expert_trust_shard": "Before replacing the fuse holder, always test the fuse itself for continuity with a multimeter. If the old fuse holder is melted or shows signs of burning, this indicates a more significant electrical problem. Simply replacing a melted holder without diagnosing the root cause (like a shorted motor or heating element) will likely result in the new part failing quickly.",
-    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\"><h3 style=\"color: #2c3e50;\">Genuine General Electric Dryer Fuse Holder WE1M1003</h3><p style=\"margin-bottom: 15px;\">This is a genuine OEM Fuse Holder, part number WE1M1003, for General Electric and Hotpoint dryers. It is designed to securely house the appliance's fuse, protecting the electrical system from power surges and overloads. This component is crucial for the safe operation of your dryer.</p><h4 style=\"color: #2c3e50; border-bottom: 1px solid #ccc; padding-bottom: 5px;\">Fixes Common Dryer Issues:</h4><ul style=\"list-style-type: disc; margin-left: 20px;\"><li>Dryer will not start</li><li>No power to the dryer</li><li>Timer does not advance</li></ul><div style=\"background-color: #f2f2f2; border-left: 5px solid #3498db; padding: 15px; margin-top: 20px;\"><h4 style=\"color: #2c3e50; margin-top: 0;\">Expert Installation Tip:</h4><p style=\"margin-bottom: 0;\">Before replacing the fuse holder, always test the fuse itself for continuity with a multimeter. If the old fuse holder is melted or shows signs of burning, this indicates a more significant electrical problem. Simply replacing a melted holder without diagnosing the root cause (like a shorted motor or heating element) will likely result in the new part failing quickly.</p></div></div>",
+    "consumer_description": "This is a genuine OEM General Electric Timer Resistor, part number WE4M255. This component works in conjunction with the dryer's timer motor to properly advance the drying cycle. It features a ceramic body designed to dissipate heat and two spade terminals for a secure electrical connection.",
+    "expert_trust_shard": "If your dryer's timer is stuck and won't advance through the automatic cycle, this resistor is a very common point of failure. Before replacing the entire timer, you can test this resistor for continuity with a multimeter. A reading of 'OL' or infinite resistance confirms the part has failed and is the likely cause of your problem, saving you from a more expensive repair.",
+    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\"><h3 style=\"color: #2c3e50;\">Genuine GE Dryer Timer Resistor WE4M255</h3><p>This is a genuine OEM General Electric Timer Resistor, part number WE4M255. This component works in conjunction with the dryer's timer motor to properly advance the drying cycle. It features a ceramic body designed to dissipate heat and two spade terminals for a secure electrical connection.</p><h4 style=\"color: #2c3e50; border-bottom: 1px solid #ccc; padding-bottom: 5px;\">Common Symptoms of a Failed Resistor:</h4><ul style=\"list-style-type: disc; margin-left: 20px;\"><li>Timer will not advance during automatic cycles</li><li>Dryer runs continuously and will not shut off</li><li>Cycle timing is inaccurate or erratic</li></ul><div style=\"background-color: #f2f2f2; border-left: 5px solid #2980b9; padding: 15px; margin-top: 20px;\"><h4 style=\"margin-top: 0; color: #2980b9;\">Expert Technician's Tip:</h4><p style=\"margin-bottom: 0;\">If your dryer's timer is stuck and won't advance through the automatic cycle, this resistor is a very common point of failure. Before replacing the entire timer, you can test this resistor for continuity with a multimeter. A reading of 'OL' or infinite resistance confirms the part has failed and is the likely cause of your problem, saving you from a more expensive repair.</p></div><p style=\"margin-top: 20px;\"><i>Part was sourced from a Hotpoint Dryer model HTDX100ED3WW and is a fully tested, genuine OEM component.</i></p></div>",
     "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863269/cabinet-AND-top-panel/"
   },
   {
-    "title": "GE Hotpoint Dryer Heating Element & Housing Assembly WE11X20397 OEM",
+    "title": "GE Dryer Heating Element & Housing Assembly WE11X20397",
     "brand": "General Electric",
     "oem_part_number": "WE11X20397",
     "donor_machine_model": "HTDX100ED3WW",
     "replaces_part_numbers": [],
     "symptoms_fixed": [
-      "No heat or not enough heat",
-      "Takes too long to dry",
-      "Dryer is too hot",
-      "Will not start"
+      "Dryer not heating",
+      "Takes too long to dry clothes",
+      "Not producing enough heat",
+      "Producing too much heat"
     ],
     "compatible_models": [
       "HTDX100ED3WW"
@@ -65,32 +66,28 @@
     "image_urls": [
       "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9494500_1_S.jpg"
     ],
-    "consumer_description": "This genuine OEM Heating Element and Housing Assembly, part number WE11X20397, is the core component responsible for generating heat in your General Electric dryer. The assembly includes the heater coil pre-mounted in its metal housing, simplifying installation. If your dryer is tumbling but not heating, this is often the part needed to restore its function.",
-    "expert_trust_shard": "CRITICAL INSTALLATION TIP: Before you replace this heating element, use a multimeter to test your high-limit thermostat and thermal fuse for continuity. These safety components often fail first when an element burns out due to restricted airflow. Failing to clean your entire vent line from the dryer to the outside of your house will cause the new element to fail prematurely.",
-    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\"><h2 style=\"color: #005999;\">Genuine GE Dryer Heating Element & Housing Assembly WE11X20397</h2><p style=\"line-height: 1.5;\">This genuine OEM Heating Element and Housing Assembly, part number WE11X20397, is the core component responsible for generating heat in your General Electric dryer. The assembly includes the heater coil pre-mounted in its metal housing, simplifying installation. If your dryer is tumbling but not heating, this is often the part needed to restore its function.</p><h3 style=\"border-bottom: 2px solid #ccc; padding-bottom: 5px; color: #005999;\">Fixes Common Dryer Symptoms:</h3><ul style=\"list-style-type: disc; margin-left: 20px;\"><li>No heat or not enough heat</li><li>Takes too long to dry</li><li>Dryer is too hot</li><li>Will not start</li></ul><div style=\"background-color: #f0f8ff; border-left: 5px solid #005999; padding: 15px; margin-top: 20px;\"><h4 style=\"margin-top: 0; color: #004a80;\">Expert Technician Tip:</h4><p style=\"margin-bottom: 0; font-style: italic;\">CRITICAL INSTALLATION TIP: Before you replace this heating element, use a multimeter to test your high-limit thermostat and thermal fuse for continuity. These safety components often fail first when an element burns out due to restricted airflow. Failing to clean your entire vent line from the dryer to the outside of your house will cause the new element to fail prematurely.</p></div><p style=\"margin-top: 20px;\"><strong>Part Number:</strong> WE11X20397<br><strong>Brand:</strong> General Electric<br><strong>Tested On:</strong> HTDX100ED3WW</p></div>",
+    "consumer_description": "This genuine OEM Heating Element and Housing Assembly is the complete unit responsible for generating heat in your electric dryer. The assembly includes the coiled heating wire pre-mounted in the metal housing, which simplifies the replacement process. If your dryer is running but not heating, a faulty element is a very common culprit.",
+    "expert_trust_shard": "PRO TIP: Before replacing the entire heating element assembly, always disconnect the dryer from power. Then, test both the high-limit thermostat and the thermal fuse for continuity using a multimeter. These safety components are designed to fail to protect the dryer and are a frequent cause of no-heat symptoms; replacing a $15 fuse is much better than replacing a $150 element unnecessarily.",
+    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\"> <p>This genuine OEM <strong>Heating Element and Housing Assembly (WE11X20397)</strong> is the complete unit responsible for generating heat in your electric dryer. The assembly includes the coiled heating wire pre-mounted in the metal housing, which simplifies the replacement process. If your dryer is running but not heating, a faulty element is a very common culprit.</p> <h3 style=\"margin-top: 20px;\">Common Symptoms Fixed:</h3> <ul style=\"list-style-type: disc; margin-left: 20px;\"> <li>Dryer not heating at all</li> <li>Clothes taking too long to dry</li> <li>Dryer producing insufficient heat</li> </ul> <div style=\"background-color: #f2f2f2; border-left: 4px solid #f0ad4e; padding: 10px; margin-top: 20px;\"> <h4 style=\"margin: 0 0 10px 0; color: #333;\">Expert Installation Advice:</h4> <p style=\"margin: 0;\"><strong>PRO TIP:</strong> Before replacing the entire heating element assembly, always disconnect the dryer from power. Then, test both the high-limit thermostat and the thermal fuse for continuity using a multimeter. These safety components are designed to fail to protect the dryer and are a frequent cause of no-heat symptoms; replacing a $15 fuse is much better than replacing a $150 element unnecessarily.</p> </div> </div>",
     "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863270/drum/"
   },
   {
-    "title": "GE Hotpoint Dryer Door Latch WE1M1011",
+    "title": "GE Dryer Lint Filter WE18X25100 for Hotpoint HTDX100ED3WW",
     "brand": "General Electric",
-    "oem_part_number": "WE1M1011",
+    "oem_part_number": "WE18X25100",
     "donor_machine_model": "HTDX100ED3WW",
     "replaces_part_numbers": [],
-    "symptoms_fixed": [
-      "Dryer will not start",
-      "Door will not stay closed",
-      "Door will not latch shut"
-    ],
+    "symptoms_fixed": [],
     "compatible_models": [
       "HTDX100ED3WW"
     ],
-    "retail_price_usd": 21.82,
+    "retail_price_usd": 64.74,
     "image_urls": [
-      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/3502777_1_S.jpg"
+      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/11767017_1_S.jpg"
     ],
-    "consumer_description": "This is a genuine OEM Door Latch, part number WE1M1011, for your General Electric or Hotpoint dryer. This component securely fastens the dryer door, engaging the door switch which allows the cycle to begin. It's an essential safety and operational part made of durable plastic and metal components.",
-    "expert_trust_shard": "Before replacing this latch, check if your dryer door is sagging on its hinges. Try gently lifting the door while you close it. If it latches properly when you lift it, the issue might be worn hinges or door alignment, not a faulty latch. This quick check can save you from buying a part you don't need.",
-    "html_description_block": "<div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'><h3 style='color: #2E8B57; border-bottom: 2px solid #2E8B57; padding-bottom: 5px;'>Genuine OEM Dryer Door Latch WE1M1011</h3><p>This is a genuine OEM Door Latch, part number WE1M1011, for your General Electric or Hotpoint dryer. This component securely fastens the dryer door, engaging the door switch which allows the cycle to begin. It's an essential safety and operational part made of durable plastic and metal components.</p><h4 style='color: #444;'>Common Symptoms Addressed:</h4><ul style='list-style-type: disc; margin-left: 20px;'><li>Dryer will not start</li><li>Door will not stay closed</li><li>Door will not latch shut</li></ul><div style='background-color: #F0F8FF; border-left: 5px solid #1E90FF; padding: 10px; margin-top: 15px;'><h4 style='margin-top: 0; color: #1E90FF;'>Expert Technician Tip:</h4><p style='margin-bottom: 0;'>Before replacing this latch, check if your dryer door is sagging on its hinges. Try gently lifting the door while you close it. If it latches properly when you lift it, the issue might be worn hinges or door alignment, not a faulty latch. This quick check can save you from buying a part you don't need.</p></div></div>",
+    "consumer_description": "This genuine OEM Lint Filter, part number WE18X25100, is designed for your General Electric dryer to capture lint and debris from the exhaust air. Featuring a white frame and a fine mesh screen, it plays a critical role in preventing fire hazards and maintaining your dryer's efficiency. Regular cleaning and replacement when damaged are essential for optimal performance.",
+    "expert_trust_shard": "If your dryer is taking too long to dry clothes even with a clean lint filter, it's a strong indicator that the vent ducting to the outside of your house is clogged. A blocked vent is a serious fire hazard and dramatically reduces dryer efficiency. Never run the dryer without the lint filter in place, as lint can build up inside the machine and on the heating element.",
+    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333;\"><h3 style=\"color: #00407d;\">Part Description</h3><p>This genuine OEM Lint Filter, part number WE18X25100, is designed for your General Electric dryer to capture lint and debris from the exhaust air. Featuring a white frame and a fine mesh screen, it plays a critical role in preventing fire hazards and maintaining your dryer's efficiency. Regular cleaning and replacement when damaged are essential for optimal performance.</p><h3 style=\"color: #00407d;\">Symptoms this part can fix:</h3><ul style=\"list-style-type: disc; margin-left: 20px;\"><li>Clothes taking too long to dry</li><li>Excessive lint left on clothes</li><li>Visible damage, tears, or warping on your old filter</li><li>Overheating or error codes related to airflow</li></ul><h3 style=\"color: #b33b00;\">Expert Technician's Tip</h3><p>If your dryer is taking too long to dry clothes even with a clean lint filter, it's a strong indicator that the vent ducting to the outside of your house is clogged. A blocked vent is a serious fire hazard and dramatically reduces dryer efficiency. Never run the dryer without the lint filter in place, as lint can build up inside the machine and on the heating element.</p></div>",
     "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863268/front-panel-AND-door/"
   }
 ]

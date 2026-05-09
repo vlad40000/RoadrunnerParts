@@ -3,6 +3,7 @@ import json
 import re
 import time
 from playwright.sync_api import sync_playwright
+from playwright_stealth import Stealth
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
@@ -140,14 +141,16 @@ def run_pipeline(url_list: list, target_model: str):
     
     print(f"Starting extraction pipeline for {len(url_list)} URLs for model {target_model}...\n")
     
-    with sync_playwright() as p:
-        # Launch browser (headless=True as specified in your updated config)
-        browser = p.chromium.launch(headless=True)
+    with Stealth().use_sync(sync_playwright()) as p:
+        # Launch browser (headless=False for fix.com to avoid Akamai blocks)
+        browser = p.chromium.launch(headless=False)
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
         
         for idx, url in enumerate(url_list, 1):
+            # Apply stealth to each new page to evade bot detection
+            # (stealth_sync is applied per-page inside fetch_rendered_html)
             print(f"[{idx}/{len(url_list)}] Processing Part...")
             
             # Step 1: Hydrate and fetch DOM
