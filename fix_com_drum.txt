@@ -1,0 +1,843 @@
+<a href="#ae-skip-to-content" class="audioeye-skip-link">Skip To Main Content</a><div id="ae_enabled_site" class="ae-blurb-noaudio" role="status" aria-live="polite" data-nosnippet="" style="display: none;"><div><p data-modulename="launcher">This website is AudioEye enabled and is being optimized for accessibility. To open the AudioEye Toolbar, press "shift + =". Some assistive technologies may require the use of a passthrough function before this keystroke. For more information, activate the button labeled "Explore your accessibility options".</p></div></div>
+    
+
+
+
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5RNRXL"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+</noscript>
+    
+<header>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => EGP.deleteCookie('PSToken'));
+        </script>
+    <div class="js-scrollTrigger skip-link" data-target-scroll="main" onclick="a11y.setFocus()" tabindex="0">Skip to main content</div>
+    <div class="mobile-menu d-none d-lg-none" data-mobile-menu="main">
+        <div class="mobile-menu__header">
+            <picture> 
+                <source type="image/webp" srcset="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/originals/user-mobile.webp 
+	                , https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/originals/user-mobile-2x.webp 2x
+	                , https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/originals/user-mobile-3x.webp 3x">
+                <source type="image/png" srcset="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/originals/user-mobile.png 
+	                , https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/originals/user-mobile-2x.png 2x
+	                , https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/originals/user-mobile-3x.png 3x">
+                    <img src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/originals/user-mobile.png" class=" ">
+                </picture>
+            <div class="" data-display-logged-in="false">
+                <a href="/user/signin/">Sign In</a>
+                <span class="mobile-menu__header__title-break"> | </span>
+                <a href="/user/create/">Create Account</a>
+            </div>
+            <div class="d-none" data-display-logged-in="true">
+                <a href="/user/home/"><span class="js-username">Your Account</span></a>
+            </div>
+            <div tabindex="0" aria-label="close-menu" class="mobile-menu__header__close" data-set-mobile-menu=""></div>
+        </div>
+        <nav role="navigation" class="mobile-menu__list">
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li class="" data-display-logged-in="false">
+                    <a href="/user/self-service/">Order Status</a>
+                </li>
+                <li tabindex="0" data-set-mobile-menu="departments">
+                    <span class="text-link more">Shop by Department</span>
+                </li>
+                <li class="d-none" data-display-logged-in="true">
+                    <a href="/user/home/">Your Account</a>
+                </li>
+                <li class="d-none" data-display-logged-in="true">
+                    <a href="/user/orders/">Your Orders</a>
+                </li>
+                <li class="d-none" data-display-logged-in="true">
+                    <a href="/user/subscriptions/">Your Subscriptions</a>
+                </li>
+                <li><a href="/repair/">Repair Help</a></li>
+                <li><a onclick="EGP.AnalyticsTrackEvent('Water Filter Finder', ' Clicked mobile header link',window.location.pathname, window.location.pathname); EGP.GA4Event('Mobile Header', 'Water Filter Finder', 'Click', 'Link',  window.location.pathname,window.location.pathname); " href="/water-filter-finder/">Water Filter Finder</a></li>
+                <li><a href="/blog/">Blog</a></li>
+                <li><div class="break-line mb-2 mt-2"></div></li>
+                <li><a class="js-mobilePhoneLink" href="tel:1-855-343-0068">
+                    <span class="js-mobilePhone">1-855-343-0068</span></a></li>
+                <li><a href="mailto:customerservice@fix.com">Customer Service</a></li>
+                <li><a href="/faq/">FAQ</a></li>
+                <li class="d-none" data-display-logged-in="true"><div class="break-line mb-2 mt-2"></div></li>
+                <li class="d-none" data-display-logged-in="true"><span tabindex="0" class="text-link js-logout">Sign out</span></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="mobile-menu d-none d-lg-none" data-mobile-menu="departments">
+        <div class="mobile-menu__header mb-3">
+            <span tabindex="0" class="mobile-menu__header__back semi-bold" data-set-mobile-menu="main">Back</span>
+            <div tabindex="0" aria-label="Close Menu" class="mobile-menu__header__close" data-set-mobile-menu=""></div>
+        </div>
+        <nav role="navigation" aria-label="Departments">
+            <ul class="mobile-menu__list mb-4">
+                <li class="bold mb-2">Departments</li>
+                <li class="semi-bold"><a href="/parts/appliance/">Appliance</a></li>
+                <li class="semi-bold"><a href="/parts/lawn-and-garden/">Lawn &amp; Garden</a></li>
+                <li class="semi-bold"><a href="/parts/power-tool/">Power Tool</a></li>
+                <li class="semi-bold"><a href="/parts/bbq/">BBQ</a></li>
+                <li class="semi-bold"><a href="/parts/vacuum/">Vacuum</a></li>
+                <li class="semi-bold"><a href="/parts/heating-and-cooling/">Heating &amp; Cooling</a></li>
+                <li class="semi-bold"><a href="/parts/small-appliance/">Small Appliance</a></li>
+                <li class="semi-bold"><a href="/parts/patio-and-yard/">Patio &amp; Yard</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="js-mobileMenuOverlay mobile-menu-overlay d-lg-none" data-set-mobile-menu=""></div>
+
+    <div class="container">
+        <div id="promoModal" class="modal">
+    <div class="promo-mobile d-block d-lg-none">
+        <div tabindex="-1" class="promo-mobile__close js-promoClose">✖</div>
+        Your coupon for <span class="bold promo-mobile__msg js-couponText"></span> will be reflected when you check out!
+    </div>
+    <div class="promo-modal d-none d-lg-block">
+        <div class="modal__overlay js-promoClose"></div>
+        <div class="modal__content">
+            <button tabindex="-1" class="modal__content__close js-promoClose">✖</button>
+            <div>
+                <div class="promo-modal__header mt-5 mb-5">Your coupon for</div>
+                <div class="promo-coupon">
+                    <div class="promo-coupon__text js-couponText"></div>
+                </div>
+                <div class="promo-modal__footer mt-5 mb-5">
+                    has been applied and will be reflected<br> when you check out!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        <div class="d-block d-lg-none">
+            <div class="mobile-header">
+                <div class="js-mobileHeaderLeft mobile-header__left-side">
+                    <a href="/" title="Fix.com" class="mobile-header__left-side__logo">
+                        <img src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/logo.png" alt="Fix.com logo" title="Fix.com">
+                    </a>
+                    <button tabindex="0" aria-label="mobile menu" aria-expanded="false" class="js-mobileHeaderMenuButton mobile-header__left-side__menu-button" data-set-mobile-menu="main">
+                        <div></div><div></div><div></div>
+                    </button>
+                </div>
+
+                <div class="js-autocomplete js-mobileHeaderSearch mobile-header__search search-input">
+                    <input class="js-mobileHeaderInput it" data-search-handler="/api/search/?searchterm=" id="mobile-search" data-track-search-type="combinedsearch" data-track-search-location="header" placeholder="Model or Part #" autocomplete="off" data-track-search-pagebrand="Hotpoint" data-track-search-pagemodeltype="Dryer">
+                    <label for="mobile-search">Model or Part #</label><div class="autocomplete-container autocomplete-hidden"></div>
+                    <button aria-label="search"></button>
+                </div>
+
+                <div class="js-mobileHeaderReset mobile-header__reset-search">Close</div>
+
+                <div class="js-mobileHeaderRight mobile-header__right-side">
+                    <a href="tel:1-855-343-0068" class="js-mobilePhoneLink mobile-header__right-side__contact-button">
+                        <img src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/phone.svg" alt="Phone">
+                    </a>
+                    <a href="/shopping-cart/" title="Shopping Cart" class="mobile-header__right-side__cart-button">
+                        <div class="js-cartCount d-none"></div><img src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/cart.svg" alt="Cart">
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="d-none d-lg-block">
+            <div role="banner" class="header">
+                <div class="header__logo">
+                    <a class="d-block" title="Fix.com" href="/">
+                        <img title="Fix.com" alt="Fix.com logo" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/logo.png">
+                    </a>
+                </div>
+                <a class="header__contact" href="/contact/">
+                    <div class="header__contact__phone js-desktopPhone">1-855-343-0068</div>
+                    <div class="header__contact__weekday">Monday to Saturday<br>8am - 8pm EST</div>
+                </a>
+                <div class="header__norton">
+                    <a href="https://www.websecurity.symantec.com/ssl-certificate" target="_blank" onclick="EGP.AnalyticsTrackEvent('Navigation','Norton Secure Logo Click',window.location.pathname,null); EGP.GA4Event('Header', 'Navigation', 'Click', 'Norton Secure Logo', window.location.pathname); " aria-describedby="audioeye_new_window_message">
+                        <img class="b-lazy" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/norton-secure-badge.png" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/norton-secure-badge.png" alt="Norton secure" style="opacity: 1;">
+                    </a>
+                </div>
+                <div class="header__order-status">
+                    <a href="/user/self-service/">
+                        <svg focusable="false" aria-hidden="true" class="i i--black"><use href="/images/sprite.svg#order"></use></svg>
+                        <span>Order Status</span>
+                    </a>
+                </div>
+                <div class="header__user-menu">
+                    <a href="/user/signin/" class="js-headerUserMenu header__user-menu__title align-items-center justify-content-between">
+                        <div class="d-flex">
+                            <svg focusable="false" aria-hidden="true" class="i i--black"><use href="/images/sprite.svg#profile"></use></svg>
+                            <span class="js-username">Your Account</span>
+                        </div>
+                        <div class="arr-down"></div>
+                    </a>
+                    <nav role="navigation" aria-label="Header Account" class="d-none">
+                        <ul data-display-logged-in="false" class="">
+                            <li class="mb-3"><a href="/user/signin/" class="btn btn--orange">Sign In</a></li>
+                            <li>
+                                <a href="/user/create/">
+                                    Create Account
+                                </a>
+                            </li>
+                        </ul>
+                        <ul data-display-logged-in="true" class="d-none">
+                            <li>
+                                <a href="/user/home/">
+                                    Your Account
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/user/orders/">
+                                    Your Orders
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/user/subscriptions/">
+                                    Your Subscriptions
+                                </a>
+                            </li>
+                            <li><div tabindex="0" class="js-logout">Sign out</div></li>
+                        </ul>
+                        <noscript>
+                            <ul>
+                                <li class="mb-3"><a href="/user/signin/" class="btn btn--orange d-block">Sign In</a></li>
+                                <li>
+                                    <a href="/user/self-service/">
+                                        Order Status
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/user/create/">
+                                        Create Account
+                                    </a>
+                                </li>
+                            </ul>
+                        </noscript>
+                    </nav>
+                </div>
+                <div class="header__shopping">
+                    <a href="/shopping-cart/">
+                        <div class="header__shopping__cart">
+                            <div class="js-cartCount d-none"></div><img src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/images/cart.svg" alt="Cart">
+                        </div>
+                        <div class="header__shopping__promo shipping d-none js-tagShip"><span>Free shipping</span></div>
+                        <div class="header__shopping__promo discount d-none js-tagDis"><span><label></label></span></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <main class="container" data-stripe-key="pk_live_51R4L6ICZJtRwtRolvYiQNZjxLIwTqA5eO2oIWtHnHOv2cwZTHldgQWAil1wLadlcw9O9SDPXKJVGedr5K3nxM0wH00k880Ya1W" id="ae-skip-to-content" tabindex="-1">
+        <div id="hiddenAlertContainer" role="alert"></div>
+        
+
+
+<div id="main" role="presentation" data-brand="Hotpoint" data-modeltype="Dryer" data-page-name="Mega Model Sections" data-model-num="HTDX100ED3WW">
+     <div class="three-pane row">
+        <div class="three-pane__section__section-thumbs js-sections col-xs-12">
+            <div class="three-pane__section__header section-title">
+                Sections
+            </div>
+            <div class="three-pane__section__section-thumbs__schematics d-flex js-scroll-el">
+<div class="schematic-thump mt-3 mb-2">
+                        <a href="/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863267/backsplash-blower-AND-drive-assembly/" class="js-section-thumb">
+                            <img class="b-lazy section__img schematic-thump__img js-scroll-img b-error" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/2250A79A5F924B0B6F0D6496EE8D71D9917C8B16.gif" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/2250A79A5F924B0B6F0D6496EE8D71D9917C8B16.gif" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/2250A79A5F924B0B6F0D6496EE8D71D9917C8B16.gif" title="Backsplash, Blower &amp; Drive Assembly" alt="" role="presentation" style="opacity: 1;">
+                            <span class="d-lg-block justify-content-center mt-1 bold">Backsplash, Blower &amp; Drive Assembly</span>
+                        </a>
+                    </div>
+<div class="schematic-thump mt-3 mb-2">
+                        <a href="/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863269/cabinet-AND-top-panel/" class="js-section-thumb">
+                            <img class="b-lazy section__img schematic-thump__img js-scroll-img b-error" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/BC7D0E911E15CF9B2208F4AD5461ED2BB1008202.gif" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/BC7D0E911E15CF9B2208F4AD5461ED2BB1008202.gif" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/BC7D0E911E15CF9B2208F4AD5461ED2BB1008202.gif" title="Cabinet &amp; Top Panel" alt="" role="presentation" style="opacity: 1;">
+                            <span class="d-lg-block justify-content-center mt-1 bold">Cabinet &amp; Top Panel</span>
+                        </a>
+                    </div>
+<div class="schematic-thump mt-3 mb-2">
+                        <a href="/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863270/drum/" class="js-section-thumb selected-thumb">
+                            <img class="b-lazy section__img schematic-thump__img js-scroll-img b-error" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/A456AD5AFAD727228E6EDDF3A2DF70EDDF234D10.gif" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/A456AD5AFAD727228E6EDDF3A2DF70EDDF234D10.gif" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/A456AD5AFAD727228E6EDDF3A2DF70EDDF234D10.gif" title="Drum" alt="" style="opacity: 1;" role="presentation">
+                            <span class="d-lg-block justify-content-center mt-1 bold">Drum</span>
+                        </a>
+                    </div>
+<div class="schematic-thump mt-3 mb-2">
+                        <a href="/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863268/front-panel-AND-door/" class="js-section-thumb">
+                            <img class="b-lazy section__img schematic-thump__img js-scroll-img b-error" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/D42004B3269E4F386077EC64973BC4DAC576B5B3.gif" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/D42004B3269E4F386077EC64973BC4DAC576B5B3.gif" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/D42004B3269E4F386077EC64973BC4DAC576B5B3.gif" title="Front Panel &amp; Door" alt="" role="presentation" style="opacity: 1;">
+                            <span class="d-lg-block justify-content-center mt-1 bold">Front Panel &amp; Door</span>
+                        </a>
+                    </div>
+            </div>
+        </div>
+
+        <div class="three-pane__section__section-schematic col-xs-12 js-zoom-img" style="height: 593px; min-height: 593px;">
+            <div class="three-pane__section__header section-title">
+                HTDX100ED3WW  Sections
+            </div>
+            <div class="three-pane__section__content">
+
+                <div class="img-zoom zoom-area"><img src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/A456AD5AFAD727228E6EDDF3A2DF70EDDF234D10.gif" alt="GE HTDX100ED3WW Schematic"></div>
+            </div>
+        </div>
+
+        <div class="three-pane__section__section-parts js-parts col-xs-12" style="margin-top: -318px;">
+            <div class="three-pane__section__header section-title">
+                HTDX100ED3WW Parts by Section
+            </div>
+            <div class="three-pane__section__content">
+                <div class="col-12 search-filter mb-lg-0 mb-3">
+                    <div class="js-searchRedirect" data-content-type="Parts" data-model-num="HTDX100ED3WW">
+                        <div class="d-flex mb-md-2 search-input">
+                            <input value="" type="text" maxlength="30" placeholder="Search This Model For Your Part" class="js-mega-m-search-hint" data-track-search-type="partsearchwithinmodel" data-track-search-location="section" data-track-search-locationdetail="drum" data-track-search-modelnumber="HTDX100ED3WW" data-track-search-pagebrand="Hotpoint" data-track-search-pagemodeltype="Dryer" aria-label="Search This Model For Your Part">
+                            <label for="search-part" class="text-sm">Search this model for your part</label>
+                            <button onclick="EGP.AnalyticsTrackEvent('Search', 'Combined Search', document.querySelector('.js-searchRedirect input').value, '')" type="button" aria-label="search"></button>
+                        </div>
+                        <div class="col-12 d-block d-md-none search-filter__tip mt-2 mb-2">Keep searches simple, eg. "belt" or "pump".</div>
+                        <a href="/Models/HTDX100ED3WW" class="three-pane__backlink chev">Back to Model Details</a>
+                    </div>
+                </div>
+                <div class="row align-items-stretch section-parts__part-list js-scroll-el">
+
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="SCREW">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix266693/screw-we1m280/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy b-loaded" alt="SCREW – Part Number: WE1M280" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266693_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266693_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix266693/screw-we1m280/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">SCREW</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX266693</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>18.54
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="266693" tabindex="0" aria-describedby="pop1953" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#specialorder"></use></svg>&nbsp;
+                                        <span> Special Order</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 266693, 1)" data-item-brand="General Electric" data-args="266693|SCREW|18.5400|1|2|SpecialOrder|WE1M280|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">240</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Screw - #10">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix267633/screw-10-we2m174/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy b-loaded" alt="Screw - #10 – Part Number: WE2M174" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267633_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267633_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix267633/screw-10-we2m174/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Screw - #10</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX267633</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>18.54
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="267633" tabindex="0" aria-describedby="pop5848" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 267633, 1)" data-item-brand="General Electric" data-args="267633|Screw - #10|18.5400|1|2|InStock|WE2M174|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">502</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="DRUM Assembly">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix9493090/drum-assembly-we21x20562/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="DRUM Assembly – Part Number: WE21X20562" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9493090_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9493090_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9493090_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix9493090/drum-assembly-we21x20562/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">DRUM Assembly</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX9493090</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>405.76
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="9493090" tabindex="0" aria-describedby="pop7179" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#specialorder"></use></svg>&nbsp;
+                                        <span> Special Order</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 9493090, 1)" data-item-brand="General Electric" data-args="9493090|DRUM Assembly|405.7600|1|2|SpecialOrder|WE21X20562|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">503</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="DIFFUSER">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix12743374/diffuser-we11x29438/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="DIFFUSER – Part Number: WE11X29438" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/12743374_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/12743374_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/12743374_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix12743374/diffuser-we11x29438/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">DIFFUSER</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX12743374</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>52.71
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="12743374" tabindex="0" aria-describedby="pop15" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 12743374, 1)" data-item-brand="General Electric" data-args="12743374|DIFFUSER|52.7100|1|2|InStock|WE11X29438|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">504</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Safety Thermostat">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix267911/safety-thermostat-we4m160/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="Safety Thermostat – Part Number: WE4M160" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267911_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267911_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267911_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix267911/safety-thermostat-we4m160/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Safety Thermostat</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX267911</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>129.64
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="267911" tabindex="0" aria-describedby="pop3833" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 267911, 1)" data-item-brand="General Electric" data-args="267911|Safety Thermostat|129.6400|1|2|InStock|WE4M160|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">505</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Cycling Thermostat - 4 Wire">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix267926/cycling-thermostat-4-wire-we4m181/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="Cycling Thermostat - 4 Wire – Part Number: WE4M181" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267926_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267926_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267926_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix267926/cycling-thermostat-4-wire-we4m181/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Cycling Thermostat - 4 Wire</a>
+                                        <a href="/parts/dryer/general-electric/fix267926/cycling-thermostat-4-wire-we4m181/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW#CustomerReview" class="no-underline">
+                                            <div class="rating mb-2"><div class="rating__stars ">
+                    <div class="rating__stars__upper" style="width: 100%">★★★★★</div>
+                    <div class="rating__stars__lower">★★★★★</div>
+                </div> <span class="rating__count ">(2)</span>
+            </div>
+                                        </a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX267926</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>60.49
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="267926" tabindex="0" aria-describedby="pop3412" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 267926, 1)" data-item-brand="General Electric" data-args="267926|Cycling Thermostat - 4 Wire|60.4900|1|2|InStock|WE4M181|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">506</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="High Limit Thermostat - L315-65">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix267900/high-limit-thermostat-l315-65-we4m137/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="High Limit Thermostat - L315-65 – Part Number: WE4M137" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267900_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267900_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267900_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix267900/high-limit-thermostat-l315-65-we4m137/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">High Limit Thermostat - L315-65</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX267900</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>85.88
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="267900" tabindex="0" aria-describedby="pop8190" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 267900, 1)" data-item-brand="General Electric" data-args="267900|High Limit Thermostat - L315-65|85.8800|1|2|InStock|WE4M137|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">507</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Shaft">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix12227518/shaft-we00x181l/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="Shaft – Part Number: WE00X181L" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/A456AD5AFAD727228E6EDDF3A2DF70EDDF234D10.gif" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/A456AD5AFAD727228E6EDDF3A2DF70EDDF234D10.gif" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/Schematics/GE/GE_Thumb/A456AD5AFAD727228E6EDDF3A2DF70EDDF234D10.gif" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix12227518/shaft-we00x181l/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Shaft</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX12227518</div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="12227518" tabindex="0" aria-describedby="pop3437" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#nla"></use></svg>&nbsp;
+                                        <span> No Longer Available</span>
+                                    </div>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">508</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="BAFFLE">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix9493081/baffle-we14x20426/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="BAFFLE – Part Number: WE14X20426" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9493081_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9493081_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9493081_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix9493081/baffle-we14x20426/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">BAFFLE</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX9493081</div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="9493081" tabindex="0" aria-describedby="pop2806" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#nla"></use></svg>&nbsp;
+                                        <span> No Longer Available</span>
+                                    </div>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">509</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="PROTECTION BRACKET">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix3511493/protection-bracket-we1m780/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="PROTECTION BRACKET – Part Number: WE1M780" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/3511493_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/3511493_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/3511493_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix3511493/protection-bracket-we1m780/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">PROTECTION BRACKET</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX3511493</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>16.35
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="3511493" tabindex="0" aria-describedby="pop6950" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 3511493, 1)" data-item-brand="General Electric" data-args="3511493|PROTECTION BRACKET|16.3500|1|2|InStock|WE1M780|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">510</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Heating Element &amp; Housing Assembly">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix9494500/heating-element-housing-assembly-we11x20397/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="Heating Element &amp; Housing Assembly – Part Number: WE11X20397" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9494500_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9494500_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9494500_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix9494500/heating-element-housing-assembly-we11x20397/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Heating Element &amp; Housing Assembly</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX9494500</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>154.72
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="9494500" tabindex="0" aria-describedby="pop8646" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 9494500, 1)" data-item-brand="General Electric" data-args="9494500|Heating Element &amp; Housing Assembly|154.7200|1|2|InStock|WE11X20397|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">512</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="HEATER HOUSING">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix8756703/heater-housing-we11m10002/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="HEATER HOUSING – Part Number: WE11M10002" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756703_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756703_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756703_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix8756703/heater-housing-we11m10002/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">HEATER HOUSING</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX8756703</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>40.71
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="8756703" tabindex="0" aria-describedby="pop362" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 8756703, 1)" data-item-brand="General Electric" data-args="8756703|HEATER HOUSING|40.7100|1|2|InStock|WE11M10002|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">513</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="MICA HEATER">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix8756702/mica-heater-we11m10001/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="MICA HEATER – Part Number: WE11M10001" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756702_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756702_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756702_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix8756702/mica-heater-we11m10001/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">MICA HEATER</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX8756702</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>154.98
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="8756702" tabindex="0" aria-describedby="pop9885" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 8756702, 1)" data-item-brand="General Electric" data-args="8756702|MICA HEATER|154.9800|1|2|InStock|WE11M10001|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">514</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="GROUND STRAP Assembly">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix8756810/ground-strap-assembly-we1m1015/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="GROUND STRAP Assembly – Part Number: WE1M1015" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756810_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756810_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8756810_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix8756810/ground-strap-assembly-we1m1015/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">GROUND STRAP Assembly</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX8756810</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>20.72
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="8756810" tabindex="0" aria-describedby="pop2058" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 8756810, 1)" data-item-brand="General Electric" data-args="8756810|GROUND STRAP Assembly|20.7200|1|2|InStock|WE1M1015|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">515</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="SCREW #10">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix267626/screw-10-we2m163/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="SCREW #10 – Part Number: WE2M163" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267626_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267626_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267626_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix267626/screw-10-we2m163/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">SCREW #10</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX267626</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>16.35
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="267626" tabindex="0" aria-describedby="pop8939" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 267626, 1)" data-item-brand="General Electric" data-args="267626|SCREW #10|16.3500|1|2|InStock|WE2M163|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">534</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Bearing Retainer">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix266696/bearing-retainer-we1m300/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="Bearing Retainer – Part Number: WE1M300" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266696_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266696_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266696_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix266696/bearing-retainer-we1m300/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Bearing Retainer</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX266696</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>50.46
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="266696" tabindex="0" aria-describedby="pop4393" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 266696, 1)" data-item-brand="General Electric" data-args="266696|Bearing Retainer|50.4600|1|2|InStock|WE1M300|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">3102</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Drum Bearing Sleeve">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix266777/drum-bearing-sleeve-we1m462/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="Drum Bearing Sleeve – Part Number: WE1M462" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266777_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266777_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266777_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix266777/drum-bearing-sleeve-we1m462/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Drum Bearing Sleeve</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX266777</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>31.05
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="266777" tabindex="0" aria-describedby="pop4365" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 266777, 1)" data-item-brand="General Electric" data-args="266777|Drum Bearing Sleeve|31.0500|1|2|InStock|WE1M462|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">3106</span>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3 js-mega-m-part" data-name="Retainer O-Ring">
+                            <div class="mega-m__part justify-content-between box-shadow">
+                                <a href="/parts/dryer/general-electric/fix266776/retainer-o-ring-we1m461/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="mega-m__part__img ">
+                                        <img class="js-scroll-img b-lazy" alt="Retainer O-Ring – Part Number: WE1M461" data-temp="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266776_1_S.jpg" data-src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266776_1_S.jpg" src="https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/266776_1_S.jpg" style="opacity: 1;">
+                                </a>
+                                <div class="d-flex flex-col flex-grow-1 part-info">
+                                    <a href="/parts/dryer/general-electric/fix266776/retainer-o-ring-we1m461/?SourceCode=1&amp;SearchTerm=HTDX100ED3WW&amp;ModelNum=HTDX100ED3WW" class="bold mb-1 mega-m__part__name">Retainer O-Ring</a>
+                                    <div class="it"><span class="bold">Fix Number</span> FIX266776</div>
+                                        <div class="price mt-2">
+                                            <span class="price__currency">$</span>17.58
+                                        </div>
+                                    <div class="mega-m__part__avlbl ship-stock mt-2 bold js-tooltip" data-invid="266776" tabindex="0" aria-describedby="pop1777" style="position: relative;">
+                                        <svg focusable="false" aria-hidden="true" class="i"><use href="/images/sprite.svg#instock"></use></svg>&nbsp;
+                                        <span> In Stock</span>
+                                    </div>
+                                        <button type="submit" class="btn btn--orange btn--sm mt-2" onclick="AddToCart(this, 'Model Search - Exact - Parts List', 266776, 1)" data-item-brand="General Electric" data-args="266776|Retainer O-Ring|17.5800|1|2|InStock|WE1M461|HTDX100ED3WW|0.0000|1|0|0">
+                                            Add to cart
+                                        </button>
+                                </div>
+                                <span class="bold order-num js-o-num" style="font-size: 100%;">3127</span>
+                            </div>
+                        </div>
+                    <div class="mega-m__no-result d-none js-mega-m-no-search">
+                        Sorry, there are no results for this search.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row three-pane-footer">
+        <div class="three-pane__footer mt-1 col-12 d-flex justify-content-sm-between">
+            <ul class="d-flex justify-content-center flex-md-grow-0">
+                <li class="d-flex"><a href="/">Home</a></li>
+                <li class="d-flex"><a href="/faq/">FAQ</a></li>
+                <li class="d-flex"><a href="/contact/">Contact</a></li>
+            </ul>
+
+            <span class="d-none d-md-flex">© 2024 Fix.com All rights reserved</span>
+
+        </div>
+        <span class="three-pane__copyright col-12 d-block d-md-none">© 2024 Fix.com All rights reserved</span>
+    </div>
+</div>
+    </main>
+
+
+
+
+
+<script type="text/javascript" src="/pAdprv3vE/XrHkC/EJeA/YurE0Dr4btpXm8/CA5MPg/d2/NsXS4GEFgB"></script><link rel="stylesheet" type="text/css" href="/pAdprv3vE/XrHkC/EJeA/N4/C0Q8Pg/WH/BTEUldDl5Y"><script src="/pAdprv3vE/XrHkC/EJeA/Yu/C0Q8Pg/XD/8KYF4aVSIq" async="" defer=""></script><div id="sec-overlay" style="display:none;"><div id="sec-container"></div></div><noscript><img src="https://www.fix.com/akam/13/pixel_c08237c?a=dD0wMmQwM2YxYzI4ZGMyZjc4YzU2NWViYzEzMjJiNzU5YjQ5NjExNzYwJmpzPW9mZg==" style="visibility: hidden; position: absolute; left: -999px; top: -999px;" /></noscript><script type="text/javascript" src="/pAdprv3vE/XrHkC/EJeA/N4rE0DO5/G1JQPg/Zh/oOPD1fMlcr?v=d7460274-6ae4-ce22-55c1-120b9f2b1738" defer=""></script>
+
+<div id="pop1953" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">Special Order</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop1953content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop1953content">Item is not in stock and usually ships 10-15 business days from the time you place your order.</p></div></div><div id="pop5848" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop5848content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop5848content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop7179" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">Special Order</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop7179content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop7179content">Item is not in stock and usually ships 10-15 business days from the time you place your order.</p></div></div><div id="pop15" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop15content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop15content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop3833" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop3833content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop3833content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop3412" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop3412content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop3412content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop8190" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop8190content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop8190content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop3437" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">NLA - No Longer Available</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop3437content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop3437content">This item is no longer being made by the manufacturer, and cannot be added to your shopping cart.</p></div></div><div id="pop2806" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">NLA - No Longer Available</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop2806content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop2806content">This item is no longer being made by the manufacturer, and cannot be added to your shopping cart.</p></div></div><div id="pop6950" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop6950content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop6950content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop8646" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop8646content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop8646content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop362" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop362content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop362content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop9885" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop9885content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop9885content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop2058" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop2058content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop2058content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop8939" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop8939content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop8939content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop4393" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop4393content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop4393content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop4365" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop4365content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop4365content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div id="pop1777" class="popover__stock js-popover d-none" role="tooltip"><div class="arrow"></div>
+				<div class="popover-title"><span class="title-text">In Stock</span><span tabindex="0" onclick="tooltip.close()" aria-labeledby="pop1777content" class="close-btn"></span></div>
+				<div class="popover-content"><p id="pop1777content">Item is in stock and will ship today if your order is placed before 4:00 PM Eastern Standard Time. <br> If your order is placed after 4:00 PM EST, the in stock items will ship on the next business day.</p></div></div><div class="footer-widgets" role="contentinfo"><button class="js-back-to-top sticky-back-to-top" style="left: auto;"><span class="chevron"></span><span>To Top</span></button></div><script src="https://js.stripe.com/acacia/stripe.js" async=""></script><div>
+        <div id="imgZoom" class="modal modal__img-zoom">
+            <div class="modal__overlay dark" onclick="showModal(true ,'#imgZoom')"></div>
+            <div class="modal__content">
+                <div class="modal__content__close" onclick="showModal(false ,'#imgZoom')">✖</div>
+                <div class="modal__content__body">
+                    <img class="js-modal-img-zoom">
+                </div>
+            </div>
+        </div></div><iframe name="__privateStripeController6431" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/controller-with-preconnect-d6f301f5db2ee5e4f4e49fadaa5fa80c.html#__shared_params__[version]=acacia&amp;__shared_params__[light_experiment_assignments]=%7B%22token%22%3A%22e9884fa1-86dd-4485-a19d-e860b6486196%22%2C%22assignments%22%3A%7B%22link_ewcs_prewarm_experiment_v2%22%3A%22treatment%22%7D%7D&amp;apiKey=pk_live_51R4L6ICZJtRwtRolvYiQNZjxLIwTqA5eO2oIWtHnHOv2cwZTHldgQWAil1wLadlcw9O9SDPXKJVGedr5K3nxM0wH00k880Ya1W&amp;apiVersion=2025-01-27.acacia&amp;stripeJsId=e9884fa1-86dd-4485-a19d-e860b6486196&amp;stripeObjId=sobj-1ab74843-bf16-4fc7-906c-3d77af6da1c8&amp;firstStripeInstanceCreatedLatency=20&amp;controllerCount=1&amp;isCheckout=false&amp;stripeJsLoadTime=1778362688743&amp;manualBrowserDeprecationRollout=false&amp;mids[guid]=NA&amp;mids[muid]=NA&amp;mids[sid]=NA&amp;referrer=https%3A%2F%2Fwww.fix.com%2Fmodels%2Fdryer%2Fhotpoint%2Fid849531%2Fhtdx100ed3ww%2Fsection6863270%2Fdrum%2F&amp;controllerId=__privateStripeController6431" aria-hidden="true" tabindex="-1" style="border: none !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;" title="Stripe secure payment form" id="ae_iframe_up6hqqkg"></iframe><script src="https://wsmcdn.audioeye.com/aem.js" type="text/javascript" async=""></script><script async="" type="text/javascript" class="optanon-category-C0004" src="https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=VdQYMf"></script><script type="text/javascript" class="optanon-category-C0004">
+    !function(){if(!window.klaviyo){window._klOnsite=window._klOnsite||[];try{window.klaviyo=new Proxy({},{get:function(n,i){return"push"===i?function(){var n;(n=window._klOnsite).push.apply(n,arguments)}:function(){for(var n=arguments.length,o=new Array(n),w=0;w<n;w++)o[w]=arguments[w];var t="function"==typeof o[o.length-1]?o.pop():void 0,e=new Promise((function(n){window._klOnsite.push([i].concat(o,[function(i){t&&t(i),n(i)}]))}));return e}}})}catch(n){window.klaviyo=window.klaviyo||[],window.klaviyo.push=function(){var n;(n=window._klOnsite).push.apply(n,arguments)}}}}();
+</script><div id="onetrust-consent-sdk" data-nosnippet="true"><div class="onetrust-pc-dark-filter ot-hide ot-fade-in"></div></div><script src="https://wsv3cdn.audioeye.com/bootstrap.js?h=13b61938d087a0b90dcc51ad475e9a96" type="text/javascript" async=""></script><script src="//assets.bounceexchange.com/assets/smart-tag/versioned/runtime_c81e76ee00d795b1eebf8d27949f8dc5.br.js" async="async"></script><div id="batBeacon67242130715" style="width: 0px; height: 0px; display: none; visibility: hidden;"><img id="batBeacon487600287317" width="0" height="0" alt="" src="https://bat.bing.com/action/0?ti=5948732&amp;Ver=2&amp;mid=fd240fa1-6d94-4f1e-990f-6a18394cbab9&amp;bo=1&amp;sid=5f653c004bef11f1aefb41f63858fdf3&amp;vid=5f6583004bef11f188bf8fd8ff762a5a&amp;vids=1&amp;msclkid=N&amp;uach=pv%3D10.0&amp;pi=918639831&amp;lg=en-US&amp;sw=1280&amp;sh=720&amp;sc=24&amp;nwd=1&amp;tl=Hotpoint%20Dryer%20HTDX100ED3WW%20Parts%20List&amp;kw=appliance%20parts,%20appliance%20repair%20parts,%20Hotpoint%20parts,%20Dryer%20parts,%20HTDX100ED3WW%20parts&amp;p=https%3A%2F%2Fwww.fix.com%2Fmodels%2Fdryer%2Fhotpoint%2Fid849531%2Fhtdx100ed3ww%2Fsection6863270%2Fdrum%2F&amp;r=&amp;lt=1711&amp;evt=pageLoad&amp;sv=2&amp;cdb=AQER&amp;rn=718274" class="optanon-category-C0004 " style="width: 0px; height: 0px; display: none; visibility: hidden;"></div><script async="" crossorigin="anonymous" src="https://wsv3cdn.audioeye.com/v2/scripts/loader.js?h=13b61938d087a0b90dcc51ad475e9a96&amp;lang=en&amp;cb=2026-05-01"></script><script src="//assets.bounceexchange.com/assets/smart-tag/versioned/main-v2_63e84cd7813c827315a199d35d5845ce.br.js" async="async"></script><script src="//assets.bounceexchange.com/assets/smart-tag/versioned/cjs_min_92abedfd1b9757a428bfcd7452d0081f.js" async="true" id="c.js" data-apikey="2^HIykD" data-cb="bouncex.dg.initPostDeviceGraph" data-bx="1" data-gm="1" data-fire="1"></script><script type="text/javascript" src="https://wsv3cdn.audioeye.com/static-scripts/v2/2026-05-01/startup.bundle.js"></script><iframe name="__privateStripeMetricsController6430" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fwww.fix.com%2Fmodels%2Fdryer%2Fhotpoint%2Fid849531%2Fhtdx100ed3ww%2Fsection6863270%2Fdrum%2F&amp;title=Hotpoint%20Dryer%20HTDX100ED3WW%20Parts%20List&amp;referrer=&amp;muid=NA&amp;sid=NA&amp;version=6&amp;preview=false&amp;__shared_params__[version]=acacia" aria-hidden="true" tabindex="-1" style="border: none !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;" title="Stripe secure payment form" id="ae_iframe_nm877e0s"></iframe><div id="ae_app" data-nosnippet="">
+    
+        <!--
+        Layout, Style or Voice Helpers
+    -->
+    <div id="ae_helpers" class="ae-module" style="display: none;">
+
+    
+    </div>
+    
+
+        <!--
+        Compliance
+    -->
+    <div id="ae_compliance" class="ae-module" style="display: none;">
+
+        <!-- For autoSmartRem addNewWindowWarnings div is referenced in an aria-describedby -->
+        <div id="audioeye_new_window_message" style="display:none">Opens in new window</div>
+        <div id="audioeye_pdf_message" style="display:none">PDF Download</div>
+        <div id="audioeye_word_message" style="display:none">Word Download</div>
+        <div id="audioeye_excel_message" style="display:none">Excel Download</div>
+        <div id="audioeye_powerpoint_message" style="display:none">PowerPoint Download</div>
+        <div id="audioeye_document_message" style="display:none">Document Download</div>
+
+                    </div>
+    
+    <!--
+        Versioning Control Panel if versioning = true !
+    -->
+        
+    <!--
+        Launcher
+    -->
+    <aside id="ae_launcher" style="display: none; bottom: 24px; inset-inline-start: 24px;" class="ae-module aetipsytip ae-active ae-cta-position-preset-left-lower" aria-label="Accessibility options" dir="ltr">
+  <button aria-label="Explore your accessibility options">
+    <div style="display: none" class="ae-left">
+      <span>Explore your accessibility options</span>
+    </div>
+
+    <div class="ae-right">
+      <span class="icomoon-wrapper">
+        <div>
+          <span class="icomoon-cta ae-icon-launcher-universalaccess ae-initial-cta">
+            <span class="icomoon-cta path1 a11y-icon-figure-and-border"></span>
+            <span class="icomoon-cta path2 a11y-icon-background" style="color: rgb(96, 46, 204);"></span>
+          </span>
+        </div>
+      </span>
+    </div>
+  </button>
+</aside>
+
+    <!-- Toolbar -->
+
+    <span id="ae_placeholder_toolbar" style="display: none;" aria-hidden="true"></span>
+
+    <!--
+        Site Menu
+    -->
+    <span id="ae_placeholder_site-menu" style="display: none;" aria-hidden="true"></span>
+
+    
+    <!--
+        Generic Aria Live message container
+    -->
+    <div class="ae-blurb-noaudio" id="ae_enabled_messages" aria-relevant="additions" aria-live="assertive"></div>
+
+    
+    <!-- Symbol definitions -->
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <title>close carousel</title>
+        <defs>
+            <symbol id="icon-close-carousel" viewBox="0 0 32 32">
+                <path fill="#ffffff" style="fill: var(--color1, #ffffff)" d="M28.992 0l-12.992 12.992-12.992-12.992-3.008 3.008 12.992 12.992-12.992 12.992 3.008 3.008 12.992-12.992 12.992 12.992 3.008-3.008-12.992-12.992 12.992-12.992-3.008-3.008z"></path>
+            </symbol>
+        </defs>
+    </svg>
+
+</div><!-- end #ae_app --><iframe id="bcx_local_storage_frame" src="https://assets.bounceexchange.com/assets/bounce/local_storage_frame17.min.html#7448" title="empty" style="display: none;"></iframe>
