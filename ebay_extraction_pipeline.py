@@ -68,14 +68,17 @@ def fetch_rendered_html(url: str, browser_context) -> str:
         print(f"  -> Fetching DOM: {url}")
         page.goto(url, wait_until="domcontentloaded")
         
-        # We wait for the main product wrapper to load. 
-        # If Fix.com changes their layout, update this CSS selector.
+        # Wait for the specific Fix.com parts container to load
+        # Fix.com usually wraps their lists in an element with an id like 'parts-list' 
+        # or a specific class. Update this selector if they change their UI.
         try:
-            page.wait_for_selector(".product-detail, #main-content, .container", timeout=15000)
+            page.wait_for_selector(".part-list, #parts-list, .section-parts", timeout=15000)
+            # Extract just the parts container to save token space
+            html_content = page.locator(".part-list, #parts-list, .section-parts").first.inner_html()
         except Exception as e:
-            print(f"  [!] Selector timeout, falling back to body.")
+            print(f"  [!] Timeout or selector not found, falling back to body.")
+            html_content = page.locator("body").inner_html()
             
-        html_content = page.locator("body").inner_html()
         return html_content
     except Exception as e:
         print(f"  [!] Failed to fetch {url}: {e}")
@@ -138,8 +141,8 @@ def run_pipeline(url_list: list, target_model: str):
     print(f"Starting extraction pipeline for {len(url_list)} URLs for model {target_model}...\n")
     
     with sync_playwright() as p:
-        # Launch browser (headless=False for fix.com to avoid Akamai blocks)
-        browser = p.chromium.launch(headless=False)
+        # Launch browser (headless=True as specified in your updated config)
+        browser = p.chromium.launch(headless=True)
         context = browser.new_context(
             user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
