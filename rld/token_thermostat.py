@@ -169,7 +169,7 @@ class TokenThermostat:
 
         # --- Load baseline ---
         self._baseline = self._load_baseline(baseline_path)
-        self._baseline_velocity = self._baseline.get("tokens_per_minute", 8000)
+        self._baseline_velocity = self._baseline.get("tokens_per_minute", 9000)
         self._baseline_yield    = self._baseline.get("valid_artifacts_per_minute", 3)
 
         # --- Live vitals ---
@@ -493,9 +493,10 @@ class TokenThermostat:
         if path and Path(path).exists():
             with open(path, encoding="utf-8") as f:
                 return json.load(f)
-        # Conservative defaults until a real baseline run is completed
+        # Conservative defaults until a real baseline run is completed.
+        # Based on external benchmarks (Gemini Flash): ~150 tokens/sec -> 9000 tokens/min.
         return {
-            "tokens_per_minute": 8000,
+            "tokens_per_minute": 9000,
             "valid_artifacts_per_minute": 3,
         }
 
