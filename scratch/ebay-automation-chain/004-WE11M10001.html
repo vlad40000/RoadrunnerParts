@@ -12,7 +12,12 @@
     section{background:white;border:1px solid #d8dee9;padding:16px}
     h1{font-size:22px;margin:0 0 6px}
     h2{font-size:16px;margin:0 0 12px}
+    h3{font-size:14px;margin:16px 0 8px}
     pre{white-space:pre-wrap;overflow:auto;background:#0f172a;color:#e5e7eb;padding:12px}
+    .plain-text{background:#f8fafc;color:#111827;border:1px solid #e5e7eb}
+    .json-view{display:none}
+    body.show-json .json-view{display:block}
+    body.show-json .readable-view{display:none}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
     .stat{border:1px solid #e5e7eb;padding:12px;background:#f9fafb}
     .ready{border-left:5px solid #16a34a}
@@ -26,10 +31,34 @@
     select{border:1px solid #cbd5e1;padding:8px 10px;background:white}
     button{border:1px solid #111827;background:#111827;color:white;padding:9px 12px;font-weight:800;cursor:pointer}
     button.secondary{background:white;color:#111827}
+    .view-toggle{margin-top:12px;display:flex;align-items:center;gap:10px;color:white;font-weight:800}
+    .view-toggle input{position:absolute;opacity:0}
+    .view-toggle .switch-ui{background:#475569}
+    .view-toggle input:checked + .switch-ui{background:#2563eb}
     .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .shards{background:#f8fafc;border:1px solid #e5e7eb;padding:12px;margin-top:12px}
     .shards li{margin:6px 0}
     .muted{color:#6b7280}
+    .switch-row{display:flex;align-items:center;gap:10px;font-weight:800;margin:12px 0 0}
+    .switch-row input{position:absolute;opacity:0}
+    .switch-ui{width:44px;height:24px;border-radius:999px;background:#cbd5e1;position:relative;display:inline-block;transition:.15s}
+    .switch-ui:before{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:white;left:3px;top:3px;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .switch-row input:checked + .switch-ui{background:#16a34a}
+    .switch-row input:checked + .switch-ui:before{transform:translateX(20px)}
+    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+    .image-card{display:flex;flex-direction:column;gap:6px;color:#111827;border:1px solid #e5e7eb;background:#f8fafc;padding:8px}
+    .image-card.is-kept{background:#ecfdf5;border-color:#22c55e}
+    .image-card.is-trashed{background:#fef2f2;border-color:#ef4444;opacity:.55}
+    .image-card img{width:100%;aspect-ratio:1;object-fit:contain;background:white;border:1px solid #e5e7eb}
+    .image-card span,.image-card small{font-size:11px;font-weight:800;color:#92400e}
+    .image-card.is-kept .image-state{color:#166534}
+    .image-card.is-trashed .image-state{color:#991b1b}
+    .image-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+    .image-actions button{padding:6px 4px;font-size:11px}
+    .image-actions .image-keep{background:#166534;border-color:#166534}
+    .image-actions .image-trash{background:#991b1b;border-color:#991b1b}
+    .image-actions .image-clear{background:white;color:#111827;border-color:#9ca3af}
+    .image-summary{background:#f8fafc;border:1px solid #e5e7eb;padding:10px;margin:10px 0;font-weight:800}
   </style>
 </head>
 <body>
@@ -37,6 +66,11 @@
     <a href="index.html">Back to chain index</a>
     <h1>GE WE11M10001 Dryer Heating Element Used Dryer Part</h1>
     <div>Review Ready / part_photos_attached</div>
+    <label class="view-toggle" for="jsonMode">
+      <input id="jsonMode" type="checkbox">
+      <span class="switch-ui" aria-hidden="true"></span>
+      <span>Show JSON</span>
+    </label>
   </header>
   <main>
     <section class="ready">
@@ -51,7 +85,8 @@
     </section>
     <section>
       <h2>Phase 0 - Donor Machine Lock</h2>
-      <pre>{
+      <div class="readable-view"><table><tbody><tr><th>Brand</th><td>Hotpoint</td></tr><tr><th>Model</th><td>HTDX100ED3WW</td></tr><tr><th>Serial</th><td>ZA801821C</td></tr><tr><th>Type</th><td>Electric Dryer</td></tr><tr><th>Session</th><td>HTDX100ED3WW_ZA801821C</td></tr></tbody></table></div>
+      <pre class="json-view">{
   &quot;DONOR_MACHINE_ID&quot;: {
     &quot;Brand&quot;: &quot;Hotpoint&quot;,
     &quot;Model_Number&quot;: &quot;HTDX100ED3WW&quot;,
@@ -63,7 +98,8 @@
     </section>
     <section>
       <h2>Phase 1A - Part Extraction Lock</h2>
-      <pre>{
+      <div class="readable-view"><table><tbody><tr><th>Part Number</th><td>WE11M10001</td></tr><tr><th>Part Name</th><td>Dryer Heating Element</td></tr><tr><th>Diagram Section</th><td>DRUM</td></tr><tr><th>Diagram Callout</th><td>514</td></tr><tr><th>Diagram Image</th><td>/diagrams/HTDX100ED3WW/drum.png</td></tr><tr><th>Included Hardware</th><td>[X]</td></tr><tr><th>Provenance</th><td>Pulled directly from donor Hotpoint HTDX100ED3WW (Serial: ZA801821C). Verify part number, diagram callout, and photos before ordering.</td></tr><tr><th>Confidence</th><td>0.95</td></tr><tr><th>HITL Required</th><td>No</td></tr><tr><th>Flag Reason</th><td>Distinct part title and diagram callout are present in the operator sheet.</td></tr></tbody></table></div>
+      <pre class="json-view">{
   &quot;PART_ID&quot;: {
     &quot;Diagram_Item_Number&quot;: &quot;514&quot;,
     &quot;Assembly_Diagram_Section&quot;: &quot;DRUM&quot;,
@@ -84,9 +120,37 @@
     </section>
     <section>
       <h2>Phase 1B - Baseline Listing</h2>
-      <pre>{
+      <div class="readable-view">
+    <div class="read-block">
+      <h3>GE WE11M10001 Dryer Heating Element Used Dryer Part</h3>
+      <pre class="plain-text">Title: GE WE11M10001 Dryer Heating Element Used Dryer Part
+
+The Part
+- Part number: WE11M10001
+- Part label: Dryer Heating Element
+- Diagram callout: 514
+- Donor model record: Hotpoint HTDX100ED3WW / Serial ZA801821C
+- Assembly diagram section: DRUM
+- Included hardware: [X]
+- Source product description: ReliableParts block captured for operator review only. Rewrite in Roadrunner wording before staging.
+
+
+Condition
+- Used appliance part removed from a teardown unit.
+- Exact testing notes were not supplied in the input evidence.
+- Match the part number, diagram callout, and listing photos before ordering.
+
+Tech Tip:
+Confirm the diagram callout and wear points against your original part before installation.
+
+Terms
+- Items ship within 1 business day.
+- 30-day returns on uninstalled parts.
+- Review routing: Eligible for local operator review.</pre>
+    </div></div>
+      <pre class="json-view">{
   &quot;title&quot;: &quot;GE WE11M10001 Dryer Heating Element Used Dryer Part&quot;,
-  &quot;description&quot;: &quot;Title: GE WE11M10001 Dryer Heating Element Used Dryer Part\n\nThe Part\n- Part number: WE11M10001\n- Part label: Dryer Heating Element\n- Diagram callout: 514\n- Donor model record: Hotpoint HTDX100ED3WW / Serial ZA801821C\n- Assembly diagram section: DRUM\n- Included hardware: [X]\n\nCondition\n- Used appliance part removed from a teardown unit.\n- Exact testing notes were not supplied in the input evidence.\n- Match the part number, diagram callout, and listing photos before ordering.\n\nTech Tip:\nConfirm the diagram callout and wear points against your original part before installation.\n\nTerms\n- Items ship within 1 business day.\n- 30-day returns on uninstalled parts.\n- Review routing: Eligible for local operator review.&quot;,
+  &quot;description&quot;: &quot;Title: GE WE11M10001 Dryer Heating Element Used Dryer Part\n\nThe Part\n- Part number: WE11M10001\n- Part label: Dryer Heating Element\n- Diagram callout: 514\n- Donor model record: Hotpoint HTDX100ED3WW / Serial ZA801821C\n- Assembly diagram section: DRUM\n- Included hardware: [X]\n- Source product description: ReliableParts block captured for operator review only. Rewrite in Roadrunner wording before staging.\n\n\nCondition\n- Used appliance part removed from a teardown unit.\n- Exact testing notes were not supplied in the input evidence.\n- Match the part number, diagram callout, and listing photos before ordering.\n\nTech Tip:\nConfirm the diagram callout and wear points against your original part before installation.\n\nTerms\n- Items ship within 1 business day.\n- 30-day returns on uninstalled parts.\n- Review routing: Eligible for local operator review.&quot;,
   &quot;layout&quot;: [
     &quot;Title&quot;,
     &quot;The Part&quot;,
@@ -98,14 +162,290 @@
     </section>
     <section>
       <h2>Phase 1C - Trust Shard Delta</h2>
-      <pre>{
+      <div class="readable-view">
+    <div class="read-block">
+      <h3>Tech Tip</h3>
+      <p>Confirm the diagram callout and wear points against your original part before installation.</p>
+      <h3>Delta Scope</h3>
+      <p>Added one bounded Tech Tip without changing locked part number, title, diagram callout, donor provenance, condition, or policy terms.</p>
+    </div></div>
+      <pre class="json-view">{
   &quot;techNote&quot;: &quot;Confirm the diagram callout and wear points against your original part before installation.&quot;,
   &quot;deltaScope&quot;: &quot;Added one bounded Tech Tip without changing locked part number, title, diagram callout, donor provenance, condition, or policy terms.&quot;
 }</pre>
     </section>
     <section>
+      <h2>Source Description Evidence</h2>
+      <p class="muted">Distributor text is evidence for operator review only. Rewrite it in Roadrunner wording before any live listing use.</p>
+      <div class="readable-view">
+        <div class="read-block">
+          <table><tbody><tr><th>Source</th><td>reliableparts.com</td></tr><tr><th>Evidence Type</th><td>distributor_product_description</td></tr><tr><th>Identity Match</th><td>exact</td></tr><tr><th>Product Page</th><td>https://www.reliableparts.com/gen-we11m10001.html</td></tr><tr><th>URL Source</th><td>url_csv</td></tr><tr><th>Selector</th><td>#accordion .product.attribute.description .value .short-desc</td></tr><tr><th>Captured</th><td>2026-05-10T09:04:05.261Z</td></tr><tr><th>Use Policy</th><td>source evidence only; rewrite in Roadrunner wording before staging</td></tr></tbody></table>
+          <h3>Captured Description Text</h3>
+          <pre class="plain-text">Maintain your drying efficiency with this high-quality heater element designed for GE appliances. Crafted with durable mica material, this essential component ensures optimal heat distribution, allowing your dryer to operate at peak performance. Compatible with a range of popular brands, including Hotpoint, Haier, Monogram, and Café, this part seamlessly fits various dryer models, making installation straightforward. Replacing a worn-out heating element can significantly improve your dryer&#39;s effectiveness, reducing drying times and preventing energy waste. With the manufacturer’s commitment to quality, you can trust its reliability for long-lasting use. Ensure your laundry routine remains hassle-free by upgrading your dryer with this premium heating element.</pre>
+        </div></div>
+      <pre class="json-view">[
+  {
+    &quot;partNumber&quot;: &quot;WE11M10001&quot;,
+    &quot;source&quot;: &quot;reliableparts.com&quot;,
+    &quot;evidenceType&quot;: &quot;distributor_product_description&quot;,
+    &quot;identityMatch&quot;: &quot;exact&quot;,
+    &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+    &quot;pageUrlSource&quot;: &quot;url_csv&quot;,
+    &quot;capturedAt&quot;: &quot;2026-05-10T09:04:05.261Z&quot;,
+    &quot;selector&quot;: &quot;#accordion .product.attribute.description .value .short-desc&quot;,
+    &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica&quot;,
+    &quot;sku&quot;: &quot;GEN WE11M10001&quot;,
+    &quot;descriptionText&quot;: &quot;Maintain your drying efficiency with this high-quality heater element designed for GE appliances. Crafted with durable mica material, this essential component ensures optimal heat distribution, allowing your dryer to operate at peak performance. Compatible with a range of popular brands, including Hotpoint, Haier, Monogram, and Café, this part seamlessly fits various dryer models, making installation straightforward. Replacing a worn-out heating element can significantly improve your dryer&#39;s effectiveness, reducing drying times and preventing energy waste. With the manufacturer’s commitment to quality, you can trust its reliability for long-lasting use. Ensure your laundry routine remains hassle-free by upgrading your dryer with this premium heating element.&quot;,
+    &quot;listingUsePolicy&quot;: &quot;source evidence only; rewrite in Roadrunner wording before staging&quot;
+  }
+]</pre>
+    </section>
+    <section>
+      <h2>ReliableParts Image Evidence</h2>
+      <p class="muted">These are source image candidates only. They are not approved sale photos and require watermark/use-rights review.</p>
+      <div id="imageReviewSummary" class="image-summary">No image choices saved yet.</div>
+      <div class="readable-view">
+        <div class="read-block">
+          <table><tbody><tr><th>Source</th><td>reliableparts.com</td></tr><tr><th>Evidence Type</th><td>distributor_product_image_set</td></tr><tr><th>Identity Match</th><td>exact</td></tr><tr><th>Product Page</th><td>https://www.reliableparts.com/gen-we11m10001.html</td></tr><tr><th>URL Source</th><td>url_csv</td></tr><tr><th>Captured</th><td>2026-05-10T09:03:21.838Z</td></tr><tr><th>Review Status</th><td>candidate_needs_watermark_review</td></tr><tr><th>Use Policy</th><td>image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging</td></tr></tbody></table>
+          <div class="image-grid">
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c_small.webp" alt="WE11M10001 GE Dryer Heater Element with Mica">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail">
+                  <a href="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/73f4ecda-91a3-40b4-904c-e38f1fd818b4_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/73f4ecda-91a3-40b4-904c-e38f1fd818b4_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/73f4ecda-91a3-40b4-904c-e38f1fd818b4_small.webp" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/993cb9ec-e818-4e10-bb57-fd649dd55f0d_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/993cb9ec-e818-4e10-bb57-fd649dd55f0d_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/993cb9ec-e818-4e10-bb57-fd649dd55f0d_small.webp" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c.webp">
+                  <a href="https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c.webp" alt="WE11M10001">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div></div>
+        </div></div>
+      <pre class="json-view">[
+  {
+    &quot;partNumber&quot;: &quot;WE11M10001&quot;,
+    &quot;source&quot;: &quot;reliableparts.com&quot;,
+    &quot;evidenceType&quot;: &quot;distributor_product_image_set&quot;,
+    &quot;identityMatch&quot;: &quot;exact&quot;,
+    &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+    &quot;pageUrlSource&quot;: &quot;url_csv&quot;,
+    &quot;capturedAt&quot;: &quot;2026-05-10T09:03:21.838Z&quot;,
+    &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica&quot;,
+    &quot;sku&quot;: &quot;GEN WE11M10001&quot;,
+    &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+    &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;,
+    &quot;candidates&quot;: [
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica&quot;,
+        &quot;alt&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica&quot;,
+        &quot;selector&quot;: &quot;#bkp-common-parts .dynamic-part img&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica image 1&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica image 2&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica image 3&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica image 5&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica image 6&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/73f4ecda-91a3-40b4-904c-e38f1fd818b4_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/73f4ecda-91a3-40b4-904c-e38f1fd818b4_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica image 2&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/993cb9ec-e818-4e10-bb57-fd649dd55f0d_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/993cb9ec-e818-4e10-bb57-fd649dd55f0d_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica image 3&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we11m10001.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE11M10001 GE Dryer Heater Element with Mica&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;meta[property=&#39;og:image&#39;]&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      }
+    ]
+  }
+]</pre>
+    </section>
+    <section>
       <h2>Operator Reply And Memory Shards</h2>
-      <p class="muted">Use <strong>&lt;shard&gt;reminder or hint&lt;shard&gt;</strong> anywhere in the reply. Mark correct to reinforce the behavior, or incorrect to redirect model attention.</p>
+      <p class="muted">Use <strong>&lt;shard&gt;reminder or hint&lt;/shard&gt;</strong> anywhere in the reply. Mark correct to reinforce the behavior, or incorrect to redirect model attention.</p>
       <label for="operatorVerdict">Review Result</label>
       <select id="operatorVerdict">
         <option value="correct">Model correct - reinforce this skill</option>
@@ -113,6 +453,11 @@
         <option value="photo_gate">Photo or evidence gate issue</option>
         <option value="hold">Hold for later</option>
       </select>
+      <label class="switch-row" for="quickReviewed">
+        <input id="quickReviewed" type="checkbox">
+        <span class="switch-ui" aria-hidden="true"></span>
+        <span>Reviewed</span>
+      </label>
       <label for="operatorReply">Operator Reply</label>
       <textarea id="operatorReply" spellcheck="true"></textarea>
       <div class="actions">
@@ -128,7 +473,13 @@
     </section>
     <section>
       <h2>eBay Payload</h2>
-      <pre>{
+      <div class="readable-view">
+    <table><tbody><tr><th>Title</th><td>GE WE11M10001 Dryer Heating Element Used Dryer Part</td></tr><tr><th>Category</th><td>20714</td></tr><tr><th>Condition</th><td>Used</td></tr><tr><th>Format</th><td>FixedPrice</td></tr><tr><th>Buy It Now</th><td>$40</td></tr><tr><th>Minimum Offer</th><td>$32</td></tr><tr><th>Photo Gate</th><td>part_photos_attached</td></tr><tr><th>Attached Images</th><td>1</td></tr></tbody></table>
+    <h3>Item Specifics</h3>
+    <table><tbody><tr><th>Brand</th><td>GE</td></tr><tr><th>Donor_Brand</th><td>Hotpoint</td></tr><tr><th>Type</th><td>Dryer Heating Element</td></tr><tr><th>MPN</th><td>WE11M10001</td></tr><tr><th>UPC</th><td>Does Not Apply</td></tr><tr><th>Donor_Model</th><td>HTDX100ED3WW</td></tr><tr><th>Donor_Serial</th><td>ZA801821C</td></tr><tr><th>Diagram_Callout</th><td>514</td></tr><tr><th>Diagram_Section</th><td>DRUM</td></tr></tbody></table>
+    <h3>Attached Images</h3>
+    <ul><li>scratch\approved-images\WE11M10001-a.jpg</li></ul></div>
+      <pre class="json-view">{
   &quot;title&quot;: &quot;GE WE11M10001 Dryer Heating Element Used Dryer Part&quot;,
   &quot;categoryId&quot;: &quot;20714&quot;,
   &quot;condition&quot;: &quot;Used&quot;,
@@ -241,20 +592,81 @@
     (function () {
       var seed = JSON.parse(document.getElementById("reviewSeed").textContent);
       var storageKey = "rrp-ebay-review:" + seed.partNumber;
+      var imageStorageKey = "rrp-ebay-image-review:" + seed.partNumber;
+      var jsonModeEl = document.getElementById("jsonMode");
       var replyEl = document.getElementById("operatorReply");
       var verdictEl = document.getElementById("operatorVerdict");
+      var reviewedEl = document.getElementById("quickReviewed");
       var shardListEl = document.getElementById("shardList");
       var jsonEl = document.getElementById("reviewJson");
+      var imageSummaryEl = document.getElementById("imageReviewSummary");
 
       function extractShards(text) {
         var shards = [];
-        var pattern = /<shard>([\s\S]*?)<shard>/gi;
+        var pattern = /<shard>([\s\S]*?)(?:<\/shard>|<shard>)/gi;
         var match;
         while ((match = pattern.exec(text || ""))) {
           var value = match[1].trim();
           if (value) shards.push(value);
         }
         return shards;
+      }
+
+      function setJsonMode(enabled) {
+        document.body.classList.toggle("show-json", enabled);
+        localStorage.setItem("rrp-ebay-json-mode", enabled ? "true" : "false");
+      }
+
+      function loadImageDecisions() {
+        try {
+          return JSON.parse(localStorage.getItem(imageStorageKey) || "{}");
+        } catch {
+          return {};
+        }
+      }
+
+      function saveImageDecision(imageUrl, decision) {
+        var decisions = loadImageDecisions();
+        if (decision === "clear") delete decisions[imageUrl];
+        else decisions[imageUrl] = {
+          decision: decision,
+          imageUrl: imageUrl,
+          partNumber: seed.partNumber,
+          title: seed.title,
+          fileName: seed.fileName,
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(imageStorageKey, JSON.stringify(decisions));
+        var index = JSON.parse(localStorage.getItem("rrp-ebay-image-review-index") || "[]");
+        if (index.indexOf(seed.partNumber) === -1) index.push(seed.partNumber);
+        localStorage.setItem("rrp-ebay-image-review-index", JSON.stringify(index.sort()));
+        renderImageDecisions();
+      }
+
+      function renderImageDecisions() {
+        var decisions = loadImageDecisions();
+        var kept = 0;
+        var trashed = 0;
+        document.querySelectorAll("[data-image-url]").forEach(function (card) {
+          var imageUrl = card.getAttribute("data-image-url");
+          var record = decisions[imageUrl];
+          var decision = record && record.decision;
+          card.classList.toggle("is-kept", decision === "keep");
+          card.classList.toggle("is-trashed", decision === "trash");
+          var state = card.querySelector("[data-image-state]");
+          if (decision === "keep") {
+            kept += 1;
+            if (state) state.textContent = "Kept";
+          } else if (decision === "trash") {
+            trashed += 1;
+            if (state) state.textContent = "Trashed";
+          } else if (state) {
+            state.textContent = "Unreviewed";
+          }
+        });
+        if (imageSummaryEl) {
+          imageSummaryEl.textContent = "Image choices: " + kept + " kept / " + trashed + " trashed";
+        }
       }
 
       function buildRecord() {
@@ -264,6 +676,7 @@
           title: seed.title,
           fileName: seed.fileName,
           verdict: verdictEl.value,
+          reviewed: reviewedEl.checked,
           operatorReply: reply,
           shards: extractShards(reply),
           modelRouting: seed.modelRouting,
@@ -288,6 +701,7 @@
           });
         }
         jsonEl.textContent = JSON.stringify(record, null, 2);
+        reviewedEl.checked = Boolean(record.reviewed);
       }
 
       function save() {
@@ -305,6 +719,7 @@
           var parsed = JSON.parse(existing);
           replyEl.value = parsed.operatorReply || "";
           verdictEl.value = parsed.verdict || "correct";
+          reviewedEl.checked = Boolean(parsed.reviewed);
           render(parsed);
         } catch {
           render(buildRecord());
@@ -313,8 +728,22 @@
         render(buildRecord());
       }
 
+      jsonModeEl.checked = localStorage.getItem("rrp-ebay-json-mode") === "true";
+      setJsonMode(jsonModeEl.checked);
+      jsonModeEl.addEventListener("change", function () {
+        setJsonMode(jsonModeEl.checked);
+      });
+
       replyEl.addEventListener("input", function () { render(buildRecord()); });
       verdictEl.addEventListener("change", function () { render(buildRecord()); });
+      reviewedEl.addEventListener("change", save);
+      document.querySelectorAll("[data-image-decision]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var card = button.closest("[data-image-url]");
+          if (!card) return;
+          saveImageDecision(card.getAttribute("data-image-url"), button.getAttribute("data-image-decision"));
+        });
+      });
       document.getElementById("saveReview").addEventListener("click", save);
       document.getElementById("copyReview").addEventListener("click", function () {
         navigator.clipboard.writeText(JSON.stringify(buildRecord(), null, 2));
@@ -325,6 +754,7 @@
         verdictEl.value = "correct";
         render(buildRecord());
       });
+      renderImageDecisions();
     })();
   </script>
 </body>

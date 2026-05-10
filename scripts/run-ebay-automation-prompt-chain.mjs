@@ -6,6 +6,9 @@ const DEFAULT_OUTPUT_DIR = "scratch/ebay-automation-chain";
 const DEFAULT_PROMPT_PATH = "scratch/ebay_prompt_chain.txt";
 const DEFAULT_APPROVED_IMAGE_ROOT = "scratch/approved-images";
 const DEFAULT_LEGACY_CHAIN = "scratch/ebay-zero-drift-final-52/chain-payloads.json";
+const DEFAULT_DESCRIPTION_EVIDENCE = "scratch/description-evidence/reliableparts-descriptions.json";
+const DEFAULT_IMAGE_EVIDENCE = "scratch/image-evidence/reliableparts-images.json";
+const DEFAULT_LOCAL_IMAGE_EVIDENCE_DIR = "scratch/image-evidence";
 
 const DONOR_MACHINE_ID = {
   Brand: "Hotpoint",
@@ -46,6 +49,9 @@ const outputDir = String(args.get("output-dir") || DEFAULT_OUTPUT_DIR);
 const promptPath = String(args.get("prompt") || DEFAULT_PROMPT_PATH);
 const approvedImageRoot = String(args.get("approved-image-root") || DEFAULT_APPROVED_IMAGE_ROOT);
 const legacyChainPath = String(args.get("legacy-chain") || DEFAULT_LEGACY_CHAIN);
+const descriptionEvidencePath = String(args.get("description-evidence") || DEFAULT_DESCRIPTION_EVIDENCE);
+const imageEvidencePath = String(args.get("image-evidence") || DEFAULT_IMAGE_EVIDENCE);
+const localImageEvidenceDir = String(args.get("local-image-evidence-dir") || DEFAULT_LOCAL_IMAGE_EVIDENCE_DIR);
 const liveEbaySync = String(args.get("live-ebay-sync") || "false").toLowerCase() === "true";
 
 if (liveEbaySync) {
@@ -101,6 +107,83 @@ function loadLegacyMap(filePath) {
   return map;
 }
 
+function loadDescriptionEvidenceMap(filePath) {
+  const map = new Map();
+  if (!fs.existsSync(filePath)) return map;
+  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  const records = Array.isArray(parsed) ? parsed : parsed.descriptions || parsed.descriptionEvidence || [];
+  if (!Array.isArray(records)) return map;
+  for (const record of records) {
+    const partNumber = String(
+      record?.partNumber ||
+        record?.mpn ||
+        record?.OEM_Part_Number ||
+        record?.ebay_listing_payload?.itemSpecifics?.MPN ||
+        "",
+    )
+      .trim()
+      .toUpperCase();
+    if (!partNumber || !record?.descriptionText) continue;
+    map.set(partNumber, {
+      partNumber,
+      source: record.source || "unknown",
+      evidenceType: record.evidenceType || "product_description",
+      identityMatch: record.identityMatch || "unknown",
+      pageUrl: record.pageUrl || "",
+      pageUrlSource: record.pageUrlSource || "",
+      capturedAt: record.capturedAt || "",
+      selector: record.selector || "",
+      title: record.title || "",
+      sku: record.sku || "",
+      descriptionText: record.descriptionText,
+      listingUsePolicy:
+        record.listingUsePolicy ||
+        "source evidence only; rewrite in Roadrunner wording before staging",
+    });
+  }
+  return map;
+}
+
+function loadImageEvidenceMap(filePath) {
+  const map = new Map();
+  if (!fs.existsSync(filePath)) return map;
+  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  const records = Array.isArray(parsed) ? parsed : parsed.images || parsed.imageEvidence || [];
+  if (!Array.isArray(records)) return map;
+  for (const record of records) {
+    const partNumber = String(record?.partNumber || record?.mpn || "").trim().toUpperCase();
+    if (!partNumber || !Array.isArray(record?.candidates) || record.candidates.length === 0) continue;
+    map.set(partNumber, {
+      partNumber,
+      source: record.source || "unknown",
+      evidenceType: record.evidenceType || "product_image_set",
+      identityMatch: record.identityMatch || "unknown",
+      pageUrl: record.pageUrl || "",
+      pageUrlSource: record.pageUrlSource || "",
+      capturedAt: record.capturedAt || "",
+      title: record.title || "",
+      sku: record.sku || "",
+      reviewStatus: record.reviewStatus || "candidate_needs_operator_review",
+      listingUsePolicy:
+        record.listingUsePolicy ||
+        "image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging",
+      candidates: record.candidates.map((candidate) => ({
+        imageUrl: candidate.imageUrl || "",
+        thumbnailUrl: candidate.thumbnailUrl || candidate.imageUrl || "",
+        pageUrl: candidate.pageUrl || record.pageUrl || "",
+        source: candidate.source || record.source || "unknown",
+        imageHost: candidate.imageHost || "",
+        title: candidate.title || "",
+        alt: candidate.alt || "",
+        selector: candidate.selector || "",
+        reviewStatus: candidate.reviewStatus || record.reviewStatus || "candidate_needs_operator_review",
+        listingUsePolicy: candidate.listingUsePolicy || record.listingUsePolicy || "",
+      })),
+    });
+  }
+  return map;
+}
+
 function walkFiles(rootDir) {
   if (!fs.existsSync(rootDir)) return [];
   const stack = [rootDir];
@@ -128,6 +211,68 @@ function loadApprovedImages(rootDir) {
     if (!map.has(partNumber)) map.set(partNumber, []);
     map.get(partNumber).push(filePath);
   }
+  return map;
+}
+
+function normalizePartKey(value) {
+  return String(value || "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function loadLocalImageEvidence(rootDir, listingsForPartMatch) {
+  const allowed = new Set([".jpg", ".jpeg", ".png", ".webp"]);
+  const knownParts = listingsForPartMatch
+    .map((record) => String(record.partNumber || record.specs?.mpn || "").trim().toUpperCase())
+    .filter(Boolean)
+    .map((partNumber) => ({ partNumber, normalized: normalizePartKey(partNumber) }));
+  const map = new Map();
+
+  for (const filePath of walkFiles(rootDir)) {
+    if (!allowed.has(path.extname(filePath).toLowerCase())) continue;
+    const fileName = path.basename(filePath);
+    const normalizedFileName = normalizePartKey(fileName);
+    const matchedPart = knownParts.find((part) => normalizedFileName.includes(part.normalized));
+    if (!matchedPart) continue;
+
+    const relativeUrl = path.relative(outputDir, filePath).split(path.sep).join("/");
+    if (!map.has(matchedPart.partNumber)) {
+      map.set(matchedPart.partNumber, {
+        partNumber: matchedPart.partNumber,
+        source: "local_image_evidence",
+        evidenceType: "operator_supplied_image_file_set",
+        identityMatch: "filename_part_number_match",
+        pageUrl: "",
+        pageUrlSource: "scratch/image-evidence local file",
+        capturedAt: new Date().toISOString(),
+        title: `${matchedPart.partNumber} local image candidates`,
+        sku: "",
+        reviewStatus: "candidate_needs_operator_review",
+        listingUsePolicy:
+          "local image evidence only; operator must Keep/Trash and separately approve sale photos before staging",
+        candidates: [],
+      });
+    }
+
+    map.get(matchedPart.partNumber).candidates.push({
+      imageUrl: relativeUrl,
+      thumbnailUrl: relativeUrl,
+      pageUrl: "",
+      source: "local_image_evidence",
+      imageHost: "local",
+      title: fileName,
+      alt: `${matchedPart.partNumber} ${fileName}`,
+      selector: "scratch/image-evidence file",
+      reviewStatus: "candidate_needs_operator_review",
+      listingUsePolicy:
+        "local image evidence only; operator must Keep/Trash and separately approve sale photos before staging",
+    });
+  }
+
+  for (const record of map.values()) {
+    record.candidates.sort((a, b) => a.title.localeCompare(b.title));
+  }
+
   return map;
 }
 
@@ -190,7 +335,7 @@ function routeReview(record, legacyRecord) {
   }
 
   const label = `${record.title || ""} ${record.partTitle || ""} ${record.specs?.type || ""}`.toLowerCase();
-  const smallOrAmbiguous = /\b(thermostat|timer|switch|fuse|knob|strap|bracket|bearing|latch|hinge|button|screw|gasket|o-ring|ground|terminal|wire|resistor|plug|shaft|pulley arm)\b/.test(label);
+  const smallOrAmbiguous = /\b(thermostat|timer|switch|fuse|knob|strap|bracket|bearing|latch|hinge|button|screw|gasket|o-?ring|ground|terminal|wire|resistor|plug|shaft|pulley|glide|slide|seal|clamp|leg|filter|mesh)\b/.test(label);
   if (smallOrAmbiguous) {
     return {
       confidence_score: 0.82,
@@ -297,9 +442,104 @@ function htmlForEbayDescription({ title, record, phase1a, phase1c, routing, atta
 </html>`;
 }
 
+function readableTable(rows) {
+  return `<table><tbody>${rows
+    .map(([label, value]) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value ?? "")}</td></tr>`)
+    .join("")}</tbody></table>`;
+}
+
+function readableList(values) {
+  const items = values.filter(Boolean);
+  if (!items.length) return `<p class="muted">No values captured.</p>`;
+  return `<ul>${items.map((value) => `<li>${escapeHtml(value)}</li>`).join("")}</ul>`;
+}
+
+function sourceDescriptionReadable(records) {
+  if (!records.length) {
+    return `<p class="muted">No source-backed product description block has been captured for this part yet.</p>`;
+  }
+
+  return records
+    .map(
+      (record) => `
+        <div class="read-block">
+          ${readableTable([
+            ["Source", record.source],
+            ["Evidence Type", record.evidenceType],
+            ["Identity Match", record.identityMatch],
+            ["Product Page", record.pageUrl],
+            ["URL Source", record.pageUrlSource],
+            ["Selector", record.selector],
+            ["Captured", record.capturedAt],
+            ["Use Policy", record.listingUsePolicy],
+          ])}
+          <h3>Captured Description Text</h3>
+          <pre class="plain-text">${escapeHtml(record.descriptionText)}</pre>
+        </div>`,
+    )
+    .join("");
+}
+
+function sourceImageReadable(records) {
+  if (!records.length) {
+    return `<p class="muted">No ReliableParts image evidence has been captured for this part yet.</p>`;
+  }
+
+  return records
+    .map((record) => {
+      const candidates = Array.isArray(record.candidates) ? record.candidates : [];
+      const imagesHtml = candidates.length
+        ? `<div class="image-grid">${candidates
+            .map(
+              (candidate) => `
+                <div class="image-card" data-image-url="${escapeHtml(candidate.imageUrl)}">
+                  <a href="${escapeHtml(candidate.imageUrl)}" target="_blank" rel="noreferrer">
+                    <img src="${escapeHtml(candidate.thumbnailUrl || candidate.imageUrl)}" alt="${escapeHtml(candidate.alt || record.partNumber)}">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>${escapeHtml(candidate.reviewStatus || record.reviewStatus)}</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>`,
+            )
+            .join("")}</div>`
+        : `<p class="muted">No candidate image URLs captured.</p>`;
+
+      return `
+        <div class="read-block">
+          ${readableTable([
+            ["Source", record.source],
+            ["Evidence Type", record.evidenceType],
+            ["Identity Match", record.identityMatch],
+            ["Product Page", record.pageUrl],
+            ["URL Source", record.pageUrlSource],
+            ["Captured", record.capturedAt],
+            ["Review Status", record.reviewStatus],
+            ["Use Policy", record.listingUsePolicy],
+          ])}
+          ${imagesHtml}
+        </div>`;
+    })
+    .join("");
+}
+
 function reviewPage(payload) {
   const routing = payload.system_routing;
   const p1a = payload.phase1a.PART_ID;
+  const compatibility = payload.phase1a.COMPATIBILITY_ID || {};
+  const donor = payload.phase0.DONOR_MACHINE_ID || {};
+  const phase1b = payload.phase1b || {};
+  const phase1c = payload.phase1c || {};
+  const ebayPayload = payload.ebay_listing_payload || {};
+  const itemSpecifics = ebayPayload.itemSpecifics || {};
+  const pricing = ebayPayload.pricing || {};
+  const sourceDescriptions = Array.isArray(payload.source_description_evidence)
+    ? payload.source_description_evidence
+    : [];
+  const sourceImages = Array.isArray(payload.source_image_evidence) ? payload.source_image_evidence : [];
   const reviewSeed = {
     partNumber: p1a.OEM_Part_Number,
     title: payload.ebay_listing_payload.title,
@@ -315,6 +555,54 @@ function reviewPage(payload) {
         .map((candidate) => `<li><a href="${escapeHtml(candidate.pageUrl || candidate.imageUrl || "#")}">${escapeHtml(candidate.sourceDomain || "candidate")}</a> - ${escapeHtml(candidate.reviewStatus || "needs operator review")}</li>`)
         .join("")
     : "<li>No image candidates in normalized artifact.</li>";
+  const donorReadable = readableTable([
+    ["Brand", donor.Brand],
+    ["Model", donor.Model_Number],
+    ["Serial", donor.Serial_Number],
+    ["Type", donor.Type],
+    ["Session", donor.Session_ID],
+  ]);
+  const phase1aReadable = readableTable([
+    ["Part Number", p1a.OEM_Part_Number],
+    ["Part Name", p1a.Part_Name],
+    ["Diagram Section", p1a.Assembly_Diagram_Section],
+    ["Diagram Callout", p1a.Diagram_Item_Number],
+    ["Diagram Image", p1a.Assembly_Diagram_Image],
+    ["Included Hardware", p1a.Included_Hardware],
+    ["Provenance", compatibility.Provenance],
+    ["Confidence", routing.confidence_score.toFixed(2)],
+    ["HITL Required", routing.hitl_review_required ? "Yes" : "No"],
+    ["Flag Reason", routing.flag_reason || "None"],
+  ]);
+  const phase1bReadable = `
+    <div class="read-block">
+      <h3>${escapeHtml(phase1b.title || ebayPayload.title || "Untitled listing")}</h3>
+      <pre class="plain-text">${escapeHtml(phase1b.description || "No baseline description captured.")}</pre>
+    </div>`;
+  const phase1cReadable = `
+    <div class="read-block">
+      <h3>Tech Tip</h3>
+      <p>${escapeHtml(phase1c.techNote || "No tech tip captured.")}</p>
+      <h3>Delta Scope</h3>
+      <p>${escapeHtml(phase1c.deltaScope || "No delta scope captured.")}</p>
+    </div>`;
+  const sourceDescriptionBlock = sourceDescriptionReadable(sourceDescriptions);
+  const sourceImageBlock = sourceImageReadable(sourceImages);
+  const ebayReadable = `
+    ${readableTable([
+      ["Title", ebayPayload.title],
+      ["Category", ebayPayload.categoryId],
+      ["Condition", ebayPayload.condition],
+      ["Format", ebayPayload.format],
+      ["Buy It Now", pricing.buyItNowPrice ? `$${pricing.buyItNowPrice}` : ""],
+      ["Minimum Offer", pricing.minimumOfferPrice ? `$${pricing.minimumOfferPrice}` : ""],
+      ["Photo Gate", ebayPayload.imageStatus],
+      ["Attached Images", Array.isArray(ebayPayload.attachedImages) ? ebayPayload.attachedImages.length : 0],
+    ])}
+    <h3>Item Specifics</h3>
+    ${readableTable(Object.entries(itemSpecifics))}
+    <h3>Attached Images</h3>
+    ${readableList(Array.isArray(ebayPayload.attachedImages) ? ebayPayload.attachedImages : [])}`;
 
   return `<!doctype html>
 <html lang="en">
@@ -330,7 +618,12 @@ function reviewPage(payload) {
     section{background:white;border:1px solid #d8dee9;padding:16px}
     h1{font-size:22px;margin:0 0 6px}
     h2{font-size:16px;margin:0 0 12px}
+    h3{font-size:14px;margin:16px 0 8px}
     pre{white-space:pre-wrap;overflow:auto;background:#0f172a;color:#e5e7eb;padding:12px}
+    .plain-text{background:#f8fafc;color:#111827;border:1px solid #e5e7eb}
+    .json-view{display:none}
+    body.show-json .json-view{display:block}
+    body.show-json .readable-view{display:none}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
     .stat{border:1px solid #e5e7eb;padding:12px;background:#f9fafb}
     .ready{border-left:5px solid #16a34a}
@@ -344,10 +637,34 @@ function reviewPage(payload) {
     select{border:1px solid #cbd5e1;padding:8px 10px;background:white}
     button{border:1px solid #111827;background:#111827;color:white;padding:9px 12px;font-weight:800;cursor:pointer}
     button.secondary{background:white;color:#111827}
+    .view-toggle{margin-top:12px;display:flex;align-items:center;gap:10px;color:white;font-weight:800}
+    .view-toggle input{position:absolute;opacity:0}
+    .view-toggle .switch-ui{background:#475569}
+    .view-toggle input:checked + .switch-ui{background:#2563eb}
     .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .shards{background:#f8fafc;border:1px solid #e5e7eb;padding:12px;margin-top:12px}
     .shards li{margin:6px 0}
     .muted{color:#6b7280}
+    .switch-row{display:flex;align-items:center;gap:10px;font-weight:800;margin:12px 0 0}
+    .switch-row input{position:absolute;opacity:0}
+    .switch-ui{width:44px;height:24px;border-radius:999px;background:#cbd5e1;position:relative;display:inline-block;transition:.15s}
+    .switch-ui:before{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:white;left:3px;top:3px;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .switch-row input:checked + .switch-ui{background:#16a34a}
+    .switch-row input:checked + .switch-ui:before{transform:translateX(20px)}
+    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+    .image-card{display:flex;flex-direction:column;gap:6px;color:#111827;border:1px solid #e5e7eb;background:#f8fafc;padding:8px}
+    .image-card.is-kept{background:#ecfdf5;border-color:#22c55e}
+    .image-card.is-trashed{background:#fef2f2;border-color:#ef4444;opacity:.55}
+    .image-card img{width:100%;aspect-ratio:1;object-fit:contain;background:white;border:1px solid #e5e7eb}
+    .image-card span,.image-card small{font-size:11px;font-weight:800;color:#92400e}
+    .image-card.is-kept .image-state{color:#166534}
+    .image-card.is-trashed .image-state{color:#991b1b}
+    .image-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+    .image-actions button{padding:6px 4px;font-size:11px}
+    .image-actions .image-keep{background:#166534;border-color:#166534}
+    .image-actions .image-trash{background:#991b1b;border-color:#991b1b}
+    .image-actions .image-clear{background:white;color:#111827;border-color:#9ca3af}
+    .image-summary{background:#f8fafc;border:1px solid #e5e7eb;padding:10px;margin:10px 0;font-weight:800}
   </style>
 </head>
 <body>
@@ -355,6 +672,11 @@ function reviewPage(payload) {
     <a href="index.html">Back to chain index</a>
     <h1>${escapeHtml(payload.ebay_listing_payload.title)}</h1>
     <div>${routing.hitl_review_required ? "Needs HITL Review" : "Review Ready"} / ${escapeHtml(payload.ebay_listing_payload.imageStatus)}</div>
+    <label class="view-toggle" for="jsonMode">
+      <input id="jsonMode" type="checkbox">
+      <span class="switch-ui" aria-hidden="true"></span>
+      <span>Show JSON</span>
+    </label>
   </header>
   <main>
     <section class="${routing.hitl_review_required ? "review" : "ready"}">
@@ -369,23 +691,40 @@ function reviewPage(payload) {
     </section>
     <section>
       <h2>Phase 0 - Donor Machine Lock</h2>
-      <pre>${escapeHtml(JSON.stringify(payload.phase0, null, 2))}</pre>
+      <div class="readable-view">${donorReadable}</div>
+      <pre class="json-view">${escapeHtml(JSON.stringify(payload.phase0, null, 2))}</pre>
     </section>
     <section>
       <h2>Phase 1A - Part Extraction Lock</h2>
-      <pre>${escapeHtml(JSON.stringify(payload.phase1a, null, 2))}</pre>
+      <div class="readable-view">${phase1aReadable}</div>
+      <pre class="json-view">${escapeHtml(JSON.stringify(payload.phase1a, null, 2))}</pre>
     </section>
     <section>
       <h2>Phase 1B - Baseline Listing</h2>
-      <pre>${escapeHtml(JSON.stringify(payload.phase1b, null, 2))}</pre>
+      <div class="readable-view">${phase1bReadable}</div>
+      <pre class="json-view">${escapeHtml(JSON.stringify(payload.phase1b, null, 2))}</pre>
     </section>
     <section>
       <h2>Phase 1C - Trust Shard Delta</h2>
-      <pre>${escapeHtml(JSON.stringify(payload.phase1c, null, 2))}</pre>
+      <div class="readable-view">${phase1cReadable}</div>
+      <pre class="json-view">${escapeHtml(JSON.stringify(payload.phase1c, null, 2))}</pre>
+    </section>
+    <section>
+      <h2>Source Description Evidence</h2>
+      <p class="muted">Distributor text is evidence for operator review only. Rewrite it in Roadrunner wording before any live listing use.</p>
+      <div class="readable-view">${sourceDescriptionBlock}</div>
+      <pre class="json-view">${escapeHtml(JSON.stringify(sourceDescriptions, null, 2))}</pre>
+    </section>
+    <section>
+      <h2>ReliableParts Image Evidence</h2>
+      <p class="muted">These are source image candidates only. They are not approved sale photos and require watermark/use-rights review.</p>
+      <div id="imageReviewSummary" class="image-summary">No image choices saved yet.</div>
+      <div class="readable-view">${sourceImageBlock}</div>
+      <pre class="json-view">${escapeHtml(JSON.stringify(sourceImages, null, 2))}</pre>
     </section>
     <section>
       <h2>Operator Reply And Memory Shards</h2>
-      <p class="muted">Use <strong>&lt;shard&gt;reminder or hint&lt;shard&gt;</strong> anywhere in the reply. Mark correct to reinforce the behavior, or incorrect to redirect model attention.</p>
+      <p class="muted">Use <strong>&lt;shard&gt;reminder or hint&lt;/shard&gt;</strong> anywhere in the reply. Mark correct to reinforce the behavior, or incorrect to redirect model attention.</p>
       <label for="operatorVerdict">Review Result</label>
       <select id="operatorVerdict">
         <option value="correct">Model correct - reinforce this skill</option>
@@ -393,6 +732,11 @@ function reviewPage(payload) {
         <option value="photo_gate">Photo or evidence gate issue</option>
         <option value="hold">Hold for later</option>
       </select>
+      <label class="switch-row" for="quickReviewed">
+        <input id="quickReviewed" type="checkbox">
+        <span class="switch-ui" aria-hidden="true"></span>
+        <span>Reviewed</span>
+      </label>
       <label for="operatorReply">Operator Reply</label>
       <textarea id="operatorReply" spellcheck="true"></textarea>
       <div class="actions">
@@ -408,7 +752,8 @@ function reviewPage(payload) {
     </section>
     <section>
       <h2>eBay Payload</h2>
-      <pre>${escapeHtml(JSON.stringify(payload.ebay_listing_payload, null, 2))}</pre>
+      <div class="readable-view">${ebayReadable}</div>
+      <pre class="json-view">${escapeHtml(JSON.stringify(payload.ebay_listing_payload, null, 2))}</pre>
     </section>
     <section>
       <h2>Image Candidates For Operator Review</h2>
@@ -424,20 +769,81 @@ function reviewPage(payload) {
     (function () {
       var seed = JSON.parse(document.getElementById("reviewSeed").textContent);
       var storageKey = "rrp-ebay-review:" + seed.partNumber;
+      var imageStorageKey = "rrp-ebay-image-review:" + seed.partNumber;
+      var jsonModeEl = document.getElementById("jsonMode");
       var replyEl = document.getElementById("operatorReply");
       var verdictEl = document.getElementById("operatorVerdict");
+      var reviewedEl = document.getElementById("quickReviewed");
       var shardListEl = document.getElementById("shardList");
       var jsonEl = document.getElementById("reviewJson");
+      var imageSummaryEl = document.getElementById("imageReviewSummary");
 
       function extractShards(text) {
         var shards = [];
-        var pattern = /<shard>([\\s\\S]*?)<shard>/gi;
+        var pattern = /<shard>([\\s\\S]*?)(?:<\\/shard>|<shard>)/gi;
         var match;
         while ((match = pattern.exec(text || ""))) {
           var value = match[1].trim();
           if (value) shards.push(value);
         }
         return shards;
+      }
+
+      function setJsonMode(enabled) {
+        document.body.classList.toggle("show-json", enabled);
+        localStorage.setItem("rrp-ebay-json-mode", enabled ? "true" : "false");
+      }
+
+      function loadImageDecisions() {
+        try {
+          return JSON.parse(localStorage.getItem(imageStorageKey) || "{}");
+        } catch {
+          return {};
+        }
+      }
+
+      function saveImageDecision(imageUrl, decision) {
+        var decisions = loadImageDecisions();
+        if (decision === "clear") delete decisions[imageUrl];
+        else decisions[imageUrl] = {
+          decision: decision,
+          imageUrl: imageUrl,
+          partNumber: seed.partNumber,
+          title: seed.title,
+          fileName: seed.fileName,
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(imageStorageKey, JSON.stringify(decisions));
+        var index = JSON.parse(localStorage.getItem("rrp-ebay-image-review-index") || "[]");
+        if (index.indexOf(seed.partNumber) === -1) index.push(seed.partNumber);
+        localStorage.setItem("rrp-ebay-image-review-index", JSON.stringify(index.sort()));
+        renderImageDecisions();
+      }
+
+      function renderImageDecisions() {
+        var decisions = loadImageDecisions();
+        var kept = 0;
+        var trashed = 0;
+        document.querySelectorAll("[data-image-url]").forEach(function (card) {
+          var imageUrl = card.getAttribute("data-image-url");
+          var record = decisions[imageUrl];
+          var decision = record && record.decision;
+          card.classList.toggle("is-kept", decision === "keep");
+          card.classList.toggle("is-trashed", decision === "trash");
+          var state = card.querySelector("[data-image-state]");
+          if (decision === "keep") {
+            kept += 1;
+            if (state) state.textContent = "Kept";
+          } else if (decision === "trash") {
+            trashed += 1;
+            if (state) state.textContent = "Trashed";
+          } else if (state) {
+            state.textContent = "Unreviewed";
+          }
+        });
+        if (imageSummaryEl) {
+          imageSummaryEl.textContent = "Image choices: " + kept + " kept / " + trashed + " trashed";
+        }
       }
 
       function buildRecord() {
@@ -447,6 +853,7 @@ function reviewPage(payload) {
           title: seed.title,
           fileName: seed.fileName,
           verdict: verdictEl.value,
+          reviewed: reviewedEl.checked,
           operatorReply: reply,
           shards: extractShards(reply),
           modelRouting: seed.modelRouting,
@@ -471,6 +878,7 @@ function reviewPage(payload) {
           });
         }
         jsonEl.textContent = JSON.stringify(record, null, 2);
+        reviewedEl.checked = Boolean(record.reviewed);
       }
 
       function save() {
@@ -488,6 +896,7 @@ function reviewPage(payload) {
           var parsed = JSON.parse(existing);
           replyEl.value = parsed.operatorReply || "";
           verdictEl.value = parsed.verdict || "correct";
+          reviewedEl.checked = Boolean(parsed.reviewed);
           render(parsed);
         } catch {
           render(buildRecord());
@@ -496,8 +905,22 @@ function reviewPage(payload) {
         render(buildRecord());
       }
 
+      jsonModeEl.checked = localStorage.getItem("rrp-ebay-json-mode") === "true";
+      setJsonMode(jsonModeEl.checked);
+      jsonModeEl.addEventListener("change", function () {
+        setJsonMode(jsonModeEl.checked);
+      });
+
       replyEl.addEventListener("input", function () { render(buildRecord()); });
       verdictEl.addEventListener("change", function () { render(buildRecord()); });
+      reviewedEl.addEventListener("change", save);
+      document.querySelectorAll("[data-image-decision]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var card = button.closest("[data-image-url]");
+          if (!card) return;
+          saveImageDecision(card.getAttribute("data-image-url"), button.getAttribute("data-image-decision"));
+        });
+      });
       document.getElementById("saveReview").addEventListener("click", save);
       document.getElementById("copyReview").addEventListener("click", function () {
         navigator.clipboard.writeText(JSON.stringify(buildRecord(), null, 2));
@@ -508,6 +931,7 @@ function reviewPage(payload) {
         verdictEl.value = "correct";
         render(buildRecord());
       });
+      renderImageDecisions();
     })();
   </script>
 </body>
@@ -519,16 +943,41 @@ function indexPage({ listings, generatedAt, promptSummary }) {
   const ready = listings.length - hitl;
   const attached = listings.filter((item) => item.ebay_listing_payload.imageStatus === "part_photos_attached").length;
   const pending = listings.length - attached;
+  const sourceDescriptions = listings.filter((item) => item.source_description_evidence?.length).length;
+  const sourceImages = listings.filter((item) => item.source_image_evidence?.length).length;
   const cards = listings
     .map((item) => {
       const cls = item.system_routing.hitl_review_required ? "review" : "ready";
       const p1a = item.phase1a.PART_ID;
-      return `<a class="card ${cls}" href="${escapeHtml(item.fileName)}">
-        <strong>${escapeHtml(p1a.OEM_Part_Number)}</strong>
-        <span>${escapeHtml(item.ebay_listing_payload.title)}</span>
-        <small data-review-state="${escapeHtml(p1a.OEM_Part_Number)}">No operator reply saved</small>
-        <em>${item.system_routing.hitl_review_required ? "HITL" : "Ready"} / ${escapeHtml(item.ebay_listing_payload.imageStatus)}</em>
-      </a>`;
+      const seed = {
+        partNumber: p1a.OEM_Part_Number,
+        title: item.ebay_listing_payload.title,
+        fileName: item.fileName,
+        modelRouting: item.system_routing.hitl_review_required ? "hitl_review" : "review_ready",
+        photoGate: item.ebay_listing_payload.imageStatus,
+        modelTechNote: item.phase1c.techNote,
+      };
+      const descriptionStatus = item.source_description_evidence?.length
+        ? "source description captured"
+        : "no source description";
+      const sourceImageStatus = item.source_image_evidence?.length ? "source images captured" : "no source images";
+      return `<article class="card ${cls}" data-card="${escapeHtml(p1a.OEM_Part_Number)}" data-seed="${escapeHtml(JSON.stringify(seed))}">
+        <a class="card-link" href="${escapeHtml(item.fileName)}">
+          <strong>${escapeHtml(p1a.OEM_Part_Number)}</strong>
+          <span>${escapeHtml(item.ebay_listing_payload.title)}</span>
+          <em>${item.system_routing.hitl_review_required ? "HITL" : "Ready"} / ${escapeHtml(item.ebay_listing_payload.imageStatus)}</em>
+          <em>${escapeHtml(descriptionStatus)}</em>
+          <em>${escapeHtml(sourceImageStatus)}</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="${escapeHtml(p1a.OEM_Part_Number)}">No operator reply saved</small>
+          <label class="switch-row" for="toggle-${escapeHtml(p1a.OEM_Part_Number)}">
+            <input id="toggle-${escapeHtml(p1a.OEM_Part_Number)}" type="checkbox" data-review-toggle="${escapeHtml(p1a.OEM_Part_Number)}">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="${escapeHtml(p1a.OEM_Part_Number)}">Reviewed</span>
+          </label>
+        </div>
+      </article>`;
     })
     .join("");
 
@@ -548,14 +997,23 @@ function indexPage({ listings, generatedAt, promptSummary }) {
     .prompt{background:white;border:1px solid #d8dee9;padding:14px;margin-bottom:18px}
     pre{white-space:pre-wrap;background:#0f172a;color:#e5e7eb;padding:12px;overflow:auto}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-    .card{display:flex;flex-direction:column;gap:8px;background:white;border:1px solid #d8dee9;padding:14px;text-decoration:none;color:#111827}
+    .card{display:flex;flex-direction:column;gap:10px;background:white;border:1px solid #d8dee9;padding:14px;color:#111827}
     .card:hover{border-color:#2563eb}
+    .card.is-reviewed{background:#f0fdf4;border-color:#86efac}
     .card.ready{border-left:5px solid #16a34a}
     .card.review{border-left:5px solid #f59e0b}
+    .card-link{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:#111827}
     .card strong{font-size:18px}
     .card span{color:#4b5563}
     .card small{color:#6b7280;font-weight:700}
     .card em{font-style:normal;font-size:12px;font-weight:800;color:#2563eb}
+    .card-review{border-top:1px solid #e5e7eb;padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .switch-row{display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;white-space:nowrap}
+    .switch-row input{position:absolute;opacity:0}
+    .switch-ui{width:42px;height:24px;border-radius:999px;background:#cbd5e1;position:relative;display:inline-block;transition:.15s}
+    .switch-ui:before{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:white;left:3px;top:3px;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .switch-row input:checked + .switch-ui{background:#16a34a}
+    .switch-row input:checked + .switch-ui:before{transform:translateX(18px)}
     button{border:1px solid #111827;background:#111827;color:white;padding:9px 12px;font-weight:800;cursor:pointer}
     .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   </style>
@@ -569,6 +1027,8 @@ function indexPage({ listings, generatedAt, promptSummary }) {
       <div class="stat">${hitl} HITL review</div>
       <div class="stat">${attached} approved photo attached</div>
       <div class="stat">${pending} photo pending</div>
+      <div class="stat">${sourceDescriptions} source descriptions</div>
+      <div class="stat">${sourceImages} source image sets</div>
       <div class="stat">liveEbaySync: false</div>
       <div class="stat">Generated: ${escapeHtml(generatedAt)}</div>
     </div>
@@ -580,9 +1040,9 @@ function indexPage({ listings, generatedAt, promptSummary }) {
     </section>
     <section class="prompt">
       <h2>Operator Shard Export</h2>
-      <p>Replies saved on individual part pages are stored in this browser. Use this export after reviewing the 49 pages to create the shard-ingest JSON.</p>
+      <p>Replies and image keep/trash decisions are stored in this browser. Use this export after reviewing the 49 pages.</p>
       <div class="actions">
-        <button id="exportReviews" type="button">Download Review Shards JSON</button>
+        <button id="exportReviews" type="button">Download Review JSON</button>
       </div>
       <pre id="reviewSummary">No saved replies loaded yet.</pre>
     </section>
@@ -601,35 +1061,124 @@ function indexPage({ listings, generatedAt, promptSummary }) {
         return records;
       }
 
+      function loadImageReviews() {
+        var records = [];
+        for (var i = 0; i < localStorage.length; i += 1) {
+          var key = localStorage.key(i);
+          if (!key || key.indexOf("rrp-ebay-image-review:") !== 0) continue;
+          var partNumber = key.replace("rrp-ebay-image-review:", "");
+          try {
+            var decisions = JSON.parse(localStorage.getItem(key) || "{}");
+            Object.keys(decisions).forEach(function (imageUrl) {
+              records.push(decisions[imageUrl]);
+            });
+          } catch {}
+        }
+        records.sort(function (a, b) {
+          return String(a.partNumber).localeCompare(String(b.partNumber)) || String(a.imageUrl).localeCompare(String(b.imageUrl));
+        });
+        return records;
+      }
+
+      function storageKey(partNumber) {
+        return "rrp-ebay-review:" + partNumber;
+      }
+
+      function defaultVerdict(seed) {
+        if (seed.photoGate !== "part_photos_attached") return "photo_gate";
+        if (seed.modelRouting === "hitl_review") return "hold";
+        return "correct";
+      }
+
+      function saveQuickReview(seed, reviewed) {
+        if (!reviewed) {
+          localStorage.removeItem(storageKey(seed.partNumber));
+          renderSummary();
+          return;
+        }
+
+        var record = {
+          partNumber: seed.partNumber,
+          title: seed.title,
+          fileName: seed.fileName,
+          verdict: defaultVerdict(seed),
+          reviewed: true,
+          operatorReply: "Quick index toggle review.",
+          shards: [],
+          modelRouting: seed.modelRouting,
+          photoGate: seed.photoGate,
+          modelTechNote: seed.modelTechNote,
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(storageKey(seed.partNumber), JSON.stringify(record));
+        var index = JSON.parse(localStorage.getItem("rrp-ebay-review-index") || "[]");
+        if (index.indexOf(seed.partNumber) === -1) index.push(seed.partNumber);
+        localStorage.setItem("rrp-ebay-review-index", JSON.stringify(index.sort()));
+        renderSummary();
+      }
+
       function renderSummary() {
         var records = loadReviews();
+        var imageRecords = loadImageReviews();
         var shardCount = records.reduce(function (sum, record) { return sum + (record.shards || []).length; }, 0);
+        document.querySelectorAll("[data-review-state]").forEach(function (node) {
+          node.textContent = "No operator reply saved";
+        });
+        document.querySelectorAll("[data-review-toggle]").forEach(function (toggle) {
+          toggle.checked = false;
+        });
+        document.querySelectorAll("[data-toggle-label]").forEach(function (label) {
+          label.textContent = "Reviewed";
+        });
+        document.querySelectorAll("[data-card]").forEach(function (card) {
+          card.classList.remove("is-reviewed");
+        });
         document.getElementById("reviewSummary").textContent = JSON.stringify({
           savedReplies: records.length,
           extractedShards: shardCount,
           correct: records.filter(function (record) { return record.verdict === "correct"; }).length,
           incorrect: records.filter(function (record) { return record.verdict === "incorrect"; }).length,
-          photoGate: records.filter(function (record) { return record.verdict === "photo_gate"; }).length
+          photoGate: records.filter(function (record) { return record.verdict === "photo_gate"; }).length,
+          imageKept: imageRecords.filter(function (record) { return record.decision === "keep"; }).length,
+          imageTrashed: imageRecords.filter(function (record) { return record.decision === "trash"; }).length,
+          imageDecisions: imageRecords.length
         }, null, 2);
         records.forEach(function (record) {
           var node = document.querySelector('[data-review-state="' + record.partNumber + '"]');
-          if (node) node.textContent = "Reply saved / " + ((record.shards || []).length) + " shard(s)";
+          if (node) node.textContent = "Reviewed: " + record.verdict + " / " + ((record.shards || []).length) + " shard(s)";
+          var toggle = document.querySelector('[data-review-toggle="' + record.partNumber + '"]');
+          if (toggle) toggle.checked = Boolean(record.reviewed || record.operatorReply || (record.shards || []).length);
+          var label = document.querySelector('[data-toggle-label="' + record.partNumber + '"]');
+          if (label) label.textContent = "Reviewed";
+          var card = document.querySelector('[data-card="' + record.partNumber + '"]');
+          if (card) card.classList.add("is-reviewed");
         });
       }
 
+      document.querySelectorAll("[data-review-toggle]").forEach(function (toggle) {
+        toggle.addEventListener("change", function () {
+          var card = toggle.closest("[data-seed]");
+          if (!card) return;
+          var seed = JSON.parse(card.getAttribute("data-seed"));
+          saveQuickReview(seed, toggle.checked);
+        });
+      });
+
       document.getElementById("exportReviews").addEventListener("click", function () {
         var records = loadReviews();
+        var imageRecords = loadImageReviews();
         var payload = {
           exportedAt: new Date().toISOString(),
           source: "scratch/ebay-automation-chain local review UI",
-          instructions: "Ingest shards only after operator review. verdict=correct reinforces the model skill; verdict=incorrect redirects attention.",
-          records: records
+          instructions: "Ingest shards and image decisions only after operator review. ReliableParts images remain candidates until kept and rights/watermark reviewed.",
+          records: records,
+          imageRecords: imageRecords
         };
         var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url;
-        a.download = "ebay-operator-shards.json";
+        a.download = "ebay-operator-review.json";
         a.click();
         URL.revokeObjectURL(url);
       });
@@ -641,7 +1190,15 @@ function indexPage({ listings, generatedAt, promptSummary }) {
 </html>`;
 }
 
-function buildPayload(record, index, legacyMap, approvedImageMap) {
+function buildPayload(
+  record,
+  index,
+  legacyMap,
+  approvedImageMap,
+  descriptionEvidenceMap,
+  imageEvidenceMap,
+  localImageEvidenceMap,
+) {
   const partNumber = String(record.partNumber || record.specs?.mpn || "").trim().toUpperCase();
   if (!partNumber) throw new Error(`Missing part number at listing index ${index}`);
 
@@ -650,12 +1207,28 @@ function buildPayload(record, index, legacyMap, approvedImageMap) {
   const diagram = DIAGRAMS[section];
   const callout = String(record.diagId || record.specs?.diagramId || legacyRecord?.phase1a?.PART_ID?.Diagram_Item_Number || "").trim();
   const label = cleanPartLabel(record);
-  const routing = routeReview(record, legacyRecord);
+  const baseRouting = routeReview(record, legacyRecord);
   const title = makeTitle(record);
   const price = parseMoney(record.ebayBuyNow || record.specs?.ebayBuyNow, 25);
   const attachedImages = approvedImageMap.get(partNumber) || [];
   const relativeImages = attachedImages.map((imagePath) => path.relative(outputDir, imagePath).split(path.sep).join("/"));
   const imageStatus = attachedImages.length ? "part_photos_attached" : "part_photo_pending";
+  const sourceDescriptionEvidence = descriptionEvidenceMap.has(partNumber)
+    ? [descriptionEvidenceMap.get(partNumber)]
+    : [];
+  const sourceImageEvidence = [
+    ...(imageEvidenceMap.has(partNumber) ? [imageEvidenceMap.get(partNumber)] : []),
+    ...(localImageEvidenceMap.has(partNumber) ? [localImageEvidenceMap.get(partNumber)] : []),
+  ];
+  const routing = attachedImages.length
+    ? baseRouting
+    : {
+        confidence_score: Math.min(Number(baseRouting.confidence_score || 0.82), 0.82),
+        hitl_review_required: true,
+        flag_reason: baseRouting.hitl_review_required
+          ? `${baseRouting.flag_reason} Also blocked by photo gate: no approved sale photo is attached.`
+          : "Photo gate blocked: no approved sale photo is attached, so this listing must stay in HITL review before staging.",
+      };
   const techNote = techNoteFor(record);
 
   const phase1a = {
@@ -686,6 +1259,7 @@ The Part
 - Donor model record: ${DONOR_MACHINE_ID.Brand} ${DONOR_MACHINE_ID.Model_Number} / Serial ${DONOR_MACHINE_ID.Serial_Number}
 - Assembly diagram section: ${section}
 - Included hardware: [X]
+${sourceDescriptionEvidence.length ? "- Source product description: ReliableParts block captured for operator review only. Rewrite in Roadrunner wording before staging.\n" : ""}
 
 Condition
 - Used appliance part removed from a teardown unit.
@@ -735,6 +1309,9 @@ Terms
       nameplate_image: "C:/Users/bradv/Downloads/20260327_091311.jpg",
       diagram_root: "public/diagrams/HTDX100ED3WW",
       approved_part_image_root: approvedImageRoot,
+      description_evidence_path: descriptionEvidencePath,
+      image_evidence_path: imageEvidencePath,
+      local_image_evidence_dir: localImageEvidenceDir,
       live_ebay_sync: false,
     },
     validationEvidence: {
@@ -745,6 +1322,13 @@ Terms
         imagePath: diagram.imagePath,
         imageUrl: diagram.imageUrl,
       },
+      sourceDescription: sourceDescriptionEvidence.map((evidence) => ({
+        source: evidence.source,
+        pageUrl: evidence.pageUrl,
+        selector: evidence.selector,
+        capturedAt: evidence.capturedAt,
+        listingUsePolicy: evidence.listingUsePolicy,
+      })),
     },
     phase0: {
       DONOR_MACHINE_ID,
@@ -753,6 +1337,8 @@ Terms
     phase1b,
     phase1c,
     system_routing: routing,
+    source_description_evidence: sourceDescriptionEvidence,
+    source_image_evidence: sourceImageEvidence,
     image_candidates: Array.isArray(record.imageCandidates) ? record.imageCandidates : [],
     ebay_listing_payload: {
       title,
@@ -789,6 +1375,9 @@ Terms
 const listings = parseJsonWithListings(inputPath);
 const legacyMap = loadLegacyMap(legacyChainPath);
 const approvedImageMap = loadApprovedImages(approvedImageRoot);
+const descriptionEvidenceMap = loadDescriptionEvidenceMap(descriptionEvidencePath);
+const imageEvidenceMap = loadImageEvidenceMap(imageEvidencePath);
+const localImageEvidenceMap = loadLocalImageEvidence(localImageEvidenceDir, listings);
 const promptSummary = readPromptSummary(promptPath);
 const generatedAt = new Date().toISOString();
 
@@ -800,7 +1389,17 @@ for (const entry of fs.readdirSync(outputDir)) {
   }
 }
 
-const payloads = listings.map((record, index) => buildPayload(record, index, legacyMap, approvedImageMap));
+const payloads = listings.map((record, index) =>
+  buildPayload(
+    record,
+    index,
+    legacyMap,
+    approvedImageMap,
+    descriptionEvidenceMap,
+    imageEvidenceMap,
+    localImageEvidenceMap,
+  ),
+);
 
 for (const payload of payloads) {
   fs.writeFileSync(path.join(outputDir, payload.fileName), reviewPage(payload));
@@ -818,6 +1417,9 @@ const manifest = {
     hitlReview: payloads.filter((item) => item.system_routing.hitl_review_required).length,
     approvedPhotosAttached: payloads.filter((item) => item.ebay_listing_payload.imageStatus === "part_photos_attached").length,
     partPhotoPending: payloads.filter((item) => item.ebay_listing_payload.imageStatus === "part_photo_pending").length,
+    sourceDescriptions: payloads.filter((item) => item.source_description_evidence.length > 0).length,
+    sourceImageSets: payloads.filter((item) => item.source_image_evidence.length > 0).length,
+    localImageEvidenceSets: localImageEvidenceMap.size,
   },
   listings: payloads,
 };

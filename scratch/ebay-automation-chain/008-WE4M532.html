@@ -12,7 +12,12 @@
     section{background:white;border:1px solid #d8dee9;padding:16px}
     h1{font-size:22px;margin:0 0 6px}
     h2{font-size:16px;margin:0 0 12px}
+    h3{font-size:14px;margin:16px 0 8px}
     pre{white-space:pre-wrap;overflow:auto;background:#0f172a;color:#e5e7eb;padding:12px}
+    .plain-text{background:#f8fafc;color:#111827;border:1px solid #e5e7eb}
+    .json-view{display:none}
+    body.show-json .json-view{display:block}
+    body.show-json .readable-view{display:none}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
     .stat{border:1px solid #e5e7eb;padding:12px;background:#f9fafb}
     .ready{border-left:5px solid #16a34a}
@@ -26,10 +31,34 @@
     select{border:1px solid #cbd5e1;padding:8px 10px;background:white}
     button{border:1px solid #111827;background:#111827;color:white;padding:9px 12px;font-weight:800;cursor:pointer}
     button.secondary{background:white;color:#111827}
+    .view-toggle{margin-top:12px;display:flex;align-items:center;gap:10px;color:white;font-weight:800}
+    .view-toggle input{position:absolute;opacity:0}
+    .view-toggle .switch-ui{background:#475569}
+    .view-toggle input:checked + .switch-ui{background:#2563eb}
     .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .shards{background:#f8fafc;border:1px solid #e5e7eb;padding:12px;margin-top:12px}
     .shards li{margin:6px 0}
     .muted{color:#6b7280}
+    .switch-row{display:flex;align-items:center;gap:10px;font-weight:800;margin:12px 0 0}
+    .switch-row input{position:absolute;opacity:0}
+    .switch-ui{width:44px;height:24px;border-radius:999px;background:#cbd5e1;position:relative;display:inline-block;transition:.15s}
+    .switch-ui:before{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:white;left:3px;top:3px;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .switch-row input:checked + .switch-ui{background:#16a34a}
+    .switch-row input:checked + .switch-ui:before{transform:translateX(20px)}
+    .image-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+    .image-card{display:flex;flex-direction:column;gap:6px;color:#111827;border:1px solid #e5e7eb;background:#f8fafc;padding:8px}
+    .image-card.is-kept{background:#ecfdf5;border-color:#22c55e}
+    .image-card.is-trashed{background:#fef2f2;border-color:#ef4444;opacity:.55}
+    .image-card img{width:100%;aspect-ratio:1;object-fit:contain;background:white;border:1px solid #e5e7eb}
+    .image-card span,.image-card small{font-size:11px;font-weight:800;color:#92400e}
+    .image-card.is-kept .image-state{color:#166534}
+    .image-card.is-trashed .image-state{color:#991b1b}
+    .image-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+    .image-actions button{padding:6px 4px;font-size:11px}
+    .image-actions .image-keep{background:#166534;border-color:#166534}
+    .image-actions .image-trash{background:#991b1b;border-color:#991b1b}
+    .image-actions .image-clear{background:white;color:#111827;border-color:#9ca3af}
+    .image-summary{background:#f8fafc;border:1px solid #e5e7eb;padding:10px;margin:10px 0;font-weight:800}
   </style>
 </head>
 <body>
@@ -37,21 +66,27 @@
     <a href="index.html">Back to chain index</a>
     <h1>GE WE4M532 Dryer Timer Used Dryer Part</h1>
     <div>Needs HITL Review / part_photo_pending</div>
+    <label class="view-toggle" for="jsonMode">
+      <input id="jsonMode" type="checkbox">
+      <span class="switch-ui" aria-hidden="true"></span>
+      <span>Show JSON</span>
+    </label>
   </header>
   <main>
     <section class="review">
       <h2>Prompt Chain Routing</h2>
       <div class="grid">
         <div class="stat"><strong>Part</strong><br>WE4M532</div>
-        <div class="stat"><strong>Phase 1A Confidence</strong><br>0.90</div>
+        <div class="stat"><strong>Phase 1A Confidence</strong><br>0.82</div>
         <div class="stat"><strong>HITL</strong><br>Required</div>
         <div class="stat"><strong>Photo Gate</strong><br>part_photo_pending</div>
       </div>
-      <p>Part type is not distinctive enough for zero-click routing from row data alone.</p>
+      <p>Part type is not distinctive enough for zero-click routing from row data alone. Also blocked by photo gate: no approved sale photo is attached.</p>
     </section>
     <section>
       <h2>Phase 0 - Donor Machine Lock</h2>
-      <pre>{
+      <div class="readable-view"><table><tbody><tr><th>Brand</th><td>Hotpoint</td></tr><tr><th>Model</th><td>HTDX100ED3WW</td></tr><tr><th>Serial</th><td>ZA801821C</td></tr><tr><th>Type</th><td>Electric Dryer</td></tr><tr><th>Session</th><td>HTDX100ED3WW_ZA801821C</td></tr></tbody></table></div>
+      <pre class="json-view">{
   &quot;DONOR_MACHINE_ID&quot;: {
     &quot;Brand&quot;: &quot;Hotpoint&quot;,
     &quot;Model_Number&quot;: &quot;HTDX100ED3WW&quot;,
@@ -63,7 +98,8 @@
     </section>
     <section>
       <h2>Phase 1A - Part Extraction Lock</h2>
-      <pre>{
+      <div class="readable-view"><table><tbody><tr><th>Part Number</th><td>WE4M532</td></tr><tr><th>Part Name</th><td>Dryer Timer</td></tr><tr><th>Diagram Section</th><td>BACKSPLASH, BLOWER &amp; DRIVE ASSEMBLY</td></tr><tr><th>Diagram Callout</th><td>100</td></tr><tr><th>Diagram Image</th><td>/diagrams/HTDX100ED3WW/backsplash-blower-drive-assembly.png</td></tr><tr><th>Included Hardware</th><td>[X]</td></tr><tr><th>Provenance</th><td>Pulled directly from donor Hotpoint HTDX100ED3WW (Serial: ZA801821C). Verify part number, diagram callout, and photos before ordering.</td></tr><tr><th>Confidence</th><td>0.82</td></tr><tr><th>HITL Required</th><td>Yes</td></tr><tr><th>Flag Reason</th><td>Part type is not distinctive enough for zero-click routing from row data alone. Also blocked by photo gate: no approved sale photo is attached.</td></tr></tbody></table></div>
+      <pre class="json-view">{
   &quot;PART_ID&quot;: {
     &quot;Diagram_Item_Number&quot;: &quot;100&quot;,
     &quot;Assembly_Diagram_Section&quot;: &quot;BACKSPLASH, BLOWER &amp; DRIVE ASSEMBLY&quot;,
@@ -76,17 +112,45 @@
     &quot;Provenance&quot;: &quot;Pulled directly from donor Hotpoint HTDX100ED3WW (Serial: ZA801821C). Verify part number, diagram callout, and photos before ordering.&quot;
   },
   &quot;SYSTEM_ROUTING&quot;: {
-    &quot;Confidence_Score&quot;: 0.9,
+    &quot;Confidence_Score&quot;: 0.82,
     &quot;HITL_Review_Required&quot;: true,
-    &quot;Flag_Reason&quot;: &quot;Part type is not distinctive enough for zero-click routing from row data alone.&quot;
+    &quot;Flag_Reason&quot;: &quot;Part type is not distinctive enough for zero-click routing from row data alone. Also blocked by photo gate: no approved sale photo is attached.&quot;
   }
 }</pre>
     </section>
     <section>
       <h2>Phase 1B - Baseline Listing</h2>
-      <pre>{
+      <div class="readable-view">
+    <div class="read-block">
+      <h3>GE WE4M532 Dryer Timer Used Dryer Part</h3>
+      <pre class="plain-text">Title: GE WE4M532 Dryer Timer Used Dryer Part
+
+The Part
+- Part number: WE4M532
+- Part label: Dryer Timer
+- Diagram callout: 100
+- Donor model record: Hotpoint HTDX100ED3WW / Serial ZA801821C
+- Assembly diagram section: BACKSPLASH, BLOWER &amp; DRIVE ASSEMBLY
+- Included hardware: [X]
+- Source product description: ReliableParts block captured for operator review only. Rewrite in Roadrunner wording before staging.
+
+
+Condition
+- Used appliance part removed from a teardown unit.
+- Exact testing notes were not supplied in the input evidence.
+- Match the part number, diagram callout, and listing photos before ordering.
+
+Tech Tip:
+Match the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.
+
+Terms
+- Items ship within 1 business day.
+- 30-day returns on uninstalled parts.
+- Review routing: Needs human review before staging.</pre>
+    </div></div>
+      <pre class="json-view">{
   &quot;title&quot;: &quot;GE WE4M532 Dryer Timer Used Dryer Part&quot;,
-  &quot;description&quot;: &quot;Title: GE WE4M532 Dryer Timer Used Dryer Part\n\nThe Part\n- Part number: WE4M532\n- Part label: Dryer Timer\n- Diagram callout: 100\n- Donor model record: Hotpoint HTDX100ED3WW / Serial ZA801821C\n- Assembly diagram section: BACKSPLASH, BLOWER &amp; DRIVE ASSEMBLY\n- Included hardware: [X]\n\nCondition\n- Used appliance part removed from a teardown unit.\n- Exact testing notes were not supplied in the input evidence.\n- Match the part number, diagram callout, and listing photos before ordering.\n\nTech Tip:\nMatch the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.\n\nTerms\n- Items ship within 1 business day.\n- 30-day returns on uninstalled parts.\n- Review routing: Needs human review before staging.&quot;,
+  &quot;description&quot;: &quot;Title: GE WE4M532 Dryer Timer Used Dryer Part\n\nThe Part\n- Part number: WE4M532\n- Part label: Dryer Timer\n- Diagram callout: 100\n- Donor model record: Hotpoint HTDX100ED3WW / Serial ZA801821C\n- Assembly diagram section: BACKSPLASH, BLOWER &amp; DRIVE ASSEMBLY\n- Included hardware: [X]\n- Source product description: ReliableParts block captured for operator review only. Rewrite in Roadrunner wording before staging.\n\n\nCondition\n- Used appliance part removed from a teardown unit.\n- Exact testing notes were not supplied in the input evidence.\n- Match the part number, diagram callout, and listing photos before ordering.\n\nTech Tip:\nMatch the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.\n\nTerms\n- Items ship within 1 business day.\n- 30-day returns on uninstalled parts.\n- Review routing: Needs human review before staging.&quot;,
   &quot;layout&quot;: [
     &quot;Title&quot;,
     &quot;The Part&quot;,
@@ -98,14 +162,453 @@
     </section>
     <section>
       <h2>Phase 1C - Trust Shard Delta</h2>
-      <pre>{
+      <div class="readable-view">
+    <div class="read-block">
+      <h3>Tech Tip</h3>
+      <p>Match the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.</p>
+      <h3>Delta Scope</h3>
+      <p>Added one bounded Tech Tip without changing locked part number, title, diagram callout, donor provenance, condition, or policy terms.</p>
+    </div></div>
+      <pre class="json-view">{
   &quot;techNote&quot;: &quot;Match the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.&quot;,
   &quot;deltaScope&quot;: &quot;Added one bounded Tech Tip without changing locked part number, title, diagram callout, donor provenance, condition, or policy terms.&quot;
 }</pre>
     </section>
     <section>
+      <h2>Source Description Evidence</h2>
+      <p class="muted">Distributor text is evidence for operator review only. Rewrite it in Roadrunner wording before any live listing use.</p>
+      <div class="readable-view">
+        <div class="read-block">
+          <table><tbody><tr><th>Source</th><td>reliableparts.com</td></tr><tr><th>Evidence Type</th><td>distributor_product_description</td></tr><tr><th>Identity Match</th><td>exact</td></tr><tr><th>Product Page</th><td>https://www.reliableparts.com/gen-we4m532.html</td></tr><tr><th>URL Source</th><td>url_csv</td></tr><tr><th>Selector</th><td>#accordion .product.attribute.description .value .short-desc</td></tr><tr><th>Captured</th><td>2026-05-10T09:04:06.945Z</td></tr><tr><th>Use Policy</th><td>source evidence only; rewrite in Roadrunner wording before staging</td></tr></tbody></table>
+          <h3>Captured Description Text</h3>
+          <pre class="plain-text">Maintain the functionality of your washing machine with this high-quality timer circuit board, designed specifically for GE appliances. Engineered with precision, this replacement part ensures reliable operation for a variety of models, including those from Hotpoint, Haier, Monogram, and Café. It plays a critical role in the proper timing of wash cycles, helping to eliminate errors and ensure your laundry is done on schedule. Installing this part can help restore your washer to peak performance, allowing for efficient cycles and optimal cleaning results. With a straightforward installation process, this timer offers a perfect solution for both DIY enthusiasts and professional technicians. Trust in a product that meets the high standards of GE quality and reliability, and bring your washing machine back to life. Perfect for anyone looking to maintain or repair their appliance effectively.</pre>
+        </div></div>
+      <pre class="json-view">[
+  {
+    &quot;partNumber&quot;: &quot;WE4M532&quot;,
+    &quot;source&quot;: &quot;reliableparts.com&quot;,
+    &quot;evidenceType&quot;: &quot;distributor_product_description&quot;,
+    &quot;identityMatch&quot;: &quot;exact&quot;,
+    &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+    &quot;pageUrlSource&quot;: &quot;url_csv&quot;,
+    &quot;capturedAt&quot;: &quot;2026-05-10T09:04:06.945Z&quot;,
+    &quot;selector&quot;: &quot;#accordion .product.attribute.description .value .short-desc&quot;,
+    &quot;title&quot;: &quot;WE4M532 GE Dryer Timer&quot;,
+    &quot;sku&quot;: &quot;GEN WE4M532&quot;,
+    &quot;descriptionText&quot;: &quot;Maintain the functionality of your washing machine with this high-quality timer circuit board, designed specifically for GE appliances. Engineered with precision, this replacement part ensures reliable operation for a variety of models, including those from Hotpoint, Haier, Monogram, and Café. It plays a critical role in the proper timing of wash cycles, helping to eliminate errors and ensure your laundry is done on schedule. Installing this part can help restore your washer to peak performance, allowing for efficient cycles and optimal cleaning results. With a straightforward installation process, this timer offers a perfect solution for both DIY enthusiasts and professional technicians. Trust in a product that meets the high standards of GE quality and reliability, and bring your washing machine back to life. Perfect for anyone looking to maintain or repair their appliance effectively.&quot;,
+    &quot;listingUsePolicy&quot;: &quot;source evidence only; rewrite in Roadrunner wording before staging&quot;
+  }
+]</pre>
+    </section>
+    <section>
+      <h2>ReliableParts Image Evidence</h2>
+      <p class="muted">These are source image candidates only. They are not approved sale photos and require watermark/use-rights review.</p>
+      <div id="imageReviewSummary" class="image-summary">No image choices saved yet.</div>
+      <div class="readable-view">
+        <div class="read-block">
+          <table><tbody><tr><th>Source</th><td>reliableparts.com</td></tr><tr><th>Evidence Type</th><td>distributor_product_image_set</td></tr><tr><th>Identity Match</th><td>exact</td></tr><tr><th>Product Page</th><td>https://www.reliableparts.com/gen-we4m532.html</td></tr><tr><th>URL Source</th><td>url_csv</td></tr><tr><th>Captured</th><td>2026-05-10T09:03:23.408Z</td></tr><tr><th>Review Status</th><td>candidate_needs_watermark_review</td></tr><tr><th>Use Policy</th><td>image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging</td></tr></tbody></table>
+          <div class="image-grid">
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f_small.webp" alt="WE4M532 GE Dryer Timer">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image">
+                  <a href="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail">
+                  <a href="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail" target="_blank" rel="noreferrer">
+                    <img src="https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/97edfed3-6d5b-4b34-a017-abc58154409c_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/97edfed3-6d5b-4b34-a017-abc58154409c_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/97edfed3-6d5b-4b34-a017-abc58154409c_small.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/20f49e55-fa2b-468a-9b20-95c43959ddc6_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/20f49e55-fa2b-468a-9b20-95c43959ddc6_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/20f49e55-fa2b-468a-9b20-95c43959ddc6_small.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/eccb152c-7b48-4c57-9192-22ed39055ab6_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/eccb152c-7b48-4c57-9192-22ed39055ab6_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/eccb152c-7b48-4c57-9192-22ed39055ab6_small.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/c86b1eff-4ddf-4301-9261-63ba4002f3bd_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/c86b1eff-4ddf-4301-9261-63ba4002f3bd_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/c86b1eff-4ddf-4301-9261-63ba4002f3bd_small.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/bd2adf50-5e85-49e2-b421-7491e9d8b725_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/bd2adf50-5e85-49e2-b421-7491e9d8b725_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/bd2adf50-5e85-49e2-b421-7491e9d8b725_small.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/997d42c3-adce-48c5-929c-383f2400a137_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/997d42c3-adce-48c5-929c-383f2400a137_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/997d42c3-adce-48c5-929c-383f2400a137_small.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/dad5dda1-24b9-4852-a426-8623e97df148_small.webp">
+                  <a href="https://cdn.amplifi.pattern.com/dad5dda1-24b9-4852-a426-8623e97df148_small.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/dad5dda1-24b9-4852-a426-8623e97df148_small.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div>
+                <div class="image-card" data-image-url="https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f.webp">
+                  <a href="https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f.webp" target="_blank" rel="noreferrer">
+                    <img src="https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f.webp" alt="WE4M532">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_watermark_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div></div>
+        </div>
+        <div class="read-block">
+          <table><tbody><tr><th>Source</th><td>local_image_evidence</td></tr><tr><th>Evidence Type</th><td>operator_supplied_image_file_set</td></tr><tr><th>Identity Match</th><td>filename_part_number_match</td></tr><tr><th>Product Page</th><td></td></tr><tr><th>URL Source</th><td>scratch/image-evidence local file</td></tr><tr><th>Captured</th><td>2026-05-10T09:39:20.299Z</td></tr><tr><th>Review Status</th><td>candidate_needs_operator_review</td></tr><tr><th>Use Policy</th><td>local image evidence only; operator must Keep/Trash and separately approve sale photos before staging</td></tr></tbody></table>
+          <div class="image-grid">
+                <div class="image-card" data-image-url="../image-evidence/GEN-WE4M532_0.webp">
+                  <a href="../image-evidence/GEN-WE4M532_0.webp" target="_blank" rel="noreferrer">
+                    <img src="../image-evidence/GEN-WE4M532_0.webp" alt="WE4M532 GEN-WE4M532_0.webp">
+                  </a>
+                  <span class="image-state" data-image-state>Unreviewed</span>
+                  <small>candidate_needs_operator_review</small>
+                  <div class="image-actions">
+                    <button type="button" class="image-keep" data-image-decision="keep">Keep</button>
+                    <button type="button" class="image-trash" data-image-decision="trash">Trash</button>
+                    <button type="button" class="image-clear" data-image-decision="clear">Clear</button>
+                  </div>
+                </div></div>
+        </div></div>
+      <pre class="json-view">[
+  {
+    &quot;partNumber&quot;: &quot;WE4M532&quot;,
+    &quot;source&quot;: &quot;reliableparts.com&quot;,
+    &quot;evidenceType&quot;: &quot;distributor_product_image_set&quot;,
+    &quot;identityMatch&quot;: &quot;exact&quot;,
+    &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+    &quot;pageUrlSource&quot;: &quot;url_csv&quot;,
+    &quot;capturedAt&quot;: &quot;2026-05-10T09:03:23.408Z&quot;,
+    &quot;title&quot;: &quot;WE4M532 GE Dryer Timer&quot;,
+    &quot;sku&quot;: &quot;GEN WE4M532&quot;,
+    &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+    &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;,
+    &quot;candidates&quot;: [
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer&quot;,
+        &quot;alt&quot;: &quot;WE4M532 GE Dryer Timer&quot;,
+        &quot;selector&quot;: &quot;#bkp-common-parts .dynamic-part img&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=335&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 1&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=300&amp;height=300&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 2&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 3&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=270&amp;height=207&amp;store=reliableparts&amp;image-type=small_image&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 5&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=75&amp;height=90&amp;store=reliableparts&amp;image-type=thumbnail&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;static.reliableparts.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 6&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/97edfed3-6d5b-4b34-a017-abc58154409c_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/97edfed3-6d5b-4b34-a017-abc58154409c_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 2&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/20f49e55-fa2b-468a-9b20-95c43959ddc6_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/20f49e55-fa2b-468a-9b20-95c43959ddc6_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 3&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/eccb152c-7b48-4c57-9192-22ed39055ab6_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/eccb152c-7b48-4c57-9192-22ed39055ab6_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 4&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/c86b1eff-4ddf-4301-9261-63ba4002f3bd_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/c86b1eff-4ddf-4301-9261-63ba4002f3bd_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 5&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/bd2adf50-5e85-49e2-b421-7491e9d8b725_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/bd2adf50-5e85-49e2-b421-7491e9d8b725_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 6&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/997d42c3-adce-48c5-929c-383f2400a137_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/997d42c3-adce-48c5-929c-383f2400a137_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 7&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/dad5dda1-24b9-4852-a426-8623e97df148_small.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/dad5dda1-24b9-4852-a426-8623e97df148_small.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer image 8&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;gallery-json images&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      },
+      {
+        &quot;imageUrl&quot;: &quot;https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f.webp&quot;,
+        &quot;pageUrl&quot;: &quot;https://www.reliableparts.com/gen-we4m532.html&quot;,
+        &quot;source&quot;: &quot;reliableparts.com&quot;,
+        &quot;imageHost&quot;: &quot;cdn.amplifi.pattern.com&quot;,
+        &quot;title&quot;: &quot;WE4M532 GE Dryer Timer&quot;,
+        &quot;alt&quot;: &quot;&quot;,
+        &quot;selector&quot;: &quot;meta[property=&#39;og:image&#39;]&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_watermark_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;image evidence only; operator must verify watermark/use rights and approve physical sale photos before staging&quot;
+      }
+    ]
+  },
+  {
+    &quot;partNumber&quot;: &quot;WE4M532&quot;,
+    &quot;source&quot;: &quot;local_image_evidence&quot;,
+    &quot;evidenceType&quot;: &quot;operator_supplied_image_file_set&quot;,
+    &quot;identityMatch&quot;: &quot;filename_part_number_match&quot;,
+    &quot;pageUrl&quot;: &quot;&quot;,
+    &quot;pageUrlSource&quot;: &quot;scratch/image-evidence local file&quot;,
+    &quot;capturedAt&quot;: &quot;2026-05-10T09:39:20.299Z&quot;,
+    &quot;title&quot;: &quot;WE4M532 local image candidates&quot;,
+    &quot;sku&quot;: &quot;&quot;,
+    &quot;reviewStatus&quot;: &quot;candidate_needs_operator_review&quot;,
+    &quot;listingUsePolicy&quot;: &quot;local image evidence only; operator must Keep/Trash and separately approve sale photos before staging&quot;,
+    &quot;candidates&quot;: [
+      {
+        &quot;imageUrl&quot;: &quot;../image-evidence/GEN-WE4M532_0.webp&quot;,
+        &quot;thumbnailUrl&quot;: &quot;../image-evidence/GEN-WE4M532_0.webp&quot;,
+        &quot;pageUrl&quot;: &quot;&quot;,
+        &quot;source&quot;: &quot;local_image_evidence&quot;,
+        &quot;imageHost&quot;: &quot;local&quot;,
+        &quot;title&quot;: &quot;GEN-WE4M532_0.webp&quot;,
+        &quot;alt&quot;: &quot;WE4M532 GEN-WE4M532_0.webp&quot;,
+        &quot;selector&quot;: &quot;scratch/image-evidence file&quot;,
+        &quot;reviewStatus&quot;: &quot;candidate_needs_operator_review&quot;,
+        &quot;listingUsePolicy&quot;: &quot;local image evidence only; operator must Keep/Trash and separately approve sale photos before staging&quot;
+      }
+    ]
+  }
+]</pre>
+    </section>
+    <section>
       <h2>Operator Reply And Memory Shards</h2>
-      <p class="muted">Use <strong>&lt;shard&gt;reminder or hint&lt;shard&gt;</strong> anywhere in the reply. Mark correct to reinforce the behavior, or incorrect to redirect model attention.</p>
+      <p class="muted">Use <strong>&lt;shard&gt;reminder or hint&lt;/shard&gt;</strong> anywhere in the reply. Mark correct to reinforce the behavior, or incorrect to redirect model attention.</p>
       <label for="operatorVerdict">Review Result</label>
       <select id="operatorVerdict">
         <option value="correct">Model correct - reinforce this skill</option>
@@ -113,6 +616,11 @@
         <option value="photo_gate">Photo or evidence gate issue</option>
         <option value="hold">Hold for later</option>
       </select>
+      <label class="switch-row" for="quickReviewed">
+        <input id="quickReviewed" type="checkbox">
+        <span class="switch-ui" aria-hidden="true"></span>
+        <span>Reviewed</span>
+      </label>
       <label for="operatorReply">Operator Reply</label>
       <textarea id="operatorReply" spellcheck="true"></textarea>
       <div class="actions">
@@ -128,7 +636,13 @@
     </section>
     <section>
       <h2>eBay Payload</h2>
-      <pre>{
+      <div class="readable-view">
+    <table><tbody><tr><th>Title</th><td>GE WE4M532 Dryer Timer Used Dryer Part</td></tr><tr><th>Category</th><td>20714</td></tr><tr><th>Condition</th><td>Used</td></tr><tr><th>Format</th><td>FixedPrice</td></tr><tr><th>Buy It Now</th><td>$35</td></tr><tr><th>Minimum Offer</th><td>$28</td></tr><tr><th>Photo Gate</th><td>part_photo_pending</td></tr><tr><th>Attached Images</th><td>0</td></tr></tbody></table>
+    <h3>Item Specifics</h3>
+    <table><tbody><tr><th>Brand</th><td>GE</td></tr><tr><th>Donor_Brand</th><td>Hotpoint</td></tr><tr><th>Type</th><td>Dryer Timer</td></tr><tr><th>MPN</th><td>WE4M532</td></tr><tr><th>UPC</th><td>Does Not Apply</td></tr><tr><th>Donor_Model</th><td>HTDX100ED3WW</td></tr><tr><th>Donor_Serial</th><td>ZA801821C</td></tr><tr><th>Diagram_Callout</th><td>100</td></tr><tr><th>Diagram_Section</th><td>BACKSPLASH, BLOWER &amp; DRIVE ASSEMBLY</td></tr></tbody></table>
+    <h3>Attached Images</h3>
+    <p class="muted">No values captured.</p></div>
+      <pre class="json-view">{
   &quot;title&quot;: &quot;GE WE4M532 Dryer Timer Used Dryer Part&quot;,
   &quot;categoryId&quot;: &quot;20714&quot;,
   &quot;condition&quot;: &quot;Used&quot;,
@@ -154,7 +668,7 @@
   },
   &quot;attachedImages&quot;: [],
   &quot;imageStatus&quot;: &quot;part_photo_pending&quot;,
-  &quot;description&quot;: &quot;&lt;!doctype html&gt;\n&lt;html lang=\&quot;en\&quot;&gt;\n&lt;head&gt;\n  &lt;meta charset=\&quot;utf-8\&quot;&gt;\n  &lt;meta name=\&quot;viewport\&quot; content=\&quot;width=device-width, initial-scale=1\&quot;&gt;\n  &lt;title&gt;GE WE4M532 Dryer Timer Used Dryer Part&lt;/title&gt;\n  &lt;style&gt;\n    body{font-family:Arial,sans-serif;color:#222;line-height:1.55;margin:0;background:#f6f7f9;padding:20px}\n    .wrap{max-width:860px;margin:auto;background:#fff;border:1px solid #ddd}\n    .brand{background:#162033;color:#fff;padding:18px 22px;font-weight:800;letter-spacing:.04em}\n    .brand span{color:#4ea1ff}\n    .content{padding:24px}\n    h1{font-size:24px;margin:0 0 14px;color:#162033}\n    .badge{display:inline-block;font-weight:800;border:1px solid currentColor;padding:6px 10px;margin-bottom:18px}\n    .badge.ready{background:#ecfdf5;color:#065f46}\n    .badge.review{background:#fffbeb;color:#92400e}\n    table{border-collapse:collapse;width:100%;margin:18px 0}\n    th,td{border:1px solid #e5e7eb;padding:10px;text-align:left}\n    th{background:#f9fafb;width:180px}\n    h2{font-size:18px;margin-top:24px}\n    .note{background:#eef6ff;border-left:4px solid #2563eb;padding:14px}\n    .terms{background:#f9fafb;border-left:4px solid #162033;padding:14px}\n    .photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:18px 0}\n    .photos img{width:100%;aspect-ratio:1;object-fit:contain;border:1px solid #e5e7eb;background:#f9fafb}\n    .pending{border:2px dashed #f59e0b;background:#fffbeb;color:#92400e;padding:18px;font-weight:800}\n    .validation{background:#f8fafc;border:1px solid #e5e7eb;padding:14px;color:#4b5563;font-size:14px}\n  &lt;/style&gt;\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;div class=\&quot;wrap\&quot;&gt;\n    &lt;div class=\&quot;brand\&quot;&gt;Roadrunner&lt;span&gt;Parts&lt;/span&gt;&lt;/div&gt;\n    &lt;div class=\&quot;content\&quot;&gt;\n      &lt;h1&gt;GE WE4M532 Dryer Timer Used Dryer Part&lt;/h1&gt;\n      &lt;div class=\&quot;badge review\&quot;&gt;NEEDS HITL REVIEW - confidence 0.90&lt;/div&gt;\n      &lt;h2&gt;Part Photos For Sale&lt;/h2&gt;\n      &lt;div class=\&quot;pending\&quot;&gt;PART PHOTO PENDING - do not stage this listing until actual approved sale photos are attached.&lt;/div&gt;\n      &lt;table&gt;&lt;tbody&gt;\n        &lt;tr&gt;&lt;th&gt;Part Number&lt;/th&gt;&lt;td&gt;WE4M532&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Part Label&lt;/th&gt;&lt;td&gt;Dryer Timer&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Diagram Callout&lt;/th&gt;&lt;td&gt;100&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Donor Machine&lt;/th&gt;&lt;td&gt;Hotpoint HTDX100ED3WW&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Donor Serial&lt;/th&gt;&lt;td&gt;ZA801821C&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Diagram Section&lt;/th&gt;&lt;td&gt;BACKSPLASH, BLOWER &amp;amp; DRIVE ASSEMBLY&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Condition&lt;/th&gt;&lt;td&gt;Used&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Buy It Now&lt;/th&gt;&lt;td&gt;$35.00&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Photo Gate&lt;/th&gt;&lt;td&gt;part_photo_pending (0 approved local files)&lt;/td&gt;&lt;/tr&gt;\n      &lt;/tbody&gt;&lt;/table&gt;\n      &lt;h2&gt;The Part&lt;/h2&gt;\n      &lt;ul&gt;\n        &lt;li&gt;Part number lock: WE4M532&lt;/li&gt;\n        &lt;li&gt;Diagram callout lock: 100&lt;/li&gt;\n        &lt;li&gt;Compatibility is limited to the donor record HTDX100ED3WW / ZA801821C unless separately verified.&lt;/li&gt;\n      &lt;/ul&gt;\n      &lt;h2&gt;Condition&lt;/h2&gt;\n      &lt;p&gt;Used appliance part removed from a teardown unit. Exact testing notes were not supplied in the input evidence. Match the part number, diagram callout, and listing photos before ordering.&lt;/p&gt;\n      &lt;h2&gt;Tech Tip&lt;/h2&gt;\n      &lt;div class=\&quot;note\&quot;&gt;Match the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.&lt;/div&gt;\n      &lt;h2&gt;Internal Validation Evidence&lt;/h2&gt;\n      &lt;div class=\&quot;validation\&quot;&gt;\n        Donor/nameplate and diagram evidence validate identity only. They are not sale photos and must not be uploaded as eBay listing images.&lt;br&gt;\n        Donor: Hotpoint HTDX100ED3WW / Serial ZA801821C.&lt;br&gt;\n        Diagram: BACKSPLASH, BLOWER &amp;amp; DRIVE ASSEMBLY / Callout 100.\n      &lt;/div&gt;\n      &lt;h2&gt;Terms&lt;/h2&gt;\n      &lt;div class=\&quot;terms\&quot;&gt;Items ship within 1 business day. 30-day returns on uninstalled parts.&lt;/div&gt;\n    &lt;/div&gt;\n  &lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;&quot;
+  &quot;description&quot;: &quot;&lt;!doctype html&gt;\n&lt;html lang=\&quot;en\&quot;&gt;\n&lt;head&gt;\n  &lt;meta charset=\&quot;utf-8\&quot;&gt;\n  &lt;meta name=\&quot;viewport\&quot; content=\&quot;width=device-width, initial-scale=1\&quot;&gt;\n  &lt;title&gt;GE WE4M532 Dryer Timer Used Dryer Part&lt;/title&gt;\n  &lt;style&gt;\n    body{font-family:Arial,sans-serif;color:#222;line-height:1.55;margin:0;background:#f6f7f9;padding:20px}\n    .wrap{max-width:860px;margin:auto;background:#fff;border:1px solid #ddd}\n    .brand{background:#162033;color:#fff;padding:18px 22px;font-weight:800;letter-spacing:.04em}\n    .brand span{color:#4ea1ff}\n    .content{padding:24px}\n    h1{font-size:24px;margin:0 0 14px;color:#162033}\n    .badge{display:inline-block;font-weight:800;border:1px solid currentColor;padding:6px 10px;margin-bottom:18px}\n    .badge.ready{background:#ecfdf5;color:#065f46}\n    .badge.review{background:#fffbeb;color:#92400e}\n    table{border-collapse:collapse;width:100%;margin:18px 0}\n    th,td{border:1px solid #e5e7eb;padding:10px;text-align:left}\n    th{background:#f9fafb;width:180px}\n    h2{font-size:18px;margin-top:24px}\n    .note{background:#eef6ff;border-left:4px solid #2563eb;padding:14px}\n    .terms{background:#f9fafb;border-left:4px solid #162033;padding:14px}\n    .photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:18px 0}\n    .photos img{width:100%;aspect-ratio:1;object-fit:contain;border:1px solid #e5e7eb;background:#f9fafb}\n    .pending{border:2px dashed #f59e0b;background:#fffbeb;color:#92400e;padding:18px;font-weight:800}\n    .validation{background:#f8fafc;border:1px solid #e5e7eb;padding:14px;color:#4b5563;font-size:14px}\n  &lt;/style&gt;\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;div class=\&quot;wrap\&quot;&gt;\n    &lt;div class=\&quot;brand\&quot;&gt;Roadrunner&lt;span&gt;Parts&lt;/span&gt;&lt;/div&gt;\n    &lt;div class=\&quot;content\&quot;&gt;\n      &lt;h1&gt;GE WE4M532 Dryer Timer Used Dryer Part&lt;/h1&gt;\n      &lt;div class=\&quot;badge review\&quot;&gt;NEEDS HITL REVIEW - confidence 0.82&lt;/div&gt;\n      &lt;h2&gt;Part Photos For Sale&lt;/h2&gt;\n      &lt;div class=\&quot;pending\&quot;&gt;PART PHOTO PENDING - do not stage this listing until actual approved sale photos are attached.&lt;/div&gt;\n      &lt;table&gt;&lt;tbody&gt;\n        &lt;tr&gt;&lt;th&gt;Part Number&lt;/th&gt;&lt;td&gt;WE4M532&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Part Label&lt;/th&gt;&lt;td&gt;Dryer Timer&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Diagram Callout&lt;/th&gt;&lt;td&gt;100&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Donor Machine&lt;/th&gt;&lt;td&gt;Hotpoint HTDX100ED3WW&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Donor Serial&lt;/th&gt;&lt;td&gt;ZA801821C&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Diagram Section&lt;/th&gt;&lt;td&gt;BACKSPLASH, BLOWER &amp;amp; DRIVE ASSEMBLY&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Condition&lt;/th&gt;&lt;td&gt;Used&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Buy It Now&lt;/th&gt;&lt;td&gt;$35.00&lt;/td&gt;&lt;/tr&gt;\n        &lt;tr&gt;&lt;th&gt;Photo Gate&lt;/th&gt;&lt;td&gt;part_photo_pending (0 approved local files)&lt;/td&gt;&lt;/tr&gt;\n      &lt;/tbody&gt;&lt;/table&gt;\n      &lt;h2&gt;The Part&lt;/h2&gt;\n      &lt;ul&gt;\n        &lt;li&gt;Part number lock: WE4M532&lt;/li&gt;\n        &lt;li&gt;Diagram callout lock: 100&lt;/li&gt;\n        &lt;li&gt;Compatibility is limited to the donor record HTDX100ED3WW / ZA801821C unless separately verified.&lt;/li&gt;\n      &lt;/ul&gt;\n      &lt;h2&gt;Condition&lt;/h2&gt;\n      &lt;p&gt;Used appliance part removed from a teardown unit. Exact testing notes were not supplied in the input evidence. Match the part number, diagram callout, and listing photos before ordering.&lt;/p&gt;\n      &lt;h2&gt;Tech Tip&lt;/h2&gt;\n      &lt;div class=\&quot;note\&quot;&gt;Match the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.&lt;/div&gt;\n      &lt;h2&gt;Internal Validation Evidence&lt;/h2&gt;\n      &lt;div class=\&quot;validation\&quot;&gt;\n        Donor/nameplate and diagram evidence validate identity only. They are not sale photos and must not be uploaded as eBay listing images.&lt;br&gt;\n        Donor: Hotpoint HTDX100ED3WW / Serial ZA801821C.&lt;br&gt;\n        Diagram: BACKSPLASH, BLOWER &amp;amp; DRIVE ASSEMBLY / Callout 100.\n      &lt;/div&gt;\n      &lt;h2&gt;Terms&lt;/h2&gt;\n      &lt;div class=\&quot;terms\&quot;&gt;Items ship within 1 business day. 30-day returns on uninstalled parts.&lt;/div&gt;\n    &lt;/div&gt;\n  &lt;/div&gt;\n&lt;/body&gt;\n&lt;/html&gt;&quot;
 }</pre>
     </section>
     <section>
@@ -196,7 +710,7 @@
     &lt;div class=&quot;brand&quot;&gt;Roadrunner&lt;span&gt;Parts&lt;/span&gt;&lt;/div&gt;
     &lt;div class=&quot;content&quot;&gt;
       &lt;h1&gt;GE WE4M532 Dryer Timer Used Dryer Part&lt;/h1&gt;
-      &lt;div class=&quot;badge review&quot;&gt;NEEDS HITL REVIEW - confidence 0.90&lt;/div&gt;
+      &lt;div class=&quot;badge review&quot;&gt;NEEDS HITL REVIEW - confidence 0.82&lt;/div&gt;
       &lt;h2&gt;Part Photos For Sale&lt;/h2&gt;
       &lt;div class=&quot;pending&quot;&gt;PART PHOTO PENDING - do not stage this listing until actual approved sale photos are attached.&lt;/div&gt;
       &lt;table&gt;&lt;tbody&gt;
@@ -239,20 +753,81 @@
     (function () {
       var seed = JSON.parse(document.getElementById("reviewSeed").textContent);
       var storageKey = "rrp-ebay-review:" + seed.partNumber;
+      var imageStorageKey = "rrp-ebay-image-review:" + seed.partNumber;
+      var jsonModeEl = document.getElementById("jsonMode");
       var replyEl = document.getElementById("operatorReply");
       var verdictEl = document.getElementById("operatorVerdict");
+      var reviewedEl = document.getElementById("quickReviewed");
       var shardListEl = document.getElementById("shardList");
       var jsonEl = document.getElementById("reviewJson");
+      var imageSummaryEl = document.getElementById("imageReviewSummary");
 
       function extractShards(text) {
         var shards = [];
-        var pattern = /<shard>([\s\S]*?)<shard>/gi;
+        var pattern = /<shard>([\s\S]*?)(?:<\/shard>|<shard>)/gi;
         var match;
         while ((match = pattern.exec(text || ""))) {
           var value = match[1].trim();
           if (value) shards.push(value);
         }
         return shards;
+      }
+
+      function setJsonMode(enabled) {
+        document.body.classList.toggle("show-json", enabled);
+        localStorage.setItem("rrp-ebay-json-mode", enabled ? "true" : "false");
+      }
+
+      function loadImageDecisions() {
+        try {
+          return JSON.parse(localStorage.getItem(imageStorageKey) || "{}");
+        } catch {
+          return {};
+        }
+      }
+
+      function saveImageDecision(imageUrl, decision) {
+        var decisions = loadImageDecisions();
+        if (decision === "clear") delete decisions[imageUrl];
+        else decisions[imageUrl] = {
+          decision: decision,
+          imageUrl: imageUrl,
+          partNumber: seed.partNumber,
+          title: seed.title,
+          fileName: seed.fileName,
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(imageStorageKey, JSON.stringify(decisions));
+        var index = JSON.parse(localStorage.getItem("rrp-ebay-image-review-index") || "[]");
+        if (index.indexOf(seed.partNumber) === -1) index.push(seed.partNumber);
+        localStorage.setItem("rrp-ebay-image-review-index", JSON.stringify(index.sort()));
+        renderImageDecisions();
+      }
+
+      function renderImageDecisions() {
+        var decisions = loadImageDecisions();
+        var kept = 0;
+        var trashed = 0;
+        document.querySelectorAll("[data-image-url]").forEach(function (card) {
+          var imageUrl = card.getAttribute("data-image-url");
+          var record = decisions[imageUrl];
+          var decision = record && record.decision;
+          card.classList.toggle("is-kept", decision === "keep");
+          card.classList.toggle("is-trashed", decision === "trash");
+          var state = card.querySelector("[data-image-state]");
+          if (decision === "keep") {
+            kept += 1;
+            if (state) state.textContent = "Kept";
+          } else if (decision === "trash") {
+            trashed += 1;
+            if (state) state.textContent = "Trashed";
+          } else if (state) {
+            state.textContent = "Unreviewed";
+          }
+        });
+        if (imageSummaryEl) {
+          imageSummaryEl.textContent = "Image choices: " + kept + " kept / " + trashed + " trashed";
+        }
       }
 
       function buildRecord() {
@@ -262,6 +837,7 @@
           title: seed.title,
           fileName: seed.fileName,
           verdict: verdictEl.value,
+          reviewed: reviewedEl.checked,
           operatorReply: reply,
           shards: extractShards(reply),
           modelRouting: seed.modelRouting,
@@ -286,6 +862,7 @@
           });
         }
         jsonEl.textContent = JSON.stringify(record, null, 2);
+        reviewedEl.checked = Boolean(record.reviewed);
       }
 
       function save() {
@@ -303,6 +880,7 @@
           var parsed = JSON.parse(existing);
           replyEl.value = parsed.operatorReply || "";
           verdictEl.value = parsed.verdict || "correct";
+          reviewedEl.checked = Boolean(parsed.reviewed);
           render(parsed);
         } catch {
           render(buildRecord());
@@ -311,8 +889,22 @@
         render(buildRecord());
       }
 
+      jsonModeEl.checked = localStorage.getItem("rrp-ebay-json-mode") === "true";
+      setJsonMode(jsonModeEl.checked);
+      jsonModeEl.addEventListener("change", function () {
+        setJsonMode(jsonModeEl.checked);
+      });
+
       replyEl.addEventListener("input", function () { render(buildRecord()); });
       verdictEl.addEventListener("change", function () { render(buildRecord()); });
+      reviewedEl.addEventListener("change", save);
+      document.querySelectorAll("[data-image-decision]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          var card = button.closest("[data-image-url]");
+          if (!card) return;
+          saveImageDecision(card.getAttribute("data-image-url"), button.getAttribute("data-image-decision"));
+        });
+      });
       document.getElementById("saveReview").addEventListener("click", save);
       document.getElementById("copyReview").addEventListener("click", function () {
         navigator.clipboard.writeText(JSON.stringify(buildRecord(), null, 2));
@@ -323,6 +915,7 @@
         verdictEl.value = "correct";
         render(buildRecord());
       });
+      renderImageDecisions();
     })();
   </script>
 </body>

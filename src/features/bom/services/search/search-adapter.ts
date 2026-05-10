@@ -48,6 +48,36 @@ const BRAND_QUERY_TEMPLATES: Record<string, string[]> = {
     'site:samsungparts.com "{model}"',
     'site:searspartsdirect.com "{model}" Samsung',
   ],
+  WHIRLPOOL: [
+    'site:whirlpool.com "{model}" parts',
+    'site:whirlpool.com "{model}" manual',
+    'site:searspartsdirect.com "{model}" Whirlpool',
+  ],
+  LG: [
+    'site:lg.com "{model}" parts',
+    'site:lg.com "{model}" manual',
+    'site:searspartsdirect.com "{model}" LG',
+  ],
+  MAYTAG: [
+    'site:whirlpool.com "{model}" parts Maytag',
+    'site:searspartsdirect.com "{model}" Maytag',
+  ],
+  KENMORE: [
+    'site:searspartsdirect.com "{model}" Kenmore',
+    'site:repairclinic.com "{model}" Kenmore',
+  ],
+  KITCHENAID: [
+    'site:whirlpool.com "{model}" parts KitchenAid',
+    'site:searspartsdirect.com "{model}" KitchenAid',
+  ],
+  FRIGIDAIRE: [
+    'site:searspartsdirect.com "{model}" Frigidaire',
+    'site:repairclinic.com "{model}" Frigidaire',
+  ],
+  ELECTROLUX: [
+    'site:searspartsdirect.com "{model}" Electrolux',
+    'site:repairclinic.com "{model}" Electrolux',
+  ],
 };
 
 function applyTemplates(queries: string[], brand?: string, model?: string): string[] {
@@ -56,13 +86,22 @@ function applyTemplates(queries: string[], brand?: string, model?: string): stri
   }
 
   const templates = BRAND_QUERY_TEMPLATES[brand.toUpperCase()];
-  const augmented = [...queries];
+  const augmented: string[] = [];
+  const seen = new Set<string>();
+  const pushUnique = (query: string) => {
+    const trimmed = query.trim();
+    const key = trimmed.toLowerCase();
+    if (!trimmed || seen.has(key)) return;
+    seen.add(key);
+    augmented.push(trimmed);
+  };
 
   for (const template of templates) {
-    const rendered = template.replace("{model}", model);
-    if (!augmented.includes(rendered)) {
-      augmented.push(rendered);
-    }
+    pushUnique(template.replace("{model}", model));
+  }
+
+  for (const query of queries) {
+    pushUnique(query);
   }
 
   return augmented;
@@ -71,7 +110,13 @@ function applyTemplates(queries: string[], brand?: string, model?: string): stri
 export const searchExistingGroundingLayer: SearchAdapter = async (input) => {
   let queries = input.queries.map((q) => q.trim()).filter(Boolean);
   
-  // 1. Filter by Brand Source Gate
+  // 1. Augment with brand-aware templates if model is known.
+  // Put templates first so they are not lost when the grounded-search fanout is capped.
+  if (input.brandFamily && input.model) {
+    queries = applyTemplates(queries, input.brandFamily, input.model);
+  }
+
+  // 2. Filter by Brand Source Gate after augmentation so added templates obey the same policy.
   if (input.brandFamily) {
     const { forbiddenDomains } = getBrandGateConfig(input.brandFamily);
     queries = queries.filter((q) => {
@@ -82,11 +127,6 @@ export const searchExistingGroundingLayer: SearchAdapter = async (input) => {
       }
       return true;
     });
-  }
-
-  // 2. Augment with brand-aware templates if model is known
-  if (input.brandFamily && input.model) {
-    queries = applyTemplates(queries, input.brandFamily, input.model);
   }
 
   if (!queries.length) return [];

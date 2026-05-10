@@ -11,11 +11,19 @@
   - 17 parts extracted with diagram cross-reference and confidence scoring
   - 15/17 passed at Confidence >= 0.95
   - 2/17 flagged HITL: WH2M270 (ambiguous description), WZ05X0158 (generic hardware)
-- **Phase 1C (Trust Shard Listings)**: COMPLETE — `scratch/phase1c_trust_shard_listings.json`
-  - 15 production-ready eBay listings with Trust Shard Tech Tips
+- **Phase 1C (Trust Shard Listings)**: LOCAL REVIEW ARTIFACT — `scratch/phase1c_trust_shard_listings.json`
+  - 15 eBay listing drafts with Trust Shard Tech Tips
   - Each listing includes: Technician's Notes, Tech Tip, Specs & Fitment, Condition Delta, Terms
+  - Condition, pricing, and photo claims require provider evidence or operator verification before staging
   - 2 HITL-deferred parts awaiting manual verification before listing generation
-- **Compliance**: All listings locked to DONOR_MACHINE_ID provenance, zero hallucinated specs
+- **Compliance**: Part identity is locked to DONOR_MACHINE_ID provenance; listing claims are not final sale evidence until reviewed
+
+### RLD Token Thermostat Integration (2026-05-10)
+- **Status**: INTEGRATED - TELEMETRY ONLY
+- **Implementation**: Integrated `TokenThermostat` into `ebay_extraction_pipeline.py`.
+- **Metrics**: Records Token Velocity, Useful Yield, and schema pass/fail counts during listing extraction.
+- **Baseline**: Default set to 9,000 tokens/min until a repo-local baseline run is captured.
+- **Self-Correction**: Triage Ping and Ambient Injection hooks are present, but they do not replace provider evidence, operator review, or deterministic claim validation.
 
 ### Playwright Stealth Integration (2026-05-09)
 - **Package**: `playwright-stealth` v2.0.3 installed globally.
