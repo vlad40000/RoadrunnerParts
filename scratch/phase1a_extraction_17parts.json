@@ -1,0 +1,311 @@
+{
+  "phase": "PHASE_1A_COMPLETE",
+  "timestamp": "2026-05-10T01:26:00Z",
+  "DONOR_MACHINE_ID_REF": "HTDX100ED3WW_ZA801821C",
+  "extractions": [
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "503",
+        "Part_Name": "Drum Assembly 6.0 Cu.Ft White",
+        "OEM_Part_Number": "WE21X20407",
+        "Diagram_Section": "DRUM",
+        "Included_Hardware": "Complete drum cylinder with internal baffles, front and rear seals"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": true
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "305",
+        "Part_Name": "Inner Door Assembly White",
+        "OEM_Part_Number": "WE10X20418",
+        "Diagram_Section": "FRONT PANEL & DOOR",
+        "Included_Hardware": "Inner door panel with lint screen housing frame"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": true
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "300",
+        "Part_Name": "Filter & Mesh Assembly",
+        "OEM_Part_Number": "WE18M28",
+        "Diagram_Section": "FRONT PANEL & DOOR",
+        "Included_Hardware": "Lint filter screen and mesh frame assembly"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "213",
+        "Part_Name": "Belt Drive",
+        "OEM_Part_Number": "WE12X21574",
+        "Diagram_Section": "BACKSPLASH, BLOWER & DRIVE ASSEMBLY",
+        "Included_Hardware": "Drive belt only, no pulleys included"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "203",
+        "Part_Name": "Dryer Motor Clamp",
+        "OEM_Part_Number": "WE13X30697",
+        "Diagram_Section": "BACKSPLASH, BLOWER & DRIVE ASSEMBLY",
+        "Included_Hardware": "Motor clamp bracket with fastening hardware"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "803",
+        "Part_Name": "Interlock Switch",
+        "OEM_Part_Number": "WD21X557",
+        "Diagram_Section": "BACKSPLASH, BLOWER & DRIVE ASSEMBLY",
+        "Included_Hardware": "Door interlock switch assembly only"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "3204",
+        "Part_Name": "Ground Wire",
+        "OEM_Part_Number": "WH2M270",
+        "Diagram_Section": "CABINET & TOP PANEL",
+        "Included_Hardware": "Ground wire strap (replaces WE2X328)"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.85,
+        "HITL_Review_Required": true,
+        "Flag_Reason": "Manifest description 'We2x328' appears to be a cross-reference part number, not a description. Verify this is the correct ground wire/strap component at position 3204 on the Cabinet diagram."
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "312",
+        "Part_Name": "Felt Trap Duct",
+        "OEM_Part_Number": "WE09X20441",
+        "Diagram_Section": "FRONT PANEL & DOOR",
+        "Included_Hardware": "Felt seal strip for lint trap duct interface"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "317",
+        "Part_Name": "Bearing Slide (Upper)",
+        "OEM_Part_Number": "WE3M51",
+        "Diagram_Section": "FRONT PANEL & DOOR",
+        "Included_Hardware": "Single bearing glide pad"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "236",
+        "Part_Name": "Levelling Leg",
+        "OEM_Part_Number": "WE1M1101",
+        "Diagram_Section": "CABINET & TOP PANEL",
+        "Included_Hardware": "Single adjustable levelling foot"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "316",
+        "Part_Name": "Bearing Slide (Lower)",
+        "OEM_Part_Number": "WE3M52",
+        "Diagram_Section": "FRONT PANEL & DOOR",
+        "Included_Hardware": "Single bearing glide pad"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "216",
+        "Part_Name": "Idler Pulley",
+        "OEM_Part_Number": "WE12X20395",
+        "Diagram_Section": "BACKSPLASH, BLOWER & DRIVE ASSEMBLY",
+        "Included_Hardware": "Idler pulley wheel with center bearing, no bracket"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "218",
+        "Part_Name": "Blower Gasket (Exhaust)",
+        "OEM_Part_Number": "WE1M966",
+        "Diagram_Section": "BACKSPLASH, BLOWER & DRIVE ASSEMBLY",
+        "Included_Hardware": "Blower-to-exhaust duct gasket seal"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "327",
+        "Part_Name": "Door Latch",
+        "OEM_Part_Number": "WE1M536",
+        "Diagram_Section": "FRONT PANEL & DOOR",
+        "Included_Hardware": "Door catch/latch mechanism"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "3051",
+        "Part_Name": "Door Hinge",
+        "OEM_Part_Number": "WE1M505",
+        "Diagram_Section": "FRONT PANEL & DOOR",
+        "Included_Hardware": "Single door hinge assembly"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": false
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "461",
+        "Part_Name": "Screw 8-32x3/8 Ground Screw",
+        "OEM_Part_Number": "WZ05X0158",
+        "Diagram_Section": "BACKSPLASH, BLOWER & DRIVE / CABINET & TOP PANEL",
+        "Included_Hardware": "Single ground screw"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.80,
+        "HITL_Review_Required": true,
+        "Flag_Reason": "Generic hardware fastener. Visually indistinct from standard 8-32 screws. Low geometric match confidence. Recommend manual verification that this is the correct green-dyed ground screw before listing."
+      }
+    },
+    {
+      "PART_ID": {
+        "Diagram_Item_Number": "508",
+        "Part_Name": "Drum Shaft",
+        "OEM_Part_Number": "WE00X1811",
+        "Diagram_Section": "DRUM",
+        "Included_Hardware": "Drum support shaft with hub"
+      },
+      "COMPATIBILITY_ID": {
+        "Provenance": "Pulled directly from a working Hotpoint (GE) Model HTDX100ED3WW (Serial: ZA801821C)."
+      },
+      "SYSTEM_ROUTING": {
+        "Confidence_Score": 0.95,
+        "HITL_Review_Required": false,
+        "Flag_Reason": null,
+        "Physical_Image_Available": true
+      }
+    }
+  ]
+}

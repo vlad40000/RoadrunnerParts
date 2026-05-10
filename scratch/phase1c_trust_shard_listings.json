@@ -1,0 +1,307 @@
+{
+  "phase": "PHASE_1C_TRUST_SHARD_GENERATION",
+  "timestamp": "2026-05-10T01:27:00Z",
+  "DONOR_MACHINE_ID_REF": "HTDX100ED3WW_ZA801821C",
+  "generator": "Trust Shard Delta (High-Conversion)",
+  "listings": [
+    {
+      "partNumber": "WE21X20407",
+      "title": "GE WE21X20407 Dryer Drum Assembly 6.0 Cu.Ft - Hotpoint HTDX100ED3WW OEM",
+      "listing": {
+        "technicians_notes": "Genuine GE WE21X20407 drum assembly, 6.0 cubic foot capacity, white. This is the complete drum cylinder with internal baffles that lift and tumble your clothes through heated air. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). The drum surface is clean with no scoring, no warping, and the sealing edges are intact. All three baffles are firmly attached with no cracks or broken mounting tabs.",
+        "tech_tip": "When you slide this drum back in, line up the rear bearing hub first before lowering the front. If you try to force the front lip onto the felt seal first, you'll roll the seal right off the bulkhead and create a gap that lets hot air bypass the drum. Back-to-front, every time.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE21X20407",
+          "diagram_ref": "503 (Drum Assembly)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Tested & Working. Clean drum surface, no scoring or warping. All baffles secure.",
+        "retail_reference": "$275.95",
+        "ebay_buy_now": "$200.00"
+      }
+    },
+    {
+      "partNumber": "WE10X20418",
+      "title": "GE WE10X20418 Inner Door Assembly White - Hotpoint Dryer HTDX100ED3WW OEM",
+      "listing": {
+        "technicians_notes": "Genuine GE WE10X20418 inner door assembly, white finish. This is the inner door panel that houses the lint screen slot and seals against the front bulkhead felt. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). No cracks in the plastic frame, lint screen channel is clean with no buildup, and the seal surface is smooth with no heat damage or warping.",
+        "tech_tip": "Before you bolt this back on, run your finger along the felt seal on the front bulkhead. If it's compressed flat or peeling, replace it now. A new inner door against a worn felt seal will still leak hot air into the cabinet and trip the high-limit thermostat.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE10X20418",
+          "diagram_ref": "305 (Front Panel & Door)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Tested & Working. No cracks, clean lint channel, no heat warping.",
+        "retail_reference": "$87.95",
+        "ebay_buy_now": "$36.94"
+      }
+    },
+    {
+      "partNumber": "WE18M28",
+      "title": "GE WE18M28 Dryer Lint Filter & Mesh Assembly - Hotpoint HTDX100ED3WW OEM",
+      "listing": {
+        "technicians_notes": "Genuine GE WE18M28 lint filter and mesh assembly. This is the complete filter frame and mesh screen that slots into the inner door channel to catch lint during the drying cycle. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Mesh is intact with no tears, holes, or collapsed sections. Frame tabs are solid and the filter slides freely in the channel.",
+        "tech_tip": "If your dryer is taking two cycles to dry a load, pull the lint filter out and run water over it. If the water pools on top instead of flowing through, your mesh is clogged with fabric softener residue. Scrub it with a soft brush and dish soap every couple months. It is not always about the heating element.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE18M28",
+          "diagram_ref": "300 (Front Panel & Door)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Good Condition. Mesh intact, no tears or holes, slides freely.",
+        "retail_reference": "$52.95",
+        "ebay_buy_now": "$23.83"
+      }
+    },
+    {
+      "partNumber": "WE12X21574",
+      "title": "GE WE12X21574 Dryer Belt Drive - Hotpoint HTDX100ED3WW OEM Drum Belt",
+      "listing": {
+        "technicians_notes": "Genuine GE WE12X21574 dryer belt drive. This is the flat, multi-rib drive belt that wraps around the drum and threads through the idler pulley and motor shaft to spin the drum. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Belt has no cracks, fraying, or glazing on the ribbed surface. Maintains proper tension with no stretching.",
+        "tech_tip": "When you thread this belt, put the ribbed side against the drum. Smooth side faces out toward the idler and motor. If you flip it, the belt will squeal on startup and slip under load. Also, push the idler spring toward the motor to create slack while you loop the belt around the motor pulley, do not try to stretch it on dry.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE12X21574",
+          "diagram_ref": "213 (Backsplash, Blower & Drive Assembly)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Good Condition. No cracks, fraying, or glazing. Proper tension maintained.",
+        "retail_reference": "$45.95",
+        "ebay_buy_now": "$20.68"
+      }
+    },
+    {
+      "partNumber": "WE13X30697",
+      "title": "GE WE13X30697 Dryer Motor Clamp - Hotpoint HTDX100ED3WW OEM Motor Bracket",
+      "listing": {
+        "technicians_notes": "Genuine GE WE13X30697 dryer motor clamp. This is the metal clamp bracket that secures the drive motor to the motor support plate on the base of the dryer. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). No bending, no stress cracks, bolt holes are round and not wallowed out. Clamp tension is solid.",
+        "tech_tip": "If your dryer is making a rhythmic thumping that speeds up with drum rotation, check this motor clamp before you order a new motor. A loose clamp lets the motor rock on the support plate and creates a knock that sounds exactly like a bad bearing. Tighten or replace the clamp first. It is a five-minute fix that saves you a hundred-dollar motor.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE13X30697",
+          "diagram_ref": "203 (Backsplash, Blower & Drive Assembly)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Good Condition. No bending or stress cracks, bolt holes intact.",
+        "retail_reference": "$39.56",
+        "ebay_buy_now": "$17.80"
+      }
+    },
+    {
+      "partNumber": "WD21X557",
+      "title": "GE WD21X557 Dryer Interlock Switch - Hotpoint HTDX100ED3WW OEM Door Safety",
+      "listing": {
+        "technicians_notes": "Genuine GE WD21X557 interlock switch. This is a safety interlock switch that prevents dryer operation when the access panel is removed or improperly seated. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Switch actuates cleanly with positive click. Wiring terminals are clean with no corrosion or heat discoloration.",
+        "tech_tip": "If your dryer suddenly will not start at all, no hum, no nothing, check the interlock switches before pulling the control board. These switches are often dislodged when the top or back panel is removed for cleaning and not fully re-seated. Push the panel down until it clicks. If the switch still will not close, the actuator tab on the panel may be bent.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WD21X557",
+          "diagram_ref": "803 (Backsplash, Blower & Drive Assembly)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Tested & Working. Clean click, no corrosion on terminals.",
+        "retail_reference": "$25.00",
+        "ebay_buy_now": "$12.00"
+      }
+    },
+    {
+      "partNumber": "WE09X20441",
+      "title": "GE WE09X20441 Dryer Felt Trap Duct Seal - Hotpoint HTDX100ED3WW OEM",
+      "listing": {
+        "technicians_notes": "Genuine GE WE09X20441 felt trap duct seal. This is the felt gasket strip that seals the lint trap duct opening on the front bulkhead, preventing hot air from leaking into the cabinet around the duct. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Felt is still plush with good loft, adhesive backing is intact, no heat hardening or crumbling.",
+        "tech_tip": "When you peel the old felt off, clean the metal surface with rubbing alcohol before sticking the new one down. Any lint dust or old adhesive residue under the new felt will let it peel up in a week from the heat cycling. Press firm and let it sit for an hour before running the dryer.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE09X20441",
+          "diagram_ref": "312 (Front Panel & Door)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Good Condition. Felt plush with good loft, adhesive intact.",
+        "retail_reference": "$18.00",
+        "ebay_buy_now": "$9.00"
+      }
+    },
+    {
+      "partNumber": "WE3M51",
+      "title": "GE WE3M51 Dryer Drum Bearing Slide Upper - Hotpoint HTDX100ED3WW OEM Glide",
+      "listing": {
+        "technicians_notes": "Genuine GE WE3M51 bearing slide (upper position). This is a Teflon-coated drum glide pad that mounts on the front bulkhead and supports the front lip of the drum as it rotates. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Glide surface is smooth with no deep scoring or worn-through spots. Mounting screw holes are intact.",
+        "tech_tip": "If your dryer is squeaking or making a scraping noise, these bearing slides are almost always the cause. They wear down over time and the bare drum lip starts riding on bare metal. Replace both upper and lower slides (WE3M51 and WE3M52) at the same time, even if only one looks worn. The fresh one will wear twice as fast carrying extra load from the worn partner.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE3M51",
+          "diagram_ref": "317 (Front Panel & Door)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Serviceable. Glide surface smooth, no worn-through spots.",
+        "retail_reference": "$12.00",
+        "ebay_buy_now": "$6.00"
+      }
+    },
+    {
+      "partNumber": "WE1M1101",
+      "title": "GE WE1M1101 Dryer Levelling Leg - Hotpoint HTDX100ED3WW OEM Adjustable Foot",
+      "listing": {
+        "technicians_notes": "Genuine GE WE1M1101 adjustable levelling leg. This is a threaded levelling foot that screws into the base chassis to level the dryer on uneven floors. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Threads are clean, rubber foot pad is intact, adjusts freely with no cross-threading or corrosion.",
+        "tech_tip": "If your dryer walks across the floor or vibrates hard during tumble, it is almost never the motor. Get a bubble level on the top panel and adjust these legs until the bubble centers front-to-back and side-to-side. A dryer that is even a quarter inch off level will vibrate and walk itself right out from the wall.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE1M1101",
+          "diagram_ref": "236 (Cabinet & Top Panel)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Good Condition. Clean threads, rubber pad intact, adjusts freely.",
+        "retail_reference": "$8.00",
+        "ebay_buy_now": "$4.00"
+      }
+    },
+    {
+      "partNumber": "WE3M52",
+      "title": "GE WE3M52 Dryer Drum Bearing Slide Lower - Hotpoint HTDX100ED3WW OEM Glide",
+      "listing": {
+        "technicians_notes": "Genuine GE WE3M52 bearing slide (lower position). This is a Teflon-coated drum glide pad that mounts on the front bulkhead at the lower support point for the drum's front lip. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Glide surface retains its coating with no bare metal showing. Mounting holes are clean.",
+        "tech_tip": "Same rule as the upper slide: replace both WE3M51 and WE3M52 together. When you pull the front panel, mark which slide goes where. The upper and lower are not always identical, even if they look similar. Check the GE diagram for your model before swapping.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE3M52",
+          "diagram_ref": "316 (Front Panel & Door)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Serviceable. Coating intact, no bare metal, clean mounting holes.",
+        "retail_reference": "$12.00",
+        "ebay_buy_now": "$6.00"
+      }
+    },
+    {
+      "partNumber": "WE12X20395",
+      "title": "GE WE12X20395 Dryer Idler Pulley - Hotpoint HTDX100ED3WW OEM Belt Tensioner",
+      "listing": {
+        "technicians_notes": "Genuine GE WE12X20395 idler pulley. This is the spring-loaded idler wheel that maintains tension on the drum drive belt as it routes from the drum to the motor. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Pulley spins freely with no wobble, bearing is smooth with no grinding, groove is clean with no belt residue buildup.",
+        "tech_tip": "When you replace the belt, always spin this idler pulley by hand first. If it catches, hesitates, or feels gritty, replace it with the belt. A rough idler will chew through a new belt in months. While you are in there, hit the idler shaft with a drop of machine oil where it contacts the bracket.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE12X20395",
+          "diagram_ref": "216 (Backsplash, Blower & Drive Assembly)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Tested & Working. Spins freely, no wobble or grinding.",
+        "retail_reference": "$22.00",
+        "ebay_buy_now": "$10.00"
+      }
+    },
+    {
+      "partNumber": "WE1M966",
+      "title": "GE WE1M966 Dryer Blower Gasket Exhaust Seal - Hotpoint HTDX100ED3WW OEM",
+      "listing": {
+        "technicians_notes": "Genuine GE WE1M966 blower gasket (exhaust). This is the sealing gasket that sits between the blower housing outlet and the exhaust duct connection point, preventing hot, moist air from leaking into the cabinet. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Gasket is pliable with no hardening, cracking, or compression set. Sealing surfaces are clean.",
+        "tech_tip": "If you are getting moisture inside the dryer cabinet or the outside of your dryer feels unusually hot, check this gasket. A failed exhaust gasket lets hot, wet air dump straight into the cabinet instead of going out the vent. It will also make your dryer think the load is not drying and run extended cycles, spiking your electric bill.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE1M966",
+          "diagram_ref": "218 (Backsplash, Blower & Drive Assembly)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Good Condition. Pliable, no cracking or hardening.",
+        "retail_reference": "$15.00",
+        "ebay_buy_now": "$7.00"
+      }
+    },
+    {
+      "partNumber": "WE1M536",
+      "title": "GE WE1M536 Dryer Door Latch Catch - Hotpoint HTDX100ED3WW OEM Door Strike",
+      "listing": {
+        "technicians_notes": "Genuine GE WE1M536 door latch. This is the strike/catch mechanism mounted on the front panel that the door hook engages to keep the dryer door securely closed during operation. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Latch spring is strong, catch engages and releases cleanly, mounting tabs are solid with no cracks.",
+        "tech_tip": "If your dryer door pops open mid-cycle and shuts the machine down, check this latch before replacing the door switch. The plastic catch wears down over years of slamming and stops holding the door hook securely. You will feel it, the door will close but with less of a click than it used to. Swap the latch and the firm click comes back.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE1M536",
+          "diagram_ref": "327 (Front Panel & Door)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Tested & Working. Spring strong, clean engagement, no cracked tabs.",
+        "retail_reference": "$12.00",
+        "ebay_buy_now": "$6.00"
+      }
+    },
+    {
+      "partNumber": "WE1M505",
+      "title": "GE WE1M505 Dryer Door Hinge - Hotpoint HTDX100ED3WW OEM Door Hinge Assembly",
+      "listing": {
+        "technicians_notes": "Genuine GE WE1M505 dryer door hinge assembly. This is the pivot hinge that attaches the outer door panel to the front cabinet panel, allowing the door to swing open and closed. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Hinge pin is tight with no slop, mounting holes are not wallowed out, hinge operates smoothly through full range of motion.",
+        "tech_tip": "A sagging dryer door that does not line up with the latch anymore is usually this hinge, not a bent door. The riveted pivot pin wears and develops play over thousands of open-close cycles. If the door droops when open, the hinge has play. Replace it before the misalignment starts cracking the inner door panel from repeated forced closure.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE1M505",
+          "diagram_ref": "3051 (Front Panel & Door)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Good Condition. Tight pivot, no slop, smooth operation.",
+        "retail_reference": "$18.00",
+        "ebay_buy_now": "$9.00"
+      }
+    },
+    {
+      "partNumber": "WE00X1811",
+      "title": "GE WE00X1811 Dryer Drum Shaft - Hotpoint HTDX100ED3WW OEM Drum Support Shaft",
+      "listing": {
+        "technicians_notes": "Genuine GE WE00X1811 drum shaft. This is the center support shaft that the rear of the drum rides on, transferring the drum's weight to the rear bearing. Pulled from a working Hotpoint HTDX100ED3WW (Serial: ZA801821C). Shaft is straight with no bending, bearing surface is smooth with no scoring or galling, threads are clean.",
+        "tech_tip": "When you pull the drum out and inspect this shaft, look for a shiny wear ring on the bearing surface. A little polishing is normal. But if you see a groove you can catch a fingernail in, the shaft is wearing into the rear bearing and both need to go. Running a new bearing on a grooved shaft just chews through the new bearing in half the time.",
+        "specs_fitment": {
+          "brand": "GE / Hotpoint",
+          "pulled_from": "Model HTDX100ED3WW",
+          "part_number": "WE00X1811",
+          "diagram_ref": "508 (Drum Assembly)",
+          "note": "Check your machine's label. Parts are ordered by part number, not by what the appliance looks like."
+        },
+        "terms": "Ships within 1 business day. 30-day returns on uninstalled parts.",
+        "condition_delta": "Used - Tested & Working. Straight shaft, smooth bearing surface, clean threads.",
+        "retail_reference": "$20.00",
+        "ebay_buy_now": "$10.00"
+      }
+    }
+  ],
+  "HITL_DEFERRED": [
+    {
+      "partNumber": "WH2M270",
+      "reason": "Manifest description 'We2x328' is a cross-reference, not a human description. Verify actual component identity before listing.",
+      "diagram_ref": "3204",
+      "action_required": "Manual identification needed: confirm this is a ground wire/strap assembly at position 3204 on the Cabinet & Top Panel diagram."
+    },
+    {
+      "partNumber": "WZ05X0158",
+      "reason": "Generic hardware fastener (8-32x3/8 ground screw). Low geometric confidence. Verify this is the correct GE-branded green ground screw, not a generic hardware-store equivalent.",
+      "diagram_ref": "461",
+      "action_required": "Confirm screw is OEM GE ground screw with correct thread pitch and green dye marking."
+    }
+  ]
+}

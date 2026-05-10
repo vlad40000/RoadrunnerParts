@@ -26,6 +26,12 @@ export const dynamic = "force-dynamic";
 const MAX_URL_CONTEXT_URLS = 20;
 type FunctionCallingMode = "AUTO" | "ANY" | "NONE" | "VALIDATED";
 
+function normalizePromptModel(value: unknown): ModelSlot["modelName"] {
+  if (value === "gemini-3-flash-preview") return "gemini-3-flash-preview";
+  if (value === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
+  return "gemini-3.1-flash-lite-preview";
+}
+
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -112,7 +118,7 @@ function normalizeToolContext(value: unknown, inputPayload: Record<string, unkno
 function normalizeSlot(value: unknown, fallback: ModelSlot): ModelSlot {
   const input = asRecord(value);
   const toolInput = asRecord(input.tools);
-  const modelName = "gemini-3.1-flash-lite-preview";
+  const modelName = normalizePromptModel(input.modelName);
   const provider =
     input.provider === "manual" || input.provider === "mock" ? input.provider : "gemini";
   const temperature = Number(input.temperature);

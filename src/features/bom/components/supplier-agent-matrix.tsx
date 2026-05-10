@@ -56,7 +56,8 @@ Rules:
 8. Honor the operator-selected tool policy. Direct fetch and structured output are mandatory; browser/computer-use source data is a separate supervised path.`;
 
 type GeminiModel =
-  | "gemini-3.1-flash-lite-preview";
+  | "gemini-3.1-flash-lite-preview"
+  | "gemini-3-flash-preview";
 
 interface AgentToolConfig {
   directFetch: boolean;
@@ -285,16 +286,8 @@ function parseThinking(value: unknown): AgentTuning["thinkingLevel"] {
 }
 
 function parseModel(value: unknown): GeminiModel {
-  if (
-    value === "gemini-3-flash-preview" ||
-    value === "gemini-3.1-flash-preview" ||
-    value === "gemini-2.5-flash-lite" ||
-    value === "gemini-3.1-flash-lite-preview" ||
-    value === "gemini-3-pro-preview" ||
-    value === "gemini-3.1-pro-preview"
-  ) {
-    return "gemini-3.1-flash-lite-preview";
-  }
+  if (value === "gemini-3-flash-preview") return "gemini-3-flash-preview";
+  if (value === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
   return "gemini-3.1-flash-lite-preview";
 }
 
@@ -846,6 +839,7 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
                           className="w-full rounded border bg-white p-1 text-[10px] font-bold"
                         >
                           <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite</option>
+                          <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
                         </select>
                       </div>
                       <div className="space-y-2">

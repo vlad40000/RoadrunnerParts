@@ -1,6 +1,21 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: Pipeline Operational (Stealth Layer Active - 2026-05-09) | Fix.com BOM Reconciliation COMPLETE (2026-05-10)
+## Status: Pipeline Operational | Prompt Chain EXECUTED (Phase 0/1A/1C Complete - 2026-05-10)
+
+### Prompt Chain Execution (2026-05-10)
+- **Architecture**: Lock-Driven Parts System (3-phase state machine from `scratch/ebay_prompt_chain.txt`)
+- **Phase 0 (Genesis Record)**: COMPLETE — `scratch/phase0_genesis_record.json`
+  - Donor: Hotpoint (GE) HTDX100ED3WW, Serial ZA801821C
+  - Specs: 120/240V 60Hz 5600W, 30A fuses, UL Listed E337907
+- **Phase 1A (Extraction)**: COMPLETE — `scratch/phase1a_extraction_17parts.json`
+  - 17 parts extracted with diagram cross-reference and confidence scoring
+  - 15/17 passed at Confidence >= 0.95
+  - 2/17 flagged HITL: WH2M270 (ambiguous description), WZ05X0158 (generic hardware)
+- **Phase 1C (Trust Shard Listings)**: COMPLETE — `scratch/phase1c_trust_shard_listings.json`
+  - 15 production-ready eBay listings with Trust Shard Tech Tips
+  - Each listing includes: Technician's Notes, Tech Tip, Specs & Fitment, Condition Delta, Terms
+  - 2 HITL-deferred parts awaiting manual verification before listing generation
+- **Compliance**: All listings locked to DONOR_MACHINE_ID provenance, zero hallucinated specs
 
 ### Playwright Stealth Integration (2026-05-09)
 - **Package**: `playwright-stealth` v2.0.3 installed globally.
@@ -16,7 +31,6 @@
   - `matched`: 68 — sourced from Fix.com section caches.
   - `confirmed_not_on_fix_com`: 17 — Fix.com only carries 4 sections for this model; these parts live outside those sections.
 - **17 Confirmed Missing Parts**: WE21X20407, WE10X20418, WE18M28, WE12X21574, WE13X30697, WD21X557, WH2M270, WE09X20441, WE3M51, WE1M1101, WE3M52, WE12X20395, WE1M966, WE1M536, WE1M505, WZ05X0158, WE00X1811
-- **Next**: Source pricing/availability for these 17 from `Encompass_BOM_HTDX100ED3WW.json` or `BOM_HTDX100ED3WW_ALL.json` (D&L Parts).
 - **Scripts**:
   - `scratch/reconcile_fix_com.py` — section scraper (fixed: `domcontentloaded`, direct model URL)
   - `scratch/merge_reconciliation.py` — merges results into manifest

@@ -1,0 +1,21 @@
+{
+  "DONOR_MACHINE_ID": {
+    "Brand": "Hotpoint (General Electric)",
+    "Model_Number": "HTDX100ED3WW",
+    "Serial_Number": "ZA801821C",
+    "Session_ID": "HTDX100ED3WW_ZA801821C",
+    "Specs": {
+      "Type": "Clothes Dryer",
+      "Voltage_Primary": "120/240V 60Hz 5600W 24A 3-Wire",
+      "Voltage_Secondary": "120/208V 60Hz 4400W 22A 3-Wire",
+      "Fuses": "30A",
+      "Manufacturer": "General Electric, Louisville, KY 40225",
+      "Origin": "Made in Mexico",
+      "UL_Listed": true,
+      "UL_File": "E337907"
+    }
+  },
+  "phase": "PHASE_0_COMPLETE",
+  "timestamp": "2026-05-10T01:25:00Z",
+  "source": "OCR_NAMEPLATE_IMAGE"
+}

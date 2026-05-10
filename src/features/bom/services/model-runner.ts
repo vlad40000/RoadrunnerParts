@@ -7,17 +7,14 @@ export type ModelRunToolConfig = {
   allowedFunctionNames?: string[];
 };
 
+export type GeminiModelId =
+  | "gemini-3.1-flash-lite-preview"
+  | "gemini-3-flash-preview";
+
+export type ModelAlias = "fast" | "pro" | "lite";
+
 export type ModelRunInput = {
-  model?:
-    | "fast"
-    | "pro"
-    | "lite"
-    | "gemini-2.5-flash-lite"
-    | "gemini-3-flash-preview"
-    | "gemini-3-pro-preview"
-    | "gemini-3.1-flash-lite-preview"
-    | "gemini-3.1-flash-preview"
-    | "gemini-3.1-pro-preview";
+  model?: GeminiModelId | ModelAlias;
   prompt: string;
   files?: Array<{
     mimeType: string;
@@ -46,20 +43,28 @@ export type TextRunResult = {
   usageMetadata?: unknown;
 };
 
-function resolveModelId(model: ModelRunInput["model"]) {
-  if (
-    model === "gemini-3-flash-preview" ||
-    model === "gemini-3.1-flash-preview" ||
-    model === "gemini-2.5-flash-lite" ||
-    model === "gemini-3.1-flash-lite-preview" ||
-    model === "gemini-3-pro-preview" ||
-    model === "gemini-3.1-pro-preview"
-  ) {
-    return "gemini-3.1-flash-lite-preview";
+const DEFAULT_MODEL: GeminiModelId = "gemini-3.1-flash-lite-preview";
+
+function resolveModelId(
+  model: ModelRunInput["model"],
+  context?: { stage?: string; reason?: string },
+): GeminiModelId {
+  // Legacy aliases always resolve to flash-lite
+  if (!model || model === "fast" || model === "lite" || model === "pro") {
+    return DEFAULT_MODEL;
   }
-  if (model === "pro") return "gemini-3.1-flash-lite-preview";
-  if (model === "lite") return "gemini-3.1-flash-lite-preview";
-  return "gemini-3.1-flash-lite-preview";
+  // Explicit full model ID — pass through but log it so it's auditable
+  const modelId = model === "gemini-3-flash-preview" ? model : DEFAULT_MODEL;
+
+  if (modelId !== DEFAULT_MODEL) {
+    console.warn(
+      `[model-runner] Non-default model used: model=${modelId}` +
+        (context?.stage ? ` stage=${context.stage}` : "") +
+        (context?.reason ? ` reason=${context.reason}` : "") +
+        " | BOM truth rules still apply: model output is not source evidence.",
+    );
+  }
+  return modelId;
 }
 
 function buildModelTools(
@@ -286,14 +291,10 @@ export async function runText(input: ModelRunInput): Promise<string> {
 
 export async function runGeminiCodeExecution(input: {
   code: string;
-  model?:
-    | "gemini-2.5-flash-lite"
-    | "gemini-3-flash-preview"
-    | "gemini-3-pro-preview"
-    | "gemini-3.1-flash-lite-preview"
-    | "gemini-3.1-flash-preview"
-    | "gemini-3.1-pro-preview";
+  model?: GeminiModelId;
   context?: Record<string, unknown>;
+  stage?: string;
+  reason?: string;
 }) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -301,7 +302,10 @@ export async function runGeminiCodeExecution(input: {
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const modelId = resolveModelId(input.model as ModelRunInput["model"]);
+  const modelId = resolveModelId(input.model as ModelRunInput["model"], {
+    stage: input.stage,
+    reason: input.reason,
+  });
   const response = await ai.models.generateContent({
     model: modelId,
     contents: [

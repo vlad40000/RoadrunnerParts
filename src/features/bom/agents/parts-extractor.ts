@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { bomRowSchema, type BomRow } from "../schemas/bom";
 import { buildPartsPrompt } from "../prompts/parts";
-import { runStructuredJson } from "../services/model-runner";
+import { runStructuredJson, type GeminiModelId, type ModelAlias } from "../services/model-runner";
 
 const partsResultSchema = z.object({
   rows: z.array(bomRowSchema),
@@ -81,13 +81,7 @@ export async function runPartsExtractor(input: {
   assemblyName?: string;
   visualTruth?: any;
   agentConfig?: {
-    model?:
-      | "gemini-2.5-flash-lite"
-      | "gemini-3-flash-preview"
-      | "gemini-3.1-flash-lite-preview"
-      | "gemini-3-pro-preview"
-      | "gemini-3.1-flash-preview"
-      | "gemini-3.1-pro-preview";
+    model?: GeminiModelId | ModelAlias;
     temperature?: number;
     systemInstruction?: string | null;
     toolConfig?: {

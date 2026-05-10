@@ -18,7 +18,7 @@ const MODEL_MAP = {
   analyzer: DEFAULT_GEMINI_MODEL,
   discovery: DEFAULT_GEMINI_MODEL,
   'gemini-3-flash': 'gemini-3.1-flash-lite-preview',
-  'gemini-3-flash-preview': 'gemini-3.1-flash-lite-preview',
+  'gemini-3-flash-preview': 'gemini-3-flash-preview',
   'gemini-3.1-flash-lite-preview': 'gemini-3.1-flash-lite-preview',
   'gemini-3.1-flash-preview': 'gemini-3.1-flash-lite-preview',
   'gemini-3-pro': 'gemini-3.1-flash-lite-preview',

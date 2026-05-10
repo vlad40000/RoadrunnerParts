@@ -7,6 +7,9 @@ import {
 import { normalizeSupplierId } from "@/features/bom/services/source-tier-policy";
 
 type Params = { params: Promise<{ jobId: string; supplierId: string }> };
+type GeminiModel =
+  | "gemini-3.1-flash-lite-preview"
+  | "gemini-3-flash-preview";
 
 function positiveNumber(value: unknown) {
   const parsed =
@@ -19,17 +22,9 @@ function positiveNumber(value: unknown) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-function normalizeModel(value: unknown) {
-  if (
-    value === "gemini-3-flash-preview" ||
-    value === "gemini-3.1-flash-preview" ||
-    value === "gemini-2.5-flash-lite" ||
-    value === "gemini-3.1-flash-lite-preview" ||
-    value === "gemini-3-pro-preview" ||
-    value === "gemini-3.1-pro-preview"
-  ) {
-    return "gemini-3.1-flash-lite-preview";
-  }
+function normalizeModel(value: unknown): GeminiModel {
+  if (value === "gemini-3-flash-preview") return "gemini-3-flash-preview";
+  if (value === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
   return "gemini-3.1-flash-lite-preview";
 }
 

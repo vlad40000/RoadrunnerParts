@@ -31,6 +31,7 @@ import {
   parseSearsCatalogParts,
 } from "@/features/bom/services/providers/sears-catalog-adapter";
 import { validate_bom_completion } from "@/features/bom/core/bom-validator";
+import { type GeminiModelId, type ModelAlias } from "@/features/bom/services/model-runner";
 import { 
   bomRowSchema, 
   supplierAgentResponseSchema,
@@ -62,13 +63,7 @@ type SourceActionInput = {
   agentCode?: string | null;
   agentCodeLanguage?: string | null;
   agentConfig?: {
-    model?:
-      | "gemini-2.5-flash-lite"
-      | "gemini-3-flash-preview"
-      | "gemini-3.1-flash-lite-preview"
-      | "gemini-3-pro-preview"
-      | "gemini-3.1-flash-preview"
-      | "gemini-3.1-pro-preview";
+    model?: GeminiModelId | ModelAlias;
     temperature?: number;
     thinkingLevel?: "minimal" | "low" | "medium" | "high";
     systemInstruction?: string | null;

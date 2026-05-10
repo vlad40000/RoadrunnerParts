@@ -156,6 +156,18 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     selectable: true,
   },
   {
+    id: "gemini-3-flash-preview",
+    name: "Gemini 3 Flash Preview",
+    alias: "gemini-3-flash-preview",
+    category: "Gemini",
+    description: "Operator-selectable Flash Preview option for explicit Roadrunner fallback or stage-specific runs.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Text output model",
+    cutoff: "January 2025",
+    releaseDate: "Preview",
+    selectable: true,
+  },
+  {
     id: "gemini-3-pro-preview",
     name: "Gemini 3 Pro Preview",
     alias: "gemini-3-pro-preview",
@@ -2159,10 +2171,14 @@ function ModelOutputView({ output }: { output: PromptRun["outputs"][number] }) {
 }
 
 function modelNameFor(modelName: ModelSlot["modelName"]) {
+  if (modelName === "gemini-3-flash-preview") return "Gemini 3 Flash Preview";
   return "Gemini 3.1 Flash Lite Preview";
 }
 
 function modelDescriptionFor(modelName: ModelSlot["modelName"]) {
+  if (modelName === "gemini-3-flash-preview") {
+    return "Gemini 3 Flash Preview: optional operator-selected Roadrunner fallback model.";
+  }
   return "Gemini 3.1 Flash Lite Preview: Roadrunner default for prompt runs and BOM support tasks.";
 }
 
@@ -4151,6 +4167,7 @@ function RightInspector(props: {
                       className="h-9 w-full rounded-md border border-white/10 bg-[#17191d] px-2 text-xs text-white outline-none"
                     >
                       <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite Preview</option>
+                      <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
                     </select>
                   </label>
                   <label className="mb-2 grid gap-1">

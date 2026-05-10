@@ -39,7 +39,7 @@ export const DEFAULT_MODEL_TOOLS: ModelToolSettings = {
 
 export type ModelSlot = {
   id: "slot_a" | "slot_b";
-  modelName: "gemini-3.1-flash-lite-preview";
+  modelName: "gemini-3.1-flash-lite-preview" | "gemini-3-flash-preview";
   provider: ModelProvider;
   enabled: boolean;
   temperature?: number;
