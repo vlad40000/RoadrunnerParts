@@ -1,0 +1,157 @@
+﻿{
+    "generatedAt":  "2026-05-10T05:55:40.8501403-04:00",
+    "sourceImageDir":  "scratch/image-evidence",
+    "outputRoot":  "scratch/image-evidence/by-assembly-section",
+    "note":  "Images are copied, not moved. Each section folder also includes ebay_prompt_chain.txt and the respective assembly diagram.",
+    "copiedImageCount":  24,
+    "unmatchedImageCount":  0,
+    "unmatchedImages":  [
+
+                        ],
+    "copiedImages":  [
+                         {
+                             "File":  "GEN-WE13M39_0.webp",
+                             "PartNumber":  "WE13M39",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE13M39_1.webp",
+                             "PartNumber":  "WE13M39",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE13M39_2.webp",
+                             "PartNumber":  "WE13M39",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE16X20393_0.webp",
+                             "PartNumber":  "WE16X20393",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE16X20393_1.webp",
+                             "PartNumber":  "WE16X20393",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE16X20393_2.webp",
+                             "PartNumber":  "WE16X20393",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE19M1481_2.webp",
+                             "PartNumber":  "WE19M1481",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE19M1713_1.webp",
+                             "PartNumber":  "WE19M1713",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "We4M127.jpg",
+                             "PartNumber":  "WE4M127",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE4M404_1.webp",
+                             "PartNumber":  "WE4M404",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE4M404_10.webp",
+                             "PartNumber":  "WE4M404",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE4M404_2.webp",
+                             "PartNumber":  "WE4M404",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE4M532_0.webp",
+                             "PartNumber":  "WE4M532",
+                             "Section":  "BACKSPLASH, BLOWER \u0026 DRIVE ASSEMBLY",
+                             "Folder":  "01-backsplash-blower-drive-assembly"
+                         },
+                         {
+                             "File":  "GEN-WE4M255_0.webp",
+                             "PartNumber":  "WE4M255",
+                             "Section":  "CABINET \u0026 TOP PANEL",
+                             "Folder":  "02-cabinet-top-panel"
+                         },
+                         {
+                             "File":  "GEN-WE4M525_0.webp",
+                             "PartNumber":  "WE4M525",
+                             "Section":  "CABINET \u0026 TOP PANEL",
+                             "Folder":  "02-cabinet-top-panel"
+                         },
+                         {
+                             "File":  "GEWE4M525__49493.jpg",
+                             "PartNumber":  "WE4M525",
+                             "Section":  "CABINET \u0026 TOP PANEL",
+                             "Folder":  "02-cabinet-top-panel"
+                         },
+                         {
+                             "File":  "imageDisplay_ed1b478f-877b-4015-890a-7ec26af129b9.webp",
+                             "PartNumber":  "WE4M525",
+                             "Section":  "CABINET \u0026 TOP PANEL",
+                             "Folder":  "02-cabinet-top-panel"
+                         },
+                         {
+                             "File":  "GEN-WE4M160_0.webp",
+                             "PartNumber":  "WE4M160",
+                             "Section":  "DRUM",
+                             "Folder":  "03-drum"
+                         },
+                         {
+                             "File":  "WE4M160 .jpg",
+                             "PartNumber":  "WE4M160",
+                             "Section":  "DRUM",
+                             "Folder":  "03-drum"
+                         },
+                         {
+                             "File":  "WE4M160 _1.jpg",
+                             "PartNumber":  "WE4M160",
+                             "Section":  "DRUM",
+                             "Folder":  "03-drum"
+                         },
+                         {
+                             "File":  "we4m415-dryer-door-switch-for-ge-294882_994x994.webp",
+                             "PartNumber":  "WE4M415",
+                             "Section":  "FRONT PANEL \u0026 DOOR",
+                             "Folder":  "04-front-panel-door"
+                         },
+                         {
+                             "File":  "we4m415-dryer-door-switch-for-ge-410311_994x994.webp",
+                             "PartNumber":  "WE4M415",
+                             "Section":  "FRONT PANEL \u0026 DOOR",
+                             "Folder":  "04-front-panel-door"
+                         },
+                         {
+                             "File":  "we4m415-dryer-door-switch-for-ge-775220_994x994.webp",
+                             "PartNumber":  "WE4M415",
+                             "Section":  "FRONT PANEL \u0026 DOOR",
+                             "Folder":  "04-front-panel-door"
+                         },
+                         {
+                             "File":  "we4m415-dryer-door-switch-for-ge-857776_994x994.webp",
+                             "PartNumber":  "WE4M415",
+                             "Section":  "FRONT PANEL \u0026 DOOR",
+                             "Folder":  "04-front-panel-door"
+                         }
+                     ]
+}
