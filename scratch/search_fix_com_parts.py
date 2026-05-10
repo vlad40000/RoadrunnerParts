@@ -1,16 +1,78 @@
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
 import json
-import time
+from urllib.parse import urljoin, urlparse
 
-missing_parts = [
-    "WE21X20407", "WE10X20418", "WE18M28", "WE12X21574", "WE13X30697",
-    "WD21X557", "WH2M270", "WE09X20441", "WE3M51", "WE1M1101",
-    "WE3M52", "WE12X20395", "WE1M966", "WE1M536", "WE1M505",
-    "WZ05X0158", "WE00X1811"
-]
+MANIFEST_PATH = "HTDX100ED3WW_fix_com_backlog_manifest.json"
+OUTPUT_PATH = "scratch/fix_com_search_results.json"
+
+
+def load_missing_parts():
+    with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
+        manifest = json.load(f)
+
+    return [
+        row["partNumber"]
+        for row in manifest.get("rows", [])
+        if row.get("status") == "missing_fix_com_evidence"
+        or row.get("missing_fix_com_evidence") is True
+    ]
+
+
+def visible_text(locator):
+    try:
+        if locator.count() and locator.first.is_visible():
+            return locator.first.inner_text().strip()
+    except Exception:
+        return ""
+    return ""
+
+
+def is_product_page(url):
+    path = urlparse(url).path.lower()
+    return path.startswith("/parts/") and not path.startswith("/parts/search")
+
+
+def parse_part_container(page, part_num):
+    container = page.locator(
+        f'.js-mega-m-part:has-text("{part_num}"), .mega-m__part:has-text("{part_num}")'
+    ).first
+    try:
+        if not container.is_visible():
+            return None
+    except Exception:
+        return None
+
+    part_name = visible_text(container.locator(".mega-m__part__name"))
+    price = visible_text(container.locator(".price"))
+    href = container.locator('a[href*="/parts/"]').first.get_attribute("href")
+    return {
+        "partName": part_name,
+        "price": price or "N/A",
+        "url": urljoin(page.url, href) if href else page.url,
+        "sourceHtmlSnippet": container.evaluate("node => node.outerHTML"),
+    }
+
+
+def parse_product_page(page, part_num):
+    h1 = visible_text(page.locator("h1"))
+    body_text = page.locator("body").inner_text(timeout=10000)
+    if not h1 or h1.lower() == "page not found" or part_num not in body_text:
+        return None
+
+    price = visible_text(page.locator(".price"))
+    return {
+        "partName": h1,
+        "price": price or "N/A",
+        "url": page.url,
+        "sourceHtmlSnippet": page.locator("body").evaluate(
+            "node => node.innerHTML.slice(0, 2000)"
+        ),
+    }
 
 def run():
+    missing_parts = load_missing_parts()
+
     with Stealth().use_sync(sync_playwright()) as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
@@ -23,50 +85,51 @@ def run():
         for part_num in missing_parts:
             print(f"Searching for {part_num}...")
             url = f"https://www.fix.com/parts/search/?SearchTerm={part_num}"
+            result = {
+                "partNumber": part_num,
+                "found": False,
+                "status": "not_found_on_fix_com_search",
+                "searchUrl": url,
+                "partName": None,
+                "price": None,
+                "url": None,
+            }
+
             try:
                 page.goto(url, wait_until="domcontentloaded", timeout=60000)
-                page.wait_for_timeout(2000) # Give it a moment to render
-                
-                html = page.content()
-                if part_num in html:
-                    # Look for part details
-                    # If it redirects to a part page, the URL will have /parts/
-                    # If it's a list, we'll see multiple.
-                    
-                    if "/parts/" in page.url:
-                        print(f"Direct part page found for {part_num}")
-                        part_name = page.locator('h1').inner_text()
-                        price_elem = page.locator('.price').first
-                        price = price_elem.inner_text() if price_elem.is_visible() else "N/A"
-                        
-                        results.append({
-                            "partNumber": part_num,
-                            "partName": part_name.strip(),
-                            "price": price.strip(),
-                            "url": page.url,
-                            "found": True
-                        })
-                    else:
-                        print(f"Search results list found for {part_num}")
-                        # Grab the first match
-                        container = page.locator(f'.js-mega-m-part:has-text("{part_num}"), .mega-m__part:has-text("{part_num}")').first
-                        if container.is_visible():
-                            part_name = container.locator('.mega-m__part__name').inner_text()
-                            price = container.locator('.price').inner_text()
-                            results.append({
-                                "partNumber": part_num,
-                                "partName": part_name.strip(),
-                                "price": price.strip(),
-                                "url": page.url,
-                                "found": True
-                            })
+                page.wait_for_timeout(2000)
+
+                evidence = (
+                    parse_product_page(page, part_num)
+                    if is_product_page(page.url)
+                    else parse_part_container(page, part_num)
+                )
+
+                if evidence:
+                    result.update(
+                        {
+                            "found": True,
+                            "status": "source_backed_match",
+                            "partName": evidence["partName"],
+                            "price": evidence["price"],
+                            "url": evidence["url"],
+                            "sourceHtmlSnippet": evidence["sourceHtmlSnippet"],
+                        }
+                    )
+                    print(f"FOUND: {part_num} - {evidence['partName']}")
                 else:
-                    print(f"Part {part_num} NOT found on Fix.com")
+                    page_title = visible_text(page.locator("h1")) or page.title()
+                    result["pageTitle"] = page_title
+                    result["resolvedUrl"] = page.url
+                    print(f"NOT FOUND: {part_num} - {page_title}")
             except Exception as e:
                 print(f"Error searching for {part_num}: {e}")
+                result["status"] = "search_error"
+                result["error"] = str(e)
+
+            results.append(result)
         
-        # Save results
-        with open("scratch/fix_com_search_results.json", "w") as f:
+        with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
             
         browser.close()
