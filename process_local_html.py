@@ -56,13 +56,13 @@ def extract_ebay_listing(cleaned_html: str, target_donor_model: str, client: gen
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-pro",
+            model="gemini-3.1-flash-lite-preview",
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 response_mime_type="application/json",
                 response_schema=EbayListingTemplate,
-                temperature=0.0
+                temperature=1.0
             )
         )
         return json.loads(response.text)

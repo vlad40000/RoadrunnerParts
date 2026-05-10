@@ -124,6 +124,38 @@ export type PromptScenario = {
 
 export type PromptRunStatus = "pending" | "running" | "complete" | "failed";
 
+export type CompactionPolicy = {
+  maxInputPayloadBytes: number;
+  maxRenderedPromptBytes: number;
+  maxAttachmentBytesTotal: number;
+  maxSingleAttachmentBytes: number;
+  maxStringBytes: number;
+  maxArrayItems: number;
+  maxObjectDepth: number;
+  previewChars: number;
+};
+
+export type CompactedReferenceField = {
+  path: string;
+  reason: string;
+  originalBytes: number;
+  retainedBytes: number;
+  originalType: string;
+  preview?: string;
+};
+
+export type PayloadDiagnostics = {
+  payloadStatus: "ok" | "compacted" | "rejected";
+  sizeBeforeBytes: number;
+  sizeAfterBytes: number;
+  promptBytesBefore: number;
+  promptBytesAfter: number;
+  attachmentsBytesBefore: number;
+  attachmentsBytesAfter: number;
+  compactedFields: CompactedReferenceField[];
+  rejectionReason?: string;
+};
+
 export type NormalizedModelOutput = {
   rawText: string;
   parsedJson: unknown | null;
@@ -165,6 +197,7 @@ export type PromptRun = {
   scenarioType: PromptScenarioType;
   scenarioName: string;
   inputPayload: Record<string, unknown>;
+  payloadDiagnostics?: PayloadDiagnostics;
   toolContext?: unknown;
   modelSlots: ModelSlot[];
   outputs: PromptRunOutput[];

@@ -58,6 +58,8 @@ class ComputerUseAgent {
     this.slotId = options.slotId || process.env.ROADRUNNER_SLOT_ID || null;
     this.appUrl = options.appUrl || process.env.ROADRUNNER_APP_URL || null;
     this.modelNumber = options.model || null;
+    this.headful = Boolean(options.headful || process.env.CU_AGENT_HEADFUL === '1');
+    this.keepOpen = Boolean(options.keepOpen || process.env.CU_AGENT_KEEP_OPEN === '1');
     this.browser = null;
     this.context = null;
     this.page = null;
@@ -260,11 +262,24 @@ class ComputerUseAgent {
   async init() {
     console.log('[CU Agent] Initializing Playwright browser...');
     await this.telemetry('cu_agent_init', 'running', { viewport: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } });
-    this.browser = await chromium.launch({ headless: false }); // Headless: false for visual debugging
+    this.browser = await chromium.launch({ headless: !this.headful });
     this.context = await this.browser.newContext({
       viewport: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT }
     });
     this.page = await this.context.newPage();
+  }
+
+  async close() {
+    if (this.keepOpen) return;
+    if (this.context) {
+      await this.context.close().catch(() => {});
+      this.context = null;
+    }
+    if (this.browser) {
+      await this.browser.close().catch(() => {});
+      this.browser = null;
+    }
+    this.page = null;
   }
 
   async captureState() {
@@ -353,20 +368,21 @@ class ComputerUseAgent {
 
   async run(goal, initialUrl = 'https://www.google.com') {
     await this.telemetry('cu_agent_start', 'running', { goal, initialUrl });
-    await this.init();
-    await this.page.goto(initialUrl);
+    try {
+      await this.init();
+      await this.page.goto(initialUrl, { waitUntil: 'domcontentloaded', timeout: 45000 });
 
-    let history = [
-      {
-        role: 'user',
-        parts: [
-          { text: goal }
-        ]
-      }
-    ];
+      let history = [
+        {
+          role: 'user',
+          parts: [
+            { text: goal }
+          ]
+        }
+      ];
 
-    const turnLimit = 10;
-    for (let i = 0; i < turnLimit; i++) {
+      const turnLimit = 10;
+      for (let i = 0; i < turnLimit; i++) {
       console.log(`\n--- [CU Agent] Turn ${i + 1} ---`);
 
       // 0. Check for mid-session instruction updates
@@ -472,7 +488,7 @@ Please look at the screenshot.
         ],
         // Required for Computer Use loops to allow the model to think before acting
         generationConfig: {
-          temperature: 0.1,
+          temperature: 1.0,
           topP: 0.95,
         }
       });
@@ -552,10 +568,10 @@ Please look at the screenshot.
       });
     }
 
-    await this.telemetry('cu_agent_finished', 'complete', { url: this.page?.url() || null });
-
-    // Keep browser open for inspection if needed, otherwise:
-    // await this.browser.close();
+      await this.telemetry('cu_agent_finished', 'complete', { url: this.page?.url() || null });
+    } finally {
+      await this.close();
+    }
   }
 }
 
@@ -581,10 +597,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     slotId: args.slotId,
     appUrl: args.appUrl,
     model: args.model,
+    headful: Boolean(args.headful),
+    keepOpen: Boolean(args.keepOpen),
   });
   agent.run(goal, args.url || 'https://encompass.com').catch(async (err) => {
     console.error(err);
     await agent.telemetry('cu_agent_failed', 'failed', { error: err.message });
+    await agent.close();
   });
 }
 
