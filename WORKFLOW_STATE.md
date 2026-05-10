@@ -1,6 +1,6 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: Pipeline Operational (Stealth Layer Active - 2026-05-09)
+## Status: Pipeline Operational (Stealth Layer Active - 2026-05-09) | Fix.com BOM Reconciliation COMPLETE (2026-05-10)
 
 ### Playwright Stealth Integration (2026-05-09)
 - **Package**: `playwright-stealth` v2.0.3 installed globally.
@@ -9,6 +9,17 @@
 - **Validation**: 4/4 Fix.com section URLs extracted successfully with full 40,000-char payloads. Zero "Access Denied" blocks from Akamai WAF.
 - **Output**: `HTDX100ED3WW_ebay_templates.json` — 4 listings with Trust Shards, HTML blocks, images, and retail prices.
 - **Pattern for new scripts**: `from playwright_stealth import Stealth` + `with Stealth().use_sync(sync_playwright()) as p:`
+
+### Fix.com BOM Reconciliation (2026-05-10)
+- **Status**: COMPLETE
+- **Manifest**: `HTDX100ED3WW_fix_com_backlog_manifest.json` (85 total rows)
+  - `matched`: 68 — sourced from Fix.com section caches.
+  - `confirmed_not_on_fix_com`: 17 — Fix.com only carries 4 sections for this model; these parts live outside those sections.
+- **17 Confirmed Missing Parts**: WE21X20407, WE10X20418, WE18M28, WE12X21574, WE13X30697, WD21X557, WH2M270, WE09X20441, WE3M51, WE1M1101, WE3M52, WE12X20395, WE1M966, WE1M536, WE1M505, WZ05X0158, WE00X1811
+- **Next**: Source pricing/availability for these 17 from `Encompass_BOM_HTDX100ED3WW.json` or `BOM_HTDX100ED3WW_ALL.json` (D&L Parts).
+- **Scripts**:
+  - `scratch/reconcile_fix_com.py` — section scraper (fixed: `domcontentloaded`, direct model URL)
+  - `scratch/merge_reconciliation.py` — merges results into manifest
 
 ### Previous Status: Local HTML Review (Images Integrated - Watermark Guarded)
 

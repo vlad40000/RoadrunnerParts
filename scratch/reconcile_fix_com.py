@@ -1,94 +1,143 @@
+"""
+reconcile_fix_com.py
+Navigate directly to the HTDX100ED3WW Fix.com model page, enumerate all
+section URLs, then search each section's HTML for the 17 still-missing parts.
+Saves results to scratch/fix_com_reconciliation_results.json.
+"""
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
+from urllib.parse import urljoin
 import json
 
-missing_parts = [
+MODEL_URL = "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/"
+
+MISSING_PARTS = [
     "WE21X20407", "WE10X20418", "WE18M28", "WE12X21574", "WE13X30697",
     "WD21X557", "WH2M270", "WE09X20441", "WE3M51", "WE1M1101",
     "WE3M52", "WE12X20395", "WE1M966", "WE1M536", "WE1M505",
-    "WZ05X0158", "WE00X1811"
+    "WZ05X0158", "WE00X1811",
 ]
+
+OUTPUT = "scratch/fix_com_reconciliation_results.json"
+
+
+def visible_text(locator):
+    try:
+        if locator.count() and locator.first.is_visible():
+            return locator.first.inner_text().strip()
+    except Exception:
+        return ""
+    return ""
+
 
 def run():
     with Stealth().use_sync(sync_playwright()) as p:
         browser = p.chromium.launch(headless=True)
         context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/121.0.0.0 Safari/537.36"
+            )
         )
         page = context.new_page()
-        
-        results = []
-        
-        # 1. Start from fix.com and search for the model
-        print("Navigating to Fix.com...")
-        page.goto("https://www.fix.com", wait_until="networkidle")
-        
-        print("Searching for model HTDX100ED3WW...")
-        page.fill('input[name="SearchTerm"]', "HTDX100ED3WW")
-        page.press('input[name="SearchTerm"]', "Enter")
-        page.wait_for_load_state("networkidle")
-        
-        # Check if we landed on the model page or a search results page
-        if "/models/" not in page.url:
-            print("Selecting model from results...")
-            model_link = page.locator('a[href*="htdx100ed3ww"]').first
-            if model_link.is_visible():
-                model_link.click()
-                page.wait_for_load_state("networkidle")
-        
-        print(f"Current URL: {page.url}")
-        
-        # 2. Extract sections
-        sections = page.locator('a[href*="/section/"]').all()
-        section_data = []
-        for s in sections:
-            href = s.get_attribute("href")
-            name = s.inner_text()
-            if href:
-                section_data.append({"name": name, "url": page.evaluate(f'new URL("{href}", window.location.href).href')})
-        
-        print(f"Found {len(section_data)} sections.")
-        
-        # 3. For each section, search for parts
-        for section in section_data:
-            print(f"Checking section: {section['name']}...")
-            page.goto(section['url'], wait_until="networkidle")
-            
-            # Click "View More" until all parts are visible
-            while True:
-                view_more = page.locator('text=/View More/i').first
-                if view_more.is_visible():
-                    print("Clicking View More...")
-                    view_more.click()
-                    page.wait_for_timeout(2000)
-                else:
-                    break
-            
-            html = page.content()
-            for part_num in missing_parts:
-                if part_num in html:
-                    # Find the container
-                    # Fix.com structure: <div class="js-mega-m-part" data-name="...">
-                    container = page.locator(f'.js-mega-m-part:has-text("{part_num}"), .mega-m__part:has-text("{part_num}")').first
-                    if container.is_visible():
-                        part_name = container.locator('.mega-m__part__name').inner_text()
-                        price = container.locator('.price').inner_text()
-                        
-                        results.append({
-                            "partNumber": part_num,
-                            "partName": part_name.strip(),
-                            "price": price.strip(),
-                            "section": section['name'],
-                            "sectionUrl": section['url'],
-                            "found": True
+
+        # --- 1. Load model page and collect all section URLs ---
+        print(f"Loading model page: {MODEL_URL}")
+        page.goto(MODEL_URL, wait_until="domcontentloaded", timeout=60000)
+        page.wait_for_timeout(3000)
+
+        links = page.query_selector_all("a[href*='/section']")
+        sections = []
+        seen = set()
+        for link in links:
+            href = link.get_attribute("href")
+            name = link.inner_text().strip().split("\n")[0].strip()
+            if not href:
+                continue
+            full_url = urljoin(MODEL_URL, href)
+            if "/section" in full_url and full_url not in seen and name:
+                sections.append({"name": name, "url": full_url})
+                seen.add(full_url)
+
+        print(f"Found {len(sections)} sections.")
+        if not sections:
+            print("ERROR: No sections found. Exiting.")
+            browser.close()
+            return
+
+        # Track results per part
+        results = {pn: {"partNumber": pn, "found": False, "sections_checked": []} for pn in MISSING_PARTS}
+
+        # --- 2. Scrape each section ---
+        for sec in sections:
+            print(f"  Section: {sec['name']} -> {sec['url']}")
+            try:
+                page.goto(sec["url"], wait_until="domcontentloaded", timeout=60000)
+                page.wait_for_timeout(2000)
+
+                # Click "View More" until exhausted
+                while True:
+                    vm = page.locator("text=/View More/i").first
+                    try:
+                        if vm.is_visible(timeout=2000):
+                            print("    Clicking View More...")
+                            vm.click()
+                            page.wait_for_timeout(2000)
+                        else:
+                            break
+                    except Exception:
+                        break
+
+                html = page.content()
+
+                for pn in MISSING_PARTS:
+                    results[pn]["sections_checked"].append(sec["name"])
+                    if pn in html and not results[pn]["found"]:
+                        # Try to extract the part container
+                        container = page.locator(
+                            f'.js-mega-m-part:has-text("{pn}"), .mega-m__part:has-text("{pn}")'
+                        ).first
+                        part_name = ""
+                        price = ""
+                        href = None
+                        try:
+                            part_name = visible_text(container.locator(".mega-m__part__name"))
+                            price = visible_text(container.locator(".price"))
+                            href = container.locator('a[href*="/parts/"]').first.get_attribute("href")
+                        except Exception:
+                            pass
+
+                        results[pn].update({
+                            "found": True,
+                            "status": "source_backed_match",
+                            "partName": part_name,
+                            "price": price or "N/A",
+                            "section": sec["name"],
+                            "sectionUrl": sec["url"],
+                            "url": urljoin(sec["url"], href) if href else sec["url"],
+                            "sourceHtmlSnippet": html[max(0, html.find(pn) - 200): html.find(pn) + 500],
                         })
-                        print(f"FOUND: {part_num} - {part_name.strip()} - {price.strip()}")
-        
-        # Save results
-        with open("scratch/fix_com_reconciliation_results.json", "w") as f:
-            json.dump(results, f, indent=2)
-            
+                        print(f"    FOUND: {pn} - {part_name} - {price}")
+
+            except Exception as e:
+                print(f"  ERROR on section {sec['name']}: {e}")
+
+        # Mark unfound parts
+        for pn, r in results.items():
+            if not r["found"]:
+                r["status"] = "not_found_on_fix_com"
+                print(f"NOT FOUND: {pn}")
+
+        out = list(results.values())
+        with open(OUTPUT, "w", encoding="utf-8") as f:
+            json.dump(out, f, indent=2)
+
+        found_count = sum(1 for r in out if r["found"])
+        print(f"\nDone. {found_count}/{len(MISSING_PARTS)} parts found.")
+        print(f"Results saved to {OUTPUT}")
         browser.close()
+
 
 if __name__ == "__main__":
     run()

@@ -47,9 +47,19 @@
       "matchPartNumbers": [
         "WE21X20407"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE19M1713",
@@ -269,9 +279,19 @@
       "matchPartNumbers": [
         "WE10X20418"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE20X20409",
@@ -732,9 +752,19 @@
       "matchPartNumbers": [
         "WE18M28"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE14X20425",
@@ -984,9 +1014,19 @@
       "matchPartNumbers": [
         "WE12X21574"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE1M1003",
@@ -1055,9 +1095,19 @@
       "matchPartNumbers": [
         "WE13X30697"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE11X29438",
@@ -1428,9 +1478,19 @@
       "matchPartNumbers": [
         "WD21X557"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE1M1030",
@@ -1470,9 +1530,19 @@
         "WH2M270",
         "WE2X328"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE1M650",
@@ -1571,9 +1641,19 @@
       "matchPartNumbers": [
         "WE09X20441"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE1M1015",
@@ -1642,9 +1722,19 @@
       "matchPartNumbers": [
         "WE3M51"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE2M96",
@@ -1723,9 +1813,19 @@
       "matchPartNumbers": [
         "WE1M1101"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE14X20426",
@@ -1955,9 +2055,19 @@
       "matchPartNumbers": [
         "WE3M52"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE03X31620",
@@ -2026,9 +2136,19 @@
       "matchPartNumbers": [
         "WE12X20395"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE1M966",
@@ -2037,9 +2157,19 @@
       "matchPartNumbers": [
         "WE1M966"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WH01X10313",
@@ -2108,9 +2238,19 @@
       "matchPartNumbers": [
         "WE1M536"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE1M1033",
@@ -2159,9 +2299,19 @@
       "matchPartNumbers": [
         "WE1M505"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE2M196",
@@ -2230,9 +2380,19 @@
       "matchPartNumbers": [
         "WZ05X0158"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     },
     {
       "partNumber": "WE00X181L",
@@ -2271,9 +2431,19 @@
       "matchPartNumbers": [
         "WE00X1811"
       ],
-      "status": "missing_fix_com_evidence",
+      "status": "confirmed_not_on_fix_com",
       "matchedPartNumber": null,
-      "fixComEvidence": null
+      "fixComEvidence": {
+        "status": "confirmed_not_on_fix_com",
+        "source": "fix.com",
+        "note": "Part not listed in any of the 4 sections Fix.com carries for HTDX100ED3WW. Source from D&L Parts or Encompass.",
+        "sections_checked": [
+          "Backsplash, Blower & Drive Assembly",
+          "Cabinet & Top Panel",
+          "Drum",
+          "Front Panel & Door"
+        ]
+      }
     }
   ]
 }
