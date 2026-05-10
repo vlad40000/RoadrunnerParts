@@ -1,0 +1,2 @@
+run_id,condition,model,reference_id,lock_id,total_tokens,runtime_seconds,tokens_per_minute,valid_artifact_count,lock_violation_count,level_1_friction_count,level_2_drift_count,level_3_terminal_decay_count,human_intervention_count,lock_integrity_score,stochastic_leakage_ratio
+EBAY-BACKLOG-1778389651,active_rld,,reference-v1,lock-v1,4726,11.023121,25724.1,2,0,0,0,0,0,1.0,0.0

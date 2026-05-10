@@ -1,93 +1,74 @@
-[
-  {
-    "title": "GE Dryer Timer WE4M532 for Hotpoint HTDX100ED3WW",
-    "brand": "General Electric",
-    "oem_part_number": "WE4M532",
-    "donor_machine_model": "HTDX100ED3WW",
-    "replaces_part_numbers": [],
-    "symptoms_fixed": [
-      "Timer will not advance",
-      "Dryer will not start",
-      "Shuts off too soon",
-      "Runs for too long",
-      "Will not shut off"
-    ],
-    "compatible_models": [
-      "HTDX100ED3WW"
-    ],
-    "retail_price_usd": 90.29,
-    "image_urls": [
-      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/8746223_1_S.jpg"
-    ],
-    "consumer_description": "This genuine OEM Dryer Timer, part number WE4M532, is the brain of your dryer's cycle selection. It is a mechanical component that controls the duration of the drying, heating, and tumbling functions based on your settings. If your dryer's timer is not advancing or cycles are ending prematurely, this is the likely replacement part needed.",
-    "expert_trust_shard": "Before replacing the timer, always disconnect the dryer from its power source. When you access the old timer, take a clear photo of the wire connections with your smartphone before disconnecting them. This simple step is a lifesaver, ensuring each wire goes back to the correct terminal on the new timer, preventing electrical issues.",
-    "html_description_block": "<div style='font-family: Arial, sans-serif; font-size: 14px; color: #333;'><h3 style='color: #2E4053; border-bottom: 2px solid #2E4053; padding-bottom: 5px;'>Genuine GE Dryer Timer WE4M532</h3><p style='margin-bottom: 15px;'>This genuine OEM Dryer Timer, part number WE4M532, is the brain of your dryer's cycle selection. It is a mechanical component that controls the duration of the drying, heating, and tumbling functions based on your settings. If your dryer's timer is not advancing or cycles are ending prematurely, this is the likely replacement part needed.</p><h4 style='color: #2E4053;'>Common Symptoms Fixed:</h4><ul style='list-style-type: disc; margin-left: 20px;'><li>Timer will not advance</li><li>Dryer will not start</li><li>Shuts off too soon</li><li>Runs for too long</li><li>Will not shut off</li></ul><div style='background-color: #F8F9F9; border: 1px solid #D5DBDB; border-radius: 5px; padding: 10px; margin-top: 20px;'><h4 style='color: #196F3D; margin-top: 0;'>Expert Installation Tip:</h4><p style='margin-bottom: 0;'>Before replacing the timer, always disconnect the dryer from its power source. When you access the old timer, take a clear photo of the wire connections with your smartphone before disconnecting them. This simple step is a lifesaver, ensuring each wire goes back to the correct terminal on the new timer, preventing electrical issues.</p></div></div>",
-    "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863267/backsplash-blower-AND-drive-assembly/"
-  },
-  {
-    "title": "GE Dryer Timer Resistor WE4M255 for Hotpoint HTDX100ED3WW",
-    "brand": "General Electric",
-    "oem_part_number": "WE4M255",
-    "donor_machine_model": "HTDX100ED3WW",
-    "replaces_part_numbers": [],
-    "symptoms_fixed": [
-      "Timer will not advance",
-      "Dryer runs continuously",
-      "Dryer will not shut off automatically"
-    ],
-    "compatible_models": [
-      "HTDX100ED3WW"
-    ],
-    "retail_price_usd": 39.63,
-    "image_urls": [
-      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/267964_1_S.jpg"
-    ],
-    "consumer_description": "This is a genuine OEM General Electric Timer Resistor, part number WE4M255. This component works in conjunction with the dryer's timer motor to properly advance the drying cycle. It features a ceramic body designed to dissipate heat and two spade terminals for a secure electrical connection.",
-    "expert_trust_shard": "If your dryer's timer is stuck and won't advance through the automatic cycle, this resistor is a very common point of failure. Before replacing the entire timer, you can test this resistor for continuity with a multimeter. A reading of 'OL' or infinite resistance confirms the part has failed and is the likely cause of your problem, saving you from a more expensive repair.",
-    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 14px; color: #333;\"><h3 style=\"color: #2c3e50;\">Genuine GE Dryer Timer Resistor WE4M255</h3><p>This is a genuine OEM General Electric Timer Resistor, part number WE4M255. This component works in conjunction with the dryer's timer motor to properly advance the drying cycle. It features a ceramic body designed to dissipate heat and two spade terminals for a secure electrical connection.</p><h4 style=\"color: #2c3e50; border-bottom: 1px solid #ccc; padding-bottom: 5px;\">Common Symptoms of a Failed Resistor:</h4><ul style=\"list-style-type: disc; margin-left: 20px;\"><li>Timer will not advance during automatic cycles</li><li>Dryer runs continuously and will not shut off</li><li>Cycle timing is inaccurate or erratic</li></ul><div style=\"background-color: #f2f2f2; border-left: 5px solid #2980b9; padding: 15px; margin-top: 20px;\"><h4 style=\"margin-top: 0; color: #2980b9;\">Expert Technician's Tip:</h4><p style=\"margin-bottom: 0;\">If your dryer's timer is stuck and won't advance through the automatic cycle, this resistor is a very common point of failure. Before replacing the entire timer, you can test this resistor for continuity with a multimeter. A reading of 'OL' or infinite resistance confirms the part has failed and is the likely cause of your problem, saving you from a more expensive repair.</p></div><p style=\"margin-top: 20px;\"><i>Part was sourced from a Hotpoint Dryer model HTDX100ED3WW and is a fully tested, genuine OEM component.</i></p></div>",
-    "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863269/cabinet-AND-top-panel/"
-  },
-  {
-    "title": "GE Dryer Heating Element & Housing Assembly WE11X20397",
-    "brand": "General Electric",
-    "oem_part_number": "WE11X20397",
-    "donor_machine_model": "HTDX100ED3WW",
-    "replaces_part_numbers": [],
-    "symptoms_fixed": [
-      "Dryer not heating",
-      "Takes too long to dry clothes",
-      "Not producing enough heat",
-      "Producing too much heat"
-    ],
-    "compatible_models": [
-      "HTDX100ED3WW"
-    ],
-    "retail_price_usd": 154.72,
-    "image_urls": [
-      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9494500_1_S.jpg"
-    ],
-    "consumer_description": "This genuine OEM Heating Element and Housing Assembly is the complete unit responsible for generating heat in your electric dryer. The assembly includes the coiled heating wire pre-mounted in the metal housing, which simplifies the replacement process. If your dryer is running but not heating, a faulty element is a very common culprit.",
-    "expert_trust_shard": "PRO TIP: Before replacing the entire heating element assembly, always disconnect the dryer from power. Then, test both the high-limit thermostat and the thermal fuse for continuity using a multimeter. These safety components are designed to fail to protect the dryer and are a frequent cause of no-heat symptoms; replacing a $15 fuse is much better than replacing a $150 element unnecessarily.",
-    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;\"> <p>This genuine OEM <strong>Heating Element and Housing Assembly (WE11X20397)</strong> is the complete unit responsible for generating heat in your electric dryer. The assembly includes the coiled heating wire pre-mounted in the metal housing, which simplifies the replacement process. If your dryer is running but not heating, a faulty element is a very common culprit.</p> <h3 style=\"margin-top: 20px;\">Common Symptoms Fixed:</h3> <ul style=\"list-style-type: disc; margin-left: 20px;\"> <li>Dryer not heating at all</li> <li>Clothes taking too long to dry</li> <li>Dryer producing insufficient heat</li> </ul> <div style=\"background-color: #f2f2f2; border-left: 4px solid #f0ad4e; padding: 10px; margin-top: 20px;\"> <h4 style=\"margin: 0 0 10px 0; color: #333;\">Expert Installation Advice:</h4> <p style=\"margin: 0;\"><strong>PRO TIP:</strong> Before replacing the entire heating element assembly, always disconnect the dryer from power. Then, test both the high-limit thermostat and the thermal fuse for continuity using a multimeter. These safety components are designed to fail to protect the dryer and are a frequent cause of no-heat symptoms; replacing a $15 fuse is much better than replacing a $150 element unnecessarily.</p> </div> </div>",
-    "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863270/drum/"
-  },
-  {
-    "title": "GE Dryer Lint Filter WE18X25100 for Hotpoint HTDX100ED3WW",
-    "brand": "General Electric",
-    "oem_part_number": "WE18X25100",
-    "donor_machine_model": "HTDX100ED3WW",
-    "replaces_part_numbers": [],
-    "symptoms_fixed": [],
-    "compatible_models": [
-      "HTDX100ED3WW"
-    ],
-    "retail_price_usd": 64.74,
-    "image_urls": [
-      "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/11767017_1_S.jpg"
-    ],
-    "consumer_description": "This genuine OEM Lint Filter, part number WE18X25100, is designed for your General Electric dryer to capture lint and debris from the exhaust air. Featuring a white frame and a fine mesh screen, it plays a critical role in preventing fire hazards and maintaining your dryer's efficiency. Regular cleaning and replacement when damaged are essential for optimal performance.",
-    "expert_trust_shard": "If your dryer is taking too long to dry clothes even with a clean lint filter, it's a strong indicator that the vent ducting to the outside of your house is clogged. A blocked vent is a serious fire hazard and dramatically reduces dryer efficiency. Never run the dryer without the lint filter in place, as lint can build up inside the machine and on the heating element.",
-    "html_description_block": "<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333;\"><h3 style=\"color: #00407d;\">Part Description</h3><p>This genuine OEM Lint Filter, part number WE18X25100, is designed for your General Electric dryer to capture lint and debris from the exhaust air. Featuring a white frame and a fine mesh screen, it plays a critical role in preventing fire hazards and maintaining your dryer's efficiency. Regular cleaning and replacement when damaged are essential for optimal performance.</p><h3 style=\"color: #00407d;\">Symptoms this part can fix:</h3><ul style=\"list-style-type: disc; margin-left: 20px;\"><li>Clothes taking too long to dry</li><li>Excessive lint left on clothes</li><li>Visible damage, tears, or warping on your old filter</li><li>Overheating or error codes related to airflow</li></ul><h3 style=\"color: #b33b00;\">Expert Technician's Tip</h3><p>If your dryer is taking too long to dry clothes even with a clean lint filter, it's a strong indicator that the vent ducting to the outside of your house is clogged. A blocked vent is a serious fire hazard and dramatically reduces dryer efficiency. Never run the dryer without the lint filter in place, as lint can build up inside the machine and on the heating element.</p></div>",
-    "source_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863268/front-panel-AND-door/"
-  }
-]
+{
+  "model": "HTDX100ED3WW",
+  "generatedCount": 2,
+  "skippedCount": 1,
+  "listings": [
+    {
+      "title": "General Electric WE21X20562 Dryer Drum Assembly for HTDX100ED3WW",
+      "brand": "General Electric",
+      "oem_part_number": "WE21X20562",
+      "donor_machine_model": "HTDX100ED3WW",
+      "replaces_part_numbers": [],
+      "symptoms_fixed": [
+        "Noisy operation",
+        "Drum does not rotate",
+        "Drum damage or scoring",
+        "Excessive vibration during cycle"
+      ],
+      "compatible_models": [
+        "HTDX100ED3WW"
+      ],
+      "retail_price_usd": 405.76,
+      "image_urls": [
+        "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/9493090_1_S.jpg"
+      ],
+      "consumer_description": "This is a genuine General Electric drum assembly designed specifically for your dryer. It serves as the primary vessel for your laundry and is constructed to restore smooth, quiet operation to your machine.",
+      "expert_trust_shard": "Replacing a dryer drum is a significant repair. Before installing, I highly recommend inspecting the drum glides and the felt seals on your dryer housing. If the old drum was scored, those original glides are likely worn down to the metal and will immediately damage your brand-new drum if not replaced at the same time.",
+      "html_description_block": "<div style=\"font-family: Arial, sans-serif; line-height: 1.5; color: #333;\"><h2 style=\"color: #2c3e50;\">GE Dryer Drum Assembly - WE21X20562</h2><p>Restore your dryer to factory-standard performance with this genuine GE drum assembly. Designed for durability and perfect fitment, this component solves persistent issues caused by structural wear or damage.</p><h3 style=\"color: #2c3e50;\">Symptoms Resolved:</h3><ul style=\"background-color: #f9f9f9; padding: 15px; border-radius: 5px;\"><li>Noisy, rattling, or squealing during cycles</li><li>Drum failing to rotate or uneven rotation</li><li>Visible dents, cracks, or scoring inside the drum</li><li>Excessive machine vibration</li></ul><h3 style=\"color: #c0392b;\">Expert Installation Tip:</h3><p><em><strong>Pro Technician Advice:</strong> Replacing the drum is a major operation. Always check your dryer's glide strips and felt seals before finishing the assembly. If these components are worn, they can cause friction and rapid damage to your new drum. Replacing these inexpensive parts now will save you a massive headache later.</em></p></div>",
+      "source_url": "https://www.fix.com/parts/dryer/general-electric/fix9493090/drum-assembly-we21x20562/?SourceCode=1&SearchTerm=HTDX100ED3WW&ModelNum=HTDX100ED3WW",
+      "section_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863270/drum/",
+      "section": "DRUM",
+      "diagram_ref": "503",
+      "backlog_part_number": "WE21X20562",
+      "matched_part_number": "WE21X20562",
+      "fix_number": "FIX9493090",
+      "source_cache_file": "fix_com_drum.txt"
+    },
+    {
+      "title": "Hotpoint Dryer Backsplash Graphics WE19M1713 OEM Genuine Part",
+      "brand": "Hotpoint",
+      "oem_part_number": "WE19M1713",
+      "donor_machine_model": "HTDX100ED3WW",
+      "replaces_part_numbers": [],
+      "symptoms_fixed": [
+        "Faded or damaged control console graphics",
+        "Cracked or scratched backsplash display area"
+      ],
+      "compatible_models": [
+        "HTDX100ED3WW"
+      ],
+      "retail_price_usd": 165.52,
+      "image_urls": [
+        "https://fixcom-g4bhetdmcgd9b7er.z01.azurefd.net/assets/partimages/7783385_4_S.jpg"
+      ],
+      "consumer_description": "This is a genuine Hotpoint Backsplash Graphics assembly, designed to restore the control panel area of your dryer to its original appearance. It features clear, durable labeling for your cycle settings and serves as the visual face of your control interface.",
+      "expert_trust_shard": "When installing this backsplash panel, take care to document or photograph your current wiring harness connections before removing the old unit. Since you will be transferring existing control knobs and potentially sensitive interface boards, work on a soft, clean surface to prevent accidental scratching of the new finish.",
+      "html_description_block": "<div style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\"><h2 style=\"color: #0056b3;\">Product Overview</h2><p>Restore the professional look of your Hotpoint dryer with this genuine OEM Backsplash Graphics assembly (Part Number: <strong>WE19M1713</strong>). Perfect for replacing worn, faded, or damaged consoles, this part ensures your cycle settings remain clear and easy to read.</p><h3 style=\"color: #333;\">Symptoms Addressed:</h3><ul style=\"color: #555;\"><li>Faded or unreadable control console labels</li><li>Visible cracks or deep scratches on the backsplash area</li></ul><h3 style=\"color: #0056b3;\">Expert Installation Tip</h3><p><em>From a professional technician:</em> Before starting the installation, take a quick photo of the wiring behind the current console. This acts as your map during reassembly. When swapping over your dials and electronics, handle the components gently\u2014plastic clips can become brittle over time. Always work on a clean, padded surface to keep your brand-new backsplash looking pristine.</p></div>",
+      "source_url": "https://www.fix.com/parts/dryer/hotpoint/fix7783385/backsplash-graphics-we19m1713/?SourceCode=1&SearchTerm=HTDX100ED3WW&ModelNum=HTDX100ED3WW",
+      "section_url": "https://www.fix.com/models/dryer/hotpoint/id849531/htdx100ed3ww/section6863267/backsplash-blower-AND-drive-assembly/",
+      "section": "BACKSPLASH, BLOWER & DRIVE ASSEMBLY",
+      "diagram_ref": "13",
+      "backlog_part_number": "WE19M1713",
+      "matched_part_number": "WE19M1713",
+      "fix_number": "FIX7783385",
+      "source_cache_file": "fix_com_backsplash-blower-AND-drive-assembly.txt"
+    }
+  ],
+  "skipped": [
+    {
+      "partNumber": "WE21X20407",
+      "description": "Drum Asm 6.0 Cu.ft Wh",
+      "reason": "missing_fix_com_evidence"
+    }
+  ]
+}

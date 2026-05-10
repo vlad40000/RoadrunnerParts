@@ -2,6 +2,7 @@ import os
 import json
 import re
 import time
+import sys
 import argparse
 from html import unescape
 from pathlib import Path
@@ -10,6 +11,9 @@ from playwright_stealth import Stealth
 from google import genai
 from google.genai import types
 from pydantic import BaseModel, Field
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "rld"))
+from token_thermostat import TokenThermostat
 
 # Auto-load the GEMINI_API_KEY from .env.local if present
 try:
@@ -337,16 +341,21 @@ def fetch_rendered_html(url: str, browser_context) -> str:
 # ==============================================================================
 # 4. DETERMINISTIC GEMINI PARSER
 # ==============================================================================
-def extract_ebay_listing(source_material: str, target_donor_model: str, client: genai.Client) -> dict:
+def extract_ebay_listing(source_material: str, target_donor_model: str, client: genai.Client, thermostat: TokenThermostat = None, ambient_injection: str = "") -> dict:
     """
     Forces the LLM to parse the HTML into the strict EbayListingTemplate schema.
     """
-    system_instruction = """
+    orchestrator_directive = f"""
     <orchestrator_directive>
     You are operating under STRICT_SEQUENTIAL execution mode. This system utilizes a multi-phase state machine (Phase 0 -> Phase 1A -> Phase 1B/1C).
     You are executing Phase 1B (Extraction) and Phase 1C (Creative Delta). 
     There is zero tolerance for step-skipping, predictive generation, or phase-merging.
+    {f'<ambient_injection>{ambient_injection}</ambient_injection>' if ambient_injection else ''}
     </orchestrator_directive>
+    """
+
+    system_instruction = f"""
+    {orchestrator_directive}
 
     ROLE: Expert Appliance Technician and E-Commerce Copywriter.
 
@@ -374,9 +383,35 @@ def extract_ebay_listing(source_material: str, target_donor_model: str, client: 
                 temperature=1.0 # Maintain standard temperature; rely on Pydantic for structure
             )
         )
-        return json.loads(response.text)
+        
+        output_dict = None
+        schema_passed = False
+        try:
+            output_dict = json.loads(response.text)
+            schema_passed = True
+        except Exception:
+            pass
+
+        if thermostat and getattr(response, "usage_metadata", None):
+            tokens = getattr(response.usage_metadata, "total_token_count", 0)
+            in_tokens = getattr(response.usage_metadata, "prompt_token_count", 0)
+            out_tokens = getattr(response.usage_metadata, "candidates_token_count", 0)
+            
+            thermostat.record_event(
+                tokens=tokens,
+                input_tokens=in_tokens,
+                output_tokens=out_tokens,
+                artifacts_valid=1 if schema_passed else 0,
+                artifacts_invalid=0 if schema_passed else 1,
+                schema_passed=schema_passed,
+                schema_failed=not schema_passed,
+            )
+
+        return output_dict
     except Exception as e:
         print(f"  [!] Gemini Extraction Failed: {e}")
+        if thermostat:
+            thermostat.record_event(error=True)
         return None
 
 # ==============================================================================
@@ -385,6 +420,8 @@ def extract_ebay_listing(source_material: str, target_donor_model: str, client: 
 def run_pipeline(url_list: list, target_model: str, headful: bool = False):
     # Initialize the Gemini Client (Requires GEMINI_API_KEY environment variable)
     ai_client = genai.Client()
+    thermostat = TokenThermostat(run_id=f"EBAY-SECTIONS-{int(time.time())}")
+    ambient_injection = ""
     
     results = []
     
@@ -412,7 +449,15 @@ def run_pipeline(url_list: list, target_model: str, headful: bool = False):
 
                 # Step 3: Extract structured JSON.
                 print(f"  -> Sending {len(cleaned_html)} chars to Gemini...")
-                listing_data = extract_ebay_listing(cleaned_html, target_model, ai_client)
+                listing_data = extract_ebay_listing(cleaned_html, target_model, ai_client, thermostat=thermostat, ambient_injection=ambient_injection)
+
+                if thermostat:
+                    ping = thermostat.tick()
+                    if ping:
+                        print(f"  [!] TRIAGE PING: Decay Level {ping.decay_level} ({ping.leak_pattern})")
+                        injection = thermostat.apply_relock(ping)
+                        ambient_injection = injection.instruction
+                        print(f"  [!] Applying Ambient Injection: {ambient_injection}")
 
                 if listing_data:
                     # Append original source URL for tracking.
@@ -433,6 +478,10 @@ def run_pipeline(url_list: list, target_model: str, headful: bool = False):
     with open(output_filename, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
         
+    if thermostat:
+        thermostat.print_dashboard()
+        thermostat.close_run()
+
     print(f"\nPipeline Complete. Saved {len(results)} templates to {output_filename}")
 
 
@@ -495,6 +544,8 @@ def run_backlog_pipeline(
         raise RuntimeError("GEMINI_API_KEY is required to generate eBay templates. Use --manifest-only for coverage only.")
 
     ai_client = genai.Client()
+    thermostat = TokenThermostat(run_id=f"EBAY-BACKLOG-{int(time.time())}")
+    ambient_injection = ""
     results = []
     skipped = []
 
@@ -513,7 +564,16 @@ def run_backlog_pipeline(
             f"[{idx}/{len(rows)}] Generating listing for "
             f"{row['partNumber']} from Fix.com evidence {evidence.get('partNumber')}"
         )
-        listing_data = extract_ebay_listing(build_part_source_material(row), target_model, ai_client)
+        listing_data = extract_ebay_listing(build_part_source_material(row), target_model, ai_client, thermostat=thermostat, ambient_injection=ambient_injection)
+        
+        if thermostat:
+            ping = thermostat.tick()
+            if ping:
+                print(f"  [!] TRIAGE PING: Decay Level {ping.decay_level} ({ping.leak_pattern})")
+                injection = thermostat.apply_relock(ping)
+                ambient_injection = injection.instruction
+                print(f"  [!] Applying Ambient Injection: {ambient_injection}")
+
         if listing_data:
             listing_data["source_url"] = evidence.get("partUrl") or evidence.get("sectionUrl")
             listing_data["section_url"] = evidence.get("sectionUrl")
@@ -535,6 +595,11 @@ def run_backlog_pipeline(
     }
     output_filename = f"{target_model}_ebay_templates.json"
     write_json(output_filename, output)
+    
+    if thermostat:
+        thermostat.print_dashboard()
+        thermostat.close_run()
+
     print(f"\nPipeline Complete. Saved {len(results)} listings to {output_filename}")
     return output
 

@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RoadrunnerParts eBay Automation Prompt Chain</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#111827}
+    header{background:#111827;color:white;padding:24px}
+    h1{margin:0 0 10px;font-size:28px}
+    .stats{display:flex;flex-wrap:wrap;gap:10px}
+    .stat{background:#1f2937;border:1px solid #374151;padding:10px 12px}
+    main{padding:20px;max-width:1280px;margin:0 auto}
+    .prompt{background:white;border:1px solid #d8dee9;padding:14px;margin-bottom:18px}
+    pre{white-space:pre-wrap;background:#0f172a;color:#e5e7eb;padding:12px;overflow:auto}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .card{display:flex;flex-direction:column;gap:8px;background:white;border:1px solid #d8dee9;padding:14px;text-decoration:none;color:#111827}
+    .card:hover{border-color:#2563eb}
+    .card.ready{border-left:5px solid #16a34a}
+    .card.review{border-left:5px solid #f59e0b}
+    .card strong{font-size:18px}
+    .card span{color:#4b5563}
+    .card small{color:#6b7280;font-weight:700}
+    .card em{font-style:normal;font-size:12px;font-weight:800;color:#2563eb}
+    button{border:1px solid #111827;background:#111827;color:white;padding:9px 12px;font-weight:800;cursor:pointer}
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RoadrunnerParts eBay Automation Prompt Chain</h1>
+    <div class="stats">
+      <div class="stat">49 listings processed</div>
+      <div class="stat">27 review ready</div>
+      <div class="stat">22 HITL review</div>
+      <div class="stat">20 approved photo attached</div>
+      <div class="stat">29 photo pending</div>
+      <div class="stat">liveEbaySync: false</div>
+      <div class="stat">Generated: 2026-05-10T05:06:14.010Z</div>
+    </div>
+  </header>
+  <main>
+    <section class="prompt">
+      <h2>Prompt Chain Guardrails</h2>
+      <pre>1. For Phase 0: The appliance&#39;s Model and Serial Number (entered manually or via an
+3. For Phase 1A: A batch of Physical Part Images taken by the user, explicitly
+phase state machine (Phase 0 -&gt; Phase 1A -&gt; Phase 1B/1C).
+You are strictly forbidden from executing a downstream phase until the exact, formatted
+output of the preceding phase exists in your active memory. There is zero tolerance for
+step-skipping, predictive generation, or phase-merging.
+&lt;state_machine_logic&gt;
+- STATE 0 (Genesis): Requires[Nameplate Image/Text]. Outputs [DONOR_MACHINE_ID].
+- STATE 1A (Extraction): Requires[DONOR_MACHINE_ID] + [Diagram] + [Part Image].
+Outputs [PART_ID] +[COMPATIBILITY_ID] + [SYSTEM_ROUTING].
+- STATE 1B/1C (Generation): Requires [PART_ID] + [COMPATIBILITY_ID] + [DELTA]. Outputs
+&lt;/state_machine_logic&gt;
+&lt;master_sequence_fail_safes&gt;
+If you violate the state machine logic, you must instantly halt execution and output the
+corresponding FAIL code:
+1. THE &quot;GHOST&quot; FAIL: If you attempt to execute Phase 1A without a verified
+DONOR_MACHINE_ID in active memory -&gt; OUTPUT: [SYSTEM ERROR: SEQUENCE
+VIOLATION - MISSING PHASE 0 -&gt; FAIL_FAST]
+2. THE &quot;SKIP&quot; FAIL: If you attempt to output a final eBay listing (Phase 1B/1C) without
+having generated the exact 3-part JSON extraction from Phase 1A -&gt; OUTPUT:[SYSTEM
+ERROR: SEQUENCE VIOLATION - MISSING PHASE 1A -&gt; FAIL_FAST]
+3. THE &quot;MERGE&quot; FAIL: If you attempt to output Phase 1A and Phase 1B/1C in the same
+single response block without a system prompt telling you to advance -&gt; OUTPUT:[SYSTEM
+ERROR: SEQUENCE VIOLATION - UNAUTHORIZED MERGE -&gt; FAIL_FAST]
+&lt;/master_sequence_fail_safes&gt;
+Process ONLY the specific Phase requested by the user API call. Await the next API trigger
+PROMPT 0: DONOR MACHINE INGESTION (Manual or OCR)
+&quot;DONOR_MACHINE_ID&quot;: {
+PROMPT 1A: REFERENCE-FIRST PART EXTRACTION (Part + Diagram Pairing)
+the Part photos together into one highly-focused prompt.
+&lt;active_memory&gt;[INJECT DONOR_MACHINE_ID FROM PHASE 0 HERE]
+&quot;PART_ID&quot;: {
+&quot;SYSTEM_ROUTING&quot;: {
+PROMPT 1B: SURGICAL EDIT (Zero-Drift Baseline Generation)
+PROMPT 1C: THE &quot;TRUST SHARD&quot; DELTA (High-Conversion Edit)
+- Generate a &quot;Trust Shard&quot;—a 1 to 2-sentence Tech Tip.</pre>
+    </section>
+    <section class="prompt">
+      <h2>Operator Shard Export</h2>
+      <p>Replies saved on individual part pages are stored in this browser. Use this export after reviewing the 49 pages to create the shard-ingest JSON.</p>
+      <div class="actions">
+        <button id="exportReviews" type="button">Download Review Shards JSON</button>
+      </div>
+      <pre id="reviewSummary">No saved replies loaded yet.</pre>
+    </section>
+    <div class="grid"><a class="card ready" href="001-WE21X20562.html">
+        <strong>WE21X20562</strong>
+        <span>GE WE21X20562 Drum Assembly 6.0 Used Dryer Part</span>
+        <small data-review-state="WE21X20562">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="002-WE21X20407.html">
+        <strong>WE21X20407</strong>
+        <span>GE WE21X20407 Drum Assembly 6.0 Cu.Ft Wh Used Dryer Part</span>
+        <small data-review-state="WE21X20407">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="003-WE19M1713.html">
+        <strong>WE19M1713</strong>
+        <span>GE WE19M1713 Backsplash Graphics Assembly Used Dryer Part</span>
+        <small data-review-state="WE19M1713">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="004-WE11M10001.html">
+        <strong>WE11M10001</strong>
+        <span>GE WE11M10001 Dryer Heating Element Used Dryer Part</span>
+        <small data-review-state="WE11M10001">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="005-WE11X20397.html">
+        <strong>WE11X20397</strong>
+        <span>GE WE11X20397 GE Dryer Heating Element Used Dryer Part</span>
+        <small data-review-state="WE11X20397">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="006-WE17X22217.html">
+        <strong>WE17X22217</strong>
+        <span>GE WE17X22217 Kit Motor &amp; Pulley Used Dryer Part</span>
+        <small data-review-state="WE17X22217">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card review" href="007-WE4M160.html">
+        <strong>WE4M160</strong>
+        <span>GE WE4M160 Dryer Safety Thermostat Used Dryer Part</span>
+        <small data-review-state="WE4M160">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="008-WE4M532.html">
+        <strong>WE4M532</strong>
+        <span>GE WE4M532 Dryer Timer Used Dryer Part</span>
+        <small data-review-state="WE4M532">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card ready" href="009-WE49X22295.html">
+        <strong>WE49X22295</strong>
+        <span>GE WE49X22295 Kit Front Panel And Inner Door Used Dryer Part</span>
+        <small data-review-state="WE49X22295">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="010-WE10X20418.html">
+        <strong>WE10X20418</strong>
+        <span>GE WE10X20418 Inner Door Assembly White Used Dryer Part</span>
+        <small data-review-state="WE10X20418">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="011-WE20X20409.html">
+        <strong>WE20X20409</strong>
+        <span>GE WE20X20409 Dryer Front Panel Used Dryer Part</span>
+        <small data-review-state="WE20X20409">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="012-WE20X20412.html">
+        <strong>WE20X20412</strong>
+        <span>GE WE20X20412 Bottom Cover Used Dryer Part</span>
+        <small data-review-state="WE20X20412">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card review" href="013-WE03X20434.html">
+        <strong>WE03X20434</strong>
+        <span>GE WE03X20434 Dryer Idler Pulley Arm Used Dryer Part</span>
+        <small data-review-state="WE03X20434">No operator reply saved</small>
+        <em>HITL / part_photos_attached</em>
+      </a><a class="card ready" href="014-WE20X20417.html">
+        <strong>WE20X20417</strong>
+        <span>GE WE20X20417 Dryer Top Panel Used Dryer Part</span>
+        <small data-review-state="WE20X20417">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="015-WE20X20396.html">
+        <strong>WE20X20396</strong>
+        <span>GE WE20X20396 Rear Panel Used Dryer Part</span>
+        <small data-review-state="WE20X20396">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card review" href="016-WE4M137.html">
+        <strong>WE4M137</strong>
+        <span>GE WE4M137 Dryer High-Limit Thermostat Used Dryer Part</span>
+        <small data-review-state="WE4M137">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card ready" href="017-WE20X20391.html">
+        <strong>WE20X20391</strong>
+        <span>GE WE20X20391 Chassis Base Used Dryer Part</span>
+        <small data-review-state="WE20X20391">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card review" href="018-WE49X22294.html">
+        <strong>WE49X22294</strong>
+        <span>GE WE49X22294 Kit Of Servi Used Dryer Part</span>
+        <small data-review-state="WE49X22294">No operator reply saved</small>
+        <em>HITL / part_photos_attached</em>
+      </a><a class="card ready" href="019-WE14X20392.html">
+        <strong>WE14X20392</strong>
+        <span>GE WE14X20392 Dryer Blower Housing Used Dryer Part</span>
+        <small data-review-state="WE14X20392">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="020-WE19M1481.html">
+        <strong>WE19M1481</strong>
+        <span>GE WE19M1481 Dryer Control Panel Cover, Rear Used Dryer Part</span>
+        <small data-review-state="WE19M1481">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="021-WE10X20468.html">
+        <strong>WE10X20468</strong>
+        <span>GE WE10X20468 Dryer Door Outer Panel Used Dryer Part</span>
+        <small data-review-state="WE10X20468">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card review" href="022-WE4M181.html">
+        <strong>WE4M181</strong>
+        <span>GE WE4M181 Dryer Cycling Thermostat Used Dryer Part</span>
+        <small data-review-state="WE4M181">No operator reply saved</small>
+        <em>HITL / part_photos_attached</em>
+      </a><a class="card review" href="023-WE19M1478.html">
+        <strong>WE19M1478</strong>
+        <span>GE WE19M1478 End Cap LH W Used Dryer Part</span>
+        <small data-review-state="WE19M1478">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card ready" href="024-WE16X20393.html">
+        <strong>WE16X20393</strong>
+        <span>GE WE16X20393 Laundry Center Dryer Blower Wheel Used Dryer Part</span>
+        <small data-review-state="WE16X20393">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="025-WE18X25100.html">
+        <strong>WE18X25100</strong>
+        <span>GE WE18X25100 Dryer Lint Screen Used Dryer Part</span>
+        <small data-review-state="WE18X25100">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="026-WE18M28.html">
+        <strong>WE18M28</strong>
+        <span>GE WE18M28 Filter &amp; Mesh Assembly. Used Dryer Part</span>
+        <small data-review-state="WE18M28">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="027-WE14X20425.html">
+        <strong>WE14X20425</strong>
+        <span>GE WE14X20425 Trap Duct Used Dryer Part</span>
+        <small data-review-state="WE14X20425">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="028-WE13M39.html">
+        <strong>WE13M39</strong>
+        <span>GE WE13M39 Motor Support Used Dryer Part</span>
+        <small data-review-state="WE13M39">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card ready" href="029-WE20X20406.html">
+        <strong>WE20X20406</strong>
+        <span>GE WE20X20406 Dryer Side Panel Used Dryer Part</span>
+        <small data-review-state="WE20X20406">No operator reply saved</small>
+        <em>Ready / part_photos_attached</em>
+      </a><a class="card review" href="030-WE1M1002.html">
+        <strong>WE1M1002</strong>
+        <span>GE WE1M1002 Fuse Cemr 30 Amp 120v Used Dryer Part</span>
+        <small data-review-state="WE1M1002">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="031-WE1X921.html">
+        <strong>WE1X921</strong>
+        <span>GE WE1X921 Motor Strap Used Dryer Part</span>
+        <small data-review-state="WE1X921">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="032-WE1M300.html">
+        <strong>WE1M300</strong>
+        <span>GE WE1M300 Dryer Drum Bearing Bracket Used Dryer Part</span>
+        <small data-review-state="WE1M300">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card ready" href="033-WE03X29897.html">
+        <strong>WE03X29897</strong>
+        <span>GE WE03X29897 Dryer Drum Belt Used Dryer Part</span>
+        <small data-review-state="WE03X29897">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card review" href="034-WE4M404.html">
+        <strong>WE4M404</strong>
+        <span>GE WE4M404 Dryer Temperature Switch Used Dryer Part</span>
+        <small data-review-state="WE4M404">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card ready" href="035-WE12X21574.html">
+        <strong>WE12X21574</strong>
+        <span>GE WE12X21574 Belt Drive Used Dryer Part</span>
+        <small data-review-state="WE12X21574">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card review" href="036-WE1M1003.html">
+        <strong>WE1M1003</strong>
+        <span>GE WE1M1003 Dryer Fuse Holder Used Dryer Part</span>
+        <small data-review-state="WE1M1003">No operator reply saved</small>
+        <em>HITL / part_photos_attached</em>
+      </a><a class="card review" href="037-WE4M255.html">
+        <strong>WE4M255</strong>
+        <span>GE WE4M255 Kenmore Dryer Timer Resistor Used Dryer Part</span>
+        <small data-review-state="WE4M255">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="038-WE13X30697.html">
+        <strong>WE13X30697</strong>
+        <span>GE WE13X30697 Dryer Motor Clamp Used Dryer Part</span>
+        <small data-review-state="WE13X30697">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card ready" href="039-WE11X29438.html">
+        <strong>WE11X29438</strong>
+        <span>GE WE11X29438 Dryer Drum Rear Cover Used Dryer Part</span>
+        <small data-review-state="WE11X29438">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card review" href="040-WE1M1007.html">
+        <strong>WE1M1007</strong>
+        <span>GE WE1M1007 Cover Fuse Terminal Used Dryer Part</span>
+        <small data-review-state="WE1M1007">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="041-WE3M56.html">
+        <strong>WE3M56</strong>
+        <span>GE WE3M56 Bearing Used Dryer Part</span>
+        <small data-review-state="WE3M56">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="042-WE03X20228.html">
+        <strong>WE03X20228</strong>
+        <span>GE WE03X20228 Top Bearing Used Dryer Part</span>
+        <small data-review-state="WE03X20228">No operator reply saved</small>
+        <em>HITL / part_photos_attached</em>
+      </a><a class="card review" href="043-WE4M415.html">
+        <strong>WE4M415</strong>
+        <span>GE WE4M415 Dryer Door Switch Used Dryer Part</span>
+        <small data-review-state="WE4M415">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="044-WE1M462.html">
+        <strong>WE1M462</strong>
+        <span>GE WE1M462 Kenmore Dryer Rear Bearing Used Dryer Part</span>
+        <small data-review-state="WE1M462">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card ready" href="045-WE11X20400.html">
+        <strong>WE11X20400</strong>
+        <span>GE WE11X20400 Heater Housing Used Dryer Part</span>
+        <small data-review-state="WE11X20400">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card ready" href="046-WE01X20419.html">
+        <strong>WE01X20419</strong>
+        <span>GE WE01X20419 Dryer Door Handle Used Dryer Part</span>
+        <small data-review-state="WE01X20419">No operator reply saved</small>
+        <em>Ready / part_photo_pending</em>
+      </a><a class="card review" href="047-WE4M416.html">
+        <strong>WE4M416</strong>
+        <span>GE WE4M416 Dryer Push-To-Start Switch Used Dryer Part</span>
+        <small data-review-state="WE4M416">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="048-WE4M127.html">
+        <strong>WE4M127</strong>
+        <span>GE WE4M127 Dryer Operating Thermostat Used Dryer Part</span>
+        <small data-review-state="WE4M127">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a><a class="card review" href="049-WE4M525.html">
+        <strong>WE4M525</strong>
+        <span>GE WE4M525 4 Term Blk &amp; Grnd Strap Used Dryer Part</span>
+        <small data-review-state="WE4M525">No operator reply saved</small>
+        <em>HITL / part_photo_pending</em>
+      </a></div>
+  </main>
+  <script>
+    (function () {
+      function loadReviews() {
+        var records = [];
+        for (var i = 0; i < localStorage.length; i += 1) {
+          var key = localStorage.key(i);
+          if (!key || key.indexOf("rrp-ebay-review:") !== 0) continue;
+          try { records.push(JSON.parse(localStorage.getItem(key))); } catch {}
+        }
+        records.sort(function (a, b) { return String(a.partNumber).localeCompare(String(b.partNumber)); });
+        return records;
+      }
+
+      function renderSummary() {
+        var records = loadReviews();
+        var shardCount = records.reduce(function (sum, record) { return sum + (record.shards || []).length; }, 0);
+        document.getElementById("reviewSummary").textContent = JSON.stringify({
+          savedReplies: records.length,
+          extractedShards: shardCount,
+          correct: records.filter(function (record) { return record.verdict === "correct"; }).length,
+          incorrect: records.filter(function (record) { return record.verdict === "incorrect"; }).length,
+          photoGate: records.filter(function (record) { return record.verdict === "photo_gate"; }).length
+        }, null, 2);
+        records.forEach(function (record) {
+          var node = document.querySelector('[data-review-state="' + record.partNumber + '"]');
+          if (node) node.textContent = "Reply saved / " + ((record.shards || []).length) + " shard(s)";
+        });
+      }
+
+      document.getElementById("exportReviews").addEventListener("click", function () {
+        var records = loadReviews();
+        var payload = {
+          exportedAt: new Date().toISOString(),
+          source: "scratch/ebay-automation-chain local review UI",
+          instructions: "Ingest shards only after operator review. verdict=correct reinforces the model skill; verdict=incorrect redirects attention.",
+          records: records
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "ebay-operator-shards.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      renderSummary();
+    })();
+  </script>
+</body>
+</html>
