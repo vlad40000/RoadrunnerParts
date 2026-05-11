@@ -712,7 +712,7 @@ const html = `<!DOCTYPE html>
 
     .operator-actions {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 8px;
       margin: 0 0 16px;
     }
@@ -1286,6 +1286,7 @@ const html = `<!DOCTYPE html>
           <button data-action="reset">Reset</button>
           <button data-action="copy">Copy</button>
           <button data-action="export">Export</button>
+          <button data-action="publish">Publish</button>
           <button data-action="commit">Commit</button>
         </div>
         <div class="image-editor" id="imageEditor">
@@ -1769,6 +1770,89 @@ const html = `<!DOCTYPE html>
       return { ok: response.ok, status: response.status, body };
     }
 
+    async function postLiveState(packet) {
+      const response = await fetch("/api/ebay/mockup-live-state", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(packet),
+      });
+      const body = await response.json().catch(() => ({}));
+      return { ok: response.ok, status: response.status, body };
+    }
+
+    function applyRemoteState(state) {
+      if (!state || typeof state !== "object") return false;
+      const edits = Array.isArray(state.edits) ? state.edits : [];
+      edits.forEach((edit) => {
+        const partNumber = String(edit.partNumber || "").toUpperCase();
+        const listing = listings.find((item) => item.partNumber === partNumber);
+        if (!listing) return;
+        [
+          "title",
+          "displayPartNumber",
+          "fitmentLinkText",
+          "reviewLinkText",
+          "condition",
+          "descriptionText",
+          "sellerNotes",
+          "brand",
+          "mpn",
+          "fitment",
+          "location",
+          "shipping",
+          "returns",
+        ].forEach((key) => {
+          if (typeof edit[key] === "string" && edit[key].trim()) listing[key] = edit[key].trim();
+        });
+        if (Number.isFinite(Number(edit.price))) listing.price = Number(edit.price);
+        if (Number.isFinite(Number(edit.quantity))) listing.quantity = Math.max(1, Number(edit.quantity));
+        if ("protection" in edit) listing.protection = Boolean(edit.protection);
+      });
+
+      const imageManifest = Array.isArray(state.imageManifest) ? state.imageManifest : [];
+      imageManifest.forEach((image) => {
+        const partNumber = String(image.partNumber || "").toUpperCase();
+        const imageUrl = String(image.url || image.downloadUrl || "").trim();
+        const listing = listings.find((item) => item.partNumber === partNumber);
+        if (!listing || !imageUrl) return;
+        listing.approvedImage = imageUrl;
+        listing.publicImageUrl = imageUrl;
+        listing.imageFiles = [imageUrl, ...(Array.isArray(listing.imageFiles) ? listing.imageFiles.filter((url) => url !== imageUrl) : [])];
+        listing.hasPhoto = true;
+        listing.photoGate = "operator_sale_photo_ready";
+      });
+      return edits.length > 0 || imageManifest.length > 0;
+    }
+
+    async function loadLiveState() {
+      try {
+        const response = await fetch("/api/ebay/mockup-live-state", { cache: "no-store" });
+        const body = await response.json().catch(() => ({}));
+        if (response.ok && body.state && applyRemoteState(body.state)) {
+          showListing(activeIndex);
+        }
+      } catch {
+        // Live state is optional; the static generated data remains the fallback.
+      }
+    }
+
+    async function publishLiveState() {
+      const packet = buildEditPacket();
+      const result = await postLiveState(packet);
+      if (!result.ok) {
+        downloadJson("roadrunner-ebay-live-publish-packet.json", packet);
+        notify((result.body && result.body.error ? result.body.error + ". " : "") + "Downloaded publish packet.");
+        return;
+      }
+      applyRemoteState(result.body.state);
+      pendingImageUploads.forEach((image) => {
+        if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+      });
+      pendingImageUploads.clear();
+      showListing(activeIndex);
+      notify("Published live edits/images");
+    }
+
     async function commitCurrentEdits() {
       const packet = buildEditPacket();
       try {
@@ -2110,6 +2194,10 @@ const html = `<!DOCTYPE html>
         const payload = buildEditPacket();
         downloadJson("roadrunner-ebay-live-edits.json", payload);
         notify("Downloaded current browser edits");
+        return;
+      }
+      if (action === "publish") {
+        await publishLiveState();
         return;
       }
       if (action === "commit") {
