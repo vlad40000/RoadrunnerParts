@@ -1,5 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { list } from "@vercel/blob";
+
+const DETAIL_STATE_PATH = "ebay/detail-editor-state/current.json";
 
 export const metadata = {
   title: "eBay Listings Dashboard — RoadrunnerParts",
@@ -9,7 +12,13 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-function loadListings() {
+function cleanPartNumber(value) {
+  return String(value || "")
+    .replace(/[^A-Z0-9-]/gi, "")
+    .toUpperCase();
+}
+
+function loadBaseListings() {
   const filePath = path.join(
     process.cwd(),
     "scratch/ebay-html-current/listings.normalized.json"
@@ -17,6 +26,63 @@ function loadListings() {
   if (!fs.existsSync(filePath)) return [];
   const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
   return data.listings || [];
+}
+
+async function loadDetailEditorEdits() {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return {};
+  try {
+    const result = await list({ prefix: DETAIL_STATE_PATH, limit: 1 });
+    const blob = result.blobs.find((item) => item.pathname === DETAIL_STATE_PATH);
+    if (!blob) return {};
+    const response = await fetch(blob.url, { cache: "no-store" });
+    if (!response.ok) return {};
+    const state = await response.json();
+    return state && typeof state.edits === "object" && !Array.isArray(state.edits)
+      ? state.edits
+      : {};
+  } catch {
+    return {};
+  }
+}
+
+function imageCandidateKey(candidate) {
+  return String(candidate?.imageUrl || candidate?.thumbnailUrl || candidate?.remoteImageUrl || "")
+    .trim()
+    .toLowerCase();
+}
+
+function mergeImageCandidates(baseCandidates, editCandidates) {
+  const merged = [];
+  const seen = new Set();
+
+  for (const candidate of [
+    ...(Array.isArray(editCandidates) ? editCandidates : []),
+    ...(Array.isArray(baseCandidates) ? baseCandidates : []),
+  ]) {
+    const key = imageCandidateKey(candidate);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(candidate);
+  }
+
+  return merged;
+}
+
+async function loadListings() {
+  const listings = loadBaseListings();
+  const edits = await loadDetailEditorEdits();
+  if (!Object.keys(edits).length) return listings;
+  return listings.map((listing) => {
+    const partNumber = cleanPartNumber(listing.partNumber);
+    const edit = edits[partNumber];
+    if (!edit) return listing;
+    return {
+      ...listing,
+      ...edit,
+      imageCandidate: edit.imageCandidates?.[0] || listing.imageCandidate || null,
+      imageCandidates: mergeImageCandidates(listing.imageCandidates, edit.imageCandidates),
+    };
+  });
 }
 
 function StatusBadge({ listing }) {
@@ -44,8 +110,8 @@ function StatusBadge({ listing }) {
   );
 }
 
-export default function EbayDashboard() {
-  const listings = loadListings();
+export default async function EbayDashboard() {
+  const listings = await loadListings();
   const withImages = listings.filter(
     (l) => l.imageCandidates && l.imageCandidates.length > 0
   );

@@ -56,6 +56,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const [customModel, setCustomModel] = useState("");
   const [showCustomModel, setShowCustomModel] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [saveMessage, setSaveMessage] = useState("");
   const [editorEnabled, setEditorEnabled] = useState(true);
 
   const calculateQualityScore = () => {
@@ -120,12 +121,65 @@ export default function ListingEditor({ initialListing, partNumber }) {
     }));
   };
 
+  const persistListing = async (draftListing, reason = "manual") => {
+    if (!editorEnabled) return;
+    setIsSaving(true);
+    setSaveMessage("");
+    try {
+      const response = await fetch("/api/ebay/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          partNumber,
+          updates: {
+            title: draftListing.title,
+            ebayBuyNow: draftListing.ebayBuyNow,
+            description: draftListing.description,
+            specs: draftListing.specs,
+            condition: draftListing.condition,
+            quantity: draftListing.quantity,
+            shipping: draftListing.shipping,
+            packageDetails: draftListing.packageDetails || {},
+            returns: draftListing.returns,
+            status: draftListing.status,
+            imageCandidates: draftListing.imageCandidates || []
+          },
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || data.ok === false) {
+        throw new Error(data.error || data.details || "Save failed");
+      }
+
+      const savedAt = new Date();
+      setLastSaved(savedAt);
+      setSaveMessage(
+        reason === "images"
+          ? `Images saved (${draftListing.imageCandidates?.length || 0})`
+          : "Saved",
+      );
+      return data;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setSaveMessage(`Save failed: ${message}`);
+      console.error("Error saving changes:", error);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleImagesChange = (imageCandidates) => {
     if (!editorEnabled) return;
-    setListing((prev) => ({
-      ...prev,
+    const nextListing = {
+      ...listing,
       imageCandidates,
-    }));
+    };
+    setListing(nextListing);
+    persistListing(nextListing, "images").catch(() => {
+      // Error is already surfaced in the sidebar save message.
+    });
   };
 
   const generateDescription = async () => {
@@ -185,40 +239,9 @@ export default function ListingEditor({ initialListing, partNumber }) {
   };
 
   const saveChanges = async () => {
-    if (!editorEnabled) return;
-    setIsSaving(true);
-    try {
-      const response = await fetch("/api/ebay/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          partNumber,
-          updates: {
-            title: listing.title,
-            ebayBuyNow: listing.ebayBuyNow,
-            description: listing.description,
-            specs: listing.specs,
-            condition: listing.condition,
-            quantity: listing.quantity,
-            shipping: listing.shipping,
-            packageDetails: listing.packageDetails || {},
-            returns: listing.returns,
-            status: listing.status,
-            imageCandidates: listing.imageCandidates || []
-          },
-        }),
-      });
-
-      if (response.ok) {
-        setLastSaved(new Date());
-      } else {
-        console.error("Failed to save changes");
-      }
-    } catch (error) {
-      console.error("Error saving changes:", error);
-    } finally {
-      setIsSaving(false);
-    }
+    persistListing(listing, "manual").catch(() => {
+      // Error is already surfaced in the sidebar save message.
+    });
   };
 
   const candidates = listing.imageCandidates || [];
@@ -564,6 +587,13 @@ export default function ListingEditor({ initialListing, partNumber }) {
           {lastSaved && (
             <div className="mt-3 text-center text-[10px] text-slate-400 font-medium">
               Saved at {lastSaved.toLocaleTimeString()}
+            </div>
+          )}
+          {saveMessage && (
+            <div className={`mt-2 text-center text-[10px] font-bold ${
+              saveMessage.startsWith("Save failed") ? "text-red-600" : "text-emerald-700"
+            }`}>
+              {saveMessage}
             </div>
           )}
         </div>
