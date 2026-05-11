@@ -1,4 +1,5 @@
 
+<!-- Gallery with images wired: 42/88 parts have product images (generated 2026-05-11T03:10:43.931Z) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -173,6 +174,99 @@
             font-weight: 600;
             margin-bottom: 10px;
         }
+
+        /* Product Image Gallery */
+        .preview-gallery {
+            margin-bottom: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        .preview-main-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            cursor: crosshair;
+            overflow: hidden;
+        }
+        .preview-main-image img {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .preview-main-image img:hover {
+            transform: scale(1.08);
+        }
+        .preview-thumbs {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            background: #f3f4f6;
+            border-top: 1px solid #e5e7eb;
+            overflow-x: auto;
+        }
+        .preview-thumb {
+            width: 64px;
+            height: 64px;
+            border-radius: 4px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            object-fit: cover;
+            background: #fff;
+            transition: border-color 0.2s, opacity 0.2s;
+            flex-shrink: 0;
+        }
+        .preview-thumb:hover {
+            border-color: var(--primary);
+            opacity: 0.85;
+        }
+        .preview-thumb.active-thumb {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+        .no-image-placeholder {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+            color: #9ca3af;
+            font-size: 14px;
+            gap: 8px;
+        }
+        .no-image-placeholder svg {
+            width: 48px;
+            height: 48px;
+            opacity: 0.4;
+        }
+        .image-status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .image-status-dot.has-image { background: #10b981; }
+        .image-status-dot.no-image { background: #d1d5db; }
+        .image-review-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: #fef3c7;
+            color: #92400e;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -185,442 +279,442 @@
         <div id="listing-list">
     
             <div class="listing-item" data-index="0" onclick="showListing(0)">
-                <div class="listing-item-pn">WE21X20562</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE21X20562</div>
                 <div class="listing-item-title">GE Genuine OEM WE21X20562 Drum Asm 6.0 - Dryer Drum Assembly</div>
             </div>
         
             <div class="listing-item" data-index="1" onclick="showListing(1)">
-                <div class="listing-item-pn">WE21X20407</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE21X20407</div>
                 <div class="listing-item-title">GE Genuine OEM WE21X20407 Drum Asm 6.0 Cu.ft - Dryer Drum Assembly</div>
             </div>
         
             <div class="listing-item" data-index="2" onclick="showListing(2)">
-                <div class="listing-item-pn">WE19M1713</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE19M1713</div>
                 <div class="listing-item-title">GE Genuine OEM WE19M1713 Backsplash Graphics Asm - Dryer Control Graphics Panel</div>
             </div>
         
             <div class="listing-item" data-index="3" onclick="showListing(3)">
-                <div class="listing-item-pn">WE11M10001</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE11M10001</div>
                 <div class="listing-item-title">GE Genuine OEM WE11M10001 Dryer Heating Element - Dryer Heating Element</div>
             </div>
         
             <div class="listing-item" data-index="4" onclick="showListing(4)">
-                <div class="listing-item-pn">WE11X20397</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE11X20397</div>
                 <div class="listing-item-title">GE OEM WE11X20397 G.e. Dryer Heating Element</div>
             </div>
         
             <div class="listing-item" data-index="5" onclick="showListing(5)">
-                <div class="listing-item-pn">WE17X22217</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE17X22217</div>
                 <div class="listing-item-title">GE Genuine OEM WE17X22217 Dryer Drive Motor With Pulley - Dryer Drive Motor</div>
             </div>
         
             <div class="listing-item" data-index="6" onclick="showListing(6)">
-                <div class="listing-item-pn">WE17M66</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE17M66</div>
                 <div class="listing-item-title">GE Genuine OEM WE17M66 Motor - Dryer Drive Motor</div>
             </div>
         
             <div class="listing-item" data-index="7" onclick="showListing(7)">
-                <div class="listing-item-pn">WE20X20596</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE20X20596</div>
                 <div class="listing-item-title">GE Genuine OEM WE20X20596 Panel - Dryer Cabinet Panel</div>
             </div>
         
             <div class="listing-item" data-index="8" onclick="showListing(8)">
-                <div class="listing-item-pn">WE4M160</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M160</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M160 Dryer Safety Thermostat - Dryer Safety Thermostat</div>
             </div>
         
             <div class="listing-item" data-index="9" onclick="showListing(9)">
-                <div class="listing-item-pn">WE4M532</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M532</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M532 Dryer Timer - Dryer Timer</div>
             </div>
         
             <div class="listing-item" data-index="10" onclick="showListing(10)">
-                <div class="listing-item-pn">WE49X22295</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE49X22295</div>
                 <div class="listing-item-title">GE Genuine OEM WE49X22295 Dryer Door Inner Panel - Dryer Door & Panel Kit</div>
             </div>
         
             <div class="listing-item" data-index="11" onclick="showListing(11)">
-                <div class="listing-item-pn">WE10X20418</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE10X20418</div>
                 <div class="listing-item-title">GE Genuine OEM WE10X20418 Inner Door Asm ite - Dryer Inner Door Liner</div>
             </div>
         
             <div class="listing-item" data-index="12" onclick="showListing(12)">
-                <div class="listing-item-pn">WE20X20409</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE20X20409</div>
                 <div class="listing-item-title">GE Genuine OEM WE20X20409 Front Panel ite - Dryer Front Cabinet Panel</div>
             </div>
         
             <div class="listing-item" data-index="13" onclick="showListing(13)">
-                <div class="listing-item-pn">WE20X20412</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE20X20412</div>
                 <div class="listing-item-title">GE Genuine OEM WE20X20412 Bottom Cover - Dryer Bottom Cover</div>
             </div>
         
             <div class="listing-item" data-index="14" onclick="showListing(14)">
-                <div class="listing-item-pn">WE03X20434</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE03X20434</div>
                 <div class="listing-item-title">GE Genuine OEM WE03X20434 Dryer Idler Pulley Arm - Dryer Idler Arm</div>
             </div>
         
             <div class="listing-item" data-index="15" onclick="showListing(15)">
-                <div class="listing-item-pn">WE20X20417</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE20X20417</div>
                 <div class="listing-item-title">GE Genuine OEM WE20X20417 Dryer Top Panel - Dryer Top Cabinet Panel</div>
             </div>
         
             <div class="listing-item" data-index="16" onclick="showListing(16)">
-                <div class="listing-item-pn">WE20X20396</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE20X20396</div>
                 <div class="listing-item-title">GE Genuine OEM WE20X20396 Rear Panel - Dryer Rear Panel</div>
             </div>
         
             <div class="listing-item" data-index="17" onclick="showListing(17)">
-                <div class="listing-item-pn">WE4M137</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M137</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M137 Dryer High-limit Thermostat - Dryer Thermostat</div>
             </div>
         
             <div class="listing-item" data-index="18" onclick="showListing(18)">
-                <div class="listing-item-pn">WE20X20391</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE20X20391</div>
                 <div class="listing-item-title">GE Genuine OEM WE20X20391 Chassis Base - Dryer Chassis Base</div>
             </div>
         
             <div class="listing-item" data-index="19" onclick="showListing(19)">
-                <div class="listing-item-pn">WE49X22294</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE49X22294</div>
                 <div class="listing-item-title">GE Genuine OEM WE49X22294 End Cap Rh W - Dryer Console End Cap</div>
             </div>
         
             <div class="listing-item" data-index="20" onclick="showListing(20)">
-                <div class="listing-item-pn">WE14X20392</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE14X20392</div>
                 <div class="listing-item-title">GE Genuine OEM WE14X20392 Dryer Blower Housing - Dryer Blower Housing</div>
             </div>
         
             <div class="listing-item" data-index="21" onclick="showListing(21)">
-                <div class="listing-item-pn">WE19M1481</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE19M1481</div>
                 <div class="listing-item-title">GE Genuine OEM WE19M1481 Dryer Control Panel Cover, Rear - Dryer Console Cover</div>
             </div>
         
             <div class="listing-item" data-index="22" onclick="showListing(22)">
-                <div class="listing-item-pn">WE10X20468</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE10X20468</div>
                 <div class="listing-item-title">GE Genuine OEM WE10X20468 Dryer Door Outer Panel - Dryer Outer Door Panel</div>
             </div>
         
             <div class="listing-item" data-index="23" onclick="showListing(23)">
-                <div class="listing-item-pn">WE4M181</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M181</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M181 Dryer Operating Thermostat - Dryer Cycling Thermostat</div>
             </div>
         
             <div class="listing-item" data-index="24" onclick="showListing(24)">
-                <div class="listing-item-pn">WE19M1478</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE19M1478</div>
                 <div class="listing-item-title">GE Genuine OEM WE19M1478 End Cap Lh - Dryer Console End Cap</div>
             </div>
         
             <div class="listing-item" data-index="25" onclick="showListing(25)">
-                <div class="listing-item-pn">WE16X20393</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE16X20393</div>
                 <div class="listing-item-title">GE Genuine OEM WE16X20393 Laundry Center Dryer Blower eel - Dryer Blower Wheel</div>
             </div>
         
             <div class="listing-item" data-index="26" onclick="showListing(26)">
-                <div class="listing-item-pn">WE18X25100</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE18X25100</div>
                 <div class="listing-item-title">GE Genuine OEM WE18X25100 Dryer Lint Screen - Dryer Lint Filter</div>
             </div>
         
             <div class="listing-item" data-index="27" onclick="showListing(27)">
-                <div class="listing-item-pn">WE18M28</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE18M28</div>
                 <div class="listing-item-title">GE Genuine OEM WE18M28 Filter & Mesh Asm. - Dryer Lint Filter Assembly</div>
             </div>
         
             <div class="listing-item" data-index="28" onclick="showListing(28)">
-                <div class="listing-item-pn">WE14X20425</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE14X20425</div>
                 <div class="listing-item-title">GE Genuine OEM WE14X20425 Trap Duct - Dryer Lint Trap Duct</div>
             </div>
         
             <div class="listing-item" data-index="29" onclick="showListing(29)">
-                <div class="listing-item-pn">WE13M39</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE13M39</div>
                 <div class="listing-item-title">GE Genuine OEM WE13M39 Motor Support - Dryer Motor Support Bracket</div>
             </div>
         
             <div class="listing-item" data-index="30" onclick="showListing(30)">
-                <div class="listing-item-pn">WE20X20406</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE20X20406</div>
                 <div class="listing-item-title">GE Genuine OEM WE20X20406 Dryer Side Panel - Dryer Side Cabinet Panel</div>
             </div>
         
             <div class="listing-item" data-index="31" onclick="showListing(31)">
-                <div class="listing-item-pn">WE1M1002</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE1M1002</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1002 Fuse Cemr 30 Amp 120V - Dryer Power Fuse</div>
             </div>
         
             <div class="listing-item" data-index="32" onclick="showListing(32)">
-                <div class="listing-item-pn">WE1X921</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE1X921</div>
                 <div class="listing-item-title">GE Genuine OEM WE1X921 Motor Strap - Dryer Motor Mounting Strap</div>
             </div>
         
             <div class="listing-item" data-index="33" onclick="showListing(33)">
-                <div class="listing-item-pn">WE1M300</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE1M300</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M300 Dryer Drum Bearing Bracket - Dryer Bearing Retainer</div>
             </div>
         
             <div class="listing-item" data-index="34" onclick="showListing(34)">
-                <div class="listing-item-pn">WE03X29897</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE03X29897</div>
                 <div class="listing-item-title">GE Genuine OEM WE03X29897 Dryer Drum Belt - Dryer Drive Belt</div>
             </div>
         
             <div class="listing-item" data-index="35" onclick="showListing(35)">
-                <div class="listing-item-pn">WE4M404</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M404</div>
                 <div class="listing-item-title">GE OEM WE4M404 Dryer Temperature Switch</div>
             </div>
         
             <div class="listing-item" data-index="36" onclick="showListing(36)">
-                <div class="listing-item-pn">WE12X21574</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE12X21574</div>
                 <div class="listing-item-title">GE Genuine OEM WE12X21574 Belt Drive - Dryer Drive Belt</div>
             </div>
         
             <div class="listing-item" data-index="37" onclick="showListing(37)">
-                <div class="listing-item-pn">WE1M1003</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE1M1003</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1003 Dryer Fuse Holder - Dryer Fuse Holder</div>
             </div>
         
             <div class="listing-item" data-index="38" onclick="showListing(38)">
-                <div class="listing-item-pn">WE4M255</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M255</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M255 Kenmore Dryer Timer Resistor - Dryer Timer Resistor</div>
             </div>
         
             <div class="listing-item" data-index="39" onclick="showListing(39)">
-                <div class="listing-item-pn">WE13X30697</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE13X30697</div>
                 <div class="listing-item-title">GE Genuine OEM WE13X30697 Dryer Motor Clamp - Dryer Motor Clamp</div>
             </div>
         
             <div class="listing-item" data-index="40" onclick="showListing(40)">
-                <div class="listing-item-pn">WE11X29438</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE11X29438</div>
                 <div class="listing-item-title">GE Genuine OEM WE11X29438 Dryer Drum Rear Cover - Dryer Rear Drum Panel/Diffuser</div>
             </div>
         
             <div class="listing-item" data-index="41" onclick="showListing(41)">
-                <div class="listing-item-pn">WE14X20421</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE14X20421</div>
                 <div class="listing-item-title">GE Genuine OEM WE14X20421 Dryer Exhaust Duct - Dryer Internal Exhaust Duct</div>
             </div>
         
             <div class="listing-item" data-index="42" onclick="showListing(42)">
-                <div class="listing-item-pn">WE1M1007</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE1M1007</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1007 Cover Fuse Terminal - Dryer Fuse Cover</div>
             </div>
         
             <div class="listing-item" data-index="43" onclick="showListing(43)">
-                <div class="listing-item-pn">WE3M56</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE3M56</div>
                 <div class="listing-item-title">GE Genuine OEM WE3M56 Bearing - Dryer Drum Top Bearing</div>
             </div>
         
             <div class="listing-item" data-index="44" onclick="showListing(44)">
-                <div class="listing-item-pn">WE03X20228</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE03X20228</div>
                 <div class="listing-item-title">GE Genuine OEM WE03X20228 Top Bearing - Dryer Drum Bearing</div>
             </div>
         
             <div class="listing-item" data-index="45" onclick="showListing(45)">
-                <div class="listing-item-pn">WE4M415</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M415</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M415 Dryer Door Switch - Dryer Door Interlock Switch</div>
             </div>
         
             <div class="listing-item" data-index="46" onclick="showListing(46)">
-                <div class="listing-item-pn">WE1M462</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE1M462</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M462 Kenmore Dryer Rear Bearing - Dryer Drum Bearing Sleeve</div>
             </div>
         
             <div class="listing-item" data-index="47" onclick="showListing(47)">
-                <div class="listing-item-pn">WE11X20400</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE11X20400</div>
                 <div class="listing-item-title">GE Genuine OEM WE11X20400 Heater Housing - Dryer Heating Chamber Housing</div>
             </div>
         
             <div class="listing-item" data-index="48" onclick="showListing(48)">
-                <div class="listing-item-pn">WE01X20419</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE01X20419</div>
                 <div class="listing-item-title">GE Genuine OEM WE01X20419 Dryer Door Handle - Dryer Door Handle</div>
             </div>
         
             <div class="listing-item" data-index="49" onclick="showListing(49)">
-                <div class="listing-item-pn">WE4M416</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M416</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M416 Dryer Push-to-start Switch - Dryer Start Switch</div>
             </div>
         
             <div class="listing-item" data-index="50" onclick="showListing(50)">
-                <div class="listing-item-pn">WE4M127</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M127</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M127 Dryer Operating Thermostat - Dryer Cycling Thermostat</div>
             </div>
         
             <div class="listing-item" data-index="51" onclick="showListing(51)">
-                <div class="listing-item-pn">WE4M525</div>
+                <div class="listing-item-pn"><span class="image-status-dot has-image"></span>WE4M525</div>
                 <div class="listing-item-title">GE Genuine OEM WE4M525 4 Term Blk & Grnd Strap - Dryer Terminal Block</div>
             </div>
         
             <div class="listing-item" data-index="52" onclick="showListing(52)">
-                <div class="listing-item-pn">WD21X10261</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WD21X10261</div>
                 <div class="listing-item-title">GE Genuine OEM WD21X10261 Interlock Switch - Dryer Interlock Switch</div>
             </div>
         
             <div class="listing-item" data-index="53" onclick="showListing(53)">
-                <div class="listing-item-pn">WD21X557</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WD21X557</div>
                 <div class="listing-item-title">GE Genuine OEM WD21X557 Interlock Sw - Dryer Interlock Switch</div>
             </div>
         
             <div class="listing-item" data-index="54" onclick="showListing(54)">
-                <div class="listing-item-pn">WE1M1030</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M1030</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1030 Shield Bottom Cover - Dryer Structural Shield</div>
             </div>
         
             <div class="listing-item" data-index="55" onclick="showListing(55)">
-                <div class="listing-item-pn">WH2M270</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WH2M270</div>
                 <div class="listing-item-title">GE Genuine OEM WH2M270 We2x328 - Dryer Hardware Set</div>
             </div>
         
             <div class="listing-item" data-index="56" onclick="showListing(56)">
-                <div class="listing-item-pn">WE1M650</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M650</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M650 Dryer Motor Wire Harness Connector - Dryer Wire Connector</div>
             </div>
         
             <div class="listing-item" data-index="57" onclick="showListing(57)">
-                <div class="listing-item-pn">WE13X20394</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE13X20394</div>
                 <div class="listing-item-title">GE Genuine OEM WE13X20394 Motor Plate - Dryer Motor Support Plate</div>
             </div>
         
             <div class="listing-item" data-index="58" onclick="showListing(58)">
-                <div class="listing-item-pn">WE1M652</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M652</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M652 Dryer Control Knob - Dryer Control Knob</div>
             </div>
         
             <div class="listing-item" data-index="59" onclick="showListing(59)">
-                <div class="listing-item-pn">WE09X20441</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE09X20441</div>
                 <div class="listing-item-title">GE Genuine OEM WE09X20441 Felt Trap Duct - Dryer Duct Seal</div>
             </div>
         
             <div class="listing-item" data-index="60" onclick="showListing(60)">
-                <div class="listing-item-pn">WE1M1015</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M1015</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1015 Ground Strap Asm - Dryer Ground Strap</div>
             </div>
         
             <div class="listing-item" data-index="61" onclick="showListing(61)">
-                <div class="listing-item-pn">WE03X37319</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE03X37319</div>
                 <div class="listing-item-title">GE Genuine OEM WE03X37319 Dryer Drum Glide Bearing - Dryer Drum Slides</div>
             </div>
         
             <div class="listing-item" data-index="62" onclick="showListing(62)">
-                <div class="listing-item-pn">WE3M51</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE3M51</div>
                 <div class="listing-item-title">GE Genuine OEM WE3M51 Bearing Slide - Dryer Drum Slide</div>
             </div>
         
             <div class="listing-item" data-index="63" onclick="showListing(63)">
-                <div class="listing-item-pn">WE2M96</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE2M96</div>
                 <div class="listing-item-title">GE Genuine OEM WE2M96 Cap Nut - Dryer Cap Nut</div>
             </div>
         
             <div class="listing-item" data-index="64" onclick="showListing(64)">
-                <div class="listing-item-pn">WE1M659</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M659</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M659 Push/ Start Button Grey - Dryer Start Button</div>
             </div>
         
             <div class="listing-item" data-index="65" onclick="showListing(65)">
-                <div class="listing-item-pn">WE1M1101</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M1101</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1101 Levelling Leg - Dryer Leveling Foot</div>
             </div>
         
             <div class="listing-item" data-index="66" onclick="showListing(66)">
-                <div class="listing-item-pn">WE14X20426</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE14X20426</div>
                 <div class="listing-item-title">GE Genuine OEM WE14X20426 Baffle - Dryer Drum Baffle</div>
             </div>
         
             <div class="listing-item" data-index="67" onclick="showListing(67)">
-                <div class="listing-item-pn">WE1M461</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M461</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M461 Kenmore Dryer Rear Bearing O-ring - Dryer Bearing O-Ring</div>
             </div>
         
             <div class="listing-item" data-index="68" onclick="showListing(68)">
-                <div class="listing-item-pn">WE1M780</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M780</div>
                 <div class="listing-item-title">GE OEM WE1M780 Dryer Heating Element Bracket</div>
             </div>
         
             <div class="listing-item" data-index="69" onclick="showListing(69)">
-                <div class="listing-item-pn">WE1M825</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M825</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M825 a , Gasket (Seal) 39 Inch - Dryer Foam Duct Gasket</div>
             </div>
         
             <div class="listing-item" data-index="70" onclick="showListing(70)">
-                <div class="listing-item-pn">WE01X20423</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE01X20423</div>
                 <div class="listing-item-title">GE OEM WE01X20423 Dryer Power Cord Access Bracket</div>
             </div>
         
             <div class="listing-item" data-index="71" onclick="showListing(71)">
-                <div class="listing-item-pn">WE03X37320</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE03X37320</div>
                 <div class="listing-item-title">GE OEM WE03X37320 Dryer Drum Glide Bearing, Upper</div>
             </div>
         
             <div class="listing-item" data-index="72" onclick="showListing(72)">
-                <div class="listing-item-pn">WE1M934</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M934</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M934 Door Reversal Plug - Dryer Plug Button</div>
             </div>
         
             <div class="listing-item" data-index="73" onclick="showListing(73)">
-                <div class="listing-item-pn">WE3M52</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE3M52</div>
                 <div class="listing-item-title">GE Genuine OEM WE3M52 Bearing Slide - Dryer Drum Glide</div>
             </div>
         
             <div class="listing-item" data-index="74" onclick="showListing(74)">
-                <div class="listing-item-pn">WE03X31620</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE03X31620</div>
                 <div class="listing-item-title">GE Genuine OEM WE03X31620 Dryer Idler Pulley - Dryer Idler Pulley Wheel</div>
             </div>
         
             <div class="listing-item" data-index="75" onclick="showListing(75)">
-                <div class="listing-item-pn">WE09X27636</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE09X27636</div>
                 <div class="listing-item-title">GE Genuine OEM WE09X27636 Dryer Blower Gasket - Dryer Blower Housing Gasket</div>
             </div>
         
             <div class="listing-item" data-index="76" onclick="showListing(76)">
-                <div class="listing-item-pn">WE12X20395</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE12X20395</div>
                 <div class="listing-item-title">GE Genuine OEM WE12X20395 Idler Pulley - Dryer Idler Pulley Wheel</div>
             </div>
         
             <div class="listing-item" data-index="77" onclick="showListing(77)">
-                <div class="listing-item-pn">WE1M966</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M966</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M966 Blower Gasket (Exhaust) - Dryer Blower Gasket</div>
             </div>
         
             <div class="listing-item" data-index="78" onclick="showListing(78)">
-                <div class="listing-item-pn">WH01X10313</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WH01X10313</div>
                 <div class="listing-item-title">GE Genuine OEM WH01X10313 Washer Control Knob - Dryer Selection Knob</div>
             </div>
         
             <div class="listing-item" data-index="79" onclick="showListing(79)">
-                <div class="listing-item-pn">WE1M1011</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M1011</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1011 Latch - Dryer Door Catch</div>
             </div>
         
             <div class="listing-item" data-index="80" onclick="showListing(80)">
-                <div class="listing-item-pn">WE1M536</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M536</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M536 Latch - Dryer Door Latch</div>
             </div>
         
             <div class="listing-item" data-index="81" onclick="showListing(81)">
-                <div class="listing-item-pn">WE1M1033</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M1033</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M1033 Dryer Door Hinge - Dryer Door Hinge</div>
             </div>
         
             <div class="listing-item" data-index="82" onclick="showListing(82)">
-                <div class="listing-item-pn">WE1M505</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1M505</div>
                 <div class="listing-item-title">GE Genuine OEM WE1M505 Hinge - Dryer Door Hinge</div>
             </div>
         
             <div class="listing-item" data-index="83" onclick="showListing(83)">
-                <div class="listing-item-pn">WE2M196</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE2M196</div>
                 <div class="listing-item-title">GE Genuine OEM WE2M196 Ground Screw - Dryer Electrical Screw</div>
             </div>
         
             <div class="listing-item" data-index="84" onclick="showListing(84)">
-                <div class="listing-item-pn">WE1X1192</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE1X1192</div>
                 <div class="listing-item-title">GE Genuine OEM WE1X1192 Door Strike - Dryer Door Catch Strike</div>
             </div>
         
             <div class="listing-item" data-index="85" onclick="showListing(85)">
-                <div class="listing-item-pn">WZ05X0158</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WZ05X0158</div>
                 <div class="listing-item-title">GE Genuine OEM WZ05X0158 Screw 8-32X3/8 Grd Scr - Dryer Grounding Screw</div>
             </div>
         
             <div class="listing-item" data-index="86" onclick="showListing(86)">
-                <div class="listing-item-pn">WE00X181L</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE00X181L</div>
                 <div class="listing-item-title">GE Genuine OEM WE00X181L Shaft - Dryer Drum Support Shaft</div>
             </div>
         
             <div class="listing-item" data-index="87" onclick="showListing(87)">
-                <div class="listing-item-pn">WE00X1811</div>
+                <div class="listing-item-pn"><span class="image-status-dot no-image"></span>WE00X1811</div>
                 <div class="listing-item-title">GE Genuine OEM WE00X1811 Shaft - Dryer Drum Axle Shaft</div>
             </div>
         
@@ -644,6 +738,10 @@
         const items = document.querySelectorAll('.listing-item');
         const searchInput = document.getElementById('search-input');
 
+        
+        // Image lookup map (auto-generated from listing-image-map.json)
+        const imageIndex = {"WE21X20562":{"main":"https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/4/f/4f3eed55-484f-484c-b721-912d747aff00.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0_small.webp","https://cdn.amplifi.pattern.com/e01afd9a-64ae-4d85-b3cc-507f316e1807_small.webp","https://cdn.amplifi.pattern.com/3eda80df-1eba-4387-98b5-12feab9f4b51_small.webp"]},"WE21X20407":{"main":"https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/4/f/4f3eed55-484f-484c-b721-912d747aff00.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/071eba2f-7fd2-4a23-9a51-4ff2e50bb1d0_small.webp","https://cdn.amplifi.pattern.com/e01afd9a-64ae-4d85-b3cc-507f316e1807_small.webp","https://cdn.amplifi.pattern.com/3eda80df-1eba-4387-98b5-12feab9f4b51_small.webp"]},"WE19M1713":{"main":"https://cdn.amplifi.pattern.com/ffe78d3d-12b9-4381-b762-22b5c604f939.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/2/f/2f74ab8d-9ec4-4658-bf75-60fc71fd320d.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/ffe78d3d-12b9-4381-b762-22b5c604f939_small.webp","https://cdn.amplifi.pattern.com/1a2b99af-8d39-49e9-8a9c-8bd2052428db_small.webp"]},"WE11M10001":{"main":"https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/4/7/473b75ef-d238-44f1-853a-80a0157b19e2.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/1b15d1cb-90f2-406e-9481-80c9275c244c_small.webp","https://cdn.amplifi.pattern.com/73f4ecda-91a3-40b4-904c-e38f1fd818b4_small.webp","https://cdn.amplifi.pattern.com/993cb9ec-e818-4e10-bb57-fd649dd55f0d_small.webp"]},"WE11X20397":{"main":"https://cdn.amplifi.pattern.com/b4c2a4e0-c75c-4ba7-b01a-6ccd378a2f46.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/5/2/52253721-a504-407d-a226-2855eca8feb7.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/b4c2a4e0-c75c-4ba7-b01a-6ccd378a2f46_small.webp","https://cdn.amplifi.pattern.com/2d572a82-9d8d-4e4d-9820-79ad08253d8e_small.webp","https://cdn.amplifi.pattern.com/154025bf-bf6b-4bf9-86ac-9e0c6fc306c8_small.webp"]},"WE17X22217":{"main":"https://cdn.amplifi.pattern.com/10e14741-6033-4067-ad8e-57f25b3fcac0.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/0/8/089257d5-d5fc-456e-9335-337734d4206e.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/10e14741-6033-4067-ad8e-57f25b3fcac0_small.webp","https://cdn.amplifi.pattern.com/00139e18-a1e8-4606-aef3-c081f40bd9e8_small.webp","https://cdn.amplifi.pattern.com/20c14508-9f1c-4ed4-bf8a-79d2617ce1e4_small.webp"]},"WE4M160":{"main":"https://cdn.amplifi.pattern.com/1f0e0664-fc71-463c-9a28-b13adb533543.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/g/e/gen-we4m160_1.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/1f0e0664-fc71-463c-9a28-b13adb533543_small.webp","https://cdn.amplifi.pattern.com/414b826d-7e0d-4693-adbd-fb86e37aa306_small.webp","https://cdn.amplifi.pattern.com/91b8dce5-c49c-4e93-ad9e-9529e86a80cd_small.webp"]},"WE4M532":{"main":"https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/2/6/2636e75b-4d5b-468c-ae22-c70407fb97c6.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/5fe43abd-73d9-49e1-ac3b-c16b392edf9f_small.webp","https://cdn.amplifi.pattern.com/97edfed3-6d5b-4b34-a017-abc58154409c_small.webp","https://cdn.amplifi.pattern.com/20f49e55-fa2b-468a-9b20-95c43959ddc6_small.webp"]},"WE49X22295":{"main":"https://cdn.amplifi.pattern.com/fd9b63b3-a3e1-43c7-b895-416e231e24b4.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/0/f/0fc8ac7e-e46d-45ef-ad2a-41108f504170.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/fd9b63b3-a3e1-43c7-b895-416e231e24b4_small.webp","https://cdn.amplifi.pattern.com/b0ff6918-f937-4995-b940-197dbce67170_small.webp","https://cdn.amplifi.pattern.com/a485e2ee-c088-4f14-b3cb-92f5e432840d_small.webp"]},"WE10X20418":{"main":"https://cdn.amplifi.pattern.com/fd9b63b3-a3e1-43c7-b895-416e231e24b4.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/0/f/0fc8ac7e-e46d-45ef-ad2a-41108f504170.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/fd9b63b3-a3e1-43c7-b895-416e231e24b4_small.webp","https://cdn.amplifi.pattern.com/b0ff6918-f937-4995-b940-197dbce67170_small.webp","https://cdn.amplifi.pattern.com/a485e2ee-c088-4f14-b3cb-92f5e432840d_small.webp"]},"WE20X20409":{"main":"https://cdn.amplifi.pattern.com/fd9b63b3-a3e1-43c7-b895-416e231e24b4.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/0/f/0fc8ac7e-e46d-45ef-ad2a-41108f504170.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/fd9b63b3-a3e1-43c7-b895-416e231e24b4_small.webp","https://cdn.amplifi.pattern.com/b0ff6918-f937-4995-b940-197dbce67170_small.webp","https://cdn.amplifi.pattern.com/a485e2ee-c088-4f14-b3cb-92f5e432840d_small.webp"]},"WE03X20434":{"main":"https://cdn.amplifi.pattern.com/87f87dae-46e8-486c-9cdb-efbd4156938d.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/6/7/67da8443-4d26-4927-8865-2150eaed224c.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/87f87dae-46e8-486c-9cdb-efbd4156938d_small.webp","https://cdn.amplifi.pattern.com/f8f8104f-7223-4e6c-8e80-b4e4a2b431ee_small.webp"]},"WE20X20417":{"main":"https://cdn.amplifi.pattern.com/98a538ec-2be8-4dcc-a40d-470eef9c365c.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/5/e/5e7ef1f3-1ca1-43db-8b66-b1dfe2da2daf.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/98a538ec-2be8-4dcc-a40d-470eef9c365c_small.webp","https://cdn.amplifi.pattern.com/31ae31cc-efe6-4283-bea5-21afde430262_small.webp"]},"WE4M137":{"main":"https://cdn.amplifi.pattern.com/f4adb3d7-468c-4514-a830-6ebb5c2035fe.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/1/4/1436662b-eb3a-4cae-aaeb-31099d3d87fb.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/f4adb3d7-468c-4514-a830-6ebb5c2035fe_small.webp","https://cdn.amplifi.pattern.com/2891638a-03d5-4ccb-8d5f-c2dd7b52723a_small.webp","https://cdn.amplifi.pattern.com/d8e605f7-efbb-48e7-974c-4d3786b12ae6_small.webp"]},"WE49X22294":{"main":"https://cdn.amplifi.pattern.com/38f8b7a2-0af5-4565-bec3-96ded4ec0766.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/1/4/14aa1461-0a5f-40dc-9b2c-1c21fdc38a02.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/38f8b7a2-0af5-4565-bec3-96ded4ec0766_small.webp","https://cdn.amplifi.pattern.com/07eeaca4-f65f-48d6-825b-eeea4bef2d67_small.webp"]},"WE19M1481":{"main":"https://cdn.amplifi.pattern.com/c24412d9-8132-476a-8c45-f82bcfa4cd2c.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/b/b/bb91e9ea-50a0-4db1-a11e-364c94e92040.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/c24412d9-8132-476a-8c45-f82bcfa4cd2c_small.webp","https://cdn.amplifi.pattern.com/17968674-50c3-432b-959f-bc64eb0c64c4_small.webp","https://cdn.amplifi.pattern.com/141fb2e0-a6e2-47ec-8912-4bd59250f924_small.webp"]},"WE4M181":{"main":"https://cdn.amplifi.pattern.com/5e3371b7-068a-4ea2-85c8-57a5dc819127.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/8/8/888c41ae-84ca-4f7a-ad0e-fc5f8c3c4695.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/5e3371b7-068a-4ea2-85c8-57a5dc819127_small.webp","https://cdn.amplifi.pattern.com/5e1d103a-945a-4e4e-b12b-ceec10c9c864_small.webp","https://cdn.amplifi.pattern.com/d019d61a-7a7e-4a2c-8a8b-62e6ed56ee8c_small.webp"]},"WE19M1478":{"main":"https://cdn.amplifi.pattern.com/38f8b7a2-0af5-4565-bec3-96ded4ec0766.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/1/4/14aa1461-0a5f-40dc-9b2c-1c21fdc38a02.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/38f8b7a2-0af5-4565-bec3-96ded4ec0766_small.webp","https://cdn.amplifi.pattern.com/07eeaca4-f65f-48d6-825b-eeea4bef2d67_small.webp"]},"WE16X20393":{"main":"https://cdn.amplifi.pattern.com/1373c605-7329-4946-b473-910ebef5a9dd.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/9/9/990cb169-a108-4ab0-85e8-35db571f77a6.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/1373c605-7329-4946-b473-910ebef5a9dd_small.webp","https://cdn.amplifi.pattern.com/5b28eae9-5e5f-4507-bb8a-96d9b7525c5d_small.webp","https://cdn.amplifi.pattern.com/43818d3a-6623-46a1-a2e7-c8ccb810ec77_small.webp"]},"WE18X25100":{"main":"https://cdn.amplifi.pattern.com/b955037b-f870-4898-ae95-e2f027ac433e.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/1/c/1c233761-e34e-4f21-84ca-29edf3d83565.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/b955037b-f870-4898-ae95-e2f027ac433e_small.webp","https://cdn.amplifi.pattern.com/ed4f795d-6b94-4ba8-b0e1-89ac9e159258_small.webp","https://cdn.amplifi.pattern.com/f23b5004-732c-4fe3-b3e4-9bb23351609d_small.webp"]},"WE18M28":{"main":"https://cdn.amplifi.pattern.com/b955037b-f870-4898-ae95-e2f027ac433e.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/1/c/1c233761-e34e-4f21-84ca-29edf3d83565.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/b955037b-f870-4898-ae95-e2f027ac433e_small.webp","https://cdn.amplifi.pattern.com/ed4f795d-6b94-4ba8-b0e1-89ac9e159258_small.webp","https://cdn.amplifi.pattern.com/f23b5004-732c-4fe3-b3e4-9bb23351609d_small.webp"]},"WE14X20425":{"main":"https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/a/e/ae1fc029-30e5-42c8-9e85-3b3e37804aef.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2_small.webp"]},"WE13M39":{"main":"https://cdn.amplifi.pattern.com/aa5e5163-f33d-41c6-8a8c-0b3503531109.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/b/8/b857c927-0a9d-4ef3-af57-fa50e9e9b179.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/aa5e5163-f33d-41c6-8a8c-0b3503531109_small.webp","https://cdn.amplifi.pattern.com/c86b0108-5533-4ab8-91a6-972052c082ef_small.webp","https://cdn.amplifi.pattern.com/88517623-0ace-428c-b68d-9165d47c8906_small.webp"]},"WE1M1002":{"main":"https://cdn.amplifi.pattern.com/ccfba9fa-f0e0-4afa-a96e-62b45f907301.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/1/d/1d80ceb8-94e1-4ab7-b354-e2d9e7ef5194.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/ccfba9fa-f0e0-4afa-a96e-62b45f907301_small.webp","https://cdn.amplifi.pattern.com/099f3cc0-ce1c-4694-8385-f0f57e24c3d8_small.webp","https://cdn.amplifi.pattern.com/6b4bded9-e0ee-4761-bf54-7278659b333b_small.webp"]},"WE1X921":{"main":"https://cdn.amplifi.pattern.com/f56d1a2e-dbef-408c-93c9-08209760e6b9.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/d/9/d9b23404-20c1-4b86-85a0-912a1dbc163f_1.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/f56d1a2e-dbef-408c-93c9-08209760e6b9_small.webp","https://cdn.amplifi.pattern.com/5316c15b-93cd-4209-9683-8c069a67abd2_small.webp","https://cdn.amplifi.pattern.com/f35dcb8f-c0a2-4281-8466-4e923af164e0_small.webp"]},"WE1M300":{"main":"https://cdn.amplifi.pattern.com/fe3db2dc-6c8f-43f5-8ad5-b1701fe9d5d4.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/6/2/62ee252c-0285-4ae1-9ff0-716f7e7e7f35.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/fe3db2dc-6c8f-43f5-8ad5-b1701fe9d5d4_small.webp","https://cdn.amplifi.pattern.com/6a08f5d3-4d38-4c30-b5b4-305cda1c1e82_small.webp","https://cdn.amplifi.pattern.com/5ea506f2-e3c0-451e-ba5f-731677eb9092_small.webp"]},"WE03X29897":{"main":"https://cdn.amplifi.pattern.com/55e45e5f-1ac0-4214-9cf4-a586317a037b.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/g/e/gen-we03x29897_1.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/55e45e5f-1ac0-4214-9cf4-a586317a037b_small.webp"]},"WE4M404":{"main":"https://cdn.amplifi.pattern.com/4684242e-cf6d-4e70-80b9-0547d11ace55.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/2/2/229a34cd-45ab-4d96-81f7-e241e34aaa23.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/4684242e-cf6d-4e70-80b9-0547d11ace55_small.webp","https://cdn.amplifi.pattern.com/d09775eb-33fa-42ac-9d6e-ffe9fcedd2f2_small.webp","https://cdn.amplifi.pattern.com/c19fbbc1-6b13-4f5d-962f-f6b3234ae023_small.webp"]},"WE12X21574":{"main":"https://cdn.amplifi.pattern.com/55e45e5f-1ac0-4214-9cf4-a586317a037b.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/g/e/gen-we03x29897_1.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/55e45e5f-1ac0-4214-9cf4-a586317a037b_small.webp"]},"WE1M1003":{"main":"https://cdn.amplifi.pattern.com/1822a03a-73c1-418e-9f11-f83fca19d27c.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/a/c/ac96d789-947b-4d4a-9f2a-8832bf4f81c7.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/1822a03a-73c1-418e-9f11-f83fca19d27c_small.webp","https://cdn.amplifi.pattern.com/f8429dca-2332-4e6e-8a4b-488f7f2d98b0_small.webp","https://cdn.amplifi.pattern.com/291eb03f-3ad2-497e-9019-0b996ce55a91_small.webp"]},"WE4M255":{"main":"https://cdn.amplifi.pattern.com/f183d08c-a547-4ab1-a171-cc451125d565.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/1/5/1572f2dd-548e-4282-9535-49b2961aa3ef.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/f183d08c-a547-4ab1-a171-cc451125d565_small.webp","https://cdn.amplifi.pattern.com/cce23955-bb17-4ff6-a33c-280de99d9247_small.webp","https://cdn.amplifi.pattern.com/1aa63177-27de-4b65-a2f0-5dfb9215800b_small.webp"]},"WE11X29438":{"main":"https://cdn.amplifi.pattern.com/3a63c98c-d906-4a9a-894d-9c36332939a6.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/g/e/gen-we11x29438_1.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/3a63c98c-d906-4a9a-894d-9c36332939a6_small.webp"]},"WE1M1007":{"main":"https://cdn.amplifi.pattern.com/4e0907f2-93aa-4cfa-a3bc-e23ebd0493e8.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/3/b/3b7f2072-a366-4507-a94e-e211b6db9701.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/4e0907f2-93aa-4cfa-a3bc-e23ebd0493e8_small.webp","https://cdn.amplifi.pattern.com/051094f2-da1d-4db2-ab11-4c69dc027b0f_small.webp","https://cdn.amplifi.pattern.com/ff8e9838-708d-4f27-8fde-89cbfbafd0fc_small.webp"]},"WE3M56":{"main":"https://cdn.amplifi.pattern.com/00bee02d-718a-403d-8cba-13872e501a28.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/5/a/5ac19430-2c72-4b51-a9aa-824cf16ed2fb.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/00bee02d-718a-403d-8cba-13872e501a28_small.webp","https://cdn.amplifi.pattern.com/67426b60-2144-4d4b-9f72-829523aef049_small.webp"]},"WE03X20228":{"main":"https://cdn.amplifi.pattern.com/00bee02d-718a-403d-8cba-13872e501a28.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/5/a/5ac19430-2c72-4b51-a9aa-824cf16ed2fb.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/00bee02d-718a-403d-8cba-13872e501a28_small.webp","https://cdn.amplifi.pattern.com/67426b60-2144-4d4b-9f72-829523aef049_small.webp"]},"WE4M415":{"main":"https://cdn.amplifi.pattern.com/9994ad41-874c-4762-b120-14b77e4c3f7c.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/d/3/d3ce9ebd-d617-4cc5-95a2-76b14c8a672b.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/9994ad41-874c-4762-b120-14b77e4c3f7c_small.webp","https://cdn.amplifi.pattern.com/198038fa-331e-4a71-abd9-0a100d01e078_small.webp","https://cdn.amplifi.pattern.com/392f1a45-582a-4a9d-b38f-034201bd0a60_small.webp"]},"WE1M462":{"main":"https://cdn.amplifi.pattern.com/b8c753c2-5adf-4fff-930f-c30460c35d58.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/g/e/gen-we1m462_1.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/b8c753c2-5adf-4fff-930f-c30460c35d58_small.webp","https://cdn.amplifi.pattern.com/37e5ebdc-26fb-4979-b0ee-95b1eefc0eff_small.webp","https://cdn.amplifi.pattern.com/f4830593-2259-4d54-b01d-6a6ca024adb3_small.webp"]},"WE11X20400":{"main":"https://cdn.amplifi.pattern.com/2f3902a5-fa17-4f33-8601-4ca9fa94ee03.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/2/a/2a9b7062-73b6-48c2-8bb5-009f0b558563.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/2f3902a5-fa17-4f33-8601-4ca9fa94ee03_small.webp","https://cdn.amplifi.pattern.com/f977693e-d7f8-46ce-86c0-2f49b6a25393_small.webp"]},"WE01X20419":{"main":"https://cdn.amplifi.pattern.com/012b1cdc-0859-4ad7-81e9-887c25e7ea61.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/a/b/abec136e-9bd0-4b21-a4f6-eb994e7f12d8.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/012b1cdc-0859-4ad7-81e9-887c25e7ea61_small.webp","https://cdn.amplifi.pattern.com/3e578a06-8405-4f1c-b408-9ca2a46be9a5_small.webp","https://cdn.amplifi.pattern.com/50bc9972-dcea-4e37-92f2-0500efe23cb2_small.webp"]},"WE4M416":{"main":"https://cdn.amplifi.pattern.com/6afaac71-a345-4390-b698-f652be5e49cd.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/b/f/bfcc02fd-5e35-4fb1-954a-737eedb8708f.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/6afaac71-a345-4390-b698-f652be5e49cd_small.webp","https://cdn.amplifi.pattern.com/cb0cbbb0-7d79-4a5b-98aa-3597594717fa_small.webp","https://cdn.amplifi.pattern.com/34d7ba35-84d5-4200-bf8a-7455d09e34ac_small.webp"]},"WE4M127":{"main":"https://cdn.amplifi.pattern.com/8941396b-72ad-4825-a327-d8447778b837.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/a/c/acff8c4a-3a77-4199-a3c3-c99c8a8ab260.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/8941396b-72ad-4825-a327-d8447778b837_small.webp","https://cdn.amplifi.pattern.com/8fdb569e-e37a-46ef-94f5-0b3b3f0df89d_small.webp","https://cdn.amplifi.pattern.com/298f03e3-684d-4097-8347-c627c38f29dd_small.webp"]},"WE4M525":{"main":"https://cdn.amplifi.pattern.com/1a7ae48d-70a8-4128-a3e8-c6dc254a6ba7.webp","thumbs":["https://static.reliableparts.com/media/catalog/product/g/e/gen-we4m525_1.jpg?width=800&height=800&store=reliableparts&image-type=small_image","https://cdn.amplifi.pattern.com/1a7ae48d-70a8-4128-a3e8-c6dc254a6ba7_small.webp","https://cdn.amplifi.pattern.com/594dd23d-9670-427d-88bf-38238fea0642_small.webp","https://cdn.amplifi.pattern.com/917d9762-e1cf-42bc-9cad-0485cc5efb21_small.webp"]}};
+
         function showListing(index) {
             const listing = listings[index];
             welcomeDiv.classList.add('hidden');
@@ -655,6 +753,38 @@
             const desc = listing.description.replace(/\n/g, '<br>');
             const conditionLabel = "Used - inspected and prepared for resale";
             
+            // Image gallery rendering
+            const imgData = imageIndex[listing.partNumber];
+            let imageGalleryHTML = '';
+            if (imgData && imgData.main) {
+                const allImages = [imgData.main, ...(imgData.thumbs || [])];
+                const thumbsHTML = allImages.map((url, i) => 
+                    `<img class="preview-thumb ${i === 0 ? 'active-thumb' : ''}" src="${url}" onclick="swapMainImage(this, '${url.replace(/'/g, "\\'")}');" onerror="this.style.display='none'" alt="View ${i+1}">`
+                ).join('');
+                
+                imageGalleryHTML = `
+                    <div class="preview-gallery">
+                        <div class="preview-main-image">
+                            <img id="main-product-image" src="${imgData.main}" alt="${listing.title}" onerror="this.parentElement.innerHTML='<div class=\\"no-image-placeholder\\">Image failed to load</div>'">
+                        </div>
+                        <div class="preview-thumbs">${thumbsHTML}</div>
+                    </div>
+                    <div class="image-review-badge">\u26A0 Image requires watermark review before production use</div>
+                `;
+            } else {
+                imageGalleryHTML = `
+                    <div class="preview-gallery">
+                        <div class="no-image-placeholder">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span>IMAGE PENDING</span>
+                            <span style="font-size:11px">No verified image available for ${listing.partNumber}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
             previewDiv.innerHTML = `
                 <div class="ebay-container">
                     <div class="ebay-header">
@@ -665,6 +795,8 @@
                         <div class="condition-badge">Condition: Used</div>
                         <h1 class="ebay-title">${listing.title}</h1>
                         
+                        ${imageGalleryHTML}
+
                         <table class="ebay-specs-table">
                             <tbody>
                                 <tr><th>Part Number</th><td><strong>${listing.partNumber}</strong></td></tr>
@@ -696,6 +828,12 @@
                 </div>
             `;
             document.getElementById('preview-pane').scrollTop = 0;
+        }
+
+        function swapMainImage(thumbEl, url) {
+            document.getElementById('main-product-image').src = url;
+            document.querySelectorAll('.preview-thumb').forEach(t => t.classList.remove('active-thumb'));
+            thumbEl.classList.add('active-thumb');
         }
 
         searchInput.addEventListener('input', (e) => {

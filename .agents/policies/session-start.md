@@ -11,6 +11,8 @@ Before edits, extraction runs, or architecture decisions, read:
 - `AGENTS.md`
 - `.agents/policies/agent-manager.md`
 
+After the required startup files, use `.agents/policies/document-map.md` to choose any additional task-specific Markdown. Do not bulk-read every Markdown file unless the user explicitly asks for a documentation audit.
+
 For BOM extraction, browser-agent, or CoVe work, also read:
 
 - `browser-agent/cove-reviewer-prompt.mjs`
