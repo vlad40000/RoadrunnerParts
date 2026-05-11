@@ -283,10 +283,13 @@ function formatBatchPrice(value: number | null) {
 }
 
 function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
+  const [showAllPending, setShowAllPending] = useState(false);
+
   if (!batch || batch.items.length === 0) return null;
 
   const readyItems = batch.items.filter((item) => item.status === 'ready_now');
   const pendingItems = batch.items.filter((item) => item.status !== 'ready_now');
+  const visiblePendingItems = showAllPending ? pendingItems : pendingItems.slice(0, 12);
 
   return (
     <section className="pro-card overflow-hidden rounded-lg border-pro-slate-200">
@@ -330,7 +333,7 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
       </div>
 
       <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <div className="max-h-[620px] overflow-y-auto p-4">
+        <div className="max-h-[460px] overflow-y-auto p-4">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {readyItems.map((item) => (
               <article key={item.partNumber} className="rounded-lg border border-pro-slate-200 bg-white p-3 shadow-sm">
@@ -388,11 +391,16 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
         </div>
 
         <aside className="border-t border-pro-slate-200 bg-pro-slate-50 p-4 lg:border-l lg:border-t-0">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-pro-slate-500">
-            Photo pending
-          </h3>
-          <div className="mt-3 space-y-2">
-            {pendingItems.map((item) => (
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-pro-slate-500">
+              Photo pending
+            </h3>
+            <span className="rounded bg-amber-100 px-2 py-1 text-[10px] font-black text-amber-800">
+              {pendingItems.length}
+            </span>
+          </div>
+          <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto pr-1">
+            {visiblePendingItems.map((item) => (
               <div key={item.partNumber} className="rounded-md border border-amber-200 bg-white px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-mono text-xs font-black text-pro-navy">{item.partNumber}</span>
@@ -402,6 +410,15 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
               </div>
             ))}
           </div>
+          {pendingItems.length > 12 && (
+            <button
+              type="button"
+              onClick={() => setShowAllPending((value) => !value)}
+              className="mt-3 w-full rounded-md border border-amber-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-50"
+            >
+              {showAllPending ? 'Collapse held items' : `Show all ${pendingItems.length} held items`}
+            </button>
+          )}
         </aside>
       </div>
     </section>
