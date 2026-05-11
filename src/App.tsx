@@ -306,6 +306,12 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
           <p className="mt-1 text-xs font-semibold text-pro-slate-500">
             Descriptions and prices are loaded from the current 41-part operator CSV. Photo-pending rows stay held.
           </p>
+          <a
+            href="/ebay_mockup_gallery.html"
+            className="mt-3 inline-flex h-9 items-center rounded-md border border-pro-blue bg-white px-3 text-[10px] font-black uppercase tracking-[0.16em] text-pro-blue transition-colors hover:bg-pro-blue hover:text-white"
+          >
+            Open live mockups
+          </a>
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="rounded-lg border border-pro-slate-200 bg-pro-slate-50 px-3 py-2">
@@ -356,7 +362,7 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
                   <span>Diag {item.diagramId || 'N/A'}</span>
                   <span className="text-right text-pro-navy">{formatBatchPrice(item.price)}</span>
                   {item.supersedes && <span className="col-span-2 truncate">Supersedes {item.supersedes}</span>}
-                  <span className="col-span-2">{item.imageCount} local image files</span>
+                  <span className="col-span-2">{item.imageCount} image files</span>
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   <a

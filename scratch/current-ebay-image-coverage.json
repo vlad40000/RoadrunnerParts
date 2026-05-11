@@ -1,7 +1,8 @@
 {
-  "generatedAt": "2026-05-11T07:09:45.492Z",
+  "generatedAt": "2026-05-11T11:29:08.601Z",
   "scopePath": "scratch/current-ebay-scope.json",
-  "outputPath": "ebay_mockup_gallery.html",
+  "outputPath": "public/ebay_mockup_gallery.html",
+  "publicGalleryPath": "/ebay_mockup_gallery.html",
   "totalParts": 41,
   "localImagesAttached": 31,
   "missingCount": 10,
@@ -60,37 +61,37 @@
   "attachedParts": [
     {
       "partNumber": "WE49X22294",
-      "imageCount": 13,
+      "imageCount": 5,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22294.jpg"
     },
     {
       "partNumber": "WE19M1713",
-      "imageCount": 13,
+      "imageCount": 5,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/GEHWE19M1713.jpg"
     },
     {
       "partNumber": "WE19M1481",
-      "imageCount": 9,
+      "imageCount": 3,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE19M1481.jpg"
     },
     {
       "partNumber": "WE4M255",
-      "imageCount": 7,
+      "imageCount": 2,
       "primaryImage": "scratch/image-evidence/GEN-WE4M255_0.webp"
     },
     {
       "partNumber": "WE4M404",
-      "imageCount": 24,
+      "imageCount": 6,
       "primaryImage": "scratch/image-evidence/GEN-WE4M404_1.webp"
     },
     {
       "partNumber": "WE4M532",
-      "imageCount": 10,
+      "imageCount": 3,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M532.jpg"
     },
     {
       "partNumber": "WE16X20393",
-      "imageCount": 24,
+      "imageCount": 6,
       "primaryImage": "scratch/image-evidence/GEN-WE16X20393_0.webp"
     },
     {
@@ -100,42 +101,42 @@
     },
     {
       "partNumber": "WE13M39",
-      "imageCount": 30,
+      "imageCount": 8,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE13M39.webp"
     },
     {
       "partNumber": "WE03X20434",
-      "imageCount": 6,
+      "imageCount": 2,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE03X20434.jpg"
     },
     {
       "partNumber": "WE14X20392",
-      "imageCount": 6,
+      "imageCount": 2,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE14X20392.webp"
     },
     {
       "partNumber": "WE20X20412",
-      "imageCount": 14,
+      "imageCount": 5,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20412.jpg"
     },
     {
       "partNumber": "WE4M127",
-      "imageCount": 14,
+      "imageCount": 4,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M127t.jpg"
     },
     {
       "partNumber": "WE49X22295",
-      "imageCount": 31,
+      "imageCount": 9,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22295.jpg"
     },
     {
       "partNumber": "WE10X20468",
-      "imageCount": 12,
+      "imageCount": 4,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE10X20468.webp"
     },
     {
       "partNumber": "WE4M415",
-      "imageCount": 24,
+      "imageCount": 8,
       "primaryImage": "scratch/image-evidence/we4m415-dryer-door-switch-for-ge-294882_994x994.webp"
     },
     {
@@ -145,27 +146,27 @@
     },
     {
       "partNumber": "WE20X20406",
-      "imageCount": 13,
+      "imageCount": 5,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20406.jpg"
     },
     {
       "partNumber": "WE20X20391",
-      "imageCount": 7,
+      "imageCount": 3,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20391.jpg"
     },
     {
       "partNumber": "WE1M1003",
-      "imageCount": 6,
+      "imageCount": 2,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1M1003.webp"
     },
     {
       "partNumber": "WE4M525",
-      "imageCount": 14,
+      "imageCount": 4,
       "primaryImage": "scratch/image-evidence/GEN-WE4M525_0.webp"
     },
     {
       "partNumber": "WE20X20396",
-      "imageCount": 6,
+      "imageCount": 2,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/Panel_WE20X20396.jpg"
     },
     {
@@ -175,17 +176,17 @@
     },
     {
       "partNumber": "WE21X20562",
-      "imageCount": 10,
+      "imageCount": 3,
       "primaryImage": "scratch/approved-images/WE21X20562.jpg"
     },
     {
       "partNumber": "WE4M160",
-      "imageCount": 23,
+      "imageCount": 7,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M160.jpg"
     },
     {
       "partNumber": "WE4M181",
-      "imageCount": 18,
+      "imageCount": 6,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M181.jpg"
     },
     {
@@ -195,12 +196,12 @@
     },
     {
       "partNumber": "WE11X20397",
-      "imageCount": 14,
+      "imageCount": 5,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11X20397.jpg"
     },
     {
       "partNumber": "WE11M10001",
-      "imageCount": 9,
+      "imageCount": 3,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11M10001.jpg"
     },
     {
@@ -210,7 +211,7 @@
     },
     {
       "partNumber": "WE17X22217",
-      "imageCount": 21,
+      "imageCount": 7,
       "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE17X22217.jpg"
     }
   ]

@@ -2,7 +2,8 @@ import fs from "fs";
 import path from "path";
 
 const scopePath = "scratch/current-ebay-scope.json";
-const outputPath = "ebay_mockup_gallery.html";
+const outputPath = "public/ebay_mockup_gallery.html";
+const publicGalleryPath = "/ebay_mockup_gallery.html";
 const coverageOutputPath = "scratch/current-ebay-image-coverage.json";
 const approvedImageRoot = "scratch/approved-images";
 const imageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif"]);
@@ -10,7 +11,6 @@ const imageSearchRoots = [
   "scratch/approved-images",
   "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images",
   "scratch/image-evidence",
-  "scratch",
 ];
 
 function dollars(value) {
@@ -89,11 +89,8 @@ function imagePriority(filePath) {
 }
 
 function fileToUrl(filePath) {
-  return filePath
-    .replaceAll("\\", "/")
-    .split("/")
-    .map((segment) => encodeURIComponent(segment))
-    .join("/");
+  const normalized = filePath.replaceAll("\\", "/");
+  return `/api/ebay/current-image?path=${encodeURIComponent(normalized)}`;
 }
 
 const projectImages = Array.from(new Set(imageSearchRoots.flatMap((root) => walkImages(root))))
@@ -1163,6 +1160,7 @@ const html = `<!DOCTYPE html>
 </html>
 `;
 
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, html);
 fs.writeFileSync(
   coverageOutputPath,
@@ -1171,6 +1169,7 @@ fs.writeFileSync(
       generatedAt: new Date().toISOString(),
       scopePath,
       outputPath,
+      publicGalleryPath,
       totalParts: parts.length,
       localImagesAttached: partsWithImages,
       missingCount: missingImages.length,
@@ -1194,5 +1193,6 @@ fs.writeFileSync(
   ),
 );
 console.log(`Wrote ${outputPath} with ${parts.length} current-scope mockups.`);
+console.log(`Public gallery path: ${publicGalleryPath}`);
 console.log(`Wrote ${coverageOutputPath}.`);
-console.log(`Local images attached: ${partsWithImages}/${parts.length}. Missing: ${missingImages.join(", ")}`);
+console.log(`Live image routes attached: ${partsWithImages}/${parts.length}. Missing: ${missingImages.join(", ")}`);
