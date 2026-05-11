@@ -9,6 +9,7 @@ const publicImageDir = "public/ebay-current-images";
 const publicImageBasePath = "/ebay-current-images";
 const coverageOutputPath = "scratch/current-ebay-image-coverage.json";
 const approvedImageRoot = "scratch/approved-images";
+const descriptionEvidencePath = "scratch/description-evidence/reliableparts-descriptions - Copy.json";
 const imageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif"]);
 const imageSearchRoots = [
   "scratch/approved-images",
@@ -110,6 +111,16 @@ function copyImageToPublic(filePath) {
   };
 }
 
+function resetPublicImageDir() {
+  const resolved = path.resolve(publicImageDir);
+  const expected = path.resolve("public", "ebay-current-images");
+  if (resolved !== expected) {
+    throw new Error(`Refusing to reset unexpected image output directory: ${resolved}`);
+  }
+  fs.rmSync(resolved, { recursive: true, force: true });
+  fs.mkdirSync(resolved, { recursive: true });
+}
+
 function sanitizeAssetName(value) {
   return String(value || "part-image")
     .trim()
@@ -128,12 +139,43 @@ function localImagesForPart(partNumber) {
   return Array.from(new Set(matches));
 }
 
+function saleImagesForPart(partNumber) {
+  return localImagesForPart(partNumber).filter((filePath) =>
+    filePath.replaceAll("\\", "/").toLowerCase().includes("/approved-images/"),
+  );
+}
+
+function loadDescriptionEvidence() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(descriptionEvidencePath, "utf8"));
+    const descs = Array.isArray(raw.descriptions) ? raw.descriptions : [];
+    const map = new Map();
+    for (const entry of descs) {
+      const pn = String(entry.partNumber || "").trim().toUpperCase();
+      if (pn) {
+        map.set(pn, {
+          descriptionText: String(entry.descriptionText || "").trim(),
+          sku: String(entry.sku || "").trim(),
+        });
+      }
+    }
+    console.log(`Loaded ${map.size} description(s) from evidence file.`);
+    return map;
+  } catch (err) {
+    console.warn(`Could not load description evidence: ${err.message}`);
+    return new Map();
+  }
+}
+
+const descriptionMap = loadDescriptionEvidence();
+
 function readParts() {
   const parsed = JSON.parse(fs.readFileSync(scopePath, "utf8"));
   const rows = Array.isArray(parsed.parts) ? parsed.parts : [];
   return rows.map((row, index) => {
     const partNumber = String(row.partNumber || "").trim().toUpperCase();
-    const imageFiles = localImagesForPart(partNumber);
+    const referenceImageFiles = localImagesForPart(partNumber);
+    const imageFiles = saleImagesForPart(partNumber);
     const publicImages = imageFiles.map((filePath) => ({
       sourcePath: filePath,
       ...copyImageToPublic(filePath),
@@ -141,28 +183,46 @@ function readParts() {
     const approvedImage = publicImages[0]?.url || "";
     const description = String(row.description || "Appliance Part").trim();
     const category = partCategory(description);
+    const evidence = descriptionMap.get(partNumber) || {};
+    const evidenceDescription = evidence.descriptionText || "";
     return {
       index,
       partNumber,
       diagramId: String(row.diagramId || row["diagram id"] || "").trim(),
       description,
       displayDescription: titleCase(description),
+      descriptionText: evidenceDescription,
       category,
       supersedes: String(row.supersedes || "").trim(),
       price: Number(row.price || 0),
       priceLabel: dollars(row.price),
       title: `GE ${partNumber} ${titleCase(description)} Used Dryer Part`,
+      condition: "Used",
+      quantity: 1,
+      displayPartNumber: evidence.sku || partNumber,
+      fitmentLinkText: "Does this part fit my appliance?",
+      reviewLinkText: "Be the first to review this product",
+      location: "United States",
+      shipping: "Free Standard Shipping",
+      returns: "30 days returns. Buyer pays return shipping.",
+      brand: "GE / Hotpoint family",
+      mpn: partNumber,
+      fitment: "Verify model compatibility before purchase",
       approvedImage,
       imageFiles: publicImages.map((image) => image.url),
       imageSourcePath: imageFiles[0] || "",
       publicImagePath: publicImages[0]?.filePath || "",
       publicImageUrl: publicImages[0]?.url || "",
       hasPhoto: Boolean(approvedImage),
+      referenceImageCount: referenceImageFiles.length,
+      heldReferenceImageCount: Math.max(0, referenceImageFiles.length - imageFiles.length),
+      photoGate: approvedImage ? "operator_sale_photo_ready" : "operator_sale_photo_required",
       photoPlan: photoPlan(description),
     };
   });
 }
 
+resetPublicImageDir();
 const parts = readParts();
 if (parts.length !== 41) {
   throw new Error(`Expected 41 current-scope parts, found ${parts.length}.`);
@@ -249,6 +309,16 @@ const html = `<!DOCTYPE html>
       background: white;
     }
 
+    .search-input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      color: #111820;
+      font: inherit;
+      font-size: 15px;
+    }
+
     .search-icon {
       display: grid;
       place-items: center;
@@ -278,11 +348,15 @@ const html = `<!DOCTYPE html>
       background: white;
       font-weight: 800;
       font-size: 14px;
+      cursor: pointer;
     }
 
     .advanced {
+      border: 0;
+      background: transparent;
       color: #5f6b7a;
       font-size: 12px;
+      cursor: pointer;
     }
 
     .scope-strip {
@@ -319,11 +393,14 @@ const html = `<!DOCTYPE html>
     }
 
     .promo-button {
+      border: 0;
       background: white;
       color: #421bc8;
       border-radius: 999px;
       padding: 9px 20px;
       font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
     }
 
     .scope-copy strong {
@@ -443,6 +520,7 @@ const html = `<!DOCTYPE html>
       font-size: 24px;
       box-shadow: 0 6px 18px rgba(17, 24, 39, 0.12);
       z-index: 2;
+      cursor: pointer;
     }
 
     .float-expand { top: 18px; right: 72px; }
@@ -518,14 +596,45 @@ const html = `<!DOCTYPE html>
       background: white;
       font-weight: 650;
       color: #111820;
+      cursor: pointer;
     }
 
     .link-action {
+      border: 0;
+      background: transparent;
+      padding: 0;
       display: inline-flex;
       align-items: center;
       gap: 8px;
       color: #2f3a49;
       font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 30;
+      max-width: min(360px, calc(100vw - 44px));
+      border: 1px solid #d6dce7;
+      border-radius: 10px;
+      background: #111820;
+      color: white;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 750;
+      box-shadow: 0 16px 44px rgba(17, 24, 39, 0.22);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.18s, transform 0.18s;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
     }
 
 
@@ -536,12 +645,128 @@ const html = `<!DOCTYPE html>
       padding-top: 4px;
     }
 
+    @media (min-width: 980px) {
+      .buy-box {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+      }
+    }
+
     .title {
+      border: 2px solid transparent;
+      border-radius: 8px;
       font-size: 24px;
       line-height: 1.22;
       letter-spacing: 0;
       margin: 0 0 16px;
       font-weight: 780;
+      padding: 4px;
+    }
+
+    .title:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: #f8fbff;
+    }
+
+    .operator-actions {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 16px;
+    }
+
+    .operator-actions button {
+      height: 36px;
+      border: 1px solid #d6dce7;
+      border-radius: 999px;
+      background: #fff;
+      color: #2f3a49;
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .operator-actions button:first-child {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .text-editor {
+      border: 1px solid #d6dce7;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 14px;
+      margin: 0 0 18px;
+    }
+
+    .text-editor-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .text-editor-head strong {
+      font-size: 14px;
+    }
+
+    .text-editor-head span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .editor-field {
+      display: grid;
+      gap: 5px;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .editor-field input,
+    .editor-field textarea {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #cfd7e6;
+      border-radius: 8px;
+      background: white;
+      color: #111820;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.45;
+      padding: 9px 10px;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .editor-field textarea {
+      resize: vertical;
+    }
+
+    .editor-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .editor-field input:focus,
+    .editor-field textarea:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(54, 101, 243, 0.12);
     }
 
     .seller {
@@ -578,6 +803,33 @@ const html = `<!DOCTYPE html>
       font-size: 28px;
       font-weight: 820;
       margin: 22px 0 2px;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .price-input {
+      font-size: 28px;
+      font-weight: 820;
+      font-family: inherit;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      padding: 2px 6px;
+      width: 140px;
+      color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .price-input:hover {
+      border-color: var(--line);
+      background: var(--soft);
+    }
+
+    .price-input:focus {
+      outline: none;
+      border-color: var(--blue);
+      background: white;
     }
 
     .pay-later {
@@ -603,24 +855,29 @@ const html = `<!DOCTYPE html>
 
     .qty-control {
       display: grid;
-      grid-template-columns: 1fr 44px 44px;
+      grid-template-columns: 44px 1fr 44px;
       border: 1px solid #d9dee7;
       border-radius: 6px;
       overflow: hidden;
       height: 48px;
-      width: 100%;
+      width: 172px;
       color: #172033;
     }
 
+    .qty-control button,
     .qty-control span {
       display: flex;
       align-items: center;
       justify-content: center;
-      border-right: 0;
     }
 
-    .qty-control span:last-child {
-      border-right: 0;
+    .qty-control button {
+      border: 0;
+      background: #f8fafc;
+      color: #111820;
+      font-size: 18px;
+      font-weight: 850;
+      cursor: pointer;
     }
 
     .button-stack {
@@ -674,6 +931,18 @@ const html = `<!DOCTYPE html>
       height: 14px;
     }
 
+    .listing-alert {
+      margin: 16px 0 0;
+      border: 1px solid #f0d48a;
+      border-radius: 10px;
+      background: #fff8e6;
+      color: #6b4a00;
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
     .policy-list {
       display: grid;
       gap: 18px;
@@ -705,150 +974,100 @@ const html = `<!DOCTYPE html>
       margin-bottom: 2px;
     }
 
-    .details-section {
-      margin-top: 46px;
-      display: grid;
-      grid-template-columns: 1fr 430px;
-      gap: 34px;
-    }
+    .item-specifics { margin-top: 46px; border-top: 1px solid var(--line); padding-top: 26px; }
+    .item-specifics h2, .description-section h2, .tab-section h2, .similar h2 { margin: 0 0 18px; font-size: 22px; font-weight: 780; }
+    .specifics-table { width: 100%; border-collapse: collapse; max-width: 900px; }
+    .specifics-table td { padding: 10px 16px; font-size: 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    .specifics-table td:first-child { color: var(--muted); width: 200px; }
+    .specifics-table td:last-child { color: var(--text); font-weight: 600; }
+    .specifics-table input { width: 100%; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #111820; font: inherit; font-weight: 700; padding: 3px 6px; }
+    .specifics-table input:hover { border-color: var(--line); background: var(--soft); }
+    .specifics-table input:focus { outline: none; border-color: var(--blue); background: white; }
 
-    .description-panel {
-      border-top: 1px solid var(--line);
-      padding-top: 26px;
-    }
+    .description-section { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 26px; }
+    .description-preview { max-width: 1040px; margin-bottom: 18px; color: #555f6d; font-size: 18px; line-height: 1.62; }
+    .description-meta { font-size: 17px; margin-bottom: 20px; color: #555f6d; }
+    .description-meta strong { color: #555f6d; }
+    .description-link { border: 0; background: transparent; color: #0654ba; font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+    .description-review { display: inline-flex; margin-bottom: 28px; }
+    .description-body { margin: 0; max-height: 185px; overflow: hidden; }
+    .description-body.expanded { max-height: none; }
+    .read-toggle { margin-top: 4px; color: #0654ba; }
+    .description-edit { width: 100%; min-height: 120px; border: 1px solid var(--line); border-radius: 10px; color: #334155; font: inherit; font-size: 14px; line-height: 1.65; padding: 16px; resize: vertical; max-width: 900px; }
+    .description-edit:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(54, 101, 243, 0.12); }
 
-    .description-panel h2,
-    .similar h2 {
-      margin: 0 0 18px;
-      font-size: 26px;
-    }
+    .tab-section { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 26px; }
+    .tab-nav { display: flex; border-bottom: 2px solid var(--line); }
+    .tab-btn { padding: 12px 28px; font-size: 15px; font-weight: 700; color: var(--muted); border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--text); border-bottom-color: var(--text); }
+    .tab-panel { display: none; padding: 20px 0; }
+    .tab-panel.active { display: block; }
+    .info-table { width: 100%; border-collapse: collapse; max-width: 900px; }
+    .info-table td { padding: 11px 16px; border-bottom: 1px solid var(--line); font-size: 14px; }
+    .info-table td:first-child { color: var(--muted); width: 200px; }
 
-    .description-panel p {
-      color: #334155;
-      line-height: 1.65;
-      max-width: 780px;
-    }
+    .ebay-footer { margin-top: 48px; border-top: 1px solid var(--line); padding: 32px 0 80px; max-width: 1618px; margin-left: auto; margin-right: auto; }
+    .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .footer-links a { color: var(--muted); font-size: 12px; text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
+    .footer-copyright { text-align: center; color: var(--muted); font-size: 11px; }
 
-    .spec-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(180px, 1fr));
-      gap: 10px;
-      margin-top: 20px;
-      max-width: 760px;
-    }
+    .save-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--line); padding: 10px 32px; display: flex; align-items: center; justify-content: space-between; z-index: 100; box-shadow: 0 -4px 16px rgba(0,0,0,0.06); }
+    .save-info { font-size: 13px; color: var(--muted); }
+    .save-info strong { color: var(--text); }
+    .save-actions { display: flex; gap: 10px; }
+    .save-btn { height: 40px; padding: 0 22px; border-radius: 20px; font-weight: 700; font-size: 13px; cursor: pointer; border: 1px solid var(--line); background: white; color: var(--text); }
+    .save-btn:hover { background: var(--soft); }
+    .save-btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
+    .save-btn.primary:hover { background: var(--blue-dark); }
 
-    .spec {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      background: #fbfcfd;
-      font-size: 13px;
-    }
+    .fullscreen-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; place-items: center; cursor: zoom-out; }
+    .fullscreen-overlay.open { display: grid; }
+    .fullscreen-overlay img { max-width: 92vw; max-height: 92vh; object-fit: contain; }
+    .fullscreen-close { position: absolute; top: 20px; right: 24px; width: 44px; height: 44px; border-radius: 50%; border: none; background: white; font-size: 22px; cursor: pointer; display: grid; place-items: center; }
 
-    .spec span {
-      display: block;
-      color: var(--muted);
-      margin-bottom: 5px;
-    }
+    .similar { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 26px; }
+    .similar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+    .similar-head a { color: var(--blue); text-decoration: none; font-weight: 700; font-size: 13px; }
+    .similar-grid { display: grid; grid-template-columns: repeat(5, minmax(160px, 1fr)); gap: 16px; }
+    .similar-card { border: 1px solid var(--line); border-radius: 12px; background: white; overflow: hidden; cursor: pointer; }
 
-    .photo-checklist {
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 20px;
-      background: #fbfcfd;
-    }
-
-    .photo-checklist h3 {
-      margin: 0 0 14px;
-      font-size: 17px;
-    }
-
-    .photo-checklist ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 10px;
-    }
-
-    .photo-checklist li {
-      display: flex;
-      gap: 10px;
-      color: #334155;
-      font-size: 14px;
-    }
-
-    .status-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #ef4444;
-      margin-top: 5px;
-      flex: 0 0 auto;
-    }
-
-    .status-dot.ready {
-      background: #16a34a;
-    }
-
-    .similar {
-      margin-top: 56px;
-    }
-
-    .similar-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-
-    .similar-head a {
-      color: var(--blue);
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    .similar-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(160px, 1fr));
-      gap: 20px;
-    }
-
-    .similar-card {
-      min-height: 280px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #f8fafc;
-      overflow: hidden;
-      position: relative;
-      cursor: pointer;
-    }
-
-    .similar-tag {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      background: var(--blue);
-      color: white;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 5px 8px;
-      border-radius: 4px;
-    }
-
+    .similar-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .similar-img { height: 140px; background: #f5f5f5; display: grid; place-items: center; overflow: hidden; }
+    .similar-img img { width: 100%; height: 100%; object-fit: contain; }
     .similar-body {
-      padding: 86px 12px 12px;
+      padding: 10px 12px 12px;
       color: #253044;
       font-size: 13px;
       font-weight: 650;
     }
 
-    .similar-price {
-      color: #111820;
-      margin-top: 6px;
-      font-weight: 800;
+    .similar-image {
+      height: 158px;
+      display: grid;
+      place-items: center;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
     }
+
+    .similar-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 10px;
+    }
+
+    .similar-image span {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .similar-price { color: #111820; margin-top: 6px; font-weight: 800; font-size: 15px; }
+    .similar-shipping { color: var(--muted); font-size: 12px; margin-top: 2px; }
 
     @media (max-width: 1100px) {
       .site-header,
@@ -923,15 +1142,12 @@ const html = `<!DOCTYPE html>
         min-height: 420px;
       }
 
-      .under-media,
-      .detail-shots {
+      .under-media {
         padding-left: 0;
       }
 
-      .detail-shots,
-      .similar-grid,
-      .spec-grid {
-        grid-template-columns: 1fr;
+      .similar-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
 
       .title {
@@ -944,20 +1160,13 @@ const html = `<!DOCTYPE html>
   <header class="site-header">
     <div class="logo"><span>e</span><span>b</span><span>a</span><span>y</span></div>
     <div class="category">Shop by<br>category</div>
-    <div class="search"><div class="search-icon">Q</div><div class="search-text">Search for anything</div><div class="search-category">All Categories v</div></div>
-    <button class="search-button">Search</button>
-    <div class="advanced">Advanced</div>
+    <div class="search"><div class="search-icon">Q</div><input class="search-input" id="searchInput" value="GE dryer parts"><div class="search-category">All Categories v</div></div>
+    <button class="search-button" id="searchBtn">Search</button>
+    <button class="advanced" id="advancedBtn">Advanced</button>
   </header>
 
-  <div class="promo"><span class="promo-live">LIVE</span><span>Shop live events</span><span>Discover exclusive drops and deals</span><span class="promo-button">See what's live</span></div>
+  <div class="promo"><span class="promo-live">LIVE</span><span>Shop live events</span><span>Discover exclusive drops and deals</span><button class="promo-button" id="liveBtn">See what's live</button></div>
 
-  <section class="scope-strip">
-    <div class="scope-copy">
-      <strong>RoadrunnerParts current 41-part review</strong>
-      <span>Mockups are visual review only. Photos remain pending until operator-approved sale photos pass rights and watermark review.</span>
-    </div>
-    <div class="part-strip" id="partStrip"></div>
-  </section>
 
   <main class="page">
     <section class="product-grid">
@@ -969,15 +1178,52 @@ const html = `<!DOCTYPE html>
         <div class="under-media">
           <span>Have one to sell?</span>
           <div class="sell-buttons">
-            <button class="sell-pill">Sell one like this</button>
-            <button class="sell-pill">Sell something else</button>
+            <button class="sell-pill" data-action="sell-like">Sell one like this</button>
+            <button class="sell-pill" data-action="sell-other">Sell something else</button>
           </div>
-          <div class="link-action">Share</div>
+          <button class="link-action" data-action="share">Share</button>
         </div>
 
+        <section class="scope-strip">
+          <div class="scope-copy">
+            <strong>RoadrunnerParts current 41-part review</strong>
+            <span>Mockups are visual review only. Photos remain pending until operator-approved sale photos pass rights and watermark review.</span>
+          </div>
+          <div class="part-strip" id="partStrip"></div>
+        </section>
       </div>
 
       <aside class="buy-box">
+        <div class="operator-actions">
+          <button data-action="save">Save</button>
+          <button data-action="reset">Reset</button>
+          <button data-action="copy">Copy</button>
+          <button data-action="export">Export</button>
+          <button data-action="commit">Commit</button>
+        </div>
+        <div class="text-editor" id="textEditor">
+          <div class="text-editor-head">
+            <strong>Listing text editor</strong>
+            <span>Live preview</span>
+          </div>
+          <div class="editor-grid">
+            <label class="editor-field full">Title<textarea id="editTitle" data-edit-key="title" rows="3" spellcheck="true"></textarea></label>
+            <label class="editor-field">Display part #<input id="editDisplayPartNumber" data-edit-key="displayPartNumber"></label>
+            <label class="editor-field">Fitment link<input id="editFitmentLinkText" data-edit-key="fitmentLinkText"></label>
+            <label class="editor-field full">Review link<input id="editReviewLinkText" data-edit-key="reviewLinkText"></label>
+            <label class="editor-field">Price<input id="editPrice" data-edit-key="price" inputmode="decimal"></label>
+            <label class="editor-field">Quantity<input id="editQuantity" data-edit-key="quantity" inputmode="numeric"></label>
+            <label class="editor-field">Condition<input id="editCondition" data-edit-key="condition"></label>
+            <label class="editor-field">Brand<input id="editBrand" data-edit-key="brand"></label>
+            <label class="editor-field">MPN<input id="editMpn" data-edit-key="mpn"></label>
+            <label class="editor-field">Fitment<input id="editFitment" data-edit-key="fitment"></label>
+            <label class="editor-field">Ships from<input id="editLocation" data-edit-key="location"></label>
+            <label class="editor-field">Shipping<input id="editShipping" data-edit-key="shipping"></label>
+            <label class="editor-field full">Returns<input id="editReturns" data-edit-key="returns"></label>
+            <label class="editor-field full">Description<textarea id="editDescription" data-edit-key="descriptionText" rows="6" spellcheck="true"></textarea></label>
+            <label class="editor-field full">Seller notes<textarea id="editSellerNotes" data-edit-key="sellerNotes" rows="4" spellcheck="true"></textarea></label>
+          </div>
+        </div>
         <h1 class="title" id="title"></h1>
         <div class="seller">
           <div class="seller-avatar">R</div>
@@ -985,25 +1231,26 @@ const html = `<!DOCTYPE html>
             <div class="seller-name">RoadRunnerParts</div>
             <div class="seller-meta">99.2% positive - Seller's other items</div>
           </div>
-          <button class="sell-pill" style="margin-left:auto;height:36px;">Message</button>
+          <button class="sell-pill" data-action="message" style="margin-left:auto;height:36px;">Message</button>
         </div>
 
-        <div class="price" id="price"></div>
+        <div class="price" id="price">US <input type="text" class="price-input" id="priceInput"></div>
         <div class="pay-later" id="payLater"></div>
 
-        <div class="row"><span>Condition:</span><strong>Used</strong></div>
-        <div class="row"><span>Quantity:</span><div class="qty-control"><span>-</span><span>1</span><span>+</span></div></div>
+        <div class="row"><span>Condition:</span><strong id="conditionText">Used</strong></div>
+        <div class="row"><span>Quantity:</span><div class="qty-control"><button data-action="qty-down">-</button><span id="qtyValue">1</span><button data-action="qty-up">+</button></div></div>
 
         <div class="button-stack">
-          <button class="cta primary">Buy It Now</button>
-          <button class="cta">Add to cart</button>
-          <button class="cta muted">Add to Watchlist</button>
+          <button class="cta primary" data-action="buy-now">Buy It Now</button>
+          <button class="cta" data-action="cart">Add to cart</button>
+          <button class="cta muted" data-action="watch">Add to Watchlist</button>
         </div>
 
         <div class="service">
           <strong>Additional service available</strong>
-          <label class="checkline"><input type="checkbox"> 3-year protection plan from Allstate - review before listing</label>
+          <label class="checkline"><input type="checkbox" id="protectionInput"> 3-year protection plan from Allstate - review before listing</label>
         </div>
+        <div class="listing-alert" id="listingAlert"></div>
 
         <div class="policy-list">
           <div class="policy"><div class="policy-icon">R</div><div><strong>Breathe easy. Returns accepted.</strong></div></div>
@@ -1014,28 +1261,86 @@ const html = `<!DOCTYPE html>
       </aside>
     </section>
 
-    <section class="details-section">
-      <div class="description-panel">
-        <h2>About this item</h2>
-        <p id="description"></p>
-        <div class="spec-grid" id="specGrid"></div>
+    <section class="item-specifics">
+      <h2>Item specifics</h2>
+      <table class="specifics-table" id="specificsTable"></table>
+    </section>
+
+    <section class="description-section">
+      <h2>Item description from the seller</h2>
+      <div class="description-preview">
+        <div class="description-meta"><strong>Part #: <span id="displayPartNumberPreview"></span></strong> <span>|</span> <button class="description-link" data-action="fitment-link" id="fitmentLinkPreview"></button></div>
+        <button class="description-link description-review" data-action="review-link" id="reviewLinkPreview"></button>
+        <p class="description-body" id="descriptionPreview"></p>
+        <button class="link-action read-toggle" data-action="read-toggle" id="readToggle">Read More</button>
       </div>
-      <div class="photo-checklist">
-        <h3>Photo checklist</h3>
-        <ul id="photoChecklist"></ul>
+      <textarea class="description-edit" id="description"></textarea>
+    </section>
+
+    <section class="tab-section">
+      <h2>Shipping, returns, and payments</h2>
+      <div class="tab-nav">
+        <button class="tab-btn active" data-tab="shipping">Shipping</button>
+        <button class="tab-btn" data-tab="returns">Returns</button>
+        <button class="tab-btn" data-tab="payments">Payments</button>
+      </div>
+      <div class="tab-panel active" id="tab-shipping">
+        <table class="info-table">
+          <tr><td>Shipping cost</td><td><strong>Free</strong> Standard Shipping</td></tr>
+          <tr><td>Delivery</td><td>Estimated between 5-8 business days</td></tr>
+          <tr><td>Handling time</td><td>Will usually ship within 1 business day of receiving cleared payment.</td></tr>
+          <tr><td>Ships to</td><td>United States</td></tr>
+          <tr><td>Excludes</td><td>Alaska/Hawaii, US Protectorates, APO/FPO, PO Box</td></tr>
+        </table>
+      </div>
+      <div class="tab-panel" id="tab-returns">
+        <table class="info-table">
+          <tr><td>Return policy</td><td>30 days money back</td></tr>
+          <tr><td>Return shipping</td><td>Buyer pays for return shipping</td></tr>
+          <tr><td>Refund method</td><td>Money back or replacement (buyer's choice)</td></tr>
+        </table>
+      </div>
+      <div class="tab-panel" id="tab-payments">
+        <table class="info-table">
+          <tr><td>Accepted</td><td>PayPal, Visa, Mastercard, Discover, American Express</td></tr>
+          <tr><td>Managed payments</td><td>This seller accepts payments through eBay's managed payments.</td></tr>
+        </table>
       </div>
     </section>
 
     <section class="similar">
       <div class="similar-head">
-        <h2>Similar Items</h2>
-        <a href="#">See all</a>
+        <h2>Similar sponsored items</h2>
+        <button class="link-action" data-action="see-all">See all</button>
       </div>
       <div class="similar-grid" id="similarGrid"></div>
     </section>
 
-
   </main>
+
+  <footer class="ebay-footer">
+    <div class="footer-links">
+      <a href="#">About eBay</a><a href="#">Announcements</a><a href="#">Community</a><a href="#">Security Center</a><a href="#">Seller Center</a><a href="#">Policies</a><a href="#">Affiliates</a><a href="#">Help & Contact</a><a href="#">Site Map</a>
+    </div>
+    <div class="footer-copyright">Copyright 1995-2025 eBay Inc. All Rights Reserved. Mockup preview only.</div>
+  </footer>
+
+  <div class="save-bar">
+    <div class="save-info"><strong id="saveStatus">Editing</strong> <span id="savePartLabel"></span></div>
+    <div class="save-actions">
+      <button class="save-btn" onclick="resetListing()">Reset</button>
+      <button class="save-btn" onclick="copyListingJSON()">Copy JSON</button>
+      <button class="save-btn" onclick="exportAllJSON()">Export All</button>
+      <button class="save-btn primary" onclick="saveListing()">Save Changes</button>
+    </div>
+  </div>
+
+  <div class="fullscreen-overlay" id="fullscreenOverlay" onclick="closeFullscreen()">
+    <button class="fullscreen-close" onclick="closeFullscreen()">&times;</button>
+    <img id="fullscreenImg" src="" alt="">
+  </div>
+
+  <div class="toast" id="toast"></div>
 
   <script>
     const listings = ${dataJson};
@@ -1048,11 +1353,41 @@ const html = `<!DOCTYPE html>
 
     const title = document.getElementById("title");
     const price = document.getElementById("price");
+    const priceInput = document.getElementById("priceInput");
     const payLater = document.getElementById("payLater");
     const description = document.getElementById("description");
-    const specGrid = document.getElementById("specGrid");
-    const photoChecklist = document.getElementById("photoChecklist");
+    const displayPartNumberPreview = document.getElementById("displayPartNumberPreview");
+    const fitmentLinkPreview = document.getElementById("fitmentLinkPreview");
+    const reviewLinkPreview = document.getElementById("reviewLinkPreview");
+    const descriptionPreview = document.getElementById("descriptionPreview");
+    const readToggle = document.getElementById("readToggle");
+    const specificsTable = document.getElementById("specificsTable");
     const similarGrid = document.getElementById("similarGrid");
+    const conditionText = document.getElementById("conditionText");
+    const qtyValue = document.getElementById("qtyValue");
+    const listingAlert = document.getElementById("listingAlert");
+    const savePartLabel = document.getElementById("savePartLabel");
+    const protectionInput = document.getElementById("protectionInput");
+    const toast = document.getElementById("toast");
+    const editTitle = document.getElementById("editTitle");
+    const editDisplayPartNumber = document.getElementById("editDisplayPartNumber");
+    const editFitmentLinkText = document.getElementById("editFitmentLinkText");
+    const editReviewLinkText = document.getElementById("editReviewLinkText");
+    const editPrice = document.getElementById("editPrice");
+    const editQuantity = document.getElementById("editQuantity");
+    const editCondition = document.getElementById("editCondition");
+    const editBrand = document.getElementById("editBrand");
+    const editMpn = document.getElementById("editMpn");
+    const editFitment = document.getElementById("editFitment");
+    const editLocation = document.getElementById("editLocation");
+    const editShipping = document.getElementById("editShipping");
+    const editReturns = document.getElementById("editReturns");
+    const editDescription = document.getElementById("editDescription");
+    const editSellerNotes = document.getElementById("editSellerNotes");
+    const editorFields = Array.from(document.querySelectorAll("[data-edit-key]"));
+    const draftStoragePrefix = "rrp-live-ebay-mockup:";
+    let toastTimer = 0;
+    let descriptionExpanded = false;
 
     function money(value) {
       return "$" + Number(value || 0).toFixed(2);
@@ -1060,6 +1395,241 @@ const html = `<!DOCTYPE html>
 
     function escapeText(value) {
       return String(value ?? "");
+    }
+
+    function storageKey(partNumber) {
+      return draftStoragePrefix + partNumber;
+    }
+
+    function defaultDescription(listing) {
+      if (listing.descriptionText) return listing.descriptionText;
+      return "Replacement " + listing.displayDescription.toLowerCase() + " for GE/Hotpoint-family dryers. Use this text area for the customer-facing listing copy: condition notes, visible wear, included hardware, fitment limits, and any testing you performed. Verify the exact model and part number before publishing.";
+    }
+
+    function defaultNotes(listing) {
+      return listing.hasPhoto
+        ? "Photo candidate attached for operator review. Confirm watermark status, rights, cosmetic condition, and bench-test notes before final staging."
+        : "Photo pending. Provider/reference images are held out of the listing preview. Add operator-owned sale photos before this listing can be staged.";
+    }
+
+    function getDraft(listing) {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey(listing.partNumber)) || "{}");
+        return parsed && typeof parsed === "object" ? parsed : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function effectiveListing(listing) {
+      const draft = getDraft(listing);
+      return {
+        ...listing,
+        title: draft.title || listing.title,
+        displayPartNumber: draft.displayPartNumber || listing.displayPartNumber,
+        fitmentLinkText: draft.fitmentLinkText || listing.fitmentLinkText,
+        reviewLinkText: draft.reviewLinkText || listing.reviewLinkText,
+        price: Number.isFinite(Number(draft.price)) ? Number(draft.price) : listing.price,
+        quantity: Number.isFinite(Number(draft.quantity)) ? Math.max(1, Number(draft.quantity)) : listing.quantity,
+        condition: draft.condition || listing.condition,
+        descriptionText: draft.descriptionText || defaultDescription(listing),
+        sellerNotes: draft.sellerNotes || defaultNotes(listing),
+        protection: Boolean(draft.protection),
+        brand: draft.brand || listing.brand,
+        mpn: draft.mpn || listing.mpn,
+        fitment: draft.fitment || listing.fitment,
+        location: draft.location || listing.location,
+        shipping: draft.shipping || listing.shipping,
+        returns: draft.returns || listing.returns,
+      };
+    }
+
+    function collectCurrentDraft() {
+      const listing = listings[activeIndex];
+      const specs = {};
+      document.querySelectorAll("[data-spec-key]").forEach((input) => {
+        specs[input.getAttribute("data-spec-key")] = input.value.trim();
+      });
+      return {
+        title: editTitle.value.trim() || title.textContent.trim() || listing.title,
+        displayPartNumber: editDisplayPartNumber.value.trim() || listing.displayPartNumber,
+        fitmentLinkText: editFitmentLinkText.value.trim() || listing.fitmentLinkText,
+        reviewLinkText: editReviewLinkText.value.trim() || listing.reviewLinkText,
+        price: parseMoneyValue(editPrice.value || priceInput.value, listing.price),
+        quantity: Math.max(1, Number(editQuantity.value || qtyValue.textContent || 1)),
+        condition: editCondition.value.trim() || specs.condition || conditionText.textContent.trim() || "Used",
+        descriptionText: editDescription.value.trim() || description.value.trim() || defaultDescription(listing),
+        sellerNotes: editSellerNotes.value.trim() || defaultNotes(listing),
+        protection: protectionInput.checked,
+        brand: editBrand.value.trim() || specs.brand || listing.brand,
+        mpn: editMpn.value.trim() || specs.mpn || listing.mpn,
+        fitment: editFitment.value.trim() || specs.fitment || listing.fitment,
+        location: editLocation.value.trim() || specs.location || listing.location,
+        shipping: editShipping.value.trim() || specs.shipping || listing.shipping,
+        returns: editReturns.value.trim() || specs.returns || listing.returns,
+        savedAt: new Date().toISOString(),
+      };
+    }
+
+    function saveCurrentDraft(showMessage = true) {
+      const listing = listings[activeIndex];
+      const draft = collectCurrentDraft();
+      localStorage.setItem(storageKey(listing.partNumber), JSON.stringify(draft));
+      if (showMessage) notify("Saved " + listing.partNumber + " in this browser");
+      return draft;
+    }
+
+    function parseMoneyValue(value, fallback) {
+      const parsed = Number(String(value || "").replace(/[^0-9.]/g, ""));
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+    }
+
+    function fillTextEditor(view) {
+      editTitle.value = view.title;
+      editDisplayPartNumber.value = view.displayPartNumber;
+      editFitmentLinkText.value = view.fitmentLinkText;
+      editReviewLinkText.value = view.reviewLinkText;
+      editPrice.value = money(view.price);
+      editQuantity.value = String(view.quantity);
+      editCondition.value = view.condition;
+      editBrand.value = view.brand;
+      editMpn.value = view.mpn;
+      editFitment.value = view.fitment;
+      editLocation.value = view.location;
+      editShipping.value = view.shipping;
+      editReturns.value = view.returns;
+      editDescription.value = view.descriptionText;
+      editSellerNotes.value = view.sellerNotes;
+    }
+
+    function applyTextEditorToPreview(saveDraft = true) {
+      const listing = listings[activeIndex];
+      const draft = collectCurrentDraft();
+      const view = { ...effectiveListing(listing), ...draft };
+      title.textContent = view.title;
+      priceInput.value = money(view.price);
+      qtyValue.textContent = String(view.quantity);
+      conditionText.textContent = view.condition;
+      payLater.textContent = "as low as " + money(view.price / 4) + "/mo with Klarna. Learn more";
+      description.value = view.descriptionText;
+      renderDescriptionPreview(view);
+      renderDetails(listing, view);
+      renderSimilar();
+      if (saveDraft) localStorage.setItem(storageKey(listing.partNumber), JSON.stringify(draft));
+    }
+
+    function renderDescriptionPreview(view) {
+      displayPartNumberPreview.textContent = view.displayPartNumber;
+      fitmentLinkPreview.textContent = view.fitmentLinkText;
+      reviewLinkPreview.textContent = view.reviewLinkText;
+      descriptionPreview.textContent = view.descriptionText;
+      descriptionPreview.classList.toggle("expanded", descriptionExpanded);
+      readToggle.textContent = descriptionExpanded ? "Read Less" : "Read More";
+    }
+
+    function notify(message) {
+      window.clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("show");
+      toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    function downloadJson(filename, value) {
+      const blob = new Blob([JSON.stringify(value, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function copyText(value) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+      const area = document.createElement("textarea");
+      area.value = value;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.left = "-9999px";
+      document.body.appendChild(area);
+      area.select();
+      const copied = document.execCommand("copy");
+      area.remove();
+      return copied;
+    }
+
+    function buildEditPacket() {
+      saveCurrentDraft(false);
+      return {
+        source: "roadrunner-ebay-live-mockup-gallery",
+        exportedAt: new Date().toISOString(),
+        activePartNumber: listings[activeIndex].partNumber,
+        editCount: listings.length,
+        edits: listings.map((item) => {
+          const view = effectiveListing(item);
+          return {
+            partNumber: item.partNumber,
+            displayPartNumber: view.displayPartNumber,
+            diagramId: item.diagramId || "",
+            category: item.category || "",
+            title: view.title,
+            price: view.price,
+            quantity: view.quantity,
+            condition: view.condition,
+            descriptionText: view.descriptionText,
+            fitmentLinkText: view.fitmentLinkText,
+            reviewLinkText: view.reviewLinkText,
+            sellerNotes: view.sellerNotes,
+            brand: view.brand,
+            mpn: view.mpn,
+            fitment: view.fitment,
+            location: view.location,
+            shipping: view.shipping,
+            returns: view.returns,
+            protection: view.protection,
+            hasPhoto: item.hasPhoto,
+            approvedImage: item.approvedImage || "",
+          };
+        }),
+      };
+    }
+
+    async function postCommitPacket(packet, secret) {
+      const headers = { "content-type": "application/json" };
+      if (secret) headers["x-rrp-commit-secret"] = secret;
+      const response = await fetch("/api/ebay/mockup-edits", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(packet),
+      });
+      const body = await response.json().catch(() => ({}));
+      return { ok: response.ok, status: response.status, body };
+    }
+
+    async function commitCurrentEdits() {
+      const packet = buildEditPacket();
+      try {
+        let result = await postCommitPacket(packet, "");
+        if (result.status === 401) {
+          const secret = window.prompt("Commit secret");
+          if (secret === null) return;
+          result = await postCommitPacket(packet, secret);
+        }
+        if (result.ok) {
+          const url = result.body && result.body.commitUrl ? result.body.commitUrl : "";
+          if (url) await copyText(url);
+          notify(url ? "Committed edits; commit URL copied" : "Committed edits");
+          return;
+        }
+        downloadJson("roadrunner-ebay-commit-packet.json", packet);
+        notify((result.body && result.body.error ? result.body.error + ". " : "") + "Downloaded commit packet.");
+      } catch {
+        downloadJson("roadrunner-ebay-commit-packet.json", packet);
+        notify("Commit endpoint unavailable. Downloaded commit packet.");
+      }
     }
 
     function renderStrip() {
@@ -1088,7 +1658,7 @@ const html = `<!DOCTYPE html>
       if (!listing.hasPhoto) return;
       activePhotoIndex = imageIndex;
       const imageUrl = listing.imageFiles[imageIndex] || listing.approvedImage;
-      mainImage.innerHTML = '<button class="media-float float-expand">+</button><button class="media-float float-heart">H</button><button class="media-float float-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" onclick="nextPhoto()">&gt;</button><img src="' + imageUrl + '" alt="' + listing.title + '">';
+      mainImage.innerHTML = '<button class="media-float float-expand" data-action="expand-photo">+</button><button class="media-float float-heart" data-action="favorite-photo">H</button><button class="media-float float-prev" data-action="photo-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" data-action="photo-next" onclick="nextPhoto()">&gt;</button><img src="' + imageUrl + '" alt="' + listing.title + '">';
       document.querySelectorAll(".thumb").forEach((thumb, i) => {
         thumb.classList.toggle("active", i === imageIndex);
       });
@@ -1111,37 +1681,40 @@ const html = `<!DOCTYPE html>
     function renderMainImage(listing) {
       activePhotoIndex = 0;
       if (listing.hasPhoto) {
-        mainImage.innerHTML = '<button class="media-float float-expand">+</button><button class="media-float float-heart">H</button><button class="media-float float-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" onclick="nextPhoto()">&gt;</button><img src="' + listing.approvedImage + '" alt="' + listing.title + '">';
+        mainImage.innerHTML = '<button class="media-float float-expand" data-action="expand-photo">+</button><button class="media-float float-heart" data-action="favorite-photo">H</button><button class="media-float float-prev" data-action="photo-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" data-action="photo-next" onclick="nextPhoto()">&gt;</button><img src="' + listing.approvedImage + '" alt="' + listing.title + '">';
         return;
       }
 
       mainImage.innerHTML =
-        '<button class="media-float float-expand">+</button><button class="media-float float-heart">H</button><button class="media-float float-prev">&lt;</button><button class="media-float float-next">&gt;</button>' +
+        '<button class="media-float float-expand" data-action="expand-photo">+</button><button class="media-float float-heart" data-action="favorite-photo">H</button><button class="media-float float-prev" data-action="photo-prev">&lt;</button><button class="media-float float-next" data-action="photo-next">&gt;</button>' +
         '<div class="photo-pending">' +
           '<div>' +
             '<div class="photo-icon">+</div>' +
             '<h2>Photo pending</h2>' +
-            '<p>' + listing.partNumber + ' needs operator-approved sale photos before this listing is stage-ready. Use clear product photos only; no scraped, watermarked, or rights-unclear images.</p>' +
+            '<p>' + listing.partNumber + ' needs operator-owned sale photos before this listing is stage-ready. ' + (listing.heldReferenceImageCount ? listing.heldReferenceImageCount + ' provider/reference image(s) were found and intentionally blocked from the lead image. ' : '') + 'Use clear product photos only; no scraped, watermarked, or rights-unclear images.</p>' +
           '</div>' +
         '</div>';
     }
 
-    function renderDetails(listing) {
-
-      specGrid.innerHTML = [
-        ["Part number", listing.partNumber],
-        ["Diagram ID", listing.diagramId || "Pending"],
-        ["Category", listing.category],
-        ["Supersedes", listing.supersedes || "None listed"],
-        ["Brand", "GE / Hotpoint family"],
-        ["Condition", "Used - inspect before listing"]
-      ].map(([label, value]) => (
-        '<div class="spec"><span>' + label + '</span><strong>' + value + '</strong></div>'
+    function renderDetails(listing, view) {
+      specificsTable.innerHTML = [
+        ["condition", "Condition", view.condition, false],
+        ["brand", "Brand", view.brand, false],
+        ["mpn", "MPN", view.mpn, false],
+        ["partNumber", "Part Number", listing.partNumber, true],
+        ["diagramId", "Diagram ID", listing.diagramId || "-", true],
+        ["category", "Type", listing.category, true],
+        ["fitment", "Compatible Model", view.fitment, false],
+        ["supersedes", "Supersedes", listing.supersedes || "N/A", true],
+        ["location", "Item Location", view.location, false],
+        ["shipping", "Shipping", view.shipping, false],
+        ["returns", "Returns", view.returns, false],
+        ["photoGate", "Photo Gate", listing.photoGate, true],
+        ["heldReferenceImageCount", "Reference Images Held", String(listing.heldReferenceImageCount || 0), true]
+      ].map(([key, label, value, readonly]) => (
+        '<tr><td>' + label + '</td><td><input data-spec-key="' + key + '" value="' + escapeHtmlAttr(value) + '"' + (readonly ? ' readonly tabindex="-1"' : '') + '></td></tr>'
       )).join("");
-
-      photoChecklist.innerHTML = listing.photoPlan.map((item) => (
-        '<li><span class="status-dot ' + (listing.hasPhoto ? 'ready' : '') + '"></span><span>' + item + '</span></li>'
-      )).join("");
+      savePartLabel.textContent = listing.partNumber + ' - ' + listing.category;
     }
 
     function renderSimilar() {
@@ -1152,38 +1725,261 @@ const html = `<!DOCTYPE html>
         .filter((_, index, array) => array.findIndex((item) => item.partNumber === _.partNumber) === index)
         .slice(0, 5);
 
-      const tags = ["Top Rated", "Best Seller", "Hot Item", "New", "Popular"];
-      const colors = ["#3665f3", "#f5af02", "#ff334d", "#10b981", "#9333ea"];
-
-      similarGrid.innerHTML = related.map((listing, index) => (
-        '<article class="similar-card" onclick="showListing(' + listings.findIndex((item) => item.partNumber === listing.partNumber) + ')">' +
-          '<div class="similar-tag" style="background:' + colors[index] + '">' + tags[index] + '</div>' +
-          '<div class="similar-body">' +
-            '<div>' + listing.partNumber + ' ' + listing.displayDescription + '</div>' +
-            '<div class="similar-price">' + money(listing.price) + '</div>' +
-          '</div>' +
-        '</article>'
-      )).join("");
+      similarGrid.innerHTML = related.map((listing) => {
+        const view = effectiveListing(listing);
+        const imgHtml = listing.approvedImage
+          ? '<img src="' + listing.approvedImage + '" alt="' + escapeHtmlAttr(view.title) + '">'
+          : '<span style="color:#94a3b8;font-size:13px">No image</span>';
+        const realIndex = listings.findIndex((item) => item.partNumber === listing.partNumber);
+        return (
+          '<article class="similar-card" onclick="showListing(' + realIndex + ')">' +
+            '<div class="similar-img">' + imgHtml + '</div>' +
+            '<div class="similar-body">' +
+              '<div>' + escapeHtml(view.title) + '</div>' +
+              '<div class="similar-price">' + money(view.price) + '</div>' +
+              '<div class="similar-shipping">Free shipping</div>' +
+            '</div>' +
+          '</article>'
+        );
+      }).join("");
     }
 
     function showListing(index) {
+      if (listings[activeIndex]) saveCurrentDraft(false);
       activeIndex = index;
       const listing = listings[index];
+      const view = effectiveListing(listing);
+      descriptionExpanded = false;
       renderStrip();
       renderThumbs(listing);
       renderMainImage(listing);
 
-      title.textContent = listing.title;
-      price.textContent = "US " + money(listing.price);
-      payLater.textContent = "as low as " + money(listing.price / 4) + "/mo with Klarna. Learn more";
-      description.textContent = listing.displayDescription + " removed from a GE/Hotpoint-family dryer. Verify fitment, cosmetic condition, and test status before publishing. Price shown is the current operator CSV input for this pass.";
+      title.textContent = view.title;
+      fillTextEditor(view);
+      priceInput.value = money(view.price);
+      qtyValue.textContent = String(view.quantity);
+      conditionText.textContent = view.condition;
+      protectionInput.checked = view.protection;
+      payLater.textContent = "as low as " + money(view.price / 4) + "/mo with Klarna. Learn more";
+      description.value = view.descriptionText;
+      renderDescriptionPreview(view);
+      listingAlert.textContent = listing.hasPhoto
+        ? "Operator review mode: only approved local sale photos are shown here. Verify condition and fitment before staging."
+        : "Photo hold: provider/reference images are blocked from the lead photo. Add operator-owned sale photos before this item can be staged.";
 
-      renderDetails(listing);
+      renderDetails(listing, view);
       renderSimilar();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     showListing(0);
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function escapeHtmlAttr(value) {
+      return escapeHtml(value).replace(/"/g, "&quot;");
+    }
+
+    priceInput.addEventListener("change", function() {
+      const listing = listings[activeIndex];
+      const num = parseMoneyValue(this.value, effectiveListing(listing).price);
+      this.value = money(num);
+      editPrice.value = money(num);
+      payLater.textContent = "as low as " + money(num / 4) + "/mo with Klarna. Learn more";
+      saveCurrentDraft(false);
+    });
+
+    editorFields.forEach((field) => {
+      field.addEventListener("input", () => applyTextEditorToPreview(true));
+      field.addEventListener("change", () => {
+        if (field === editPrice) editPrice.value = money(parseMoneyValue(editPrice.value, listings[activeIndex].price));
+        if (field === editQuantity) editQuantity.value = String(Math.max(1, Number(editQuantity.value || 1)));
+        applyTextEditorToPreview(true);
+      });
+    });
+
+    description.addEventListener("input", () => {
+      editDescription.value = description.value;
+      applyTextEditorToPreview(true);
+    });
+    protectionInput.addEventListener("change", () => {
+      saveCurrentDraft(false);
+      renderDetails(listings[activeIndex], effectiveListing(listings[activeIndex]));
+    });
+    specificsTable.addEventListener("input", () => {
+      document.querySelectorAll("[data-spec-key]").forEach((input) => {
+        if (input.getAttribute("data-spec-key") === "condition") editCondition.value = input.value;
+        if (input.getAttribute("data-spec-key") === "brand") editBrand.value = input.value;
+        if (input.getAttribute("data-spec-key") === "mpn") editMpn.value = input.value;
+        if (input.getAttribute("data-spec-key") === "fitment") editFitment.value = input.value;
+        if (input.getAttribute("data-spec-key") === "location") editLocation.value = input.value;
+        if (input.getAttribute("data-spec-key") === "shipping") editShipping.value = input.value;
+        if (input.getAttribute("data-spec-key") === "returns") editReturns.value = input.value;
+      });
+      applyTextEditorToPreview(true);
+    });
+
+    /* Tab switching */
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + btn.getAttribute("data-tab")).classList.add("active");
+      });
+    });
+
+    /* Fullscreen overlay */
+    function openFullscreen() {
+      const img = mainImage.querySelector("img");
+      if (!img) { notify("No photo to expand"); return; }
+      document.getElementById("fullscreenImg").src = img.src;
+      document.getElementById("fullscreenOverlay").classList.add("open");
+    }
+    function closeFullscreen() {
+      document.getElementById("fullscreenOverlay").classList.remove("open");
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeFullscreen();
+    });
+
+    /* Save-bar global functions */
+    function resetListing() {
+      const listing = listings[activeIndex];
+      localStorage.removeItem(storageKey(listing.partNumber));
+      notify("Reset " + listing.partNumber);
+      showListing(activeIndex);
+    }
+    function copyListingJSON() {
+      const payload = { partNumber: listings[activeIndex].partNumber, ...collectCurrentDraft() };
+      copyText(JSON.stringify(payload, null, 2)).then(() => notify("Copied " + listings[activeIndex].partNumber + " JSON"));
+    }
+    function exportAllJSON() {
+      downloadJson("roadrunner-ebay-live-edits.json", buildEditPacket());
+      notify("Downloaded all edits as JSON");
+    }
+    function saveListing() {
+      saveCurrentDraft(true);
+    }
+
+    document.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-action]");
+      if (!button) return;
+      const action = button.getAttribute("data-action");
+      const listing = listings[activeIndex];
+      if (action === "qty-up" || action === "qty-down") {
+        const current = Math.max(1, Number(qtyValue.textContent || 1));
+        qtyValue.textContent = String(Math.max(1, current + (action === "qty-up" ? 1 : -1)));
+        editQuantity.value = qtyValue.textContent;
+        saveCurrentDraft(false);
+        return;
+      }
+      if (action === "save") {
+        saveCurrentDraft(true);
+        return;
+      }
+      if (action === "reset") {
+        localStorage.removeItem(storageKey(listing.partNumber));
+        notify("Reset " + listing.partNumber);
+        showListing(activeIndex);
+        return;
+      }
+      if (action === "copy") {
+        const payload = { partNumber: listing.partNumber, ...saveCurrentDraft(false) };
+        await copyText(JSON.stringify(payload, null, 2));
+        notify("Copied " + listing.partNumber + " JSON");
+        return;
+      }
+      if (action === "export") {
+        const payload = buildEditPacket();
+        downloadJson("roadrunner-ebay-live-edits.json", payload);
+        notify("Downloaded current browser edits");
+        return;
+      }
+      if (action === "commit") {
+        await commitCurrentEdits();
+        return;
+      }
+      if (action === "share") {
+        await copyText(location.href.split("#")[0] + "#" + listing.partNumber);
+        notify("Copied share link for " + listing.partNumber);
+        return;
+      }
+      if (action === "expand-photo") {
+        openFullscreen();
+        return;
+      }
+      if (action === "favorite-photo") {
+        button.classList.toggle("active");
+        notify("Photo marked for operator review");
+        return;
+      }
+      if (action === "photo-prev" || action === "photo-next") {
+        if (!listing.hasPhoto || listing.imageFiles.length < 2) notify("No additional approved photos yet");
+        return;
+      }
+      if (action === "watch") {
+        button.textContent = button.textContent.includes("Added") ? "Add to Watchlist" : "Added to Watchlist";
+        notify(button.textContent + " for " + listing.partNumber);
+        return;
+      }
+      if (action === "cart") {
+        notify(listing.partNumber + " added to review cart");
+        return;
+      }
+      if (action === "buy-now") {
+        notify("Review gate: " + listing.partNumber + " is not staged to eBay from this mockup.");
+        return;
+      }
+      if (action === "sell-like" || action === "sell-other") {
+        notify("Seller flow captured locally. Export JSON when ready.");
+        return;
+      }
+      if (action === "message") {
+        editSellerNotes.focus();
+        notify("Seller notes focused");
+        return;
+      }
+      if (action === "fitment-link") {
+        editFitment.focus();
+        notify("Fitment field focused");
+        return;
+      }
+      if (action === "review-link") {
+        editSellerNotes.focus();
+        notify("Review/seller note field focused");
+        return;
+      }
+      if (action === "read-toggle") {
+        descriptionExpanded = !descriptionExpanded;
+        renderDescriptionPreview(effectiveListing(listing));
+        return;
+      }
+      if (action === "see-all") {
+        document.querySelector(".part-strip").scrollIntoView({ behavior: "smooth", block: "center" });
+        notify("Showing current 41-part scope");
+      }
+    });
+
+    document.getElementById("searchBtn").addEventListener("click", () => {
+      const query = document.getElementById("searchInput").value.trim().toUpperCase();
+      const index = listings.findIndex((item) => item.partNumber.includes(query) || item.title.toUpperCase().includes(query));
+      if (index >= 0) showListing(index);
+      notify(index >= 0 ? "Opened " + listings[index].partNumber : "No current-scope match");
+    });
+    document.getElementById("advancedBtn").addEventListener("click", () => notify("Advanced filters are represented by the 41-part strip."));
+    document.getElementById("liveBtn").addEventListener("click", () => document.querySelector(".scope-strip").scrollIntoView({ behavior: "smooth", block: "center" }));
+    window.addEventListener("beforeunload", () => saveCurrentDraft(false));
+    if (location.hash) {
+      const token = decodeURIComponent(location.hash.slice(1)).toUpperCase();
+      const index = listings.findIndex((item) => item.partNumber === token);
+      if (index >= 0) showListing(index);
+    }
   </script>
 </body>
 </html>
@@ -1201,7 +1997,8 @@ fs.writeFileSync(
       publicGalleryPath,
       publicImageDir,
       totalParts: parts.length,
-      localImagesAttached: partsWithImages,
+      approvedSaleImagesAttached: partsWithImages,
+      heldReferenceImageCount: parts.reduce((sum, part) => sum + part.heldReferenceImageCount, 0),
       missingCount: missingImages.length,
       missingParts: parts
         .filter((part) => !part.hasPhoto)
@@ -1209,6 +2006,7 @@ fs.writeFileSync(
           partNumber: part.partNumber,
           diagramId: part.diagramId,
           description: part.description,
+          heldReferenceImageCount: part.heldReferenceImageCount,
         })),
       attachedParts: parts
         .filter((part) => part.hasPhoto)
@@ -1218,6 +2016,7 @@ fs.writeFileSync(
           primaryImage: part.imageSourcePath,
           publicPrimaryImage: part.publicImageUrl,
           publicPrimaryImagePath: part.publicImagePath,
+          heldReferenceImageCount: part.heldReferenceImageCount,
         })),
     },
     null,

@@ -1,281 +1,263 @@
 {
-  "generatedAt": "2026-05-11T11:47:15.450Z",
+  "generatedAt": "2026-05-11T12:10:46.033Z",
   "scopePath": "scratch/current-ebay-scope.json",
   "outputPath": "public/ebay_mockup_gallery.html",
   "publicGalleryPath": "/ebay_mockup_gallery.html",
   "publicImageDir": "public/ebay-current-images",
   "totalParts": 41,
-  "localImagesAttached": 31,
-  "missingCount": 10,
+  "approvedSaleImagesAttached": 1,
+  "heldReferenceImageCount": 123,
+  "missingCount": 40,
   "missingParts": [
+    {
+      "partNumber": "WE49X22294",
+      "diagramId": "4",
+      "description": "End Cap Rh Wh Lh Wh",
+      "heldReferenceImageCount": 5
+    },
+    {
+      "partNumber": "WE19M1713",
+      "diagramId": "13",
+      "description": "Backsplash Graphics Asm",
+      "heldReferenceImageCount": 5
+    },
     {
       "partNumber": "WE4M416",
       "diagramId": "35",
-      "description": "Switch Pts"
+      "description": "Switch Pts",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE19M1481",
+      "diagramId": "72",
+      "description": "Panel Back",
+      "heldReferenceImageCount": 3
+    },
+    {
+      "partNumber": "WE4M255",
+      "diagramId": "80",
+      "description": "Resistor",
+      "heldReferenceImageCount": 2
+    },
+    {
+      "partNumber": "WE4M404",
+      "diagramId": "87",
+      "description": "Rotary Switch 3temp Elec",
+      "heldReferenceImageCount": 6
+    },
+    {
+      "partNumber": "WE4M532",
+      "diagramId": "100",
+      "description": "Timer",
+      "heldReferenceImageCount": 3
+    },
+    {
+      "partNumber": "WE16X20393",
+      "diagramId": "201",
+      "description": "Blower Wheel",
+      "heldReferenceImageCount": 6
+    },
+    {
+      "partNumber": "WE1X921",
+      "diagramId": "204",
+      "description": "Strap Motor",
+      "heldReferenceImageCount": 1
+    },
+    {
+      "partNumber": "WE13M39",
+      "diagramId": "205",
+      "description": "Motor Support",
+      "heldReferenceImageCount": 8
+    },
+    {
+      "partNumber": "WE03X20434",
+      "diagramId": "215",
+      "description": "Idler Arm",
+      "heldReferenceImageCount": 2
     },
     {
       "partNumber": "WE03X31620",
       "diagramId": "216",
-      "description": "Idler Pulley"
+      "description": "Idler Pulley",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE14X20392",
+      "diagramId": "219",
+      "description": "Blower Housing Asm",
+      "heldReferenceImageCount": 2
+    },
+    {
+      "partNumber": "WE20X20412",
+      "diagramId": "222",
+      "description": "Bottom Cover",
+      "heldReferenceImageCount": 5
+    },
+    {
+      "partNumber": "WE4M127",
+      "diagramId": "230",
+      "description": "Thermostat Drum Out",
+      "heldReferenceImageCount": 4
     },
     {
       "partNumber": "WE13X20394",
       "diagramId": "233",
-      "description": "Motor Plate"
+      "description": "Motor Plate",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE49X22295",
+      "diagramId": "305",
+      "description": "Inner Door Asm White",
+      "heldReferenceImageCount": 9
+    },
+    {
+      "partNumber": "WE10X20468",
+      "diagramId": "307",
+      "description": "Outer Door Wh",
+      "heldReferenceImageCount": 4
     },
     {
       "partNumber": "WE3M56",
       "diagramId": "313",
-      "description": "Top Bearing"
+      "description": "Top Bearing",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE4M415",
+      "diagramId": "380",
+      "description": "Door Switch",
+      "heldReferenceImageCount": 8
+    },
+    {
+      "partNumber": "WE20X20417",
+      "diagramId": "401",
+      "description": "Cover White",
+      "heldReferenceImageCount": 1
+    },
+    {
+      "partNumber": "WE20X20406",
+      "diagramId": "404",
+      "description": "Side Panel White",
+      "heldReferenceImageCount": 5
+    },
+    {
+      "partNumber": "WE20X20391",
+      "diagramId": "408",
+      "description": "Chassis Base",
+      "heldReferenceImageCount": 3
+    },
+    {
+      "partNumber": "WE1M1003",
+      "diagramId": "417",
+      "description": "Holder Fuse",
+      "heldReferenceImageCount": 2
     },
     {
       "partNumber": "WE1M1002",
       "diagramId": "418",
-      "description": "Fuse Ccmr  30 Amp 120v"
+      "description": "Fuse Ccmr  30 Amp 120v",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE4M525",
+      "diagramId": "419",
+      "description": "Term Blk & Grnd Strap",
+      "heldReferenceImageCount": 4
+    },
+    {
+      "partNumber": "WE20X20396",
+      "diagramId": "420",
+      "description": "Rear Panel",
+      "heldReferenceImageCount": 2
+    },
+    {
+      "partNumber": "WE1M1007",
+      "diagramId": "430",
+      "description": "Cover Fuse Terminal",
+      "heldReferenceImageCount": 1
     },
     {
       "partNumber": "WE11X29438",
       "diagramId": "504",
-      "description": "Diffuser"
+      "description": "Diffuser",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE4M160",
+      "diagramId": "505",
+      "description": "Thermostat Safety Left",
+      "heldReferenceImageCount": 7
+    },
+    {
+      "partNumber": "WE4M181",
+      "diagramId": "506",
+      "description": "Thermostat Bias Ctr Inlt",
+      "heldReferenceImageCount": 6
+    },
+    {
+      "partNumber": "WE4M137",
+      "diagramId": "507",
+      "description": "Thermostat Hi-limit",
+      "heldReferenceImageCount": 1
+    },
+    {
+      "partNumber": "WE11X20397",
+      "diagramId": "512",
+      "description": "Mica Heater & Housing As",
+      "heldReferenceImageCount": 5
     },
     {
       "partNumber": "WE11M10002",
       "diagramId": "513",
-      "description": "Heater Housing"
+      "description": "Heater Housing",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE11M10001",
+      "diagramId": "514",
+      "description": "Mica Heater",
+      "heldReferenceImageCount": 3
+    },
+    {
+      "partNumber": "WE01X20419",
+      "diagramId": "603",
+      "description": "Handle White",
+      "heldReferenceImageCount": 1
+    },
+    {
+      "partNumber": "WE17X22217",
+      "diagramId": "630",
+      "description": "Motor",
+      "heldReferenceImageCount": 7
     },
     {
       "partNumber": "WE1M650",
       "diagramId": "631",
-      "description": "Connector Motor"
+      "description": "Connector Motor",
+      "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WD21X10261",
       "diagramId": "803",
-      "description": "Switch Interlock"
+      "description": "Switch Interlock",
+      "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WE1M300",
       "diagramId": "3102",
-      "description": "Bearing Retainer"
+      "description": "Bearing Retainer",
+      "heldReferenceImageCount": 0
     }
   ],
   "attachedParts": [
     {
-      "partNumber": "WE49X22294",
-      "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22294.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE49X22294-bea2b58a90.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE49X22294-bea2b58a90.jpg"
-    },
-    {
-      "partNumber": "WE19M1713",
-      "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/GEHWE19M1713.jpg",
-      "publicPrimaryImage": "/ebay-current-images/GEHWE19M1713-7e59fa70d5.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/GEHWE19M1713-7e59fa70d5.jpg"
-    },
-    {
-      "partNumber": "WE19M1481",
-      "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE19M1481.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE19M1481-cb1a651dc6.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE19M1481-cb1a651dc6.jpg"
-    },
-    {
-      "partNumber": "WE4M255",
-      "imageCount": 2,
-      "primaryImage": "scratch/image-evidence/GEN-WE4M255_0.webp",
-      "publicPrimaryImage": "/ebay-current-images/GEN-WE4M255_0-0a9d541258.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE4M255_0-0a9d541258.webp"
-    },
-    {
-      "partNumber": "WE4M404",
-      "imageCount": 6,
-      "primaryImage": "scratch/image-evidence/GEN-WE4M404_1.webp",
-      "publicPrimaryImage": "/ebay-current-images/GEN-WE4M404_1-84b9506359.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE4M404_1-84b9506359.webp"
-    },
-    {
-      "partNumber": "WE4M532",
-      "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M532.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE4M532-a3a52a39f8.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE4M532-a3a52a39f8.jpg"
-    },
-    {
-      "partNumber": "WE16X20393",
-      "imageCount": 6,
-      "primaryImage": "scratch/image-evidence/GEN-WE16X20393_0.webp",
-      "publicPrimaryImage": "/ebay-current-images/GEN-WE16X20393_0-583eb3e760.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE16X20393_0-583eb3e760.webp"
-    },
-    {
-      "partNumber": "WE1X921",
-      "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1X921.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE1X921-8fe0a2b12b.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE1X921-8fe0a2b12b.jpg"
-    },
-    {
-      "partNumber": "WE13M39",
-      "imageCount": 8,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE13M39.webp",
-      "publicPrimaryImage": "/ebay-current-images/WE13M39-8518695f54.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE13M39-8518695f54.webp"
-    },
-    {
-      "partNumber": "WE03X20434",
-      "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE03X20434.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE03X20434-b973d84181.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE03X20434-b973d84181.jpg"
-    },
-    {
-      "partNumber": "WE14X20392",
-      "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE14X20392.webp",
-      "publicPrimaryImage": "/ebay-current-images/WE14X20392-b292c2cdbd.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE14X20392-b292c2cdbd.webp"
-    },
-    {
-      "partNumber": "WE20X20412",
-      "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20412.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE20X20412-0891735fa6.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20412-0891735fa6.jpg"
-    },
-    {
-      "partNumber": "WE4M127",
-      "imageCount": 4,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M127t.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE4M127t-d61b5959b2.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE4M127t-d61b5959b2.jpg"
-    },
-    {
-      "partNumber": "WE49X22295",
-      "imageCount": 9,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22295.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE49X22295-6e4365b16b.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE49X22295-6e4365b16b.jpg"
-    },
-    {
-      "partNumber": "WE10X20468",
-      "imageCount": 4,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE10X20468.webp",
-      "publicPrimaryImage": "/ebay-current-images/WE10X20468-b93f7e0052.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE10X20468-b93f7e0052.webp"
-    },
-    {
-      "partNumber": "WE4M415",
-      "imageCount": 8,
-      "primaryImage": "scratch/image-evidence/we4m415-dryer-door-switch-for-ge-294882_994x994.webp",
-      "publicPrimaryImage": "/ebay-current-images/we4m415-dryer-door-switch-for-ge-294882_994x994-af53476b8c.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/we4m415-dryer-door-switch-for-ge-294882_994x994-af53476b8c.webp"
-    },
-    {
-      "partNumber": "WE20X20417",
-      "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20417.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE20X20417-f4165ba361.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20417-f4165ba361.jpg"
-    },
-    {
-      "partNumber": "WE20X20406",
-      "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20406.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE20X20406-c73f65e784.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20406-c73f65e784.jpg"
-    },
-    {
-      "partNumber": "WE20X20391",
-      "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20391.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE20X20391-188518a91a.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20391-188518a91a.jpg"
-    },
-    {
-      "partNumber": "WE1M1003",
-      "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1M1003.webp",
-      "publicPrimaryImage": "/ebay-current-images/WE1M1003-6dad2af1dd.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE1M1003-6dad2af1dd.webp"
-    },
-    {
-      "partNumber": "WE4M525",
-      "imageCount": 4,
-      "primaryImage": "scratch/image-evidence/GEN-WE4M525_0.webp",
-      "publicPrimaryImage": "/ebay-current-images/GEN-WE4M525_0-dadc056d15.webp",
-      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE4M525_0-dadc056d15.webp"
-    },
-    {
-      "partNumber": "WE20X20396",
-      "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/Panel_WE20X20396.jpg",
-      "publicPrimaryImage": "/ebay-current-images/Panel_WE20X20396-150b8f3d1a.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/Panel_WE20X20396-150b8f3d1a.jpg"
-    },
-    {
-      "partNumber": "WE1M1007",
-      "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1M1007.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE1M1007-42e4f72838.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE1M1007-42e4f72838.jpg"
-    },
-    {
       "partNumber": "WE21X20562",
-      "imageCount": 3,
+      "imageCount": 1,
       "primaryImage": "scratch/approved-images/WE21X20562.jpg",
       "publicPrimaryImage": "/ebay-current-images/WE21X20562-f3f7c0e731.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE21X20562-f3f7c0e731.jpg"
-    },
-    {
-      "partNumber": "WE4M160",
-      "imageCount": 7,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M160.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE4M160-f916b2900e.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE4M160-f916b2900e.jpg"
-    },
-    {
-      "partNumber": "WE4M181",
-      "imageCount": 6,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M181.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE4M181-792207ee7d.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE4M181-792207ee7d.jpg"
-    },
-    {
-      "partNumber": "WE4M137",
-      "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M137.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE4M137-81ea001400.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE4M137-81ea001400.jpg"
-    },
-    {
-      "partNumber": "WE11X20397",
-      "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11X20397.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE11X20397-b7116553b3.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE11X20397-b7116553b3.jpg"
-    },
-    {
-      "partNumber": "WE11M10001",
-      "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11M10001.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE11M10001-e6ae72e511.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE11M10001-e6ae72e511.jpg"
-    },
-    {
-      "partNumber": "WE01X20419",
-      "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE01X20419.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE01X20419-415deffb7b.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE01X20419-415deffb7b.jpg"
-    },
-    {
-      "partNumber": "WE17X22217",
-      "imageCount": 7,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE17X22217.jpg",
-      "publicPrimaryImage": "/ebay-current-images/WE17X22217-314013cfdc.jpg",
-      "publicPrimaryImagePath": "public/ebay-current-images/WE17X22217-314013cfdc.jpg"
+      "publicPrimaryImagePath": "public/ebay-current-images/WE21X20562-f3f7c0e731.jpg",
+      "heldReferenceImageCount": 2
     }
   ]
 }
