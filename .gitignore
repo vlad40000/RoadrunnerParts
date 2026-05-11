@@ -6,6 +6,7 @@ coverage/
 __pycache__/
 *.py[cod]
 *.log
+scratch/*.mp4
 .env*
 !.env.example
 .next/

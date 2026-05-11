@@ -1869,6 +1869,57 @@ function RunSettingsSidebar({
   officeEditorStatus?: string;
 }) {
   const tools = slot.tools || DEFAULT_MODEL_TOOLS;
+  const [obsidianTitle, setObsidianTitle] = useState("Roadrunner eBay loose ends");
+  const [obsidianBody, setObsidianBody] = useState("");
+  const [obsidianStatus, setObsidianStatus] = useState("");
+  const [obsidianBusy, setObsidianBusy] = useState(false);
+
+  async function saveObsidianNote() {
+    setObsidianBusy(true);
+    setObsidianStatus("");
+    try {
+      const content = obsidianBody.trim() || [
+        "## Session Settings",
+        `- Model: ${slot.modelName}`,
+        `- Temperature: ${slot.temperature ?? 1}`,
+        `- Top P: ${slot.topP ?? 0.8}`,
+        `- Max Output: ${slot.maxOutputTokens ?? 8192}`,
+        "",
+        "## Loose Ends",
+        "- Add the next concrete task here.",
+      ].join("\n");
+      const response = await fetch("/api/obsidian/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: obsidianTitle,
+          content,
+          folder: ["RoadrunnerParts", "eBay Console"],
+          source: "bom-workspace",
+          kind: "office-editor-session",
+          tags: ["roadrunner", "ebay", "obsidian", "console"],
+          frontmatter: {
+            model: slot.modelName,
+            slot: slot.id,
+            temperature: slot.temperature ?? 1,
+            topP: slot.topP ?? 0.8,
+            maxOutputTokens: slot.maxOutputTokens ?? 8192,
+          },
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (data.persisted) {
+        setObsidianStatus(`Saved to ${data.relativePath || data.path}`);
+      } else {
+        setObsidianStatus(data.error ? `Prepared fallback: ${data.error}` : "Obsidian note prepared");
+      }
+    } catch (error) {
+      setObsidianStatus(error instanceof Error ? error.message : "Obsidian save failed");
+    } finally {
+      setObsidianBusy(false);
+    }
+  }
+
   return (
     <aside className="ai-run-settings">
       <div className="ai-settings-title">
@@ -1915,6 +1966,28 @@ function RunSettingsSidebar({
           USE FOR EBAY EDITOR
         </button>
         {officeEditorStatus ? <small className="text-[10px] font-semibold text-white/45">{officeEditorStatus}</small> : null}
+      </div>
+      <div className="ai-setting-block">
+        <span>Obsidian outbox</span>
+        <label className="ai-inline-input">
+          <span>Note title</span>
+          <input value={obsidianTitle} onChange={(event) => setObsidianTitle(event.target.value)} />
+        </label>
+        <textarea
+          value={obsidianBody}
+          onChange={(event) => setObsidianBody(event.target.value)}
+          placeholder="Capture loose ends, next action, product notes, or a session handoff..."
+        />
+        <button
+          type="button"
+          className="ai-drawer-trigger-button"
+          onClick={saveObsidianNote}
+          disabled={obsidianBusy}
+        >
+          <FileCode2 size={14} />
+          {obsidianBusy ? "SAVING..." : "SAVE OBSIDIAN NOTE"}
+        </button>
+        {obsidianStatus ? <small className="text-[10px] font-semibold text-white/45">{obsidianStatus}</small> : null}
       </div>
       <div className="ai-setting-block">
         <span>System instructions</span>

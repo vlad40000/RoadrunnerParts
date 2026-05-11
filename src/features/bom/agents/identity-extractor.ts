@@ -29,35 +29,29 @@ export async function runIdentityExtractor(input: {
     passthroughFiles.push(file);
   }
 
-  const raw = await runStructuredJson<any>({
+  const data = await runStructuredJson<any>({
     model: "lite",
     systemInstruction: IDENTITY_EXTRACTION_PROMPT,
     files: passthroughFiles,
     prompt: textBlocks.join("\n\n---\n\n"),
-  });
-
-  // Robust parsing to handle stringified JSON from model
-  let data = raw;
-  if (typeof raw === "string") {
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      data = raw;
+    schema: {
+      type: "object",
+      properties: {
+        brand: { type: "string", nullable: true },
+        model: { type: "string", nullable: true },
+        serial: { type: "string", nullable: true },
+        productType: { type: "string", nullable: true },
+        alternates: { type: "array", items: { type: "string" } },
+        confidence: { type: "number" }
+      },
+      required: ["brand", "model", "serial", "productType", "alternates", "confidence"]
     }
-  }
-  
-  // Handle cases where the model might wrap the result in a property
-  if (data && typeof data === "object" && typeof data.result === "string") {
-    try {
-      data = JSON.parse(data.result);
-    } catch {}
-  }
+  });
 
   const result = identitySchema.safeParse(data);
   if (!result.success) {
     console.error("Identity extraction parsing failed. Raw data:", data, "Error:", result.error);
-    // Fallback or re-throw
-    return identitySchema.parse(data); // This will throw the original Zod error for debugging
+    throw new Error(`Identity extraction failed validation: ${result.error.message}`);
   }
 
   return result.data;
