@@ -290,7 +290,7 @@ const html = `<!DOCTYPE html>
       grid-template-columns: minmax(220px, 300px) 1fr;
       gap: 18px;
       max-width: 1618px;
-      margin: 52px auto 0;
+      margin: 0 auto;
       padding: 18px;
       border: 1px solid var(--line);
       border-radius: 12px;
@@ -968,6 +968,14 @@ const html = `<!DOCTYPE html>
 
   <div class="promo"><span class="promo-live">LIVE</span><span>Shop live events</span><span>Discover exclusive drops and deals</span><span class="promo-button">See what's live</span></div>
 
+  <section class="scope-strip">
+    <div class="scope-copy">
+      <strong>RoadrunnerParts current 41-part review</strong>
+      <span>Mockups are visual review only. Photos remain pending until operator-approved sale photos pass rights and watermark review.</span>
+    </div>
+    <div class="part-strip" id="partStrip"></div>
+  </section>
+
   <main class="page">
     <section class="product-grid">
       <div class="media-column">
@@ -1043,13 +1051,7 @@ const html = `<!DOCTYPE html>
       <div class="similar-grid" id="similarGrid"></div>
     </section>
 
-    <section class="scope-strip">
-      <div class="scope-copy">
-        <strong>RoadrunnerParts current 41-part review</strong>
-        <span>Mockups are visual review only. Photos remain pending until operator-approved sale photos pass rights and watermark review.</span>
-      </div>
-      <div class="part-strip" id="partStrip"></div>
-    </section>
+
   </main>
 
   <script>
