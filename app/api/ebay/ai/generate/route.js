@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { runStructuredJson } from "../../../../../src/features/bom/services/model-runner";
+import {
+  DEFAULT_GEMINI_TEXT_MODEL,
+  isGeminiImageGenerationModel,
+  normalizeGeminiModelId,
+  runStructuredJson,
+} from "../../../../../src/features/bom/services/model-runner";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,10 +14,20 @@ function cleanText(value, maxLength = 2000) {
 }
 
 function cleanModel(value) {
-  const model = cleanText(value, 120);
-  if (/^nano[-\s]?banana$/i.test(model)) return "gemini-2.5-flash-image";
-  if (/^gemini-[a-z0-9][a-z0-9._-]*$/i.test(model)) return model;
-  return "gemini-3.1-flash-lite-preview";
+  const requestedModel = cleanText(value, 120);
+  const normalizedModel = normalizeGeminiModelId(requestedModel);
+  if (isGeminiImageGenerationModel(normalizedModel)) {
+    return {
+      requestedModel: requestedModel || normalizedModel,
+      model: DEFAULT_GEMINI_TEXT_MODEL,
+      warnings: [`${normalizedModel} is image-workflow only for this editor action. Used ${DEFAULT_GEMINI_TEXT_MODEL} for text JSON generation.`],
+    };
+  }
+  return {
+    requestedModel: requestedModel || normalizedModel,
+    model: normalizedModel,
+    warnings: requestedModel && requestedModel !== normalizedModel ? [`Normalized model ${requestedModel} to ${normalizedModel}.`] : [],
+  };
 }
 
 function safeListingPayload(value) {
@@ -31,7 +46,8 @@ export async function POST(request) {
     const body = await request.json();
     const type = cleanText(body.type, 40);
     const partNumber = cleanText(body.partNumber, 80).toUpperCase();
-    const model = cleanModel(body.modelName || body.model);
+    const modelSelection = cleanModel(body.modelName || body.model);
+    const model = modelSelection.model;
     const currentData = safeListingPayload(body.currentData);
 
     if (!type || !partNumber) {
@@ -63,7 +79,8 @@ export async function POST(request) {
       return NextResponse.json({
         result: cleanText(edit.descriptionText || currentData.description, 4000),
         model,
-        warnings: Array.isArray(edit.warnings) ? edit.warnings : [],
+        requestedModel: modelSelection.requestedModel,
+        warnings: [...modelSelection.warnings, ...(Array.isArray(edit.warnings) ? edit.warnings : [])],
       });
     }
 
@@ -99,7 +116,8 @@ export async function POST(request) {
           condition: cleanText(result.condition || currentData.condition, 160),
         },
         model,
-        warnings: Array.isArray(result.warnings) ? result.warnings : [],
+        requestedModel: modelSelection.requestedModel,
+        warnings: [...modelSelection.warnings, ...(Array.isArray(result.warnings) ? result.warnings : [])],
       });
     }
 

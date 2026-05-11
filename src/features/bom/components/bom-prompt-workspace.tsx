@@ -117,12 +117,12 @@ const RUN_HISTORY_KEY = "bom-prompt-workspace:runs";
 const OFFICE_EDITOR_SESSION_KEY = "rrp:office-editor:gemini-session";
 
 const OFFICE_EDITOR_MODEL_PRESETS: Array<{ value: ModelSlot["modelName"]; label: string }> = [
-  { value: "gemini-3.1-flash-lite-preview", label: "Gemini 3.1 Flash Lite Preview" },
+  { value: "gemini-3.1-flash-lite", label: "Gemini 3.1 Flash Lite" },
   { value: "gemini-3-flash-preview", label: "Gemini 3 Flash Preview" },
-  { value: "gemini-3-pro-preview", label: "Gemini 3 Pro Preview" },
+  { value: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro Preview" },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
   { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
-  { value: "gemini-2.5-flash-preview-09-2025", label: "Gemini 2.5 Flash Preview 09-2025" },
-  { value: "gemini-2.5-flash-image", label: "Nano Banana / Gemini 2.5 Flash Image" },
+  { value: "gemini-3.1-flash-image-preview", label: "Nano Banana 2 / Image workflow only" },
 ];
 const MAX_PROMPT_ATTACHMENT_BYTES = 2_000_000;
 const MAX_URL_CONTEXT_URLS = 20;
@@ -154,9 +154,9 @@ type ModelCatalogItem = {
 
 const MODEL_CATALOG: ModelCatalogItem[] = [
   {
-    id: "gemini-3.1-flash-lite-preview",
-    name: "Gemini 3.1 Flash Lite Preview",
-    alias: "gemini-3.1-flash-lite-preview",
+    id: "gemini-3.1-flash-lite",
+    name: "Gemini 3.1 Flash Lite",
+    alias: "gemini-3.1-flash-lite",
     category: "Featured",
     description: "Roadrunner default Gemini model for prompt runs, OCR, source review, and BOM support tasks.",
     context: "Input: 1,048,576 / Output: 65,536",
@@ -178,9 +178,9 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     selectable: true,
   },
   {
-    id: "gemini-3-pro-preview",
-    name: "Gemini 3 Pro Preview",
-    alias: "gemini-3-pro-preview",
+    id: "gemini-3.1-pro-preview",
+    name: "Gemini 3.1 Pro Preview",
+    alias: "gemini-3.1-pro-preview",
     category: "Gemini",
     description: "Stronger Gemini option for complex office-editor edits and operator-selected deep reasoning runs.",
     context: "Input: 1,048,576 / Output: 65,536",
@@ -214,15 +214,15 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     selectable: true,
   },
   {
-    id: "gemini-2.5-flash-preview-09-2025",
-    name: "Gemini 2.5 Flash Preview 09-2025",
-    alias: "gemini-2.5-flash-preview-09-2025",
+    id: "gemini-2.5-flash",
+    name: "Gemini 2.5 Flash",
+    alias: "gemini-2.5-flash",
     category: "Gemini",
-    description: "Preview Flash model available as an explicit office-editor preset.",
+    description: "Stable Flash model available as an explicit office-editor preset.",
     context: "Input: 1,048,576 / Output: 65,536",
     cost: "Preview text output model",
     cutoff: "January 2025",
-    releaseDate: "Latest update: September 2025",
+    releaseDate: "Latest update: June 2025",
     selectable: true,
   },
   {
@@ -250,11 +250,11 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     selectable: false,
   },
   {
-    id: "gemini-2.5-flash-image",
-    name: "Gemini 2.5 Flash Image",
-    alias: "gemini-2.5-flash-image",
+    id: "gemini-3.1-flash-image-preview",
+    name: "Nano Banana 2 / Gemini 3.1 Flash Image Preview",
+    alias: "gemini-3.1-flash-image-preview",
     category: "Images",
-    description: "Image and text model for image generation workflows.",
+    description: "Image-workflow model for future office-editor visual tools.",
     context: "Input: 65,536 / Output: 32,768",
     cost: "Stable image output model",
     cutoff: "June 2025",
@@ -1064,7 +1064,7 @@ export function BomPromptWorkspace({
     if (typeof window === "undefined") return;
     const modelName = /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(slot.modelName)
       ? slot.modelName
-      : "gemini-3.1-flash-lite-preview";
+      : "gemini-3.1-flash-lite";
     const session = {
       source: "bom-workspace",
       lane: "office-editor",
@@ -2345,11 +2345,11 @@ function modelNameFor(modelName: ModelSlot["modelName"]) {
 }
 
 function modelDescriptionFor(modelName: ModelSlot["modelName"]) {
-  if (modelName === "gemini-2.5-flash-image") return "Nano Banana image-capable Gemini model for office-editor visual workflows.";
-  if (modelName === "gemini-3-pro-preview" || modelName === "gemini-2.5-pro") return "Stronger Gemini model for operator-selected office-editor sessions.";
+  if (modelName === "gemini-3.1-flash-image-preview") return "Nano Banana 2 image-workflow Gemini model for future office-editor visual tools.";
+  if (modelName === "gemini-3.1-pro-preview" || modelName === "gemini-2.5-pro") return "Stronger Gemini model for operator-selected office-editor sessions.";
   if (modelName === "gemini-3-flash-preview") return "Gemini 3 Flash Preview: balanced Gemini option for operator-selected runs.";
-  if (modelName === "gemini-2.5-flash-preview-09-2025") return "Gemini 2.5 Flash preview option for explicit session selection.";
-  return "Gemini 3.1 Flash Lite Preview: default fast Gemini setting.";
+  if (modelName === "gemini-2.5-flash") return "Gemini 2.5 Flash stable option for explicit session selection.";
+  return "Gemini 3.1 Flash Lite: default fast Gemini setting.";
 }
 
 function groupedScenarios(scenarios: PromptScenario[]) {
@@ -4419,7 +4419,7 @@ function RightInspector(props: {
                       }
                       className="h-9 w-full rounded-md border border-white/10 bg-[#17191d] px-2 text-xs text-white outline-none"
                     >
-                      <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite Preview</option>
+                      <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
                       <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
                     </select>
                   </label>

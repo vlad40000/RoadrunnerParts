@@ -28,8 +28,8 @@ export async function runAgentLoop(input: {
   const genAI = new GoogleGenerativeAI(apiKey);
   // Roadrunner standardizes Gemini stages on Flash Lite unless an environment override is set.
   const modelId = input.config.stage === "cache_check" || input.config.stage === "ocr_ingest" 
-    ? (process.env.GEMINI_MODEL_FAST || "gemini-3.1-flash-lite-preview")
-    : (process.env.GEMINI_MODEL_PRO || "gemini-3.1-flash-lite-preview");
+    ? (process.env.GEMINI_MODEL_FAST || "gemini-3.1-flash-lite")
+    : (process.env.GEMINI_MODEL_PRO || "gemini-3.1-flash-lite");
 
   const model = genAI.getGenerativeModel({
     model: modelId,

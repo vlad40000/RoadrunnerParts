@@ -27,11 +27,11 @@ For Gemini agents, **keep temperature at default 1.0** unless the operator expli
 
 Roadrunner has two AI lanes:
 
-- **Evidence automation lane**: BOM extraction, source review, nameplate OCR, supplier routing, listing-material generation, and any workflow that claims facts needed to post to eBay. Default to `gemini-3.1-flash-lite-preview` unless the operator explicitly selects another Gemini model for that run.
+- **Evidence automation lane**: BOM extraction, source review, nameplate OCR, supplier routing, listing-material generation, and any workflow that claims facts needed to post to eBay. Default to `gemini-3.1-flash-lite` unless the operator explicitly selects another Gemini model for that run.
 - **Office editor lane**: Frontend/back-office editing tools where an operator changes listing text, layout, wording, or review fields on the fly. Expose full Gemini API model selection to the operator.
 - Provider is Gemini-only by default in both lanes.
 - Operators may select any Gemini API model ID enabled for the project key, including stable, preview, latest, and experimental Gemini IDs.
-- Image/visual editor tools may use image-capable Gemini models such as Nano Banana / Gemini 2.5 Flash Image (`gemini-2.5-flash-image`) when the operator selects them.
+- Image/visual editor tools may use image-capable Gemini models such as Nano Banana 2 / Gemini 3.1 Flash Image Preview (`gemini-3.1-flash-image-preview`) when the operator selects them.
 - Custom model IDs are allowed when they start with `gemini-`.
 
 Do not silently switch models. Any non-default model run must be explicit in saved agent input/config and remain visible in logs or run metadata.
@@ -44,14 +44,14 @@ Do not silently switch models. Any non-default model run must be explicit in sav
 ## Frontline vs Fallback Configuration
 
 **Recommended Frontline Setup:**
-- Model: `gemini-3.1-flash-lite-preview` (default — use this unless a specific stage requires otherwise)
+- Model: `gemini-3.1-flash-lite` (default — use this unless a specific stage requires otherwise)
 - Temperature: `1.0` (Default)
 - Mode: `ANY` (for required calls)
 - Allowed Functions: Stage-specific only
 - Purpose: Choose the next required function call
 
 **Recommended Fallback Setup:**
-- Model: operator-selected Gemini model ID; use `gemini-3.1-flash-lite-preview` when no explicit selection is provided
+- Model: operator-selected Gemini model ID; use `gemini-3.1-flash-lite` when no explicit selection is provided
 - Temperature: `1.0` (Default)
 - Mode: `ANY` or `AUTO` by stage
 - Allowed Functions: Narrowed to repair tools only

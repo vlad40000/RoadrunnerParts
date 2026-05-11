@@ -40,7 +40,7 @@ interface ComputerUseSupervisorProps {
 }
 
 type AgentConfig = {
-  model: "gemini-3.1-flash-lite-preview" | "gemini-3-flash-preview";
+  model: "gemini-3.1-flash-lite" | "gemini-3-flash-preview";
   systemInstruction: string;
   temperature: number;
   thinkingLevel: "LOW" | "MEDIUM" | "HIGH";
@@ -57,7 +57,7 @@ type AgentConfig = {
 };
 
 const DEFAULT_AGENT_CONFIG: AgentConfig = {
-  model: "gemini-3.1-flash-lite-preview",
+  model: "gemini-3.1-flash-lite",
   systemInstruction: "",
   temperature: 1,
   thinkingLevel: "MEDIUM",
@@ -603,7 +603,7 @@ export function ComputerUseSupervisor({ jobId, slotId, model, sourceUrl, onActio
                 onChange={(event) => patchConfig({ model: event.target.value as AgentConfig["model"] })}
                 className="mb-3 w-full rounded-lg border border-white/10 bg-neutral-950 px-3 py-2 text-sm font-bold text-white outline-none"
               >
-                <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite Preview</option>
+                <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
                 <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
               </select>
               <textarea

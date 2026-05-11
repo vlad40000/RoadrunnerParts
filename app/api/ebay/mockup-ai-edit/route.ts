@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { runStructuredJson } from '../../../../src/features/bom/services/model-runner';
+import {
+  DEFAULT_GEMINI_TEXT_MODEL,
+  isGeminiImageGenerationModel,
+  normalizeGeminiModelId,
+  runStructuredJson,
+} from '../../../../src/features/bom/services/model-runner';
 
 export const runtime = 'nodejs';
 
@@ -51,14 +56,8 @@ function cleanNumber(value: unknown, fallback: number, min: number, max: number)
 }
 
 function cleanGeminiModel(value: unknown): `gemini-${string}` {
-  const model = cleanText(value, 120);
-  if (/^nano[-\s]?banana$/i.test(model)) {
-    return 'gemini-2.5-flash-image';
-  }
-  if (/^gemini-[a-z0-9][a-z0-9._-]*$/i.test(model)) {
-    return model as `gemini-${string}`;
-  }
-  return 'gemini-3.1-flash-lite-preview';
+  const model = normalizeGeminiModelId(cleanText(value, 120));
+  return (isGeminiImageGenerationModel(model) ? DEFAULT_GEMINI_TEXT_MODEL : model) as `gemini-${string}`;
 }
 
 function cleanRequestOptions(value: unknown): AiRequestOptions {

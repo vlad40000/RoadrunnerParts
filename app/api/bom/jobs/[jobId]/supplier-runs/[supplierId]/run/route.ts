@@ -15,7 +15,7 @@ import {
 
 type Params = { params: Promise<{ jobId: string; supplierId: string }> };
 type GeminiModel =
-  | "gemini-3.1-flash-lite-preview"
+  | "gemini-3.1-flash-lite"
   | "gemini-3-flash-preview";
 type ThinkingLevel = "minimal" | "low" | "medium" | "high";
 
@@ -32,8 +32,8 @@ function positiveNumber(value: unknown) {
 
 function normalizeModel(value: unknown): GeminiModel {
   if (value === "gemini-3-flash-preview") return "gemini-3-flash-preview";
-  if (value === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
-  return "gemini-3.1-flash-lite-preview";
+  if (value === "gemini-3.1-flash-lite-preview" || value === "gemini-3.1-flash-lite") return "gemini-3.1-flash-lite";
+  return "gemini-3.1-flash-lite";
 }
 
 function normalizeTemperature(value: unknown) {

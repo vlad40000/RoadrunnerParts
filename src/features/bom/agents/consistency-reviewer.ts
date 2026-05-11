@@ -11,7 +11,7 @@ export async function runConsistencyReviewer({
   masterParts: any[];
 }) {
   const result = await runStructuredJson<any>({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     prompt: CONSISTENCY_REVIEW_PROMPT,
     text: JSON.stringify({
       appliance: `${identity.brand_normalized} ${variant.resolved_model} (Variant: ${variant.resolved_revision || 'None'})`,

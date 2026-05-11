@@ -56,7 +56,7 @@ Rules:
 8. Honor the operator-selected tool policy. Direct fetch and structured output are mandatory; browser/computer-use source data is a separate supervised path.`;
 
 type GeminiModel =
-  | "gemini-3.1-flash-lite-preview"
+  | "gemini-3.1-flash-lite"
   | "gemini-3-flash-preview";
 
 interface AgentToolConfig {
@@ -109,7 +109,7 @@ const DEFAULT_TOOL_CONFIG: AgentToolConfig = {
 };
 
 const DEFAULT_TUNING: AgentTuning = {
-  model: "gemini-3.1-flash-lite-preview",
+  model: "gemini-3.1-flash-lite",
   temperature: 1.0,
   thinkingLevel: "medium",
   systemInstruction: SUPPLIER_AGENT_INSTRUCTION_PREVIEW,
@@ -287,8 +287,8 @@ function parseThinking(value: unknown): AgentTuning["thinkingLevel"] {
 
 function parseModel(value: unknown): GeminiModel {
   if (value === "gemini-3-flash-preview") return "gemini-3-flash-preview";
-  if (value === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
-  return "gemini-3.1-flash-lite-preview";
+  if (value === "gemini-3.1-flash-lite-preview" || value === "gemini-3.1-flash-lite") return "gemini-3.1-flash-lite";
+  return "gemini-3.1-flash-lite";
 }
 
 function parseTemperature(value: unknown): number {
@@ -838,7 +838,7 @@ export function SupplierAgentMatrix({ jobId, model, truth, supplierRuns }: Suppl
                           onChange={(e) => updateTuning(agent.id, { model: e.target.value as GeminiModel })}
                           className="w-full rounded border bg-white p-1 text-[10px] font-bold"
                         >
-                          <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite</option>
+                          <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
                           <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
                         </select>
                       </div>

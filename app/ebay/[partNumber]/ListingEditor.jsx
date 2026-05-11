@@ -3,6 +3,30 @@
 import React, { useState, useEffect } from "react";
 import ListingGallery from "./ListingGallery";
 
+const TEXT_FALLBACK_MODEL = "gemini-3.1-flash-lite";
+const IMAGE_WORKFLOW_MODEL = "gemini-3.1-flash-image-preview";
+const MODEL_PRESETS = [
+  "gemini-3.1-flash-lite",
+  "gemini-3-flash-preview",
+  "gemini-3.1-pro-preview",
+  "gemini-2.5-flash",
+  "gemini-2.5-pro",
+  IMAGE_WORKFLOW_MODEL,
+];
+
+function normalizeEditorModel(value) {
+  const model = String(value || "").trim();
+  if (!model || model === "gemini-3.1-flash-lite-preview") return TEXT_FALLBACK_MODEL;
+  if (model === "gemini-3-pro" || model === "gemini-3-pro-preview") return "gemini-3.1-pro-preview";
+  if (model === "gemini-2.5-flash-preview-09-2025") return "gemini-2.5-flash";
+  if (model === "gemini-2.5-flash-image" || /^nano[-\s]?banana$/i.test(model)) return IMAGE_WORKFLOW_MODEL;
+  return /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(model) ? model : TEXT_FALLBACK_MODEL;
+}
+
+function isImageWorkflowModel(model) {
+  return normalizeEditorModel(model) === IMAGE_WORKFLOW_MODEL;
+}
+
 export default function ListingEditor({ initialListing, partNumber }) {
   const [listing, setListing] = useState({
     ...initialListing,
@@ -15,7 +39,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [isOptimizingSpecs, setIsOptimizingSpecs] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("gemini-3.1-flash-lite-preview");
+  const [selectedModel, setSelectedModel] = useState(TEXT_FALLBACK_MODEL);
   const [customModel, setCustomModel] = useState("");
   const [showCustomModel, setShowCustomModel] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
@@ -37,23 +61,18 @@ export default function ListingEditor({ initialListing, partNumber }) {
   };
 
   const qualityScore = calculateQualityScore();
-  const effectiveModel = showCustomModel ? customModel : selectedModel;
+  const requestedModel = normalizeEditorModel(showCustomModel ? customModel : selectedModel);
+  const effectiveModel = isImageWorkflowModel(requestedModel) ? TEXT_FALLBACK_MODEL : requestedModel;
+  const imageWorkflowSelected = isImageWorkflowModel(requestedModel);
 
   useEffect(() => {
     try {
       const session = JSON.parse(localStorage.getItem("rrp:office-editor:gemini-session") || "{}");
-      if (session?.model && /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(session.model)) {
-        const presetModels = [
-          "gemini-3.1-flash-lite-preview",
-          "gemini-3-flash-preview",
-          "gemini-3-pro-preview",
-          "gemini-2.5-pro",
-          "gemini-2.5-flash-preview-09-2025",
-          "gemini-2.5-flash-image",
-        ];
-        setSelectedModel(session.model);
-        setCustomModel(session.model);
-        setShowCustomModel(!presetModels.includes(session.model));
+      if (session?.model) {
+        const normalizedModel = normalizeEditorModel(session.model);
+        setSelectedModel(normalizedModel);
+        setCustomModel(normalizedModel);
+        setShowCustomModel(!MODEL_PRESETS.includes(normalizedModel));
       }
     } catch {
       // Ignore malformed local editor session state.
@@ -362,19 +381,19 @@ export default function ListingEditor({ initialListing, partNumber }) {
                     setShowCustomModel(true);
                   } else {
                     setShowCustomModel(false);
-                    setSelectedModel(e.target.value);
+                    setSelectedModel(normalizeEditorModel(e.target.value));
                   }
                 }}
               >
                 <optgroup label="Stable">
-                  <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite Preview</option>
-                  <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
-                </optgroup>
-                <optgroup label="Experimental">
-                  <option value="gemini-3-pro-preview">Gemini 3 Pro Preview</option>
+                  <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                   <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                  <option value="gemini-2.5-flash-preview-09-2025">Gemini 2.5 Flash Preview 09-2025</option>
-                  <option value="gemini-2.5-flash-image">Nano Banana / Gemini 2.5 Flash Image</option>
+                </optgroup>
+                <optgroup label="Preview">
+                  <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
+                  <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
+                  <option value="gemini-3.1-flash-image-preview">Nano Banana 2 / Image workflow only</option>
                 </optgroup>
                 <option value="custom">Custom Model ID...</option>
               </select>
@@ -387,6 +406,16 @@ export default function ListingEditor({ initialListing, partNumber }) {
                   onChange={(e) => setCustomModel(e.target.value)}
                   className="mt-2 w-full rounded-lg border border-blue-200 p-2 text-xs bg-white focus:ring-2 focus:ring-blue-200 outline-none font-mono"
                 />
+              )}
+              {requestedModel !== (showCustomModel ? customModel.trim() : selectedModel) && (
+                <div className="text-[10px] font-semibold text-blue-700">
+                  Resolved model: {requestedModel}
+                </div>
+              )}
+              {imageWorkflowSelected && (
+                <div className="text-[10px] font-semibold text-amber-700">
+                  Image model selected. Text AI actions will use {TEXT_FALLBACK_MODEL} until the image workflow is wired.
+                </div>
               )}
             </div>
 

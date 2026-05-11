@@ -1,6 +1,6 @@
 ---
 name: analyzer
-model: gemini-3.1-flash-lite-preview
+model: gemini-3.1-flash-lite
 description: High-speed data parsing, fact-checking, and review tasks.
 tools: [read_file, write_file, web_search]
 max_steps: 10

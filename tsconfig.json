@@ -47,6 +47,8 @@
   "exclude": [
     "node_modules",
     "dist",
+    "scratch/**/*.ts",
+    "scratch/**/*.tsx",
     "scratch/ebay-listing-3"
   ]
 }

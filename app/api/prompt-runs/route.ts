@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { runTextDetailed } from "@/src/features/bom/services/model-runner";
+import {
+  normalizeGeminiModelId,
+  runTextDetailed,
+} from "@/src/features/bom/services/model-runner";
 import {
   DEFAULT_MODEL_TOOLS,
   DEFAULT_MODEL_SLOTS,
@@ -27,10 +30,7 @@ const MAX_URL_CONTEXT_URLS = 20;
 type FunctionCallingMode = "AUTO" | "ANY" | "NONE" | "VALIDATED";
 
 function normalizePromptModel(value: unknown): ModelSlot["modelName"] {
-  if (typeof value === "string" && /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(value.trim())) {
-    return value.trim() as ModelSlot["modelName"];
-  }
-  return "gemini-3.1-flash-lite-preview";
+  return normalizeGeminiModelId(value) as ModelSlot["modelName"];
 }
 
 function asRecord(value: unknown): Record<string, unknown> {

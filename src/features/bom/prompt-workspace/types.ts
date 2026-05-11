@@ -51,7 +51,7 @@ export type ModelSlot = {
 export const DEFAULT_MODEL_SLOTS: ModelSlot[] = [
   {
     id: "slot_a",
-    modelName: "gemini-3.1-flash-lite-preview",
+    modelName: "gemini-3.1-flash-lite",
     provider: "gemini",
     enabled: true,
     temperature: 1,
@@ -61,7 +61,7 @@ export const DEFAULT_MODEL_SLOTS: ModelSlot[] = [
   },
   {
     id: "slot_b",
-    modelName: "gemini-3.1-flash-lite-preview",
+    modelName: "gemini-3.1-flash-lite",
     provider: "gemini",
     enabled: true,
     temperature: 1,

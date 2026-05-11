@@ -7,7 +7,7 @@ import {
   type AgenticListingResult,
 } from "../schemas";
 
-const EBAY_AGENT_MODEL = "gemini-3.1-flash-lite-preview";
+const EBAY_AGENT_MODEL = "gemini-3.1-flash-lite";
 
 function extractJsonObject(text: string): unknown {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);

@@ -10,7 +10,7 @@ import { NAMEPLATE_OCR_PROMPT } from './nameplate-ocr-contract';
 
 const apiKey = process.env.GEMINI_API_KEY;
 
-const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite-preview';
+const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite';
 
 const MODEL_MAP = {
   supervisor: DEFAULT_GEMINI_MODEL,
@@ -19,16 +19,21 @@ const MODEL_MAP = {
   discovery: DEFAULT_GEMINI_MODEL,
   lite: DEFAULT_GEMINI_MODEL,
   fast: DEFAULT_GEMINI_MODEL,
-  pro: 'gemini-3-pro-preview',
-  'nano-banana': 'gemini-2.5-flash-image',
-  'nano banana': 'gemini-2.5-flash-image',
+  pro: 'gemini-3.1-pro-preview',
+  'nano-banana': 'gemini-3.1-flash-image-preview',
+  'nano banana': 'gemini-3.1-flash-image-preview',
   'gemini-3-flash': 'gemini-3-flash-preview',
   'gemini-3-flash-preview': 'gemini-3-flash-preview',
-  'gemini-3.1-flash-lite-preview': 'gemini-3.1-flash-lite-preview',
-  'gemini-3-pro': 'gemini-3-pro-preview',
-  'gemini-3-pro-preview': 'gemini-3-pro-preview',
-  'gemini-2.5-flash-image': 'gemini-2.5-flash-image',
-  'gemini-2.5-flash-image-preview': 'gemini-2.5-flash-image-preview',
+  'gemini-3.1-flash-lite': 'gemini-3.1-flash-lite',
+  'gemini-3.1-flash-lite-preview': 'gemini-3.1-flash-lite',
+  'gemini-3-pro': 'gemini-3.1-pro-preview',
+  'gemini-3-pro-preview': 'gemini-3.1-pro-preview',
+  'gemini-3.1-pro-preview': 'gemini-3.1-pro-preview',
+  'gemini-2.5-flash': 'gemini-2.5-flash',
+  'gemini-2.5-flash-preview-09-2025': 'gemini-2.5-flash',
+  'gemini-2.5-pro': 'gemini-2.5-pro',
+  'gemini-2.5-flash-image': 'gemini-3.1-flash-image-preview',
+  'gemini-3.1-flash-image-preview': 'gemini-3.1-flash-image-preview',
 };
 
 const ALL_SOURCES = [
@@ -442,7 +447,7 @@ export async function fetchPartsList(
   `;
 
   const { data, sources } = await generateStructuredJson({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: prompt,
     tools: [{ googleSearch: {} }],
     schema: responseSchema,
@@ -521,7 +526,7 @@ export async function extractIdentityFromManualPdf(pdfData, fileName = 'manual.p
   `;
 
   const { data } = await generateStructuredJson({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: [
       { text: prompt },
       {
@@ -573,7 +578,7 @@ export async function extractNameplateFromImage(imageData, mimeType, prompt = NA
   const ocrPrompt = String(prompt || "").trim() || NAMEPLATE_OCR_PROMPT;
   const ai = createGenAIClient();
   const response = await ai.models.generateContent({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     config: {
       thinkingConfig: {
         thinkingLevel: ThinkingLevel.MINIMAL,
@@ -676,7 +681,7 @@ export async function extractSchematicBOM(modelNumber, brand) {
   `;
 
   const { data, sources } = await generateStructuredJson({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: prompt,
     tools: [{ googleSearch: {} }],
     schema: responseSchema,
@@ -736,7 +741,7 @@ export async function extractPartsFromHtmlPage(html, { model, section }) {
   `;
 
   const { data } = await generateStructuredJson({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: prompt,
     schema: responseSchema,
     temperature: 1,
@@ -885,7 +890,7 @@ Return a JSON object with two keys:
   };
 
   const { data } = await generateStructuredJson({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: prompt,
     tools: [{ googleSearch: {} }],
     schema: responseSchema,
@@ -908,7 +913,7 @@ export async function transcribeAudio({ audioData, mimeType }) {
   - Output ONLY the transcription text. No pleasantries.`;
 
   const { text } = await generateText({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: [
       { text: prompt },
       {
@@ -940,7 +945,7 @@ export async function diagnoseIssue({ query, model }) {
   - Keep the tone professional and concise.`;
 
   const { text } = await generateText({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: prompt,
     config: {
       temperature: 1.0,
@@ -964,7 +969,7 @@ export async function analyzeVideo({ videoData, mimeType, model }) {
   Provide a high-level summary of your findings and the suspected component failure.`;
 
   const { text } = await generateText({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: [
       { text: prompt },
       {
@@ -1006,7 +1011,7 @@ export async function chatField({ message, context, history }) {
   QUESTION: ${message}`;
 
   const { text } = await generateText({
-    model: 'gemini-3.1-flash-lite-preview',
+    model: 'gemini-3.1-flash-lite',
     contents: [
       ...historyParts,
       { role: 'user', parts: [{ text: prompt }] }

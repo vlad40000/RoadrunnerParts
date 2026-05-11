@@ -16,7 +16,7 @@ export class PricingResearcher {
   constructor(apiKey: string) {
     const genAI = new GoogleGenerativeAI(apiKey);
     this.model = genAI.getGenerativeModel({
-      model: "gemini-3.1-flash-lite-preview",
+      model: "gemini-3.1-flash-lite",
       tools: [{ googleSearch: {} }]
     } as any);
   }

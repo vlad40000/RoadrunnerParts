@@ -8,7 +8,7 @@ export type ModelRunToolConfig = {
 };
 
 export type GeminiModelId =
-  | "gemini-3.1-flash-lite-preview"
+  | "gemini-3.1-flash-lite"
   | "gemini-3-flash-preview"
   | `gemini-${string}`;
 
@@ -44,34 +44,41 @@ export type TextRunResult = {
   usageMetadata?: unknown;
 };
 
-const DEFAULT_MODEL: GeminiModelId = "gemini-3.1-flash-lite-preview";
+export const DEFAULT_GEMINI_TEXT_MODEL: GeminiModelId = "gemini-3.1-flash-lite";
+export const GEMINI_IMAGE_MODEL: GeminiModelId = "gemini-3.1-flash-image-preview";
 
 function isGeminiModelId(value: unknown): value is GeminiModelId {
   return typeof value === "string" && /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(value.trim());
+}
+
+export function normalizeGeminiModelId(model: unknown): GeminiModelId {
+  const value = typeof model === "string" ? model.trim() : "";
+  if (!value || value === "lite" || value === "fast") return DEFAULT_GEMINI_TEXT_MODEL;
+  if (value === "pro" || value === "gemini-3-pro" || value === "gemini-3-pro-preview") {
+    return "gemini-3.1-pro-preview";
+  }
+  if (/^nano[-\s]?banana$/i.test(value) || value === "gemini-2.5-flash-image") {
+    return GEMINI_IMAGE_MODEL;
+  }
+  if (value === "gemini-3.1-flash-lite-preview") return DEFAULT_GEMINI_TEXT_MODEL;
+  if (value === "gemini-2.5-flash-preview-09-2025") return "gemini-2.5-flash";
+  if (!isGeminiModelId(value)) {
+    throw new Error(`Unsupported model provider: ${String(model)}. Roadrunner AI runs are Gemini-only.`);
+  }
+  return value as GeminiModelId;
+}
+
+export function isGeminiImageGenerationModel(model: unknown): boolean {
+  const value = typeof model === "string" ? model.trim() : "";
+  return value === GEMINI_IMAGE_MODEL || value === "gemini-2.5-flash-image" || /^nano[-\s]?banana$/i.test(value);
 }
 
 function resolveModelId(
   model: ModelRunInput["model"],
   context?: { stage?: string; reason?: string },
 ): GeminiModelId {
-  if (!model || model === "lite" || model === "fast") {
-    return "gemini-3.1-flash-lite-preview";
-  }
-
-  if (model === "pro") {
-    return "gemini-3-pro-preview";
-  }
-
-  if (model === "nano-banana") {
-    return "gemini-2.5-flash-image";
-  }
-
-  if (!isGeminiModelId(model)) {
-    throw new Error(`Unsupported model provider: ${String(model)}. Roadrunner AI runs are Gemini-only.`);
-  }
-
-  const modelId = model.trim() as GeminiModelId;
-  if (modelId !== DEFAULT_MODEL) {
+  const modelId = normalizeGeminiModelId(model);
+  if (modelId !== DEFAULT_GEMINI_TEXT_MODEL) {
     console.warn(
       `[model-runner] Operator-selected Gemini model: model=${modelId}` +
         (context?.stage ? ` stage=${context.stage}` : "") +

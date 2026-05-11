@@ -9,13 +9,13 @@ Roadrunner has two different AI lanes:
 
 ### Evidence Automation Lane
 - Use the Gemini API via `@google/generative-ai`.
-- Default to `gemini-3.1-flash-lite-preview` unless the operator explicitly selects another Gemini model for that run.
+- Default to `gemini-3.1-flash-lite` unless the operator explicitly selects another Gemini model for that run.
 - Model output is not source evidence. OEM part rows, prices, compatibility, condition, images, and completeness claims still require provider evidence, captured JSON, manuals, database records, or operator approval.
 
 ### Office Editor Lane
 - Use the Gemini API, but expose full Gemini API model selection to the operator.
 - Operators may select any Gemini model ID enabled for the configured `GEMINI_API_KEY`, including stable, preview, latest, and experimental Gemini IDs.
-- Image/visual editor tools may use image-capable Gemini models such as Nano Banana / Gemini 2.5 Flash Image (`gemini-2.5-flash-image`) when the operator selects them.
+- Image/visual editor tools may use image-capable Gemini models such as Nano Banana 2 / Gemini 3.1 Flash Image Preview (`gemini-3.1-flash-image-preview`) when the operator selects them.
 - Custom model IDs are allowed when they start with `gemini-`.
 - Editor output is a draft/change suggestion applied to frontend fields. It does not become source evidence or eBay posting truth by itself.
 

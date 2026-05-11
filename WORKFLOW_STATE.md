@@ -2,6 +2,7 @@
 
 ## Status: FRONTEND EDITOR SAVE PATH + OBSIDIAN OUTBOX READY (2026-05-11)
 - **AI Backend**: Gemini-only office-editor route accepts `modelName` / custom `gemini-*` selection, including Nano Banana image-model IDs for operator experiments.
+- **Model Selection**: eBay/editor defaults now normalize to `gemini-3.1-flash-lite`; stale saved IDs are upgraded automatically, and image-only selections fall back for text/JSON actions until an image edit route exists.
 - **Frontend Editor**: `/ebay/{partNumber}` supports live edits for title, price, description, specifics, condition, quantity, shipping, returns, status, and image candidates.
 - **Image Control**: Operators can paste an image URL, add it to the gallery, set it as the lead image, or remove watermarked/bad candidates before saving.
 - **Save Path**: Detail editor saves to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is configured and falls back to the local normalized listing JSON in local development.
