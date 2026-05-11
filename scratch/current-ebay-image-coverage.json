@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-11T14:18:11.561Z",
+  "generatedAt": "2026-05-11T21:26:25.697Z",
   "scopePath": "scratch/current-ebay-scope.json",
   "outputPath": "public/ebay_mockup_gallery.html",
   "publicGalleryPath": "/ebay_mockup_gallery.html",
@@ -12,55 +12,55 @@
     {
       "partNumber": "WE49X22294",
       "diagramId": "4",
-      "description": "End Cap Rh Wh Lh Wh",
+      "description": "End Cap Rh W",
       "heldReferenceImageCount": 5
     },
     {
       "partNumber": "WE19M1713",
       "diagramId": "13",
-      "description": "Backsplash Graphics Asm",
+      "description": "Backsplash Graphic Assembly",
       "heldReferenceImageCount": 5
     },
     {
       "partNumber": "WE4M416",
       "diagramId": "35",
-      "description": "Switch Pts",
+      "description": "Dryer Push-to-start Switch",
       "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WE19M1481",
       "diagramId": "72",
-      "description": "Panel Back",
+      "description": "Dryer Control Panel Cover, Rear",
       "heldReferenceImageCount": 3
     },
     {
       "partNumber": "WE4M255",
       "diagramId": "80",
-      "description": "Resistor",
+      "description": "Kenmore Dryer Timer Resistor",
       "heldReferenceImageCount": 2
     },
     {
       "partNumber": "WE4M404",
       "diagramId": "87",
-      "description": "Rotary Switch 3temp Elec",
+      "description": "Dryer Temperature Switch",
       "heldReferenceImageCount": 6
     },
     {
       "partNumber": "WE4M532",
       "diagramId": "100",
-      "description": "Timer",
+      "description": "Dryer Timer",
       "heldReferenceImageCount": 3
     },
     {
       "partNumber": "WE16X20393",
       "diagramId": "201",
-      "description": "Blower Wheel",
+      "description": "Laundry Center Dryer Blower Wheel",
       "heldReferenceImageCount": 6
     },
     {
       "partNumber": "WE1X921",
       "diagramId": "204",
-      "description": "Strap Motor",
+      "description": "Motor Strap",
       "heldReferenceImageCount": 1
     },
     {
@@ -72,7 +72,7 @@
     {
       "partNumber": "WE03X20434",
       "diagramId": "215",
-      "description": "Idler Arm",
+      "description": "Dryer Idler Arm",
       "heldReferenceImageCount": 2
     },
     {
@@ -84,7 +84,7 @@
     {
       "partNumber": "WE14X20392",
       "diagramId": "219",
-      "description": "Blower Housing Asm",
+      "description": "Dryer Blower Housing",
       "heldReferenceImageCount": 2
     },
     {
@@ -96,7 +96,7 @@
     {
       "partNumber": "WE4M127",
       "diagramId": "230",
-      "description": "Thermostat Drum Out",
+      "description": "Dryer Operating Thermostat",
       "heldReferenceImageCount": 4
     },
     {
@@ -108,37 +108,37 @@
     {
       "partNumber": "WE49X22295",
       "diagramId": "305",
-      "description": "Inner Door Asm White",
+      "description": "Front Panel Assembly",
       "heldReferenceImageCount": 9
     },
     {
       "partNumber": "WE10X20468",
       "diagramId": "307",
-      "description": "Outer Door Wh",
+      "description": "Dryer Door Outer Panel (white)",
       "heldReferenceImageCount": 4
     },
     {
       "partNumber": "WE3M56",
       "diagramId": "313",
-      "description": "Top Bearing",
+      "description": "Bearing",
       "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WE4M415",
       "diagramId": "380",
-      "description": "Door Switch",
+      "description": "Dryer Door Switch",
       "heldReferenceImageCount": 8
     },
     {
       "partNumber": "WE20X20417",
       "diagramId": "401",
-      "description": "Cover White",
+      "description": "Dryer Top Panel",
       "heldReferenceImageCount": 1
     },
     {
       "partNumber": "WE20X20406",
       "diagramId": "404",
-      "description": "Side Panel White",
+      "description": "Dryer Side Panel (white)",
       "heldReferenceImageCount": 5
     },
     {
@@ -150,19 +150,19 @@
     {
       "partNumber": "WE1M1003",
       "diagramId": "417",
-      "description": "Holder Fuse",
+      "description": "Dryer Fuse Holder",
       "heldReferenceImageCount": 2
     },
     {
       "partNumber": "WE1M1002",
       "diagramId": "418",
-      "description": "Fuse Ccmr  30 Amp 120v",
+      "description": "Fuse Cemr 30 Amp 120V",
       "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WE4M525",
       "diagramId": "419",
-      "description": "Term Blk & Grnd Strap",
+      "description": "4 Term Blk & Grnd Strap",
       "heldReferenceImageCount": 4
     },
     {
@@ -180,31 +180,31 @@
     {
       "partNumber": "WE11X29438",
       "diagramId": "504",
-      "description": "Diffuser",
+      "description": "Dryer Drum Rear Cover",
       "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WE4M160",
       "diagramId": "505",
-      "description": "Thermostat Safety Left",
+      "description": "Dryer Safety Thermostat",
       "heldReferenceImageCount": 7
     },
     {
       "partNumber": "WE4M181",
       "diagramId": "506",
-      "description": "Thermostat Bias Ctr Inlt",
+      "description": "Dryer Operating Thermostat",
       "heldReferenceImageCount": 6
     },
     {
       "partNumber": "WE4M137",
       "diagramId": "507",
-      "description": "Thermostat Hi-limit",
+      "description": "Dryer High-limit Thermostat",
       "heldReferenceImageCount": 1
     },
     {
       "partNumber": "WE11X20397",
       "diagramId": "512",
-      "description": "Mica Heater & Housing As",
+      "description": "Dryer Heating Element",
       "heldReferenceImageCount": 5
     },
     {
@@ -216,37 +216,37 @@
     {
       "partNumber": "WE11M10001",
       "diagramId": "514",
-      "description": "Mica Heater",
+      "description": "Dryer Heating Element",
       "heldReferenceImageCount": 3
     },
     {
       "partNumber": "WE01X20419",
       "diagramId": "603",
-      "description": "Handle White",
+      "description": "Dryer Door Handle (white)",
       "heldReferenceImageCount": 1
     },
     {
       "partNumber": "WE17X22217",
       "diagramId": "630",
-      "description": "Motor",
+      "description": "Dryer Drive Motor with Pulley",
       "heldReferenceImageCount": 7
     },
     {
       "partNumber": "WE1M650",
       "diagramId": "631",
-      "description": "Connector Motor",
+      "description": "Dryer Motor Wire Harness Connector",
       "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WD21X10261",
       "diagramId": "803",
-      "description": "Switch Interlock",
+      "description": "Interlock Switch",
       "heldReferenceImageCount": 0
     },
     {
       "partNumber": "WE1M300",
       "diagramId": "3102",
-      "description": "Bearing Retainer",
+      "description": "Dryer Drum Bearing Bracket",
       "heldReferenceImageCount": 0
     }
   ],

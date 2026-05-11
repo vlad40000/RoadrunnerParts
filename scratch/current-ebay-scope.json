@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-11T11:02:33.877Z",
+  "generatedAt": "2026-05-11T21:26:05.623Z",
   "sourceCsv": "C:\\Users\\bradv\\OneDrive\\Attachments\\Documents\\ebay pricing .csv",
   "usageBoundary": "Current eBay listing scope only. Do not generate listings, image searches, mockups, prompt-chain pages, or marketplace drafts for parts outside this file unless the operator replaces the scope.",
   "activePartCount": 41,
@@ -7,240 +7,818 @@
     {
       "partNumber": "WE49X22294",
       "diagramId": "4",
-      "description": "End Cap Rh Wh Lh Wh",
+      "description": "End Cap Rh W",
       "supersedes": "WE19M1477",
-      "price": 25.73
+      "price": 69.63,
+      "diagId": "4",
+      "partTitle": "End Cap Rh W",
+      "title": "GE WE49X22294 End Cap Rh W Used Dryer Part",
+      "ebayBuyNow": "$69.63",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE49X22294",
+        "type": "End Cap Rh W",
+        "condition": "Used",
+        "diagramId": "4",
+        "supersedes": "WE19M1477",
+        "ebayBuyNow": "$69.63"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE19M1713",
       "diagramId": "13",
-      "description": "Backsplash Graphics Asm",
+      "description": "Backsplash Graphic Assembly",
       "supersedes": "",
-      "price": 69.32
+      "price": 160.02,
+      "diagId": "13",
+      "partTitle": "Backsplash Graphic Assembly",
+      "title": "GE WE19M1713 Backsplash Graphic Assembly Used Dryer Part",
+      "ebayBuyNow": "$160.02",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE19M1713",
+        "type": "Backsplash Graphic Assembly",
+        "condition": "Used",
+        "diagramId": "13",
+        "supersedes": "",
+        "ebayBuyNow": "$160.02"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE4M416",
       "diagramId": "35",
-      "description": "Switch Pts",
+      "description": "Dryer Push-to-start Switch",
       "supersedes": "",
-      "price": 12.88
+      "price": 30.95,
+      "diagId": "35",
+      "partTitle": "Dryer Push-to-start Switch",
+      "title": "GE WE4M416 Dryer Push-to-start Switch Used Dryer Part",
+      "ebayBuyNow": "$30.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M416",
+        "type": "Dryer Push-to-start Switch",
+        "condition": "Used",
+        "diagramId": "35",
+        "supersedes": "",
+        "ebayBuyNow": "$30.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE19M1481",
       "diagramId": "72",
-      "description": "Panel Back",
+      "description": "Dryer Control Panel Cover, Rear",
       "supersedes": "",
-      "price": 31.37
+      "price": 62.95,
+      "diagId": "72",
+      "partTitle": "Dryer Control Panel Cover, Rear",
+      "title": "GE WE19M1481 Dryer Control Panel Cover, Rear Used Dryer Part",
+      "ebayBuyNow": "$62.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE19M1481",
+        "type": "Dryer Control Panel Cover, Rear",
+        "condition": "Used",
+        "diagramId": "72",
+        "supersedes": "",
+        "ebayBuyNow": "$62.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE4M255",
       "diagramId": "80",
-      "description": "Resistor",
+      "description": "Kenmore Dryer Timer Resistor",
       "supersedes": "",
-      "price": 13.6
+      "price": 39.95,
+      "diagId": "80",
+      "partTitle": "Kenmore Dryer Timer Resistor",
+      "title": "GE WE4M255 Kenmore Dryer Timer Resistor Used Dryer Part",
+      "ebayBuyNow": "$39.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M255",
+        "type": "Kenmore Dryer Timer Resistor",
+        "condition": "Used",
+        "diagramId": "80",
+        "supersedes": "",
+        "ebayBuyNow": "$39.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE4M404",
       "diagramId": "87",
-      "description": "Rotary Switch 3temp Elec",
+      "description": "Dryer Temperature Switch",
       "supersedes": "",
-      "price": 16.39
+      "price": 45.95,
+      "diagId": "87",
+      "partTitle": "Dryer Temperature Switch",
+      "title": "GE WE4M404 Dryer Temperature Switch Used Dryer Part",
+      "ebayBuyNow": "$45.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M404",
+        "type": "Dryer Temperature Switch",
+        "condition": "Used",
+        "diagramId": "87",
+        "supersedes": "",
+        "ebayBuyNow": "$45.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE4M532",
       "diagramId": "100",
-      "description": "Timer",
+      "description": "Dryer Timer",
       "supersedes": "",
-      "price": 48.38
+      "price": 96.95,
+      "diagId": "100",
+      "partTitle": "Dryer Timer",
+      "title": "GE WE4M532 Dryer Timer Used Dryer Part",
+      "ebayBuyNow": "$96.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M532",
+        "type": "Dryer Timer",
+        "condition": "Used",
+        "diagramId": "100",
+        "supersedes": "",
+        "ebayBuyNow": "$96.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE16X20393",
       "diagramId": "201",
-      "description": "Blower Wheel",
+      "description": "Laundry Center Dryer Blower Wheel",
       "supersedes": "",
-      "price": 21.51
+      "price": 53.95,
+      "diagId": "201",
+      "partTitle": "Laundry Center Dryer Blower Wheel",
+      "title": "GE WE16X20393 Laundry Center Dryer Blower Wheel Used Dryer Part",
+      "ebayBuyNow": "$53.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE16X20393",
+        "type": "Laundry Center Dryer Blower Wheel",
+        "condition": "Used",
+        "diagramId": "201",
+        "supersedes": "",
+        "ebayBuyNow": "$53.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE1X921",
       "diagramId": "204",
-      "description": "Strap Motor",
+      "description": "Motor Strap",
       "supersedes": "",
-      "price": 19.7
+      "price": 48.95,
+      "diagId": "204",
+      "partTitle": "Motor Strap",
+      "title": "GE WE1X921 Motor Strap Used Dryer Part",
+      "ebayBuyNow": "$48.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE1X921",
+        "type": "Motor Strap",
+        "condition": "Used",
+        "diagramId": "204",
+        "supersedes": "",
+        "ebayBuyNow": "$48.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE13M39",
       "diagramId": "205",
       "description": "Motor Support",
       "supersedes": "",
-      "price": 20.12
+      "price": 50.95,
+      "diagId": "205",
+      "partTitle": "Motor Support",
+      "title": "GE WE13M39 Motor Support Used Dryer Part",
+      "ebayBuyNow": "$50.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE13M39",
+        "type": "Motor Support",
+        "condition": "Used",
+        "diagramId": "205",
+        "supersedes": "",
+        "ebayBuyNow": "$50.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE03X20434",
       "diagramId": "215",
-      "description": "Idler Arm",
+      "description": "Dryer Idler Arm",
       "supersedes": "",
-      "price": 47.69
+      "price": 78,
+      "diagId": "215",
+      "partTitle": "Dryer Idler Arm",
+      "title": "GE WE03X20434 Dryer Idler Arm Used Dryer Part",
+      "ebayBuyNow": "$78.00",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE03X20434",
+        "type": "Dryer Idler Arm",
+        "condition": "Used",
+        "diagramId": "215",
+        "supersedes": "",
+        "ebayBuyNow": "$78.00"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE03X31620",
       "diagramId": "216",
       "description": "Idler Pulley",
       "supersedes": "WE12X20395",
-      "price": 13.49
+      "price": 22.3,
+      "diagId": "216",
+      "partTitle": "Idler Pulley",
+      "title": "GE WE03X31620 Idler Pulley Used Dryer Part",
+      "ebayBuyNow": "$22.30",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE03X31620",
+        "type": "Idler Pulley",
+        "condition": "Used",
+        "diagramId": "216",
+        "supersedes": "WE12X20395",
+        "ebayBuyNow": "$22.30"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE14X20392",
       "diagramId": "219",
-      "description": "Blower Housing Asm",
+      "description": "Dryer Blower Housing",
       "supersedes": "",
-      "price": 29.23
+      "price": 64.95,
+      "diagId": "219",
+      "partTitle": "Dryer Blower Housing",
+      "title": "GE WE14X20392 Dryer Blower Housing Used Dryer Part",
+      "ebayBuyNow": "$64.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE14X20392",
+        "type": "Dryer Blower Housing",
+        "condition": "Used",
+        "diagramId": "219",
+        "supersedes": "",
+        "ebayBuyNow": "$64.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE20X20412",
       "diagramId": "222",
       "description": "Bottom Cover",
       "supersedes": "",
-      "price": 36.43
+      "price": 80.95,
+      "diagId": "222",
+      "partTitle": "Bottom Cover",
+      "title": "GE WE20X20412 Bottom Cover Used Dryer Part",
+      "ebayBuyNow": "$80.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE20X20412",
+        "type": "Bottom Cover",
+        "condition": "Used",
+        "diagramId": "222",
+        "supersedes": "",
+        "ebayBuyNow": "$80.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE4M127",
       "diagramId": "230",
-      "description": "Thermostat Drum Out",
+      "description": "Dryer Operating Thermostat",
       "supersedes": "",
-      "price": 11.17
+      "price": 29.95,
+      "diagId": "230",
+      "partTitle": "Dryer Operating Thermostat",
+      "title": "GE WE4M127 Dryer Operating Thermostat Used Dryer Part",
+      "ebayBuyNow": "$29.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M127",
+        "type": "Dryer Operating Thermostat",
+        "condition": "Used",
+        "diagramId": "230",
+        "supersedes": "",
+        "ebayBuyNow": "$29.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE13X20394",
       "diagramId": "233",
       "description": "Motor Plate",
       "supersedes": "",
-      "price": 8.98
+      "price": 19.95,
+      "diagId": "233",
+      "partTitle": "Motor Plate",
+      "title": "GE WE13X20394 Motor Plate Used Dryer Part",
+      "ebayBuyNow": "$19.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE13X20394",
+        "type": "Motor Plate",
+        "condition": "Used",
+        "diagramId": "233",
+        "supersedes": "",
+        "ebayBuyNow": "$19.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE49X22295",
       "diagramId": "305",
-      "description": "Inner Door Asm White",
+      "description": "Front Panel Assembly",
       "supersedes": "WE10X20418",
-      "price": 72.84
+      "price": 168.15,
+      "diagId": "305",
+      "partTitle": "Front Panel Assembly",
+      "title": "GE WE49X22295 Front Panel Assembly Used Dryer Part",
+      "ebayBuyNow": "$168.15",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE49X22295",
+        "type": "Front Panel Assembly",
+        "condition": "Used",
+        "diagramId": "305",
+        "supersedes": "WE10X20418",
+        "ebayBuyNow": "$168.15"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
+      }
     },
     {
       "partNumber": "WE10X20468",
       "diagramId": "307",
-      "description": "Outer Door Wh",
+      "description": "Dryer Door Outer Panel (white)",
       "supersedes": "",
-      "price": 26.98
+      "price": 59.95,
+      "diagId": "307",
+      "partTitle": "Dryer Door Outer Panel (white)",
+      "title": "GE WE10X20468 Dryer Door Outer Panel (white) Used Dryer Part",
+      "ebayBuyNow": "$59.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE10X20468",
+        "type": "Dryer Door Outer Panel (white)",
+        "condition": "Used",
+        "diagramId": "307",
+        "supersedes": "",
+        "ebayBuyNow": "$59.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
+      }
     },
     {
       "partNumber": "WE3M56",
       "diagramId": "313",
-      "description": "Top Bearing",
+      "description": "Bearing",
       "supersedes": "WE03X20228",
-      "price": 18.4
+      "price": 37.95,
+      "diagId": "313",
+      "partTitle": "Bearing",
+      "title": "GE WE3M56 Bearing Used Dryer Part",
+      "ebayBuyNow": "$37.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE3M56",
+        "type": "Bearing",
+        "condition": "Used",
+        "diagramId": "313",
+        "supersedes": "WE03X20228",
+        "ebayBuyNow": "$37.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
+      }
     },
     {
       "partNumber": "WE4M415",
       "diagramId": "380",
-      "description": "Door Switch",
+      "description": "Dryer Door Switch",
       "supersedes": "",
-      "price": 12.53
+      "price": 36.95,
+      "diagId": "380",
+      "partTitle": "Dryer Door Switch",
+      "title": "GE WE4M415 Dryer Door Switch Used Dryer Part",
+      "ebayBuyNow": "$36.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M415",
+        "type": "Dryer Door Switch",
+        "condition": "Used",
+        "diagramId": "380",
+        "supersedes": "",
+        "ebayBuyNow": "$36.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
+      }
     },
     {
       "partNumber": "WE20X20417",
       "diagramId": "401",
-      "description": "Cover White",
+      "description": "Dryer Top Panel",
       "supersedes": "",
-      "price": 34.43
+      "price": 75.95,
+      "diagId": "401",
+      "partTitle": "Dryer Top Panel",
+      "title": "GE WE20X20417 Dryer Top Panel Used Dryer Part",
+      "ebayBuyNow": "$75.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE20X20417",
+        "type": "Dryer Top Panel",
+        "condition": "Used",
+        "diagramId": "401",
+        "supersedes": "",
+        "ebayBuyNow": "$75.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE20X20406",
       "diagramId": "404",
-      "description": "Side Panel White",
+      "description": "Dryer Side Panel (white)",
       "supersedes": "",
-      "price": 22.93
+      "price": 50.95,
+      "diagId": "404",
+      "partTitle": "Dryer Side Panel (white)",
+      "title": "GE WE20X20406 Dryer Side Panel (white) Used Dryer Part",
+      "ebayBuyNow": "$50.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE20X20406",
+        "type": "Dryer Side Panel (white)",
+        "condition": "Used",
+        "diagramId": "404",
+        "supersedes": "",
+        "ebayBuyNow": "$50.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE20X20391",
       "diagramId": "408",
       "description": "Chassis Base",
       "supersedes": "",
-      "price": 32.83
+      "price": 72.95,
+      "diagId": "408",
+      "partTitle": "Chassis Base",
+      "title": "GE WE20X20391 Chassis Base Used Dryer Part",
+      "ebayBuyNow": "$72.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE20X20391",
+        "type": "Chassis Base",
+        "condition": "Used",
+        "diagramId": "408",
+        "supersedes": "",
+        "ebayBuyNow": "$72.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE1M1003",
       "diagramId": "417",
-      "description": "Holder Fuse",
+      "description": "Dryer Fuse Holder",
       "supersedes": "",
-      "price": 16.18
+      "price": 44.95,
+      "diagId": "417",
+      "partTitle": "Dryer Fuse Holder",
+      "title": "GE WE1M1003 Dryer Fuse Holder Used Dryer Part",
+      "ebayBuyNow": "$44.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE1M1003",
+        "type": "Dryer Fuse Holder",
+        "condition": "Used",
+        "diagramId": "417",
+        "supersedes": "",
+        "ebayBuyNow": "$44.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE1M1002",
       "diagramId": "418",
-      "description": "Fuse Ccmr  30 Amp 120v",
+      "description": "Fuse Cemr 30 Amp 120V",
       "supersedes": "",
-      "price": 20.35
+      "price": 50.95,
+      "diagId": "418",
+      "partTitle": "Fuse Cemr 30 Amp 120V",
+      "title": "GE WE1M1002 Fuse Cemr 30 Amp 120V Used Dryer Part",
+      "ebayBuyNow": "$50.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE1M1002",
+        "type": "Fuse Cemr 30 Amp 120V",
+        "condition": "Used",
+        "diagramId": "418",
+        "supersedes": "",
+        "ebayBuyNow": "$50.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE4M525",
       "diagramId": "419",
-      "description": "Term Blk & Grnd Strap",
+      "description": "4 Term Blk & Grnd Strap",
       "supersedes": "",
-      "price": 8.5
+      "price": 29.95,
+      "diagId": "419",
+      "partTitle": "4 Term Blk & Grnd Strap",
+      "title": "GE WE4M525 4 Term Blk & Grnd Strap Used Dryer Part",
+      "ebayBuyNow": "$29.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M525",
+        "type": "4 Term Blk & Grnd Strap",
+        "condition": "Used",
+        "diagramId": "419",
+        "supersedes": "",
+        "ebayBuyNow": "$29.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE20X20396",
       "diagramId": "420",
       "description": "Rear Panel",
       "supersedes": "",
-      "price": 34.18
+      "price": 75.95,
+      "diagId": "420",
+      "partTitle": "Rear Panel",
+      "title": "GE WE20X20396 Rear Panel Used Dryer Part",
+      "ebayBuyNow": "$75.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE20X20396",
+        "type": "Rear Panel",
+        "condition": "Used",
+        "diagramId": "420",
+        "supersedes": "",
+        "ebayBuyNow": "$75.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE1M1007",
       "diagramId": "430",
       "description": "Cover Fuse Terminal",
       "supersedes": "",
-      "price": 13.02
+      "price": 37.95,
+      "diagId": "430",
+      "partTitle": "Cover Fuse Terminal",
+      "title": "GE WE1M1007 Cover Fuse Terminal Used Dryer Part",
+      "ebayBuyNow": "$37.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE1M1007",
+        "type": "Cover Fuse Terminal",
+        "condition": "Used",
+        "diagramId": "430",
+        "supersedes": "",
+        "ebayBuyNow": "$37.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
+      }
     },
     {
       "partNumber": "WE21X20562",
       "diagramId": "503",
-      "description": "Drum Asm 6.0 Cu.ft Wh",
+      "description": "Drum Assembly",
       "supersedes": "WE21X20407",
-      "price": 204.57
+      "price": 406.87,
+      "diagId": "503",
+      "partTitle": "Drum Assembly",
+      "title": "GE WE21X20562 Drum Assembly Used Dryer Part",
+      "ebayBuyNow": "$406.87",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE21X20562",
+        "type": "Drum Assembly",
+        "condition": "Used",
+        "diagramId": "503",
+        "supersedes": "WE21X20407",
+        "ebayBuyNow": "$406.87"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
+      }
     },
     {
       "partNumber": "WE11X29438",
       "diagramId": "504",
-      "description": "Diffuser",
+      "description": "Dryer Drum Rear Cover",
       "supersedes": "WE14X20408",
-      "price": 16.56
+      "price": 39.43,
+      "diagId": "504",
+      "partTitle": "Dryer Drum Rear Cover",
+      "title": "GE WE11X29438 Dryer Drum Rear Cover Used Dryer Part",
+      "ebayBuyNow": "$39.43",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE11X29438",
+        "type": "Dryer Drum Rear Cover",
+        "condition": "Used",
+        "diagramId": "504",
+        "supersedes": "WE14X20408",
+        "ebayBuyNow": "$39.43"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
+      }
     },
     {
       "partNumber": "WE4M160",
       "diagramId": "505",
-      "description": "Thermostat Safety Left",
+      "description": "Dryer Safety Thermostat",
       "supersedes": "",
-      "price": 59.4
+      "price": 119.95,
+      "diagId": "505",
+      "partTitle": "Dryer Safety Thermostat",
+      "title": "GE WE4M160 Dryer Safety Thermostat Used Dryer Part",
+      "ebayBuyNow": "$119.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M160",
+        "type": "Dryer Safety Thermostat",
+        "condition": "Used",
+        "diagramId": "505",
+        "supersedes": "",
+        "ebayBuyNow": "$119.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
+      }
     },
     {
       "partNumber": "WE4M181",
       "diagramId": "506",
-      "description": "Thermostat Bias Ctr Inlt",
+      "description": "Dryer Operating Thermostat",
       "supersedes": "",
-      "price": 29.59
+      "price": 58.95,
+      "diagId": "506",
+      "partTitle": "Dryer Operating Thermostat",
+      "title": "GE WE4M181 Dryer Operating Thermostat Used Dryer Part",
+      "ebayBuyNow": "$58.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M181",
+        "type": "Dryer Operating Thermostat",
+        "condition": "Used",
+        "diagramId": "506",
+        "supersedes": "",
+        "ebayBuyNow": "$58.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
+      }
     },
     {
       "partNumber": "WE4M137",
       "diagramId": "507",
-      "description": "Thermostat Hi-limit",
+      "description": "Dryer High-limit Thermostat",
       "supersedes": "",
-      "price": 40.7
+      "price": 74.95,
+      "diagId": "507",
+      "partTitle": "Dryer High-limit Thermostat",
+      "title": "GE WE4M137 Dryer High-limit Thermostat Used Dryer Part",
+      "ebayBuyNow": "$74.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE4M137",
+        "type": "Dryer High-limit Thermostat",
+        "condition": "Used",
+        "diagramId": "507",
+        "supersedes": "",
+        "ebayBuyNow": "$74.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
+      }
     },
     {
       "partNumber": "WE11X20397",
       "diagramId": "512",
-      "description": "Mica Heater & Housing As",
+      "description": "Dryer Heating Element",
       "supersedes": "",
-      "price": 64.08
+      "price": 146.95,
+      "diagId": "512",
+      "partTitle": "Dryer Heating Element",
+      "title": "GE WE11X20397 Dryer Heating Element Used Dryer Part",
+      "ebayBuyNow": "$146.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE11X20397",
+        "type": "Dryer Heating Element",
+        "condition": "Used",
+        "diagramId": "512",
+        "supersedes": "",
+        "ebayBuyNow": "$146.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
+      }
     },
     {
       "partNumber": "WE11M10002",
@@ -252,225 +830,363 @@
     {
       "partNumber": "WE11M10001",
       "diagramId": "514",
-      "description": "Mica Heater",
+      "description": "Dryer Heating Element",
       "supersedes": "",
-      "price": 64.18
+      "price": 146.95,
+      "diagId": "514",
+      "partTitle": "Dryer Heating Element",
+      "title": "GE WE11M10001 Dryer Heating Element Used Dryer Part",
+      "ebayBuyNow": "$146.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE11M10001",
+        "type": "Dryer Heating Element",
+        "condition": "Used",
+        "diagramId": "514",
+        "supersedes": "",
+        "ebayBuyNow": "$146.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
+      }
     },
     {
       "partNumber": "WE01X20419",
       "diagramId": "603",
-      "description": "Handle White",
+      "description": "Dryer Door Handle (white)",
       "supersedes": "",
-      "price": 9.41
+      "price": 32.95,
+      "diagId": "603",
+      "partTitle": "Dryer Door Handle (white)",
+      "title": "GE WE01X20419 Dryer Door Handle (white) Used Dryer Part",
+      "ebayBuyNow": "$32.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE01X20419",
+        "type": "Dryer Door Handle (white)",
+        "condition": "Used",
+        "diagramId": "603",
+        "supersedes": "",
+        "ebayBuyNow": "$32.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
+      }
     },
     {
       "partNumber": "WE17X22217",
       "diagramId": "630",
-      "description": "Motor",
+      "description": "Dryer Drive Motor with Pulley",
       "supersedes": "WE17M66",
-      "price": 72.44
+      "price": 160.88,
+      "diagId": "630",
+      "partTitle": "Dryer Drive Motor with Pulley",
+      "title": "GE WE17X22217 Dryer Drive Motor with Pulley Used Dryer Part",
+      "ebayBuyNow": "$160.88",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE17X22217",
+        "type": "Dryer Drive Motor with Pulley",
+        "condition": "Used",
+        "diagramId": "630",
+        "supersedes": "WE17M66",
+        "ebayBuyNow": "$160.88"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE1M650",
       "diagramId": "631",
-      "description": "Connector Motor",
+      "description": "Dryer Motor Wire Harness Connector",
       "supersedes": "",
-      "price": 9.88
+      "price": 21.95,
+      "diagId": "631",
+      "partTitle": "Dryer Motor Wire Harness Connector",
+      "title": "GE WE1M650 Dryer Motor Wire Harness Connector Used Dryer Part",
+      "ebayBuyNow": "$21.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE1M650",
+        "type": "Dryer Motor Wire Harness Connector",
+        "condition": "Used",
+        "diagramId": "631",
+        "supersedes": "",
+        "ebayBuyNow": "$21.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WD21X10261",
       "diagramId": "803",
-      "description": "Switch Interlock",
+      "description": "Interlock Switch",
       "supersedes": "WD21X557",
-      "price": 10.07
+      "price": 26.95,
+      "diagId": "803",
+      "partTitle": "Interlock Switch",
+      "title": "GE WD21X10261 Interlock Switch Used Dryer Part",
+      "ebayBuyNow": "$26.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WD21X10261",
+        "type": "Interlock Switch",
+        "condition": "Used",
+        "diagramId": "803",
+        "supersedes": "WD21X557",
+        "ebayBuyNow": "$26.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
+      }
     },
     {
       "partNumber": "WE1M300",
       "diagramId": "3102",
-      "description": "Bearing Retainer",
+      "description": "Dryer Drum Bearing Bracket",
       "supersedes": "",
-      "price": 18.52
+      "price": 46.95,
+      "diagId": "3102",
+      "partTitle": "Dryer Drum Bearing Bracket",
+      "title": "GE WE1M300 Dryer Drum Bearing Bracket Used Dryer Part",
+      "ebayBuyNow": "$46.95",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE1M300",
+        "type": "Dryer Drum Bearing Bracket",
+        "condition": "Used",
+        "diagramId": "3102",
+        "supersedes": "",
+        "ebayBuyNow": "$46.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
+      }
     }
   ],
   "listings": [
     {
       "partNumber": "WE49X22294",
       "diagramId": "4",
-      "description": "End Cap Rh Wh Lh Wh",
+      "description": "End Cap Rh W",
       "supersedes": "WE19M1477",
-      "price": 25.73,
+      "price": 69.63,
       "diagId": "4",
-      "partTitle": "End Cap Rh Wh Lh Wh",
-      "title": "GE WE49X22294 End Cap Rh Wh Lh Wh Used Dryer Part",
-      "ebayBuyNow": "$25.73",
+      "partTitle": "End Cap Rh W",
+      "title": "GE WE49X22294 End Cap Rh W Used Dryer Part",
+      "ebayBuyNow": "$69.63",
       "specs": {
         "brand": "GE",
         "mpn": "WE49X22294",
-        "type": "End Cap Rh Wh Lh Wh",
+        "type": "End Cap Rh W",
         "condition": "Used",
         "diagramId": "4",
         "supersedes": "WE19M1477",
-        "ebayBuyNow": "$25.73"
+        "ebayBuyNow": "$69.63"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE19M1713",
       "diagramId": "13",
-      "description": "Backsplash Graphics Asm",
+      "description": "Backsplash Graphic Assembly",
       "supersedes": "",
-      "price": 69.32,
+      "price": 160.02,
       "diagId": "13",
-      "partTitle": "Backsplash Graphics Asm",
-      "title": "GE WE19M1713 Backsplash Graphics Asm Used Dryer Part",
-      "ebayBuyNow": "$69.32",
+      "partTitle": "Backsplash Graphic Assembly",
+      "title": "GE WE19M1713 Backsplash Graphic Assembly Used Dryer Part",
+      "ebayBuyNow": "$160.02",
       "specs": {
         "brand": "GE",
         "mpn": "WE19M1713",
-        "type": "Backsplash Graphics Asm",
+        "type": "Backsplash Graphic Assembly",
         "condition": "Used",
         "diagramId": "13",
         "supersedes": "",
-        "ebayBuyNow": "$69.32"
+        "ebayBuyNow": "$160.02"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE4M416",
       "diagramId": "35",
-      "description": "Switch Pts",
+      "description": "Dryer Push-to-start Switch",
       "supersedes": "",
-      "price": 12.88,
+      "price": 30.95,
       "diagId": "35",
-      "partTitle": "Switch Pts",
-      "title": "GE WE4M416 Switch Pts Used Dryer Part",
-      "ebayBuyNow": "$12.88",
+      "partTitle": "Dryer Push-to-start Switch",
+      "title": "GE WE4M416 Dryer Push-to-start Switch Used Dryer Part",
+      "ebayBuyNow": "$30.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M416",
-        "type": "Switch Pts",
+        "type": "Dryer Push-to-start Switch",
         "condition": "Used",
         "diagramId": "35",
         "supersedes": "",
-        "ebayBuyNow": "$12.88"
+        "ebayBuyNow": "$30.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE19M1481",
       "diagramId": "72",
-      "description": "Panel Back",
+      "description": "Dryer Control Panel Cover, Rear",
       "supersedes": "",
-      "price": 31.37,
+      "price": 62.95,
       "diagId": "72",
-      "partTitle": "Panel Back",
-      "title": "GE WE19M1481 Panel Back Used Dryer Part",
-      "ebayBuyNow": "$31.37",
+      "partTitle": "Dryer Control Panel Cover, Rear",
+      "title": "GE WE19M1481 Dryer Control Panel Cover, Rear Used Dryer Part",
+      "ebayBuyNow": "$62.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE19M1481",
-        "type": "Panel Back",
+        "type": "Dryer Control Panel Cover, Rear",
         "condition": "Used",
         "diagramId": "72",
         "supersedes": "",
-        "ebayBuyNow": "$31.37"
+        "ebayBuyNow": "$62.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE4M255",
       "diagramId": "80",
-      "description": "Resistor",
+      "description": "Kenmore Dryer Timer Resistor",
       "supersedes": "",
-      "price": 13.6,
+      "price": 39.95,
       "diagId": "80",
-      "partTitle": "Resistor",
-      "title": "GE WE4M255 Resistor Used Dryer Part",
-      "ebayBuyNow": "$13.60",
+      "partTitle": "Kenmore Dryer Timer Resistor",
+      "title": "GE WE4M255 Kenmore Dryer Timer Resistor Used Dryer Part",
+      "ebayBuyNow": "$39.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M255",
-        "type": "Resistor",
+        "type": "Kenmore Dryer Timer Resistor",
         "condition": "Used",
         "diagramId": "80",
         "supersedes": "",
-        "ebayBuyNow": "$13.60"
+        "ebayBuyNow": "$39.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
       "partNumber": "WE4M404",
       "diagramId": "87",
-      "description": "Rotary Switch 3temp Elec",
+      "description": "Dryer Temperature Switch",
       "supersedes": "",
-      "price": 16.39,
+      "price": 45.95,
       "diagId": "87",
-      "partTitle": "Rotary Switch 3temp Elec",
-      "title": "GE WE4M404 Rotary Switch 3temp Elec Used Dryer Part",
-      "ebayBuyNow": "$16.39",
+      "partTitle": "Dryer Temperature Switch",
+      "title": "GE WE4M404 Dryer Temperature Switch Used Dryer Part",
+      "ebayBuyNow": "$45.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M404",
-        "type": "Rotary Switch 3temp Elec",
+        "type": "Dryer Temperature Switch",
         "condition": "Used",
         "diagramId": "87",
         "supersedes": "",
-        "ebayBuyNow": "$16.39"
+        "ebayBuyNow": "$45.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE4M532",
       "diagramId": "100",
-      "description": "Timer",
+      "description": "Dryer Timer",
       "supersedes": "",
-      "price": 48.38,
+      "price": 96.95,
       "diagId": "100",
-      "partTitle": "Timer",
-      "title": "GE WE4M532 Timer Used Dryer Part",
-      "ebayBuyNow": "$48.38",
+      "partTitle": "Dryer Timer",
+      "title": "GE WE4M532 Dryer Timer Used Dryer Part",
+      "ebayBuyNow": "$96.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M532",
-        "type": "Timer",
+        "type": "Dryer Timer",
         "condition": "Used",
         "diagramId": "100",
         "supersedes": "",
-        "ebayBuyNow": "$48.38"
+        "ebayBuyNow": "$96.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE16X20393",
       "diagramId": "201",
-      "description": "Blower Wheel",
+      "description": "Laundry Center Dryer Blower Wheel",
       "supersedes": "",
-      "price": 21.51,
+      "price": 53.95,
       "diagId": "201",
-      "partTitle": "Blower Wheel",
-      "title": "GE WE16X20393 Blower Wheel Used Dryer Part",
-      "ebayBuyNow": "$21.51",
+      "partTitle": "Laundry Center Dryer Blower Wheel",
+      "title": "GE WE16X20393 Laundry Center Dryer Blower Wheel Used Dryer Part",
+      "ebayBuyNow": "$53.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE16X20393",
-        "type": "Blower Wheel",
+        "type": "Laundry Center Dryer Blower Wheel",
         "condition": "Used",
         "diagramId": "201",
         "supersedes": "",
-        "ebayBuyNow": "$21.51"
+        "ebayBuyNow": "$53.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE1X921",
       "diagramId": "204",
-      "description": "Strap Motor",
+      "description": "Motor Strap",
       "supersedes": "",
-      "price": 19.7,
+      "price": 48.95,
       "diagId": "204",
-      "partTitle": "Strap Motor",
-      "title": "GE WE1X921 Strap Motor Used Dryer Part",
-      "ebayBuyNow": "$19.70",
+      "partTitle": "Motor Strap",
+      "title": "GE WE1X921 Motor Strap Used Dryer Part",
+      "ebayBuyNow": "$48.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE1X921",
-        "type": "Strap Motor",
+        "type": "Motor Strap",
         "condition": "Used",
         "diagramId": "204",
         "supersedes": "",
-        "ebayBuyNow": "$19.70"
+        "ebayBuyNow": "$48.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
@@ -478,11 +1194,11 @@
       "diagramId": "205",
       "description": "Motor Support",
       "supersedes": "",
-      "price": 20.12,
+      "price": 50.95,
       "diagId": "205",
       "partTitle": "Motor Support",
       "title": "GE WE13M39 Motor Support Used Dryer Part",
-      "ebayBuyNow": "$20.12",
+      "ebayBuyNow": "$50.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE13M39",
@@ -490,27 +1206,35 @@
         "condition": "Used",
         "diagramId": "205",
         "supersedes": "",
-        "ebayBuyNow": "$20.12"
+        "ebayBuyNow": "$50.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE03X20434",
       "diagramId": "215",
-      "description": "Idler Arm",
+      "description": "Dryer Idler Arm",
       "supersedes": "",
-      "price": 47.69,
+      "price": 78,
       "diagId": "215",
-      "partTitle": "Idler Arm",
-      "title": "GE WE03X20434 Idler Arm Used Dryer Part",
-      "ebayBuyNow": "$47.69",
+      "partTitle": "Dryer Idler Arm",
+      "title": "GE WE03X20434 Dryer Idler Arm Used Dryer Part",
+      "ebayBuyNow": "$78.00",
       "specs": {
         "brand": "GE",
         "mpn": "WE03X20434",
-        "type": "Idler Arm",
+        "type": "Dryer Idler Arm",
         "condition": "Used",
         "diagramId": "215",
         "supersedes": "",
-        "ebayBuyNow": "$47.69"
+        "ebayBuyNow": "$78.00"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
@@ -518,11 +1242,11 @@
       "diagramId": "216",
       "description": "Idler Pulley",
       "supersedes": "WE12X20395",
-      "price": 13.49,
+      "price": 22.3,
       "diagId": "216",
       "partTitle": "Idler Pulley",
       "title": "GE WE03X31620 Idler Pulley Used Dryer Part",
-      "ebayBuyNow": "$13.49",
+      "ebayBuyNow": "$22.30",
       "specs": {
         "brand": "GE",
         "mpn": "WE03X31620",
@@ -530,27 +1254,35 @@
         "condition": "Used",
         "diagramId": "216",
         "supersedes": "WE12X20395",
-        "ebayBuyNow": "$13.49"
+        "ebayBuyNow": "$22.30"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE14X20392",
       "diagramId": "219",
-      "description": "Blower Housing Asm",
+      "description": "Dryer Blower Housing",
       "supersedes": "",
-      "price": 29.23,
+      "price": 64.95,
       "diagId": "219",
-      "partTitle": "Blower Housing Asm",
-      "title": "GE WE14X20392 Blower Housing Asm Used Dryer Part",
-      "ebayBuyNow": "$29.23",
+      "partTitle": "Dryer Blower Housing",
+      "title": "GE WE14X20392 Dryer Blower Housing Used Dryer Part",
+      "ebayBuyNow": "$64.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE14X20392",
-        "type": "Blower Housing Asm",
+        "type": "Dryer Blower Housing",
         "condition": "Used",
         "diagramId": "219",
         "supersedes": "",
-        "ebayBuyNow": "$29.23"
+        "ebayBuyNow": "$64.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
@@ -558,11 +1290,11 @@
       "diagramId": "222",
       "description": "Bottom Cover",
       "supersedes": "",
-      "price": 36.43,
+      "price": 80.95,
       "diagId": "222",
       "partTitle": "Bottom Cover",
       "title": "GE WE20X20412 Bottom Cover Used Dryer Part",
-      "ebayBuyNow": "$36.43",
+      "ebayBuyNow": "$80.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE20X20412",
@@ -570,27 +1302,35 @@
         "condition": "Used",
         "diagramId": "222",
         "supersedes": "",
-        "ebayBuyNow": "$36.43"
+        "ebayBuyNow": "$80.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
       "partNumber": "WE4M127",
       "diagramId": "230",
-      "description": "Thermostat Drum Out",
+      "description": "Dryer Operating Thermostat",
       "supersedes": "",
-      "price": 11.17,
+      "price": 29.95,
       "diagId": "230",
-      "partTitle": "Thermostat Drum Out",
-      "title": "GE WE4M127 Thermostat Drum Out Used Dryer Part",
-      "ebayBuyNow": "$11.17",
+      "partTitle": "Dryer Operating Thermostat",
+      "title": "GE WE4M127 Dryer Operating Thermostat Used Dryer Part",
+      "ebayBuyNow": "$29.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M127",
-        "type": "Thermostat Drum Out",
+        "type": "Dryer Operating Thermostat",
         "condition": "Used",
         "diagramId": "230",
         "supersedes": "",
-        "ebayBuyNow": "$11.17"
+        "ebayBuyNow": "$29.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
@@ -598,11 +1338,11 @@
       "diagramId": "233",
       "description": "Motor Plate",
       "supersedes": "",
-      "price": 8.98,
+      "price": 19.95,
       "diagId": "233",
       "partTitle": "Motor Plate",
       "title": "GE WE13X20394 Motor Plate Used Dryer Part",
-      "ebayBuyNow": "$8.98",
+      "ebayBuyNow": "$19.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE13X20394",
@@ -610,127 +1350,155 @@
         "condition": "Used",
         "diagramId": "233",
         "supersedes": "",
-        "ebayBuyNow": "$8.98"
+        "ebayBuyNow": "$19.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE49X22295",
       "diagramId": "305",
-      "description": "Inner Door Asm White",
+      "description": "Front Panel Assembly",
       "supersedes": "WE10X20418",
-      "price": 72.84,
+      "price": 168.15,
       "diagId": "305",
-      "partTitle": "Inner Door Asm White",
-      "title": "GE WE49X22295 Inner Door Asm White Used Dryer Part",
-      "ebayBuyNow": "$72.84",
+      "partTitle": "Front Panel Assembly",
+      "title": "GE WE49X22295 Front Panel Assembly Used Dryer Part",
+      "ebayBuyNow": "$168.15",
       "specs": {
         "brand": "GE",
         "mpn": "WE49X22295",
-        "type": "Inner Door Asm White",
+        "type": "Front Panel Assembly",
         "condition": "Used",
         "diagramId": "305",
         "supersedes": "WE10X20418",
-        "ebayBuyNow": "$72.84"
+        "ebayBuyNow": "$168.15"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
       }
     },
     {
       "partNumber": "WE10X20468",
       "diagramId": "307",
-      "description": "Outer Door Wh",
+      "description": "Dryer Door Outer Panel (white)",
       "supersedes": "",
-      "price": 26.98,
+      "price": 59.95,
       "diagId": "307",
-      "partTitle": "Outer Door Wh",
-      "title": "GE WE10X20468 Outer Door Wh Used Dryer Part",
-      "ebayBuyNow": "$26.98",
+      "partTitle": "Dryer Door Outer Panel (white)",
+      "title": "GE WE10X20468 Dryer Door Outer Panel (white) Used Dryer Part",
+      "ebayBuyNow": "$59.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE10X20468",
-        "type": "Outer Door Wh",
+        "type": "Dryer Door Outer Panel (white)",
         "condition": "Used",
         "diagramId": "307",
         "supersedes": "",
-        "ebayBuyNow": "$26.98"
+        "ebayBuyNow": "$59.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
       }
     },
     {
       "partNumber": "WE3M56",
       "diagramId": "313",
-      "description": "Top Bearing",
+      "description": "Bearing",
       "supersedes": "WE03X20228",
-      "price": 18.4,
+      "price": 37.95,
       "diagId": "313",
-      "partTitle": "Top Bearing",
-      "title": "GE WE3M56 Top Bearing Used Dryer Part",
-      "ebayBuyNow": "$18.40",
+      "partTitle": "Bearing",
+      "title": "GE WE3M56 Bearing Used Dryer Part",
+      "ebayBuyNow": "$37.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE3M56",
-        "type": "Top Bearing",
+        "type": "Bearing",
         "condition": "Used",
         "diagramId": "313",
         "supersedes": "WE03X20228",
-        "ebayBuyNow": "$18.40"
+        "ebayBuyNow": "$37.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
       }
     },
     {
       "partNumber": "WE4M415",
       "diagramId": "380",
-      "description": "Door Switch",
+      "description": "Dryer Door Switch",
       "supersedes": "",
-      "price": 12.53,
+      "price": 36.95,
       "diagId": "380",
-      "partTitle": "Door Switch",
-      "title": "GE WE4M415 Door Switch Used Dryer Part",
-      "ebayBuyNow": "$12.53",
+      "partTitle": "Dryer Door Switch",
+      "title": "GE WE4M415 Dryer Door Switch Used Dryer Part",
+      "ebayBuyNow": "$36.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M415",
-        "type": "Door Switch",
+        "type": "Dryer Door Switch",
         "condition": "Used",
         "diagramId": "380",
         "supersedes": "",
-        "ebayBuyNow": "$12.53"
+        "ebayBuyNow": "$36.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
       }
     },
     {
       "partNumber": "WE20X20417",
       "diagramId": "401",
-      "description": "Cover White",
+      "description": "Dryer Top Panel",
       "supersedes": "",
-      "price": 34.43,
+      "price": 75.95,
       "diagId": "401",
-      "partTitle": "Cover White",
-      "title": "GE WE20X20417 Cover White Used Dryer Part",
-      "ebayBuyNow": "$34.43",
+      "partTitle": "Dryer Top Panel",
+      "title": "GE WE20X20417 Dryer Top Panel Used Dryer Part",
+      "ebayBuyNow": "$75.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE20X20417",
-        "type": "Cover White",
+        "type": "Dryer Top Panel",
         "condition": "Used",
         "diagramId": "401",
         "supersedes": "",
-        "ebayBuyNow": "$34.43"
+        "ebayBuyNow": "$75.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
       "partNumber": "WE20X20406",
       "diagramId": "404",
-      "description": "Side Panel White",
+      "description": "Dryer Side Panel (white)",
       "supersedes": "",
-      "price": 22.93,
+      "price": 50.95,
       "diagId": "404",
-      "partTitle": "Side Panel White",
-      "title": "GE WE20X20406 Side Panel White Used Dryer Part",
-      "ebayBuyNow": "$22.93",
+      "partTitle": "Dryer Side Panel (white)",
+      "title": "GE WE20X20406 Dryer Side Panel (white) Used Dryer Part",
+      "ebayBuyNow": "$50.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE20X20406",
-        "type": "Side Panel White",
+        "type": "Dryer Side Panel (white)",
         "condition": "Used",
         "diagramId": "404",
         "supersedes": "",
-        "ebayBuyNow": "$22.93"
+        "ebayBuyNow": "$50.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
@@ -738,11 +1506,11 @@
       "diagramId": "408",
       "description": "Chassis Base",
       "supersedes": "",
-      "price": 32.83,
+      "price": 72.95,
       "diagId": "408",
       "partTitle": "Chassis Base",
       "title": "GE WE20X20391 Chassis Base Used Dryer Part",
-      "ebayBuyNow": "$32.83",
+      "ebayBuyNow": "$72.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE20X20391",
@@ -750,67 +1518,83 @@
         "condition": "Used",
         "diagramId": "408",
         "supersedes": "",
-        "ebayBuyNow": "$32.83"
+        "ebayBuyNow": "$72.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
       "partNumber": "WE1M1003",
       "diagramId": "417",
-      "description": "Holder Fuse",
+      "description": "Dryer Fuse Holder",
       "supersedes": "",
-      "price": 16.18,
+      "price": 44.95,
       "diagId": "417",
-      "partTitle": "Holder Fuse",
-      "title": "GE WE1M1003 Holder Fuse Used Dryer Part",
-      "ebayBuyNow": "$16.18",
+      "partTitle": "Dryer Fuse Holder",
+      "title": "GE WE1M1003 Dryer Fuse Holder Used Dryer Part",
+      "ebayBuyNow": "$44.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE1M1003",
-        "type": "Holder Fuse",
+        "type": "Dryer Fuse Holder",
         "condition": "Used",
         "diagramId": "417",
         "supersedes": "",
-        "ebayBuyNow": "$16.18"
+        "ebayBuyNow": "$44.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
       "partNumber": "WE1M1002",
       "diagramId": "418",
-      "description": "Fuse Ccmr  30 Amp 120v",
+      "description": "Fuse Cemr 30 Amp 120V",
       "supersedes": "",
-      "price": 20.35,
+      "price": 50.95,
       "diagId": "418",
-      "partTitle": "Fuse Ccmr  30 Amp 120v",
-      "title": "GE WE1M1002 Fuse Ccmr  30 Amp 120v Used Dryer Part",
-      "ebayBuyNow": "$20.35",
+      "partTitle": "Fuse Cemr 30 Amp 120V",
+      "title": "GE WE1M1002 Fuse Cemr 30 Amp 120V Used Dryer Part",
+      "ebayBuyNow": "$50.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE1M1002",
-        "type": "Fuse Ccmr  30 Amp 120v",
+        "type": "Fuse Cemr 30 Amp 120V",
         "condition": "Used",
         "diagramId": "418",
         "supersedes": "",
-        "ebayBuyNow": "$20.35"
+        "ebayBuyNow": "$50.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
       "partNumber": "WE4M525",
       "diagramId": "419",
-      "description": "Term Blk & Grnd Strap",
+      "description": "4 Term Blk & Grnd Strap",
       "supersedes": "",
-      "price": 8.5,
+      "price": 29.95,
       "diagId": "419",
-      "partTitle": "Term Blk & Grnd Strap",
-      "title": "GE WE4M525 Term Blk & Grnd Strap Used Dryer Part",
-      "ebayBuyNow": "$8.50",
+      "partTitle": "4 Term Blk & Grnd Strap",
+      "title": "GE WE4M525 4 Term Blk & Grnd Strap Used Dryer Part",
+      "ebayBuyNow": "$29.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M525",
-        "type": "Term Blk & Grnd Strap",
+        "type": "4 Term Blk & Grnd Strap",
         "condition": "Used",
         "diagramId": "419",
         "supersedes": "",
-        "ebayBuyNow": "$8.50"
+        "ebayBuyNow": "$29.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
@@ -818,11 +1602,11 @@
       "diagramId": "420",
       "description": "Rear Panel",
       "supersedes": "",
-      "price": 34.18,
+      "price": 75.95,
       "diagId": "420",
       "partTitle": "Rear Panel",
       "title": "GE WE20X20396 Rear Panel Used Dryer Part",
-      "ebayBuyNow": "$34.18",
+      "ebayBuyNow": "$75.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE20X20396",
@@ -830,7 +1614,11 @@
         "condition": "Used",
         "diagramId": "420",
         "supersedes": "",
-        "ebayBuyNow": "$34.18"
+        "ebayBuyNow": "$75.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
@@ -838,11 +1626,11 @@
       "diagramId": "430",
       "description": "Cover Fuse Terminal",
       "supersedes": "",
-      "price": 13.02,
+      "price": 37.95,
       "diagId": "430",
       "partTitle": "Cover Fuse Terminal",
       "title": "GE WE1M1007 Cover Fuse Terminal Used Dryer Part",
-      "ebayBuyNow": "$13.02",
+      "ebayBuyNow": "$37.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE1M1007",
@@ -850,127 +1638,155 @@
         "condition": "Used",
         "diagramId": "430",
         "supersedes": "",
-        "ebayBuyNow": "$13.02"
+        "ebayBuyNow": "$37.95"
+      },
+      "assemblySource": {
+        "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+        "sheet": "Cabinet & Top Panel"
       }
     },
     {
       "partNumber": "WE21X20562",
       "diagramId": "503",
-      "description": "Drum Asm 6.0 Cu.ft Wh",
+      "description": "Drum Assembly",
       "supersedes": "WE21X20407",
-      "price": 204.57,
+      "price": 406.87,
       "diagId": "503",
-      "partTitle": "Drum Asm 6.0 Cu.ft Wh",
-      "title": "GE WE21X20562 Drum Asm 6.0 Cu.ft Wh Used Dryer Part",
-      "ebayBuyNow": "$204.57",
+      "partTitle": "Drum Assembly",
+      "title": "GE WE21X20562 Drum Assembly Used Dryer Part",
+      "ebayBuyNow": "$406.87",
       "specs": {
         "brand": "GE",
         "mpn": "WE21X20562",
-        "type": "Drum Asm 6.0 Cu.ft Wh",
+        "type": "Drum Assembly",
         "condition": "Used",
         "diagramId": "503",
         "supersedes": "WE21X20407",
-        "ebayBuyNow": "$204.57"
+        "ebayBuyNow": "$406.87"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
       }
     },
     {
       "partNumber": "WE11X29438",
       "diagramId": "504",
-      "description": "Diffuser",
+      "description": "Dryer Drum Rear Cover",
       "supersedes": "WE14X20408",
-      "price": 16.56,
+      "price": 39.43,
       "diagId": "504",
-      "partTitle": "Diffuser",
-      "title": "GE WE11X29438 Diffuser Used Dryer Part",
-      "ebayBuyNow": "$16.56",
+      "partTitle": "Dryer Drum Rear Cover",
+      "title": "GE WE11X29438 Dryer Drum Rear Cover Used Dryer Part",
+      "ebayBuyNow": "$39.43",
       "specs": {
         "brand": "GE",
         "mpn": "WE11X29438",
-        "type": "Diffuser",
+        "type": "Dryer Drum Rear Cover",
         "condition": "Used",
         "diagramId": "504",
         "supersedes": "WE14X20408",
-        "ebayBuyNow": "$16.56"
+        "ebayBuyNow": "$39.43"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
       }
     },
     {
       "partNumber": "WE4M160",
       "diagramId": "505",
-      "description": "Thermostat Safety Left",
+      "description": "Dryer Safety Thermostat",
       "supersedes": "",
-      "price": 59.4,
+      "price": 119.95,
       "diagId": "505",
-      "partTitle": "Thermostat Safety Left",
-      "title": "GE WE4M160 Thermostat Safety Left Used Dryer Part",
-      "ebayBuyNow": "$59.40",
+      "partTitle": "Dryer Safety Thermostat",
+      "title": "GE WE4M160 Dryer Safety Thermostat Used Dryer Part",
+      "ebayBuyNow": "$119.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M160",
-        "type": "Thermostat Safety Left",
+        "type": "Dryer Safety Thermostat",
         "condition": "Used",
         "diagramId": "505",
         "supersedes": "",
-        "ebayBuyNow": "$59.40"
+        "ebayBuyNow": "$119.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
       }
     },
     {
       "partNumber": "WE4M181",
       "diagramId": "506",
-      "description": "Thermostat Bias Ctr Inlt",
+      "description": "Dryer Operating Thermostat",
       "supersedes": "",
-      "price": 29.59,
+      "price": 58.95,
       "diagId": "506",
-      "partTitle": "Thermostat Bias Ctr Inlt",
-      "title": "GE WE4M181 Thermostat Bias Ctr Inlt Used Dryer Part",
-      "ebayBuyNow": "$29.59",
+      "partTitle": "Dryer Operating Thermostat",
+      "title": "GE WE4M181 Dryer Operating Thermostat Used Dryer Part",
+      "ebayBuyNow": "$58.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M181",
-        "type": "Thermostat Bias Ctr Inlt",
+        "type": "Dryer Operating Thermostat",
         "condition": "Used",
         "diagramId": "506",
         "supersedes": "",
-        "ebayBuyNow": "$29.59"
+        "ebayBuyNow": "$58.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
       }
     },
     {
       "partNumber": "WE4M137",
       "diagramId": "507",
-      "description": "Thermostat Hi-limit",
+      "description": "Dryer High-limit Thermostat",
       "supersedes": "",
-      "price": 40.7,
+      "price": 74.95,
       "diagId": "507",
-      "partTitle": "Thermostat Hi-limit",
-      "title": "GE WE4M137 Thermostat Hi-limit Used Dryer Part",
-      "ebayBuyNow": "$40.70",
+      "partTitle": "Dryer High-limit Thermostat",
+      "title": "GE WE4M137 Dryer High-limit Thermostat Used Dryer Part",
+      "ebayBuyNow": "$74.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE4M137",
-        "type": "Thermostat Hi-limit",
+        "type": "Dryer High-limit Thermostat",
         "condition": "Used",
         "diagramId": "507",
         "supersedes": "",
-        "ebayBuyNow": "$40.70"
+        "ebayBuyNow": "$74.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
       }
     },
     {
       "partNumber": "WE11X20397",
       "diagramId": "512",
-      "description": "Mica Heater & Housing As",
+      "description": "Dryer Heating Element",
       "supersedes": "",
-      "price": 64.08,
+      "price": 146.95,
       "diagId": "512",
-      "partTitle": "Mica Heater & Housing As",
-      "title": "GE WE11X20397 Mica Heater & Housing As Used Dryer Part",
-      "ebayBuyNow": "$64.08",
+      "partTitle": "Dryer Heating Element",
+      "title": "GE WE11X20397 Dryer Heating Element Used Dryer Part",
+      "ebayBuyNow": "$146.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE11X20397",
-        "type": "Mica Heater & Housing As",
+        "type": "Dryer Heating Element",
         "condition": "Used",
         "diagramId": "512",
         "supersedes": "",
-        "ebayBuyNow": "$64.08"
+        "ebayBuyNow": "$146.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
       }
     },
     {
@@ -996,122 +1812,268 @@
     {
       "partNumber": "WE11M10001",
       "diagramId": "514",
-      "description": "Mica Heater",
+      "description": "Dryer Heating Element",
       "supersedes": "",
-      "price": 64.18,
+      "price": 146.95,
       "diagId": "514",
-      "partTitle": "Mica Heater",
-      "title": "GE WE11M10001 Mica Heater Used Dryer Part",
-      "ebayBuyNow": "$64.18",
+      "partTitle": "Dryer Heating Element",
+      "title": "GE WE11M10001 Dryer Heating Element Used Dryer Part",
+      "ebayBuyNow": "$146.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE11M10001",
-        "type": "Mica Heater",
+        "type": "Dryer Heating Element",
         "condition": "Used",
         "diagramId": "514",
         "supersedes": "",
-        "ebayBuyNow": "$64.18"
+        "ebayBuyNow": "$146.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
       }
     },
     {
       "partNumber": "WE01X20419",
       "diagramId": "603",
-      "description": "Handle White",
+      "description": "Dryer Door Handle (white)",
       "supersedes": "",
-      "price": 9.41,
+      "price": 32.95,
       "diagId": "603",
-      "partTitle": "Handle White",
-      "title": "GE WE01X20419 Handle White Used Dryer Part",
-      "ebayBuyNow": "$9.41",
+      "partTitle": "Dryer Door Handle (white)",
+      "title": "GE WE01X20419 Dryer Door Handle (white) Used Dryer Part",
+      "ebayBuyNow": "$32.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE01X20419",
-        "type": "Handle White",
+        "type": "Dryer Door Handle (white)",
         "condition": "Used",
         "diagramId": "603",
         "supersedes": "",
-        "ebayBuyNow": "$9.41"
+        "ebayBuyNow": "$32.95"
+      },
+      "assemblySource": {
+        "workbook": "Front_Panel_Door_Parts.xlsx",
+        "sheet": "Front Panel & Door"
       }
     },
     {
       "partNumber": "WE17X22217",
       "diagramId": "630",
-      "description": "Motor",
+      "description": "Dryer Drive Motor with Pulley",
       "supersedes": "WE17M66",
-      "price": 72.44,
+      "price": 160.88,
       "diagId": "630",
-      "partTitle": "Motor",
-      "title": "GE WE17X22217 Motor Used Dryer Part",
-      "ebayBuyNow": "$72.44",
+      "partTitle": "Dryer Drive Motor with Pulley",
+      "title": "GE WE17X22217 Dryer Drive Motor with Pulley Used Dryer Part",
+      "ebayBuyNow": "$160.88",
       "specs": {
         "brand": "GE",
         "mpn": "WE17X22217",
-        "type": "Motor",
+        "type": "Dryer Drive Motor with Pulley",
         "condition": "Used",
         "diagramId": "630",
         "supersedes": "WE17M66",
-        "ebayBuyNow": "$72.44"
+        "ebayBuyNow": "$160.88"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE1M650",
       "diagramId": "631",
-      "description": "Connector Motor",
+      "description": "Dryer Motor Wire Harness Connector",
       "supersedes": "",
-      "price": 9.88,
+      "price": 21.95,
       "diagId": "631",
-      "partTitle": "Connector Motor",
-      "title": "GE WE1M650 Connector Motor Used Dryer Part",
-      "ebayBuyNow": "$9.88",
+      "partTitle": "Dryer Motor Wire Harness Connector",
+      "title": "GE WE1M650 Dryer Motor Wire Harness Connector Used Dryer Part",
+      "ebayBuyNow": "$21.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE1M650",
-        "type": "Connector Motor",
+        "type": "Dryer Motor Wire Harness Connector",
         "condition": "Used",
         "diagramId": "631",
         "supersedes": "",
-        "ebayBuyNow": "$9.88"
+        "ebayBuyNow": "$21.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WD21X10261",
       "diagramId": "803",
-      "description": "Switch Interlock",
+      "description": "Interlock Switch",
       "supersedes": "WD21X557",
-      "price": 10.07,
+      "price": 26.95,
       "diagId": "803",
-      "partTitle": "Switch Interlock",
-      "title": "GE WD21X10261 Switch Interlock Used Dryer Part",
-      "ebayBuyNow": "$10.07",
+      "partTitle": "Interlock Switch",
+      "title": "GE WD21X10261 Interlock Switch Used Dryer Part",
+      "ebayBuyNow": "$26.95",
       "specs": {
         "brand": "GE",
         "mpn": "WD21X10261",
-        "type": "Switch Interlock",
+        "type": "Interlock Switch",
         "condition": "Used",
         "diagramId": "803",
         "supersedes": "WD21X557",
-        "ebayBuyNow": "$10.07"
+        "ebayBuyNow": "$26.95"
+      },
+      "assemblySource": {
+        "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+        "sheet": "Backsplash Blower & Drive Assem"
       }
     },
     {
       "partNumber": "WE1M300",
       "diagramId": "3102",
-      "description": "Bearing Retainer",
+      "description": "Dryer Drum Bearing Bracket",
       "supersedes": "",
-      "price": 18.52,
+      "price": 46.95,
       "diagId": "3102",
-      "partTitle": "Bearing Retainer",
-      "title": "GE WE1M300 Bearing Retainer Used Dryer Part",
-      "ebayBuyNow": "$18.52",
+      "partTitle": "Dryer Drum Bearing Bracket",
+      "title": "GE WE1M300 Dryer Drum Bearing Bracket Used Dryer Part",
+      "ebayBuyNow": "$46.95",
       "specs": {
         "brand": "GE",
         "mpn": "WE1M300",
-        "type": "Bearing Retainer",
+        "type": "Dryer Drum Bearing Bracket",
         "condition": "Used",
         "diagramId": "3102",
         "supersedes": "",
-        "ebayBuyNow": "$18.52"
+        "ebayBuyNow": "$46.95"
+      },
+      "assemblySource": {
+        "workbook": "Drum_Parts.xlsx",
+        "sheet": "Drum"
       }
     }
-  ]
+  ],
+  "assemblyWorkbookImport": {
+    "importedAt": "2026-05-11T21:26:05.623Z",
+    "workbookCount": 4,
+    "workbookRows": 100,
+    "uniqueWorkbookPartCount": 97,
+    "activeMatchedCount": 40,
+    "activeMissingFromWorkbooks": [
+      "WE11M10002"
+    ],
+    "workbookPartsOutsideActiveScope": [
+      "WD21X557",
+      "WE00X1811",
+      "WE00X181L",
+      "WE01X20423",
+      "WE01X29357",
+      "WE03X20228",
+      "WE03X29897",
+      "WE03X37319",
+      "WE03X37320",
+      "WE09X20441",
+      "WE09X27634",
+      "WE09X27636",
+      "WE10X20418",
+      "WE11X20400",
+      "WE12X20395",
+      "WE12X21574",
+      "WE13X30697",
+      "WE14X20421",
+      "WE14X20425",
+      "WE14X20426",
+      "WE17M66",
+      "WE18M28",
+      "WE18X25100",
+      "WE19M1478",
+      "WE1M1011",
+      "WE1M1015",
+      "WE1M1030",
+      "WE1M1033",
+      "WE1M1101",
+      "WE1M280",
+      "WE1M461",
+      "WE1M462",
+      "WE1M505",
+      "WE1M536",
+      "WE1M652",
+      "WE1M659",
+      "WE1M780",
+      "WE1M825",
+      "WE1M934",
+      "WE1M966",
+      "WE1X1192",
+      "WE20X20409",
+      "WE20X20596",
+      "WE21X20407",
+      "WE2M160",
+      "WE2M163",
+      "WE2M173",
+      "WE2M174",
+      "WE2M196",
+      "WE2M202",
+      "WE2M223",
+      "WE2M96",
+      "WE3M51",
+      "WE3M52",
+      "WH01X10313",
+      "WH2M270",
+      "WZ05X0158"
+    ],
+    "duplicateWorkbookRows": [
+      {
+        "partNumber": "WE4M137",
+        "kept": {
+          "workbook": "Front_Panel_Door_Parts.xlsx",
+          "sheet": "Front Panel & Door",
+          "diagramId": "507",
+          "partTitle": "Dryer High-limit Thermostat",
+          "price": 74.95
+        },
+        "duplicate": {
+          "workbook": "Drum_Parts.xlsx",
+          "sheet": "Drum",
+          "diagramId": "507",
+          "partTitle": "Dryer High-limit Thermostat",
+          "price": 74.95
+        }
+      },
+      {
+        "partNumber": "WE2M174",
+        "kept": {
+          "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+          "sheet": "Backsplash Blower & Drive Assem",
+          "diagramId": "502",
+          "partTitle": "Screw #10",
+          "price": 7.09
+        },
+        "duplicate": {
+          "workbook": "Drum_Parts.xlsx",
+          "sheet": "Drum",
+          "diagramId": "502",
+          "partTitle": "Screw #10",
+          "price": 7.09
+        }
+      },
+      {
+        "partNumber": "WZ05X0158",
+        "kept": {
+          "workbook": "Backsplash_Blower_Drive_Assembly_Parts.xlsx",
+          "sheet": "Backsplash Blower & Drive Assem",
+          "diagramId": "461",
+          "partTitle": "Screw 8-32X3/8 Grd Scr",
+          "price": 6.95
+        },
+        "duplicate": {
+          "workbook": "Cabinet_Top_Panel_Parts.xlsx",
+          "sheet": "Cabinet & Top Panel",
+          "diagramId": "461",
+          "partTitle": "Screw 8-32X3/8 Grd Scr",
+          "price": 6.95
+        }
+      }
+    ]
+  }
 }

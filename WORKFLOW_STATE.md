@@ -8,6 +8,7 @@
 - **Save Path**: Detail editor saves to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is configured and falls back to the local normalized listing JSON in local development.
 - **Obsidian Outbox**: `/bom-workflow` Run Settings includes an Obsidian note outbox backed by `/api/obsidian/notes`; set `OBSIDIAN_VAULT_PATH` locally to write directly into a vault.
 - **Quality Control**: Real-time listing quality score remains visible in the editor sidebar.
+- **Assembly Workbook Import**: Current eBay source now imports title/diagram/price updates from the four operator XLSX assembly sheets via `scripts/import-ebay-assembly-workbooks.mjs`; 40 active listings matched, `WE11M10002` was not present in those sheets.
 
 ### Live Dashboard (2026-05-11T07:35)
 - **Dashboard URL**: `http://localhost:3000/ebay`
