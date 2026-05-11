@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RoadrunnerParts eBay Automation Prompt Chain</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#111827}
+    header{background:#111827;color:white;padding:24px}
+    h1{margin:0 0 10px;font-size:28px}
+    .stats{display:flex;flex-wrap:wrap;gap:10px}
+    .stat{background:#1f2937;border:1px solid #374151;padding:10px 12px}
+    main{padding:20px;max-width:1280px;margin:0 auto}
+    .prompt{background:white;border:1px solid #d8dee9;padding:14px;margin-bottom:18px}
+    pre{white-space:pre-wrap;background:#0f172a;color:#e5e7eb;padding:12px;overflow:auto}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .card{display:flex;flex-direction:column;gap:10px;background:white;border:1px solid #d8dee9;padding:14px;color:#111827}
+    .card:hover{border-color:#2563eb}
+    .card.is-reviewed{background:#f0fdf4;border-color:#86efac}
+    .card.ready{border-left:5px solid #16a34a}
+    .card.review{border-left:5px solid #f59e0b}
+    .card-link{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:#111827}
+    .card strong{font-size:18px}
+    .card span{color:#4b5563}
+    .card small{color:#6b7280;font-weight:700}
+    .card em{font-style:normal;font-size:12px;font-weight:800;color:#2563eb}
+    .card-review{border-top:1px solid #e5e7eb;padding-top:10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .switch-row{display:flex;align-items:center;gap:8px;font-weight:800;cursor:pointer;white-space:nowrap}
+    .switch-row input{position:absolute;opacity:0}
+    .switch-ui{width:42px;height:24px;border-radius:999px;background:#cbd5e1;position:relative;display:inline-block;transition:.15s}
+    .switch-ui:before{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:white;left:3px;top:3px;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .switch-row input:checked + .switch-ui{background:#16a34a}
+    .switch-row input:checked + .switch-ui:before{transform:translateX(18px)}
+    button{border:1px solid #111827;background:#111827;color:white;padding:9px 12px;font-weight:800;cursor:pointer}
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RoadrunnerParts eBay Automation Prompt Chain</h1>
+    <div class="stats">
+      <div class="stat">41 listings processed</div>
+      <div class="stat">1 review ready</div>
+      <div class="stat">40 HITL review</div>
+      <div class="stat">1 approved photo attached</div>
+      <div class="stat">40 photo pending</div>
+      <div class="stat">0 source descriptions</div>
+      <div class="stat">26 source image sets</div>
+      <div class="stat">liveEbaySync: false</div>
+      <div class="stat">Generated: 2026-05-11T04:14:07.248Z</div>
+    </div>
+  </header>
+  <main>
+    <section class="prompt">
+      <h2>Prompt Chain Guardrails</h2>
+      <pre>1. For Phase 0: The appliance&#39;s Model and Serial Number (entered manually or via an
+3. For Phase 1A: A batch of Physical Part Images taken by the user, explicitly
+phase state machine (Phase 0 -&gt; Phase 1A -&gt; Phase 1B/1C).
+You are strictly forbidden from executing a downstream phase until the exact, formatted
+output of the preceding phase exists in your active memory. There is zero tolerance for
+step-skipping, predictive generation, or phase-merging.
+&lt;state_machine_logic&gt;
+- STATE 0 (Genesis): Requires[Nameplate Image/Text]. Outputs [DONOR_MACHINE_ID].
+- STATE 1A (Extraction): Requires[DONOR_MACHINE_ID] + [Diagram] + [Part Image].
+Outputs [PART_ID] +[COMPATIBILITY_ID] + [SYSTEM_ROUTING].
+- STATE 1B/1C (Generation): Requires [PART_ID] + [COMPATIBILITY_ID] + [DELTA]. Outputs
+&lt;/state_machine_logic&gt;
+&lt;master_sequence_fail_safes&gt;
+If you violate the state machine logic, you must instantly halt execution and output the
+corresponding FAIL code:
+1. THE &quot;GHOST&quot; FAIL: If you attempt to execute Phase 1A without a verified
+DONOR_MACHINE_ID in active memory -&gt; OUTPUT: [SYSTEM ERROR: SEQUENCE
+VIOLATION - MISSING PHASE 0 -&gt; FAIL_FAST]
+2. THE &quot;SKIP&quot; FAIL: If you attempt to output a final eBay listing (Phase 1B/1C) without
+having generated the exact 3-part JSON extraction from Phase 1A -&gt; OUTPUT:[SYSTEM
+ERROR: SEQUENCE VIOLATION - MISSING PHASE 1A -&gt; FAIL_FAST]
+3. THE &quot;MERGE&quot; FAIL: If you attempt to output Phase 1A and Phase 1B/1C in the same
+single response block without a system prompt telling you to advance -&gt; OUTPUT:[SYSTEM
+ERROR: SEQUENCE VIOLATION - UNAUTHORIZED MERGE -&gt; FAIL_FAST]
+&lt;/master_sequence_fail_safes&gt;
+Process ONLY the specific Phase requested by the user API call. Await the next API trigger
+PROMPT 0: DONOR MACHINE INGESTION (Manual or OCR)
+&quot;DONOR_MACHINE_ID&quot;: {
+PROMPT 1A: REFERENCE-FIRST PART EXTRACTION (Part + Diagram Pairing)
+the Part photos together into one highly-focused prompt.
+&lt;active_memory&gt;[INJECT DONOR_MACHINE_ID FROM PHASE 0 HERE]
+&quot;PART_ID&quot;: {
+&quot;SYSTEM_ROUTING&quot;: {
+PROMPT 1B: SURGICAL EDIT (Zero-Drift Baseline Generation)
+PROMPT 1C: THE &quot;TRUST SHARD&quot; DELTA (High-Conversion Edit)
+- Generate a &quot;Trust Shard&quot;—a 1 to 2-sentence Tech Tip.</pre>
+    </section>
+    <section class="prompt">
+      <h2>Operator Shard Export</h2>
+      <p>Replies and image keep/trash decisions are stored in this browser. Use this export after reviewing the current listing pages.</p>
+      <div class="actions">
+        <button id="exportReviews" type="button">Download Review JSON</button>
+      </div>
+      <pre id="reviewSummary">No saved replies loaded yet.</pre>
+    </section>
+    <div class="grid"><article class="card review" data-card="WE49X22294" data-seed="{&quot;partNumber&quot;:&quot;WE49X22294&quot;,&quot;title&quot;:&quot;GE WE49X22294 End Cap RH Wh LH Wh Used Dryer Part&quot;,&quot;fileName&quot;:&quot;001-WE49X22294.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="001-WE49X22294.html">
+          <strong>WE49X22294</strong>
+          <span>GE WE49X22294 End Cap RH Wh LH Wh Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE49X22294">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE49X22294">
+            <input id="toggle-WE49X22294" type="checkbox" data-review-toggle="WE49X22294">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE49X22294">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE19M1713" data-seed="{&quot;partNumber&quot;:&quot;WE19M1713&quot;,&quot;title&quot;:&quot;GE WE19M1713 Backsplash Graphics Assembly Used Dryer Part&quot;,&quot;fileName&quot;:&quot;002-WE19M1713.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="002-WE19M1713.html">
+          <strong>WE19M1713</strong>
+          <span>GE WE19M1713 Backsplash Graphics Assembly Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE19M1713">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE19M1713">
+            <input id="toggle-WE19M1713" type="checkbox" data-review-toggle="WE19M1713">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE19M1713">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M416" data-seed="{&quot;partNumber&quot;:&quot;WE4M416&quot;,&quot;title&quot;:&quot;GE WE4M416 Switch Pts Used Dryer Part&quot;,&quot;fileName&quot;:&quot;003-WE4M416.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="003-WE4M416.html">
+          <strong>WE4M416</strong>
+          <span>GE WE4M416 Switch Pts Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M416">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M416">
+            <input id="toggle-WE4M416" type="checkbox" data-review-toggle="WE4M416">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M416">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE19M1481" data-seed="{&quot;partNumber&quot;:&quot;WE19M1481&quot;,&quot;title&quot;:&quot;GE WE19M1481 Panel Back Used Dryer Part&quot;,&quot;fileName&quot;:&quot;004-WE19M1481.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="004-WE19M1481.html">
+          <strong>WE19M1481</strong>
+          <span>GE WE19M1481 Panel Back Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE19M1481">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE19M1481">
+            <input id="toggle-WE19M1481" type="checkbox" data-review-toggle="WE19M1481">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE19M1481">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M255" data-seed="{&quot;partNumber&quot;:&quot;WE4M255&quot;,&quot;title&quot;:&quot;GE WE4M255 Resistor Used Dryer Part&quot;,&quot;fileName&quot;:&quot;005-WE4M255.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="005-WE4M255.html">
+          <strong>WE4M255</strong>
+          <span>GE WE4M255 Resistor Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M255">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M255">
+            <input id="toggle-WE4M255" type="checkbox" data-review-toggle="WE4M255">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M255">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M404" data-seed="{&quot;partNumber&quot;:&quot;WE4M404&quot;,&quot;title&quot;:&quot;GE WE4M404 Rotary Switch 3temp Elec Used Dryer Part&quot;,&quot;fileName&quot;:&quot;006-WE4M404.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="006-WE4M404.html">
+          <strong>WE4M404</strong>
+          <span>GE WE4M404 Rotary Switch 3temp Elec Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M404">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M404">
+            <input id="toggle-WE4M404" type="checkbox" data-review-toggle="WE4M404">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M404">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M532" data-seed="{&quot;partNumber&quot;:&quot;WE4M532&quot;,&quot;title&quot;:&quot;GE WE4M532 Timer Used Dryer Part&quot;,&quot;fileName&quot;:&quot;007-WE4M532.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the shaft style, terminal layout, and cycle markings before ordering; timer families often share a case but not the same switching.&quot;}">
+        <a class="card-link" href="007-WE4M532.html">
+          <strong>WE4M532</strong>
+          <span>GE WE4M532 Timer Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M532">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M532">
+            <input id="toggle-WE4M532" type="checkbox" data-review-toggle="WE4M532">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M532">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE16X20393" data-seed="{&quot;partNumber&quot;:&quot;WE16X20393&quot;,&quot;title&quot;:&quot;GE WE16X20393 Blower Wheel Used Dryer Part&quot;,&quot;fileName&quot;:&quot;008-WE16X20393.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="008-WE16X20393.html">
+          <strong>WE16X20393</strong>
+          <span>GE WE16X20393 Blower Wheel Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE16X20393">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE16X20393">
+            <input id="toggle-WE16X20393" type="checkbox" data-review-toggle="WE16X20393">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE16X20393">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE1X921" data-seed="{&quot;partNumber&quot;:&quot;WE1X921&quot;,&quot;title&quot;:&quot;GE WE1X921 Strap Motor Used Dryer Part&quot;,&quot;fileName&quot;:&quot;009-WE1X921.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the pulley, plug, and mounting points before ordering; dryer motors can look close while using different harnesses.&quot;}">
+        <a class="card-link" href="009-WE1X921.html">
+          <strong>WE1X921</strong>
+          <span>GE WE1X921 Strap Motor Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE1X921">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE1X921">
+            <input id="toggle-WE1X921" type="checkbox" data-review-toggle="WE1X921">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE1X921">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE13M39" data-seed="{&quot;partNumber&quot;:&quot;WE13M39&quot;,&quot;title&quot;:&quot;GE WE13M39 Motor Support Used Dryer Part&quot;,&quot;fileName&quot;:&quot;010-WE13M39.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the pulley, plug, and mounting points before ordering; dryer motors can look close while using different harnesses.&quot;}">
+        <a class="card-link" href="010-WE13M39.html">
+          <strong>WE13M39</strong>
+          <span>GE WE13M39 Motor Support Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE13M39">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE13M39">
+            <input id="toggle-WE13M39" type="checkbox" data-review-toggle="WE13M39">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE13M39">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE03X20434" data-seed="{&quot;partNumber&quot;:&quot;WE03X20434&quot;,&quot;title&quot;:&quot;GE WE03X20434 Idler Arm Used Dryer Part&quot;,&quot;fileName&quot;:&quot;011-WE03X20434.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="011-WE03X20434.html">
+          <strong>WE03X20434</strong>
+          <span>GE WE03X20434 Idler Arm Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE03X20434">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE03X20434">
+            <input id="toggle-WE03X20434" type="checkbox" data-review-toggle="WE03X20434">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE03X20434">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE03X31620" data-seed="{&quot;partNumber&quot;:&quot;WE03X31620&quot;,&quot;title&quot;:&quot;GE WE03X31620 Idler Pulley Used Dryer Part&quot;,&quot;fileName&quot;:&quot;012-WE03X31620.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the belt path and pulley geometry against your original setup before reassembly.&quot;}">
+        <a class="card-link" href="012-WE03X31620.html">
+          <strong>WE03X31620</strong>
+          <span>GE WE03X31620 Idler Pulley Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE03X31620">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE03X31620">
+            <input id="toggle-WE03X31620" type="checkbox" data-review-toggle="WE03X31620">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE03X31620">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE14X20392" data-seed="{&quot;partNumber&quot;:&quot;WE14X20392&quot;,&quot;title&quot;:&quot;GE WE14X20392 Blower Housing Assembly Used Dryer Part&quot;,&quot;fileName&quot;:&quot;013-WE14X20392.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="013-WE14X20392.html">
+          <strong>WE14X20392</strong>
+          <span>GE WE14X20392 Blower Housing Assembly Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE14X20392">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE14X20392">
+            <input id="toggle-WE14X20392" type="checkbox" data-review-toggle="WE14X20392">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE14X20392">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE20X20412" data-seed="{&quot;partNumber&quot;:&quot;WE20X20412&quot;,&quot;title&quot;:&quot;GE WE20X20412 Bottom Cover Used Dryer Part&quot;,&quot;fileName&quot;:&quot;014-WE20X20412.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="014-WE20X20412.html">
+          <strong>WE20X20412</strong>
+          <span>GE WE20X20412 Bottom Cover Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE20X20412">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE20X20412">
+            <input id="toggle-WE20X20412" type="checkbox" data-review-toggle="WE20X20412">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE20X20412">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M127" data-seed="{&quot;partNumber&quot;:&quot;WE4M127&quot;,&quot;title&quot;:&quot;GE WE4M127 Thermostat Drum Out Used Dryer Part&quot;,&quot;fileName&quot;:&quot;015-WE4M127.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="015-WE4M127.html">
+          <strong>WE4M127</strong>
+          <span>GE WE4M127 Thermostat Drum Out Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M127">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M127">
+            <input id="toggle-WE4M127" type="checkbox" data-review-toggle="WE4M127">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M127">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE13X20394" data-seed="{&quot;partNumber&quot;:&quot;WE13X20394&quot;,&quot;title&quot;:&quot;GE WE13X20394 Motor Plate Used Dryer Part&quot;,&quot;fileName&quot;:&quot;016-WE13X20394.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the pulley, plug, and mounting points before ordering; dryer motors can look close while using different harnesses.&quot;}">
+        <a class="card-link" href="016-WE13X20394.html">
+          <strong>WE13X20394</strong>
+          <span>GE WE13X20394 Motor Plate Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE13X20394">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE13X20394">
+            <input id="toggle-WE13X20394" type="checkbox" data-review-toggle="WE13X20394">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE13X20394">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE49X22295" data-seed="{&quot;partNumber&quot;:&quot;WE49X22295&quot;,&quot;title&quot;:&quot;GE WE49X22295 Inner Door Assembly White Used Dryer Part&quot;,&quot;fileName&quot;:&quot;017-WE49X22295.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="017-WE49X22295.html">
+          <strong>WE49X22295</strong>
+          <span>GE WE49X22295 Inner Door Assembly White Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE49X22295">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE49X22295">
+            <input id="toggle-WE49X22295" type="checkbox" data-review-toggle="WE49X22295">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE49X22295">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE10X20468" data-seed="{&quot;partNumber&quot;:&quot;WE10X20468&quot;,&quot;title&quot;:&quot;GE WE10X20468 Outer Door Wh Used Dryer Part&quot;,&quot;fileName&quot;:&quot;018-WE10X20468.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="018-WE10X20468.html">
+          <strong>WE10X20468</strong>
+          <span>GE WE10X20468 Outer Door Wh Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE10X20468">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE10X20468">
+            <input id="toggle-WE10X20468" type="checkbox" data-review-toggle="WE10X20468">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE10X20468">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE3M56" data-seed="{&quot;partNumber&quot;:&quot;WE3M56&quot;,&quot;title&quot;:&quot;GE WE3M56 Top Bearing Used Dryer Part&quot;,&quot;fileName&quot;:&quot;019-WE3M56.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the wear surfaces and support points match your original part before installation.&quot;}">
+        <a class="card-link" href="019-WE3M56.html">
+          <strong>WE3M56</strong>
+          <span>GE WE3M56 Top Bearing Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE3M56">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE3M56">
+            <input id="toggle-WE3M56" type="checkbox" data-review-toggle="WE3M56">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE3M56">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M415" data-seed="{&quot;partNumber&quot;:&quot;WE4M415&quot;,&quot;title&quot;:&quot;GE WE4M415 Door Switch Used Dryer Part&quot;,&quot;fileName&quot;:&quot;020-WE4M415.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="020-WE4M415.html">
+          <strong>WE4M415</strong>
+          <span>GE WE4M415 Door Switch Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M415">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M415">
+            <input id="toggle-WE4M415" type="checkbox" data-review-toggle="WE4M415">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M415">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE20X20417" data-seed="{&quot;partNumber&quot;:&quot;WE20X20417&quot;,&quot;title&quot;:&quot;GE WE20X20417 Cover White Used Dryer Part&quot;,&quot;fileName&quot;:&quot;021-WE20X20417.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="021-WE20X20417.html">
+          <strong>WE20X20417</strong>
+          <span>GE WE20X20417 Cover White Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE20X20417">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE20X20417">
+            <input id="toggle-WE20X20417" type="checkbox" data-review-toggle="WE20X20417">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE20X20417">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE20X20406" data-seed="{&quot;partNumber&quot;:&quot;WE20X20406&quot;,&quot;title&quot;:&quot;GE WE20X20406 Side Panel White Used Dryer Part&quot;,&quot;fileName&quot;:&quot;022-WE20X20406.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="022-WE20X20406.html">
+          <strong>WE20X20406</strong>
+          <span>GE WE20X20406 Side Panel White Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE20X20406">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE20X20406">
+            <input id="toggle-WE20X20406" type="checkbox" data-review-toggle="WE20X20406">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE20X20406">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE20X20391" data-seed="{&quot;partNumber&quot;:&quot;WE20X20391&quot;,&quot;title&quot;:&quot;GE WE20X20391 Chassis Base Used Dryer Part&quot;,&quot;fileName&quot;:&quot;023-WE20X20391.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="023-WE20X20391.html">
+          <strong>WE20X20391</strong>
+          <span>GE WE20X20391 Chassis Base Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE20X20391">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE20X20391">
+            <input id="toggle-WE20X20391" type="checkbox" data-review-toggle="WE20X20391">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE20X20391">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE1M1003" data-seed="{&quot;partNumber&quot;:&quot;WE1M1003&quot;,&quot;title&quot;:&quot;GE WE1M1003 Holder Fuse Used Dryer Part&quot;,&quot;fileName&quot;:&quot;024-WE1M1003.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="024-WE1M1003.html">
+          <strong>WE1M1003</strong>
+          <span>GE WE1M1003 Holder Fuse Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE1M1003">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE1M1003">
+            <input id="toggle-WE1M1003" type="checkbox" data-review-toggle="WE1M1003">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE1M1003">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE1M1002" data-seed="{&quot;partNumber&quot;:&quot;WE1M1002&quot;,&quot;title&quot;:&quot;GE WE1M1002 Fuse Ccmr 30 Amp 120v Used Dryer Part&quot;,&quot;fileName&quot;:&quot;025-WE1M1002.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="025-WE1M1002.html">
+          <strong>WE1M1002</strong>
+          <span>GE WE1M1002 Fuse Ccmr 30 Amp 120v Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE1M1002">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE1M1002">
+            <input id="toggle-WE1M1002" type="checkbox" data-review-toggle="WE1M1002">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE1M1002">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M525" data-seed="{&quot;partNumber&quot;:&quot;WE4M525&quot;,&quot;title&quot;:&quot;GE WE4M525 Term Blk &amp; Grnd Strap Used Dryer Part&quot;,&quot;fileName&quot;:&quot;026-WE4M525.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="026-WE4M525.html">
+          <strong>WE4M525</strong>
+          <span>GE WE4M525 Term Blk &amp; Grnd Strap Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M525">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M525">
+            <input id="toggle-WE4M525" type="checkbox" data-review-toggle="WE4M525">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M525">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE20X20396" data-seed="{&quot;partNumber&quot;:&quot;WE20X20396&quot;,&quot;title&quot;:&quot;GE WE20X20396 Rear Panel Used Dryer Part&quot;,&quot;fileName&quot;:&quot;027-WE20X20396.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Check the photos for mounting tabs, screw points, and cosmetic edges so you know it matches the piece you are replacing.&quot;}">
+        <a class="card-link" href="027-WE20X20396.html">
+          <strong>WE20X20396</strong>
+          <span>GE WE20X20396 Rear Panel Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE20X20396">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE20X20396">
+            <input id="toggle-WE20X20396" type="checkbox" data-review-toggle="WE20X20396">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE20X20396">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE1M1007" data-seed="{&quot;partNumber&quot;:&quot;WE1M1007&quot;,&quot;title&quot;:&quot;GE WE1M1007 Cover Fuse Terminal Used Dryer Part&quot;,&quot;fileName&quot;:&quot;028-WE1M1007.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="028-WE1M1007.html">
+          <strong>WE1M1007</strong>
+          <span>GE WE1M1007 Cover Fuse Terminal Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE1M1007">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE1M1007">
+            <input id="toggle-WE1M1007" type="checkbox" data-review-toggle="WE1M1007">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE1M1007">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card ready" data-card="WE21X20562" data-seed="{&quot;partNumber&quot;:&quot;WE21X20562&quot;,&quot;title&quot;:&quot;GE WE21X20562 Drum Assembly 6.0 Cu.Ft Wh Used Dryer Part&quot;,&quot;fileName&quot;:&quot;029-WE21X20562.html&quot;,&quot;modelRouting&quot;:&quot;review_ready&quot;,&quot;photoGate&quot;:&quot;part_photos_attached&quot;,&quot;modelTechNote&quot;:&quot;Confirm the wear surfaces and support points match your original part before installation.&quot;}">
+        <a class="card-link" href="029-WE21X20562.html">
+          <strong>WE21X20562</strong>
+          <span>GE WE21X20562 Drum Assembly 6.0 Cu.Ft Wh Used Dryer Part</span>
+          <em>Ready / part_photos_attached</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE21X20562">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE21X20562">
+            <input id="toggle-WE21X20562" type="checkbox" data-review-toggle="WE21X20562">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE21X20562">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE11X29438" data-seed="{&quot;partNumber&quot;:&quot;WE11X29438&quot;,&quot;title&quot;:&quot;GE WE11X29438 Diffuser Used Dryer Part&quot;,&quot;fileName&quot;:&quot;030-WE11X29438.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="030-WE11X29438.html">
+          <strong>WE11X29438</strong>
+          <span>GE WE11X29438 Diffuser Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE11X29438">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE11X29438">
+            <input id="toggle-WE11X29438" type="checkbox" data-review-toggle="WE11X29438">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE11X29438">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M160" data-seed="{&quot;partNumber&quot;:&quot;WE4M160&quot;,&quot;title&quot;:&quot;GE WE4M160 Thermostat Safety Left Used Dryer Part&quot;,&quot;fileName&quot;:&quot;031-WE4M160.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="031-WE4M160.html">
+          <strong>WE4M160</strong>
+          <span>GE WE4M160 Thermostat Safety Left Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M160">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M160">
+            <input id="toggle-WE4M160" type="checkbox" data-review-toggle="WE4M160">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M160">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M181" data-seed="{&quot;partNumber&quot;:&quot;WE4M181&quot;,&quot;title&quot;:&quot;GE WE4M181 Thermostat Bias Ctr Inlt Used Dryer Part&quot;,&quot;fileName&quot;:&quot;032-WE4M181.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="032-WE4M181.html">
+          <strong>WE4M181</strong>
+          <span>GE WE4M181 Thermostat Bias Ctr Inlt Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M181">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M181">
+            <input id="toggle-WE4M181" type="checkbox" data-review-toggle="WE4M181">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M181">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE4M137" data-seed="{&quot;partNumber&quot;:&quot;WE4M137&quot;,&quot;title&quot;:&quot;GE WE4M137 Thermostat Hi-Limit Used Dryer Part&quot;,&quot;fileName&quot;:&quot;033-WE4M137.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="033-WE4M137.html">
+          <strong>WE4M137</strong>
+          <span>GE WE4M137 Thermostat Hi-Limit Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE4M137">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE4M137">
+            <input id="toggle-WE4M137" type="checkbox" data-review-toggle="WE4M137">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE4M137">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE11X20397" data-seed="{&quot;partNumber&quot;:&quot;WE11X20397&quot;,&quot;title&quot;:&quot;GE WE11X20397 Mica Heater &amp; Housing As Used Dryer Part&quot;,&quot;fileName&quot;:&quot;034-WE11X20397.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="034-WE11X20397.html">
+          <strong>WE11X20397</strong>
+          <span>GE WE11X20397 Mica Heater &amp; Housing As Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE11X20397">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE11X20397">
+            <input id="toggle-WE11X20397" type="checkbox" data-review-toggle="WE11X20397">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE11X20397">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE11M10002" data-seed="{&quot;partNumber&quot;:&quot;WE11M10002&quot;,&quot;title&quot;:&quot;GE WE11M10002 Heater Housing Used Dryer Part&quot;,&quot;fileName&quot;:&quot;035-WE11M10002.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="035-WE11M10002.html">
+          <strong>WE11M10002</strong>
+          <span>GE WE11M10002 Heater Housing Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE11M10002">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE11M10002">
+            <input id="toggle-WE11M10002" type="checkbox" data-review-toggle="WE11M10002">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE11M10002">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE11M10001" data-seed="{&quot;partNumber&quot;:&quot;WE11M10001&quot;,&quot;title&quot;:&quot;GE WE11M10001 Mica Heater Used Dryer Part&quot;,&quot;fileName&quot;:&quot;036-WE11M10001.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="036-WE11M10001.html">
+          <strong>WE11M10001</strong>
+          <span>GE WE11M10001 Mica Heater Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE11M10001">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE11M10001">
+            <input id="toggle-WE11M10001" type="checkbox" data-review-toggle="WE11M10001">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE11M10001">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE01X20419" data-seed="{&quot;partNumber&quot;:&quot;WE01X20419&quot;,&quot;title&quot;:&quot;GE WE01X20419 Handle White Used Dryer Part&quot;,&quot;fileName&quot;:&quot;037-WE01X20419.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the diagram callout and wear points against your original part before installation.&quot;}">
+        <a class="card-link" href="037-WE01X20419.html">
+          <strong>WE01X20419</strong>
+          <span>GE WE01X20419 Handle White Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE01X20419">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE01X20419">
+            <input id="toggle-WE01X20419" type="checkbox" data-review-toggle="WE01X20419">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE01X20419">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE17X22217" data-seed="{&quot;partNumber&quot;:&quot;WE17X22217&quot;,&quot;title&quot;:&quot;GE WE17X22217 Motor Used Dryer Part&quot;,&quot;fileName&quot;:&quot;038-WE17X22217.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the pulley, plug, and mounting points before ordering; dryer motors can look close while using different harnesses.&quot;}">
+        <a class="card-link" href="038-WE17X22217.html">
+          <strong>WE17X22217</strong>
+          <span>GE WE17X22217 Motor Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>source images captured</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE17X22217">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE17X22217">
+            <input id="toggle-WE17X22217" type="checkbox" data-review-toggle="WE17X22217">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE17X22217">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE1M650" data-seed="{&quot;partNumber&quot;:&quot;WE1M650&quot;,&quot;title&quot;:&quot;GE WE1M650 Connector Motor Used Dryer Part&quot;,&quot;fileName&quot;:&quot;039-WE1M650.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the pulley, plug, and mounting points before ordering; dryer motors can look close while using different harnesses.&quot;}">
+        <a class="card-link" href="039-WE1M650.html">
+          <strong>WE1M650</strong>
+          <span>GE WE1M650 Connector Motor Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE1M650">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE1M650">
+            <input id="toggle-WE1M650" type="checkbox" data-review-toggle="WE1M650">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE1M650">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WD21X10261" data-seed="{&quot;partNumber&quot;:&quot;WD21X10261&quot;,&quot;title&quot;:&quot;GE WD21X10261 Switch Interlock Used Dryer Part&quot;,&quot;fileName&quot;:&quot;040-WD21X10261.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Match the number and terminal layout before ordering; several small electrical controls can look similar on the bench.&quot;}">
+        <a class="card-link" href="040-WD21X10261.html">
+          <strong>WD21X10261</strong>
+          <span>GE WD21X10261 Switch Interlock Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WD21X10261">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WD21X10261">
+            <input id="toggle-WD21X10261" type="checkbox" data-review-toggle="WD21X10261">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WD21X10261">Reviewed</span>
+          </label>
+        </div>
+      </article><article class="card review" data-card="WE1M300" data-seed="{&quot;partNumber&quot;:&quot;WE1M300&quot;,&quot;title&quot;:&quot;GE WE1M300 Bearing Retainer Used Dryer Part&quot;,&quot;fileName&quot;:&quot;041-WE1M300.html&quot;,&quot;modelRouting&quot;:&quot;hitl_review&quot;,&quot;photoGate&quot;:&quot;part_photo_pending&quot;,&quot;modelTechNote&quot;:&quot;Confirm the wear surfaces and support points match your original part before installation.&quot;}">
+        <a class="card-link" href="041-WE1M300.html">
+          <strong>WE1M300</strong>
+          <span>GE WE1M300 Bearing Retainer Used Dryer Part</span>
+          <em>HITL / part_photo_pending</em>
+          <em>no source description</em>
+          <em>no source images</em>
+        </a>
+        <div class="card-review">
+          <small data-review-state="WE1M300">No operator reply saved</small>
+          <label class="switch-row" for="toggle-WE1M300">
+            <input id="toggle-WE1M300" type="checkbox" data-review-toggle="WE1M300">
+            <span class="switch-ui" aria-hidden="true"></span>
+            <span data-toggle-label="WE1M300">Reviewed</span>
+          </label>
+        </div>
+      </article></div>
+  </main>
+  <script>
+    (function () {
+      function loadReviews() {
+        var records = [];
+        for (var i = 0; i < localStorage.length; i += 1) {
+          var key = localStorage.key(i);
+          if (!key || key.indexOf("rrp-ebay-review:") !== 0) continue;
+          try { records.push(JSON.parse(localStorage.getItem(key))); } catch {}
+        }
+        records.sort(function (a, b) { return String(a.partNumber).localeCompare(String(b.partNumber)); });
+        return records;
+      }
+
+      function loadImageReviews() {
+        var records = [];
+        for (var i = 0; i < localStorage.length; i += 1) {
+          var key = localStorage.key(i);
+          if (!key || key.indexOf("rrp-ebay-image-review:") !== 0) continue;
+          var partNumber = key.replace("rrp-ebay-image-review:", "");
+          try {
+            var decisions = JSON.parse(localStorage.getItem(key) || "{}");
+            Object.keys(decisions).forEach(function (imageUrl) {
+              records.push(decisions[imageUrl]);
+            });
+          } catch {}
+        }
+        records.sort(function (a, b) {
+          return String(a.partNumber).localeCompare(String(b.partNumber)) || String(a.imageUrl).localeCompare(String(b.imageUrl));
+        });
+        return records;
+      }
+
+      function storageKey(partNumber) {
+        return "rrp-ebay-review:" + partNumber;
+      }
+
+      function defaultVerdict(seed) {
+        if (seed.photoGate !== "part_photos_attached") return "photo_gate";
+        if (seed.modelRouting === "hitl_review") return "hold";
+        return "correct";
+      }
+
+      function saveQuickReview(seed, reviewed) {
+        if (!reviewed) {
+          localStorage.removeItem(storageKey(seed.partNumber));
+          renderSummary();
+          return;
+        }
+
+        var record = {
+          partNumber: seed.partNumber,
+          title: seed.title,
+          fileName: seed.fileName,
+          verdict: defaultVerdict(seed),
+          reviewed: true,
+          operatorReply: "Quick index toggle review.",
+          shards: [],
+          modelRouting: seed.modelRouting,
+          photoGate: seed.photoGate,
+          modelTechNote: seed.modelTechNote,
+          updatedAt: new Date().toISOString()
+        };
+        localStorage.setItem(storageKey(seed.partNumber), JSON.stringify(record));
+        var index = JSON.parse(localStorage.getItem("rrp-ebay-review-index") || "[]");
+        if (index.indexOf(seed.partNumber) === -1) index.push(seed.partNumber);
+        localStorage.setItem("rrp-ebay-review-index", JSON.stringify(index.sort()));
+        renderSummary();
+      }
+
+      function renderSummary() {
+        var records = loadReviews();
+        var imageRecords = loadImageReviews();
+        var shardCount = records.reduce(function (sum, record) { return sum + (record.shards || []).length; }, 0);
+        document.querySelectorAll("[data-review-state]").forEach(function (node) {
+          node.textContent = "No operator reply saved";
+        });
+        document.querySelectorAll("[data-review-toggle]").forEach(function (toggle) {
+          toggle.checked = false;
+        });
+        document.querySelectorAll("[data-toggle-label]").forEach(function (label) {
+          label.textContent = "Reviewed";
+        });
+        document.querySelectorAll("[data-card]").forEach(function (card) {
+          card.classList.remove("is-reviewed");
+        });
+        document.getElementById("reviewSummary").textContent = JSON.stringify({
+          savedReplies: records.length,
+          extractedShards: shardCount,
+          correct: records.filter(function (record) { return record.verdict === "correct"; }).length,
+          incorrect: records.filter(function (record) { return record.verdict === "incorrect"; }).length,
+          photoGate: records.filter(function (record) { return record.verdict === "photo_gate"; }).length,
+          imageKept: imageRecords.filter(function (record) { return record.decision === "keep"; }).length,
+          imageTrashed: imageRecords.filter(function (record) { return record.decision === "trash"; }).length,
+          imageDecisions: imageRecords.length
+        }, null, 2);
+        records.forEach(function (record) {
+          var node = document.querySelector('[data-review-state="' + record.partNumber + '"]');
+          if (node) node.textContent = "Reviewed: " + record.verdict + " / " + ((record.shards || []).length) + " shard(s)";
+          var toggle = document.querySelector('[data-review-toggle="' + record.partNumber + '"]');
+          if (toggle) toggle.checked = Boolean(record.reviewed || record.operatorReply || (record.shards || []).length);
+          var label = document.querySelector('[data-toggle-label="' + record.partNumber + '"]');
+          if (label) label.textContent = "Reviewed";
+          var card = document.querySelector('[data-card="' + record.partNumber + '"]');
+          if (card) card.classList.add("is-reviewed");
+        });
+      }
+
+      document.querySelectorAll("[data-review-toggle]").forEach(function (toggle) {
+        toggle.addEventListener("change", function () {
+          var card = toggle.closest("[data-seed]");
+          if (!card) return;
+          var seed = JSON.parse(card.getAttribute("data-seed"));
+          saveQuickReview(seed, toggle.checked);
+        });
+      });
+
+      document.getElementById("exportReviews").addEventListener("click", function () {
+        var records = loadReviews();
+        var imageRecords = loadImageReviews();
+        var payload = {
+          exportedAt: new Date().toISOString(),
+          source: "scratch/ebay-automation-chain local review UI",
+          instructions: "Ingest shards and image decisions only after operator review. ReliableParts images remain candidates until kept and rights/watermark reviewed.",
+          records: records,
+          imageRecords: imageRecords
+        };
+        var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "ebay-operator-review.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      renderSummary();
+    })();
+  </script>
+</body>
+</html>

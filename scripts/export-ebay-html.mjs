@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-const DEFAULT_INPUT = "scratch/ge_dryer_listings.json";
-const DEFAULT_OUTPUT_DIR = "scratch/ebay-html";
+const DEFAULT_INPUT = "scratch/current-ebay-scope.json";
+const DEFAULT_OUTPUT_DIR = "scratch/ebay-html-current";
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {
@@ -50,7 +50,7 @@ function parseListingsArtifact(rawText) {
   for (const candidate of candidates) {
     try {
       const parsed = JSON.parse(candidate);
-      const listings = Array.isArray(parsed) ? parsed : parsed.listings;
+      const listings = Array.isArray(parsed) ? parsed : parsed.listings || parsed.parts;
       if (Array.isArray(listings)) return listings;
     } catch {
       // Try the next repair candidate.
@@ -351,6 +351,40 @@ function firstNonEmpty(...values) {
     if (text) return text;
   }
   return "";
+}
+
+function titleForListing(listing) {
+  const partNumber = String(listing.partNumber || "").trim().toUpperCase();
+  const label = firstNonEmpty(listing.partTitle, listing.description, listing.title, listing.specs?.type, "Appliance Part");
+  const title = firstNonEmpty(listing.title, `GE ${partNumber} ${label} Used Dryer Part`);
+  return title.length <= 80 ? title : title.slice(0, 80).trim();
+}
+
+function normalizeListingRecord(listing) {
+  const partNumber = String(listing.partNumber || listing.specs?.mpn || "").trim().toUpperCase();
+  const partTitle = firstNonEmpty(listing.partTitle, listing.description, listing.specs?.type, listing.title);
+  const diagramId = firstNonEmpty(listing.diagramId, listing.diagram_id, listing.diagId, listing.specs?.diagramId);
+  const ebayBuyNow = firstNonEmpty(listing.ebayBuyNow, listing.ebay_buy_now, listing.price, listing.specs?.ebayBuyNow);
+  const formattedEbayBuyNow = typeof ebayBuyNow === "number" ? `$${ebayBuyNow.toFixed(2)}` : ebayBuyNow;
+
+  return {
+    ...listing,
+    partNumber,
+    partTitle,
+    title: titleForListing({ ...listing, partNumber, partTitle }),
+    diagId: diagramId,
+    ebayBuyNow: formattedEbayBuyNow,
+    specs: {
+      ...(listing.specs || {}),
+      brand: listing.specs?.brand || "GE",
+      mpn: listing.specs?.mpn || partNumber,
+      type: listing.specs?.type || partTitle,
+      condition: listing.specs?.condition || "Used",
+      diagramId,
+      supersedes: firstNonEmpty(listing.supersedes, listing.specs?.supersedes),
+      ebayBuyNow: formattedEbayBuyNow,
+    },
+  };
 }
 
 function formatDescription(description) {
@@ -958,7 +992,7 @@ function renderIndexHtml(records, options = {}) {
 `;
 }
 
-let listings = parseListingsArtifact(fs.readFileSync(inputPath, "utf8"));
+let listings = parseListingsArtifact(fs.readFileSync(inputPath, "utf8")).map(normalizeListingRecord);
 const listingSheet = loadListingSheet(listingSheetPath);
 if (listingSheet) {
   const listingByPartNumber = new Map(

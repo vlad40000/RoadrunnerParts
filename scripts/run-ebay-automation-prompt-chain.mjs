@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-const DEFAULT_INPUT = "scratch/ebay-html-final-52/listings.normalized.json";
-const DEFAULT_OUTPUT_DIR = "scratch/ebay-automation-chain";
+const DEFAULT_INPUT = "scratch/ebay-html-current/listings.normalized.json";
+const DEFAULT_OUTPUT_DIR = "scratch/ebay-automation-chain-current";
 const DEFAULT_PROMPT_PATH = "scratch/ebay_prompt_chain.txt";
 const DEFAULT_APPROVED_IMAGE_ROOT = "scratch/approved-images";
 const DEFAULT_LEGACY_CHAIN = "scratch/ebay-zero-drift-final-52/chain-payloads.json";
@@ -77,7 +77,7 @@ function sanitizeFilename(value) {
 
 function parseJsonWithListings(filePath) {
   const parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  const listings = Array.isArray(parsed) ? parsed : parsed.listings;
+  const listings = Array.isArray(parsed) ? parsed : parsed.listings || parsed.parts;
   if (!Array.isArray(listings)) {
     throw new Error(`Expected an array or { listings: [] } in ${filePath}`);
   }
@@ -297,7 +297,7 @@ function titleCase(value) {
 }
 
 function cleanPartLabel(record) {
-  return String(record.partTitle || record.title || record.specs?.type || "Appliance Part")
+  return String(record.partTitle || record.description || record.title || record.specs?.type || "Appliance Part")
     .replace(/\s*\([^)]*\)\s*/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -317,7 +317,7 @@ function inferSection(record, legacyRecord) {
   const section = legacyRecord?.phase1a?.PART_ID?.Assembly_Diagram_Section;
   if (section && DIAGRAMS[section]) return section;
 
-  const callout = String(record.diagId || record.specs?.diagramId || "");
+  const callout = String(record.diagId || record.diagramId || record.specs?.diagramId || "");
   if (/^(50[3-6]|51[0234]|3102|3106)$/.test(callout)) return "DRUM";
   if (/^(30[0157]|31[12367]|380|603)$/.test(callout)) return "FRONT PANEL & DOOR";
   if (/^(40[148]|41[789]|420|430|222|80)$/.test(callout)) return "CABINET & TOP PANEL";
@@ -1040,7 +1040,7 @@ function indexPage({ listings, generatedAt, promptSummary }) {
     </section>
     <section class="prompt">
       <h2>Operator Shard Export</h2>
-      <p>Replies and image keep/trash decisions are stored in this browser. Use this export after reviewing the 49 pages.</p>
+      <p>Replies and image keep/trash decisions are stored in this browser. Use this export after reviewing the current listing pages.</p>
       <div class="actions">
         <button id="exportReviews" type="button">Download Review JSON</button>
       </div>
@@ -1205,11 +1205,11 @@ function buildPayload(
   const legacyRecord = legacyMap.get(partNumber);
   const section = inferSection(record, legacyRecord);
   const diagram = DIAGRAMS[section];
-  const callout = String(record.diagId || record.specs?.diagramId || legacyRecord?.phase1a?.PART_ID?.Diagram_Item_Number || "").trim();
+  const callout = String(record.diagId || record.diagramId || record.specs?.diagramId || legacyRecord?.phase1a?.PART_ID?.Diagram_Item_Number || "").trim();
   const label = cleanPartLabel(record);
   const baseRouting = routeReview(record, legacyRecord);
   const title = makeTitle(record);
-  const price = parseMoney(record.ebayBuyNow || record.specs?.ebayBuyNow, 25);
+  const price = parseMoney(record.ebayBuyNow || record.price || record.specs?.ebayBuyNow, 25);
   const attachedImages = approvedImageMap.get(partNumber) || [];
   const relativeImages = attachedImages.map((imagePath) => path.relative(outputDir, imagePath).split(path.sep).join("/"));
   const imageStatus = attachedImages.length ? "part_photos_attached" : "part_photo_pending";

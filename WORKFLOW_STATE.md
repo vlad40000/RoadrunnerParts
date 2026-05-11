@@ -1,6 +1,22 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: Pipeline Operational | Prompt Chain EXECUTED (Phase 0/1A/1C Complete - 2026-05-10)
+## Status: Current eBay Scope Locked To 41 Operator-Selected Parts (2026-05-11)
+
+### Current eBay Scope - Active Source Of Truth (2026-05-11)
+- **Active Count**: 41 parts. Do not treat 88, 52, 50, or 49 as current listing scope.
+- **Operator CSV**: `C:\Users\bradv\OneDrive\Attachments\Documents\ebay pricing .csv`
+- **Repo-Local Scope Artifact**: `scratch/current-ebay-scope.json`
+- **Current HTML Review Output**: `scratch/ebay-html-current/index.html`
+- **Current Prompt-Chain Review Output**: `scratch/ebay-automation-chain-current/index.html`
+- **Script Defaults Locked**:
+  - `scripts/build-current-ebay-scope.mjs` imports the operator CSV into the repo-local current scope artifact.
+  - `scripts/export-ebay-html.mjs` defaults to `scratch/current-ebay-scope.json` and `scratch/ebay-html-current/`.
+  - `scripts/find-ebay-images.mjs` defaults to `scratch/ebay-html-current/listings.normalized.json` and `scratch/ebay-images-current/`.
+  - `scripts/run-ebay-automation-prompt-chain.mjs` defaults to `scratch/ebay-html-current/listings.normalized.json` and `scratch/ebay-automation-chain-current/`.
+- **Guardrail**: Old full-BOM/listing artifacts remain archive/reference only. Do not generate mockups, image searches, prompt-chain pages, listing drafts, or marketplace sync for parts outside the current 41-part scope unless the operator replaces the scope.
+- **Photo/Evidence Gate**: Current review pages may show `PART PHOTO PENDING`, but no listing is stage-ready without operator-approved sale photos plus rights/watermark review.
+
+## Historical Status: Pipeline Operational | Prompt Chain EXECUTED (Phase 0/1A/1C Complete - 2026-05-10)
 
 ### Prompt Chain Execution (2026-05-10)
 - **Architecture**: Lock-Driven Parts System (3-phase state machine from `scratch/ebay_prompt_chain.txt`)
@@ -64,17 +80,17 @@
 ### Pending
 - **Tomorrow's Priority**: Go over the Obsidian durable memory architecture integration.
 - **eBay Deployment**: Disabled. Do not push or sync listings directly to eBay yet.
-- **Operator Review**: Review local HTML files before any future listing-draft or marketplace sync work. (Note: a specialized audit dashboard for the 50 corrected finalized items has been generated at `scratch/ebay-html-final-52/index.html`).
+- **Operator Review**: Review current local HTML files before any future listing-draft or marketplace sync work. The active dashboard is `scratch/ebay-html-current/index.html`.
 - **Audit Findings (2026-05-08)**: 50/50 selected listing records processed after duplicate/error cleanup. Image display is now strict: candidates must carry exact part-number evidence from an approved source, otherwise the listing shows `IMAGE PENDING` for operator review.
 - **Inventory Linking**: Pending; local HTML artifacts are currently for visual review only.
 
-## Selected Final Listings (50 Units)
-- **Status**: AUDIT READY (24 Mismatches Flagged)
-- **Source**: `scratch/ebay-html-final-52/listings.normalized.json` is now the authoritative source of truth for the audit.
-- **Dashboard**: `scratch/ebay-html-final-52/index.html` contains the finalized premium audit dashboard with red-flagged mismatch visual states.
+## Historical Selected Final Listings (50 Units - Archive Only)
+- **Status**: Superseded by current 41-part operator CSV scope.
+- **Source**: `scratch/ebay-html-final-52/listings.normalized.json` is an archived audit artifact, not the current source of truth.
+- **Dashboard**: `scratch/ebay-html-final-52/index.html` remains available for historical review only.
 
-## Listing Optimization (88 Units)
-- **Status**: COMPLETE
+## Historical Listing Optimization (88 Units - Archive Only)
+- **Status**: Superseded by current 41-part operator CSV scope.
 - **Condition**: Normalized to "Used" (Inspected & Prepared for Resale)
 - **Content**: Professional format with symptoms, compatibility, and features.
 - **Title**: Optimized for SEO and max 80 characters.
@@ -85,18 +101,18 @@
 - **Note**: AI image generation is STRICTLY PROHIBITED.
 - **Policy**: NO WATERMARKED IMAGES. Known watermarked domains and watermark text are hard-excluded. ReliableParts is not blanket-approved because some images are watermarked; remaining ReliableParts candidates are marked `candidate_needs_watermark_review` and do not outrank clean GE candidates.
 - **Gallery**: Updated to support multi-image selection so the operator can choose the cleanest available shot.
-- **Review**: Operator must review `scratch/ebay-html-with-images/index.html` for final approval.
+- **Review**: Historical image review output is `scratch/ebay-html-with-images/index.html`. Current review must use `scratch/ebay-html-current/index.html`.
 - **Image Selection**: If the primary image has a watermark, use the **Thumbnail Gallery** to select a clean alternative. Click the thumbnail to swap the main image, then save/note the selection.
 - **Goal**: Ensure 100% watermark-free listings before any draft staging.
 
 ### Review Findings - 2026-05-07
-- `C:\Users\bradv\Downloads\Ebay listings revised 1.txt` contains 88 unique part entries and is the current source for HTML export.
+- `C:\Users\bradv\Downloads\Ebay listings revised 1.txt` contains 88 unique part entries and is a historical source, not the current source for HTML export.
 - All listings have been updated to "Used" condition to match the inventory.
 
 ### Local HTML Export - 2026-05-07
 - `scripts/export-ebay-html.mjs` converts listing artifacts into local HTML previews.
 - **Images**: Real web candidates are now integrated for all 88 listings.
-- Output: `scratch/ebay-html/` contains all 88 part files and a central `index.html`.
+- Output: `scratch/ebay-html/` contains historical broad part files and a central `index.html`.
 
 ### Image Candidate Discovery & Multi-Image Gallery - 2026-05-08
 - `scripts/find-ebay-images.mjs` has been updated to support robust multi-image extraction:
@@ -105,18 +121,18 @@
     - **Multi-Image Manifest**: `scratch/ebay-images/image-candidates.json` now stores arrays of candidates per part.
     - **Watermark Protection**: Hard-excludes known watermarked domains and watermark text. ReliableParts candidates are retained only as review candidates, not auto-approved.
     - **Generic Asset Protection**: Hard-excludes favicon/icon/logo/button/lockup assets and tiny GE/Salsify transformed thumbnails such as `w_185,h_193`.
-- Current Pipeline Status: 88/88 parts have image candidates; 88/88 generated primary images are from GE domains (`geapplianceparts.com` or `geappliances.com`).
+- Historical Pipeline Status: 88/88 parts had image candidates; this is not current listing scope.
 - Generic Asset Status: 0 favicon/icon/button/lockup/tiny-thumbnail URLs remain in `scratch/ebay-images/image-candidates.json` or `scratch/ebay-html-with-images/listings.with-images.json`.
 
 ### Premium Audit Dashboard (Roadrunner v2)
-- **Status**: READY FOR REVIEW (88/88 Parts)
+- **Status**: ARCHIVE ONLY (88/88 Parts)
 - **UI Architecture**:
     - **Dashboard**: High-conversion card layout with animated entry and status badges.
     - **Audit View**: Dual-column layout (Gallery / Specs) with glassmorphism styling.
     - **Interactive Gallery**: Instant swap thumbnail grid with candidate scoring metadata.
 - **Watermark Policy**: STRICT (Penalized: PartsDr, APP, PartsWarehouse, Sears).
-- **Next Action**: Operator review of `scratch/ebay-html-premium/index.html`.
-- **Status Summary**: 88/88 parts have candidate arrays. 
+- **Next Action**: Do not use this as active review unless the operator explicitly reopens the 88-part scope.
+- **Status Summary**: Historical 88/88 parts have candidate arrays. 
 - **Watermark Guard**: Known watermarked domains are penalized. ReliableParts and Sears candidates are flagged for manual verification.
 - **Generic Asset Guard**: Favicon/icon/button/lockup assets and tiny `w_185,h_193` Salsify thumbnails are excluded from both `scratch/ebay-html-with-images/` and `scratch/ebay-html-premium/`.
 - **Compliance**: Image candidates require operator approval and image-use rights before live deployment.

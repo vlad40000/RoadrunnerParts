@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-const DEFAULT_INPUT = "scratch/ebay-html/listings.normalized.json";
-const DEFAULT_OUTPUT_DIR = "scratch/ebay-images";
+const DEFAULT_INPUT = "scratch/ebay-html-current/listings.normalized.json";
+const DEFAULT_OUTPUT_DIR = "scratch/ebay-images-current";
 
 const args = new Map(
   process.argv.slice(2).map((arg) => {
