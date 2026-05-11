@@ -3798,17 +3798,37 @@ function PricingPanel(props: {
   loadScenarioByType: (type: PromptScenarioType, patch?: Record<string, unknown>) => void;
   setActiveMode: (mode: BomWorkspaceMode) => void;
 }) {
+  type PipelineSignal = {
+    partNumber: string;
+    normalizedModel: string | null;
+    name: string;
+    brand: string | null;
+    brandPriority: string;
+    normalizedBrandFamily: string;
+    recommendationGroup: string;
+    active: number;
+    sold: number;
+    netExpected: number | null;
+    confidence: string | null;
+    warnings: string[];
+  };
+
   const [pipelineStats, setPipelineStats] = useState<{
     pendingSurvey: number;
     surveyed: number;
     marketSignals: number;
+    breadAndButterSignals: number;
+    overlookedSignals: number;
     draftListings: number;
   }>({
     pendingSurvey: 0,
     surveyed: 0,
     marketSignals: 0,
+    breadAndButterSignals: 0,
+    overlookedSignals: 0,
     draftListings: 0,
   });
+  const [pipelineSignals, setPipelineSignals] = useState<PipelineSignal[]>([]);
   const [pipelineBusy, setPipelineBusy] = useState(false);
   const [pipelineMessage, setPipelineMessage] = useState("");
   const [pipelineError, setPipelineError] = useState("");
@@ -3826,9 +3846,12 @@ function PricingPanel(props: {
           pendingSurvey: 0,
           surveyed: 0,
           marketSignals: 0,
+          breadAndButterSignals: 0,
+          overlookedSignals: 0,
           draftListings: 0,
         },
       );
+      setPipelineSignals(Array.isArray(payload.signals) ? payload.signals : []);
     } catch (error) {
       setPipelineError(error instanceof Error ? error.message : "Failed to load eBay pipeline.");
     }
@@ -3850,24 +3873,27 @@ function PricingPanel(props: {
           action: "prepare_drafts",
           limit: 25,
           minNetExpected: 15,
-          dryRun: false,
+          dryRun: true,
         }),
       });
       const payload = await response.json();
       if (!response.ok || !payload?.ok) {
-        throw new Error(payload?.detail || payload?.error || "Failed to prepare eBay drafts.");
+        throw new Error(payload?.detail || payload?.error || "Failed to preview eBay draft candidates.");
       }
       setPipelineStats(
         payload.stats || {
           pendingSurvey: 0,
           surveyed: 0,
           marketSignals: 0,
+          breadAndButterSignals: 0,
+          overlookedSignals: 0,
           draftListings: 0,
         },
       );
-      setPipelineMessage(`Prepared ${payload.preparedCount || 0} eBay drafts in the current workflow.`);
+      setPipelineSignals(Array.isArray(payload.signals) ? payload.signals : []);
+      setPipelineMessage(`Previewed ${payload.preparedCount || 0} eBay draft candidates. No listing tables were changed.`);
     } catch (error) {
-      setPipelineError(error instanceof Error ? error.message : "Failed to prepare eBay drafts.");
+      setPipelineError(error instanceof Error ? error.message : "Failed to preview eBay draft candidates.");
     } finally {
       setPipelineBusy(false);
     }
@@ -3959,8 +3985,10 @@ function PricingPanel(props: {
           {[
             ["Pending Survey", String(pipelineStats.pendingSurvey)],
             ["Market Signals", String(pipelineStats.marketSignals)],
-            ["Draft Listings", String(pipelineStats.draftListings)],
+            ["Bread & Butter", String(pipelineStats.breadAndButterSignals)],
+            ["Overlooked", String(pipelineStats.overlookedSignals)],
             ["Surveyed", String(pipelineStats.surveyed)],
+            ["Draft Listings", String(pipelineStats.draftListings)],
           ].map(([label, value]) => (
             <div key={label} className="rounded-lg bg-white/5 p-4">
               <div className="text-[10px] uppercase tracking-widest text-white/35">{label}</div>
@@ -3982,11 +4010,61 @@ function PricingPanel(props: {
             disabled={pipelineBusy}
             className="h-8 rounded-lg bg-white px-3 text-[10px] font-bold uppercase tracking-widest text-black disabled:opacity-40"
           >
-            {pipelineBusy ? "Preparing Drafts" : "Prepare eBay Drafts"}
+            {pipelineBusy ? "Previewing Drafts" : "Preview eBay Drafts"}
           </button>
         </div>
         {pipelineMessage ? <div className="px-4 pb-2 text-xs text-emerald-200">{pipelineMessage}</div> : null}
         {pipelineError ? <div className="px-4 pb-4 text-xs text-red-300">{pipelineError}</div> : null}
+        {pipelineSignals.length ? (
+          <div className="border-t border-white/10 p-4">
+            <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-white/45">
+              Market Signal Recommendations
+            </div>
+            <div className="overflow-x-auto rounded-lg border border-white/10">
+              <table className="min-w-full divide-y divide-white/10 text-left text-xs">
+                <thead className="bg-white/5 text-[10px] uppercase tracking-widest text-white/40">
+                  <tr>
+                    <th className="px-3 py-2">Part</th>
+                    <th className="px-3 py-2">Brand</th>
+                    <th className="px-3 py-2">Group</th>
+                    <th className="px-3 py-2">Sold</th>
+                    <th className="px-3 py-2">Active</th>
+                    <th className="px-3 py-2">Net</th>
+                    <th className="px-3 py-2">Confidence</th>
+                    <th className="px-3 py-2">Evidence</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {pipelineSignals.slice(0, 12).map((signal) => (
+                    <tr key={`${signal.partNumber}-${signal.normalizedModel || "model"}`}>
+                      <td className="px-3 py-2">
+                        <div className="font-mono text-white">{signal.partNumber}</div>
+                        <div className="max-w-[220px] truncate text-[11px] text-white/45">{signal.name}</div>
+                      </td>
+                      <td className="px-3 py-2 text-white/65">
+                        {signal.normalizedBrandFamily || signal.brand || "-"}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span className="rounded-md bg-white/10 px-2 py-1 text-[10px] uppercase tracking-widest text-white/65">
+                          {signal.recommendationGroup === "in_current_41" ? "current 41" : signal.brandPriority}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-white/70">{signal.sold}</td>
+                      <td className="px-3 py-2 font-mono text-white/70">{signal.active}</td>
+                      <td className="px-3 py-2 font-mono text-white/70">
+                        {typeof signal.netExpected === "number" ? `$${signal.netExpected.toFixed(2)}` : "-"}
+                      </td>
+                      <td className="px-3 py-2 text-white/60">{signal.confidence || "-"}</td>
+                      <td className="max-w-[260px] px-3 py-2 text-[11px] text-white/45">
+                        {signal.warnings?.length ? signal.warnings.join(" ") : "Exact part-number signal."}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null}
       </Panel>
       <Panel>
         <PanelHeader title="One Process Per Agent" />

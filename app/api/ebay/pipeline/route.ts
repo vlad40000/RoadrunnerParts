@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/src/server/db";
+import { classifyEbayBrandPriority } from "@/src/lib/ebay-brand-priority";
 import { generateEbayDescription, generateEbayTitle } from "@/src/lib/ebay-listing-gen";
 
 export const runtime = "nodejs";
@@ -33,6 +34,12 @@ function marketDemand(activeCount: number | null, soldCount: number | null) {
   return "low";
 }
 
+function rawObject(row: Record<string, unknown>) {
+  return row.raw && typeof row.raw === "object" && !Array.isArray(row.raw)
+    ? (row.raw as Record<string, unknown>)
+    : {};
+}
+
 async function loadPipelineSnapshot(limit: number) {
   const [statsRows, signalRows, draftRows] = await Promise.all([
     sql.query(`
@@ -40,6 +47,8 @@ async function loadPipelineSnapshot(limit: number) {
         (SELECT count(*)::int FROM appliance_inventory_queue WHERE ebay_survey_status = 'pending') AS pending_survey,
         (SELECT count(*)::int FROM appliance_inventory_queue WHERE ebay_survey_status IN ('complete', 'surveyed')) AS surveyed,
         (SELECT count(*)::int FROM part_market_signal) AS market_signals,
+        (SELECT count(*)::int FROM part_market_signal WHERE raw->>'brandPriority' = 'bread_and_butter') AS bread_and_butter_signals,
+        (SELECT count(*)::int FROM part_market_signal WHERE COALESCE((raw->>'inCurrent41')::boolean, false) = false) AS overlooked_signals,
         (SELECT count(*)::int FROM channel_listing WHERE channel = 'ebay' AND listing_status = 'draft') AS draft_listings
     `),
     sql.query(
@@ -55,12 +64,29 @@ async function loadPipelineSnapshot(limit: number) {
         s.average_sold_price,
         s.net_expected,
         s.confidence,
-        s.checked_at
+        s.warnings,
+        s.checked_at,
+        s.raw,
+        m.brand,
+        m.brand_family,
+        m.resolved_oem_brand,
+        m.manufacturer_family
       FROM part_market_signal s
       LEFT JOIN bom_part b
         ON b.part_number = s.part_number
        AND (b.normalized_model = s.normalized_model OR s.normalized_model IS NULL)
-      ORDER BY s.part_number, s.normalized_model, s.net_expected DESC NULLS LAST, s.checked_at DESC
+      LEFT JOIN machine_inventory m
+        ON m.normalized_model = s.normalized_model
+      ORDER BY
+        CASE COALESCE(s.raw->>'brandPriority', '')
+          WHEN 'bread_and_butter' THEN 0
+          WHEN 'secondary' THEN 1
+          ELSE 2
+        END,
+        COALESCE((s.raw->>'inCurrent41')::boolean, false) ASC,
+        s.net_expected DESC NULLS LAST,
+        s.ebay_sold_count DESC NULLS LAST,
+        s.checked_at DESC
       LIMIT $1
     `,
       [limit],
@@ -92,10 +118,31 @@ async function loadPipelineSnapshot(limit: number) {
   const signals = signalRecords.map((row) => {
     const activeCount = rowNumber(row, "ebay_active_count");
     const soldCount = rowNumber(row, "ebay_sold_count");
+    const raw = rawObject(row);
+    const priority =
+      typeof raw.brandPriority === "string"
+        ? {
+            brandPriority: raw.brandPriority,
+            normalizedBrandFamily: raw.normalizedBrandFamily || "unknown",
+            priorityReason: raw.priorityReason || "Stored market-signal brand priority.",
+          }
+        : classifyEbayBrandPriority({
+            brand: row.brand,
+            brandFamily: row.brand_family,
+            resolvedOemBrand: row.resolved_oem_brand,
+            manufacturerFamily: row.manufacturer_family,
+            normalizedModel: row.normalized_model,
+          });
     return {
       partNumber: String(row.part_number || ""),
       normalizedModel: row.normalized_model || null,
       name: String(row.part_name || "Appliance Part"),
+      brand: row.brand || null,
+      brandPriority: priority.brandPriority,
+      normalizedBrandFamily: priority.normalizedBrandFamily,
+      priorityReason: priority.priorityReason,
+      inCurrent41: Boolean(raw.inCurrent41),
+      recommendationGroup: raw.inCurrent41 ? "in_current_41" : "overlooked_candidate",
       active: activeCount ?? 0,
       sold: soldCount ?? 0,
       sellThrough: rowNumber(row, "sell_through_rate"),
@@ -104,6 +151,7 @@ async function loadPipelineSnapshot(limit: number) {
       netExpected: rowNumber(row, "net_expected"),
       demand: marketDemand(activeCount, soldCount),
       confidence: row.confidence || null,
+      warnings: Array.isArray(row.warnings) ? row.warnings : [],
       checkedAt: row.checked_at || null,
     };
   });
@@ -113,6 +161,8 @@ async function loadPipelineSnapshot(limit: number) {
       pendingSurvey: Number(stats.pending_survey || 0),
       surveyed: Number(stats.surveyed || 0),
       marketSignals: Number(stats.market_signals || 0),
+      breadAndButterSignals: Number(stats.bread_and_butter_signals || 0),
+      overlookedSignals: Number(stats.overlooked_signals || 0),
       draftListings: Number(stats.draft_listings || 0),
     },
     signals,
@@ -281,6 +331,16 @@ export async function POST(req: NextRequest) {
 
     if (action !== "prepare_drafts") {
       return NextResponse.json({ ok: false, error: `Unsupported action: ${action}` }, { status: 400 });
+    }
+
+    if (body?.dryRun !== true && body?.operatorApproval !== true) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Draft creation requires explicit operatorApproval=true. Run with dryRun=true for recommendation preview.",
+        },
+        { status: 403 },
+      );
     }
 
     const result = await prepareDraftListings({

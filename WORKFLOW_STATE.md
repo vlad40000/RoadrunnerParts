@@ -16,6 +16,13 @@
 - **Guardrail**: Old full-BOM/listing artifacts remain archive/reference only. Do not generate mockups, image searches, prompt-chain pages, listing drafts, or marketplace sync for parts outside the current 41-part scope unless the operator replaces the scope.
 - **Photo/Evidence Gate**: Current review pages may show `PART PHOTO PENDING`, but no listing is stage-ready without operator-approved sale photos plus rights/watermark review.
 
+### eBay Intelligence Lane - Broader Casting (2026-05-11)
+- **Source**: `machine_inventory` is the preferred candidate-machine source for market intelligence. If no parts overlap that table, cache-only DB models may be used for broader casting and must be tagged as `model_parts_cache_broad_fallback`.
+- **Brand Priority**: GE/Hotpoint, Whirlpool, and Maytag are tagged `bread_and_butter`; other known brands are `secondary`; missing brand evidence is `unknown_brand`.
+- **Current Listing Boundary**: Intelligence recommendations can flag overlooked candidates outside the 41, but the active listing batch remains only the 41-part CSV until the operator approves a new scope.
+- **Exact Evidence Rule**: eBay comps must carry exact part-number evidence in the listing title or URL. Weak/vague active or sold matches are downgraded and stored as warnings.
+- **Draft Guardrail**: The dashboard preview path runs dry-run by default. Creating eBay draft rows now requires explicit `operatorApproval=true`; live eBay sync remains disabled.
+
 ## Historical Status: Pipeline Operational | Prompt Chain EXECUTED (Phase 0/1A/1C Complete - 2026-05-10)
 
 ### Prompt Chain Execution (2026-05-10)
