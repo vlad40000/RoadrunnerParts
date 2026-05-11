@@ -528,26 +528,9 @@ const html = `<!DOCTYPE html>
       font-size: 14px;
     }
 
-    .detail-shots {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      padding-left: 100px;
-    }
 
-    .detail-card {
-      height: 132px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #f2f4f7;
-      padding: 14px;
-      color: #4d5a6b;
-      font-weight: 650;
-      font-size: 14px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-    }
+
+
 
     .buy-box {
       padding-top: 4px;
@@ -991,7 +974,7 @@ const html = `<!DOCTYPE html>
           </div>
           <div class="link-action">Share</div>
         </div>
-        <div class="detail-shots" id="detailShots"></div>
+
       </div>
 
       <aside class="buy-box">
@@ -1057,11 +1040,12 @@ const html = `<!DOCTYPE html>
   <script>
     const listings = ${dataJson};
     let activeIndex = 0;
+    let activePhotoIndex = 0;
 
     const partStrip = document.getElementById("partStrip");
     const thumbs = document.getElementById("thumbs");
     const mainImage = document.getElementById("mainImage");
-    const detailShots = document.getElementById("detailShots");
+
     const title = document.getElementById("title");
     const price = document.getElementById("price");
     const payLater = document.getElementById("payLater");
@@ -1102,17 +1086,32 @@ const html = `<!DOCTYPE html>
     function setMainPhoto(index, imageIndex, thumbButton) {
       const listing = listings[index];
       if (!listing.hasPhoto) return;
+      activePhotoIndex = imageIndex;
       const imageUrl = listing.imageFiles[imageIndex] || listing.approvedImage;
-      mainImage.innerHTML = '<button class="media-float float-expand">+</button><button class="media-float float-heart">H</button><button class="media-float float-prev">&lt;</button><button class="media-float float-next">&gt;</button><img src="' + imageUrl + '" alt="' + listing.title + '">';
-      if (thumbButton) {
-        document.querySelectorAll(".thumb").forEach((thumb) => thumb.classList.remove("active"));
-        thumbButton.classList.add("active");
-      }
+      mainImage.innerHTML = '<button class="media-float float-expand">+</button><button class="media-float float-heart">H</button><button class="media-float float-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" onclick="nextPhoto()">&gt;</button><img src="' + imageUrl + '" alt="' + listing.title + '">';
+      document.querySelectorAll(".thumb").forEach((thumb, i) => {
+        thumb.classList.toggle("active", i === imageIndex);
+      });
+    }
+
+    function prevPhoto() {
+      const listing = listings[activeIndex];
+      if (!listing.hasPhoto || listing.imageFiles.length < 2) return;
+      const newIndex = (activePhotoIndex - 1 + listing.imageFiles.length) % listing.imageFiles.length;
+      setMainPhoto(activeIndex, newIndex);
+    }
+
+    function nextPhoto() {
+      const listing = listings[activeIndex];
+      if (!listing.hasPhoto || listing.imageFiles.length < 2) return;
+      const newIndex = (activePhotoIndex + 1) % listing.imageFiles.length;
+      setMainPhoto(activeIndex, newIndex);
     }
 
     function renderMainImage(listing) {
+      activePhotoIndex = 0;
       if (listing.hasPhoto) {
-        mainImage.innerHTML = '<button class="media-float float-expand">+</button><button class="media-float float-heart">H</button><button class="media-float float-prev">&lt;</button><button class="media-float float-next">&gt;</button><img src="' + listing.approvedImage + '" alt="' + listing.title + '">';
+        mainImage.innerHTML = '<button class="media-float float-expand">+</button><button class="media-float float-heart">H</button><button class="media-float float-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" onclick="nextPhoto()">&gt;</button><img src="' + listing.approvedImage + '" alt="' + listing.title + '">';
         return;
       }
 
@@ -1128,9 +1127,6 @@ const html = `<!DOCTYPE html>
     }
 
     function renderDetails(listing) {
-      detailShots.innerHTML = listing.photoPlan.slice(0, 3).map((label, index) => (
-        '<div class="detail-card"><span>Detail ' + (index + 1) + '</span><strong>' + label + '</strong></div>'
-      )).join("");
 
       specGrid.innerHTML = [
         ["Part number", listing.partNumber],
