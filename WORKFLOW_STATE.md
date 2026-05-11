@@ -22,6 +22,7 @@
 - **Current Listing Boundary**: Intelligence recommendations can flag overlooked candidates outside the 41, but the active listing batch remains only the 41-part CSV until the operator approves a new scope.
 - **Exact Evidence Rule**: eBay comps must carry exact part-number evidence in the listing title or URL. Weak/vague active or sold matches are downgraded and stored as warnings.
 - **Draft Guardrail**: The dashboard preview path runs dry-run by default. Creating eBay draft rows now requires explicit `operatorApproval=true`; live eBay sync remains disabled.
+- **Current Scrape Status**: Direct eBay HTML search returned HTTP 403 during the first broad-cast batch. The affected rows are marked `confidence=blocked`; blocked/no-evidence signals are excluded from draft-candidate preparation.
 
 ## Historical Status: Pipeline Operational | Prompt Chain EXECUTED (Phase 0/1A/1C Complete - 2026-05-10)
 
