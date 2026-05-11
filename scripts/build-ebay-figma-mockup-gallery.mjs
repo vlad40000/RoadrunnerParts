@@ -1894,8 +1894,9 @@ const html = `<!DOCTYPE html>
 
       similarGrid.innerHTML = related.map((listing) => {
         const view = effectiveListing(listing);
-        const imgHtml = listing.approvedImage
-          ? '<img src="' + listing.approvedImage + '" alt="' + escapeHtmlAttr(view.title) + '">'
+        const imageUrl = primaryImageFor(listing);
+        const imgHtml = imageUrl
+          ? '<img src="' + imageUrl + '" alt="' + escapeHtmlAttr(view.title) + '">'
           : '<span style="color:#94a3b8;font-size:13px">No image</span>';
         const realIndex = listings.findIndex((item) => item.partNumber === listing.partNumber);
         return (
@@ -1920,6 +1921,7 @@ const html = `<!DOCTYPE html>
       renderStrip();
       renderThumbs(listing);
       renderMainImage(listing);
+      refreshImageEditor(listing);
 
       title.textContent = view.title;
       fillTextEditor(view);
@@ -1930,9 +1932,11 @@ const html = `<!DOCTYPE html>
       payLater.textContent = "as low as " + money(view.price / 4) + "/mo with Klarna. Learn more";
       description.value = view.descriptionText;
       renderDescriptionPreview(view);
-      listingAlert.textContent = listing.hasPhoto
-        ? "Operator review mode: only approved local sale photos are shown here. Verify condition and fitment before staging."
-        : "Photo hold: provider/reference images are blocked from the lead photo. Add operator-owned sale photos before this item can be staged.";
+      listingAlert.textContent = pendingImageFor(listing)
+        ? "Uploaded image preview is attached. Commit to publish it into the approved sale-photo folder."
+        : listing.hasPhoto
+          ? "Operator review mode: only approved local sale photos are shown here. Verify condition and fitment before staging."
+          : "Photo hold: provider/reference images are blocked from the lead photo. Add operator-owned sale photos before this item can be staged.";
 
       renderDetails(listing, view);
       renderSimilar();
@@ -1977,6 +1981,46 @@ const html = `<!DOCTYPE html>
     protectionInput.addEventListener("change", () => {
       saveCurrentDraft(false);
       renderDetails(listings[activeIndex], effectiveListing(listings[activeIndex]));
+    });
+    imageUpload.addEventListener("change", async () => {
+      const file = imageUpload.files && imageUpload.files[0];
+      if (!file) return;
+      if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type)) {
+        imageUpload.value = "";
+        notify("Use JPG, PNG, WEBP, or AVIF images");
+        return;
+      }
+      if (file.size > 8 * 1024 * 1024) {
+        imageUpload.value = "";
+        notify("Image is over 8 MB");
+        return;
+      }
+      const listing = listings[activeIndex];
+      const existing = pendingImageUploads.get(listing.partNumber);
+      if (existing && existing.previewUrl) URL.revokeObjectURL(existing.previewUrl);
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        const previewUrl = URL.createObjectURL(file);
+        pendingImageUploads.set(listing.partNumber, {
+          partNumber: listing.partNumber,
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          dataUrl,
+          previewUrl,
+          selectedAt: new Date().toISOString(),
+        });
+        refreshImageEditor(listing);
+        renderThumbs(listing);
+        renderMainImage(listing);
+        renderDetails(listing, effectiveListing(listing));
+        renderSimilar();
+        listingAlert.textContent = "Uploaded image preview is attached. Commit to publish it into the approved sale-photo folder.";
+        notify("Image preview attached for " + listing.partNumber);
+      } catch {
+        imageUpload.value = "";
+        notify("Could not read image file");
+      }
     });
     specificsTable.addEventListener("input", () => {
       document.querySelectorAll("[data-spec-key]").forEach((input) => {
@@ -2072,6 +2116,21 @@ const html = `<!DOCTYPE html>
         await commitCurrentEdits();
         return;
       }
+      if (action === "clear-upload") {
+        const pending = pendingImageUploads.get(listing.partNumber);
+        if (pending && pending.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+        pendingImageUploads.delete(listing.partNumber);
+        refreshImageEditor(listing);
+        renderThumbs(listing);
+        renderMainImage(listing);
+        renderDetails(listing, effectiveListing(listing));
+        renderSimilar();
+        listingAlert.textContent = listing.hasPhoto
+          ? "Operator review mode: only approved local sale photos are shown here. Verify condition and fitment before staging."
+          : "Photo hold: provider/reference images are blocked from the lead photo. Add operator-owned sale photos before this item can be staged.";
+        notify("Cleared uploaded image for " + listing.partNumber);
+        return;
+      }
       if (action === "share") {
         await copyText(location.href.split("#")[0] + "#" + listing.partNumber);
         notify("Copied share link for " + listing.partNumber);
@@ -2087,7 +2146,8 @@ const html = `<!DOCTYPE html>
         return;
       }
       if (action === "photo-prev" || action === "photo-next") {
-        if (!listing.hasPhoto || listing.imageFiles.length < 2) notify("No additional approved photos yet");
+        const files = imageFilesFor(listing);
+        if (!hasListingPhoto(listing) || files.length < 2) notify("No additional approved photos yet");
         return;
       }
       if (action === "watch") {
