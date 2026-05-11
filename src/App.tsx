@@ -390,8 +390,8 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
           </div>
         </div>
 
-        <aside className="border-t border-pro-slate-200 bg-pro-slate-50 p-4 lg:border-l lg:border-t-0">
-          <div className="flex items-center justify-between gap-3">
+        <aside className="flex max-h-[460px] flex-col overflow-hidden border-t border-pro-slate-200 bg-pro-slate-50 p-4 lg:border-l lg:border-t-0">
+          <div className="flex shrink-0 items-center justify-between gap-3">
             <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-pro-slate-500">
               Photo pending
             </h3>
@@ -399,7 +399,7 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
               {pendingItems.length}
             </span>
           </div>
-          <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto pr-1">
+          <div className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
             {visiblePendingItems.map((item) => (
               <div key={item.partNumber} className="rounded-md border border-amber-200 bg-white px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
@@ -414,7 +414,7 @@ function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
             <button
               type="button"
               onClick={() => setShowAllPending((value) => !value)}
-              className="mt-3 w-full rounded-md border border-amber-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-50"
+              className="mt-3 w-full shrink-0 rounded-md border border-amber-200 bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-amber-700 hover:bg-amber-50"
             >
               {showAllPending ? 'Collapse held items' : `Show all ${pendingItems.length} held items`}
             </button>
