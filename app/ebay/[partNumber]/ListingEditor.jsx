@@ -58,6 +58,11 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const [lastSaved, setLastSaved] = useState(null);
   const [saveMessage, setSaveMessage] = useState("");
   const [editorEnabled, setEditorEnabled] = useState(true);
+  const [aiInstruction, setAiInstruction] = useState("");
+  const [isRunningAi, setIsRunningAi] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiHistory, setAiHistory] = useState([]);
+  const [undoStack, setUndoStack] = useState([]);
 
   const calculateQualityScore = () => {
     let score = 0;
@@ -185,26 +190,89 @@ export default function ListingEditor({ initialListing, partNumber }) {
     });
   };
 
-  const generateDescription = async () => {
-    setIsGeneratingDescription(true);
+  const applyAiEdit = (edit) => {
+    setUndoStack((prev) => [...prev.slice(-19), JSON.parse(JSON.stringify(listing))]);
+    setListing((prev) => {
+      const next = { ...prev };
+      const fieldMap = {
+        title: "title",
+        descriptionText: "description",
+        price: "ebayBuyNow",
+        quantity: "quantity",
+        condition: "condition",
+        shipping: "shipping",
+        returns: "returns",
+        sellerNotes: "sellerNotes",
+      };
+      for (const [aiKey, localKey] of Object.entries(fieldMap)) {
+        if (edit[aiKey] !== undefined) {
+          if (aiKey === "price") {
+            next[localKey] = typeof edit[aiKey] === "number" ? `US $${edit[aiKey].toFixed(2)}` : String(edit[aiKey]);
+          } else {
+            next[localKey] = edit[aiKey];
+          }
+        }
+      }
+      const specFields = ["brand", "mpn", "fitment", "type", "color", "material", "compatibility"];
+      const specPatch = {};
+      for (const f of specFields) {
+        if (edit[f] !== undefined) specPatch[f] = edit[f];
+      }
+      if (Object.keys(specPatch).length) {
+        next.specs = { ...(prev.specs || {}), ...specPatch };
+      }
+      return next;
+    });
+  };
+
+  const runAiInstruction = async (instruction) => {
+    if (!instruction?.trim()) return;
+    setIsRunningAi(true);
+    setAiError("");
     try {
-      const response = await fetch("/api/ebay/ai/generate", {
+      const response = await fetch("/api/ebay/mockup-ai-edit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "description",
-          partNumber,
-          currentData: listing,
-          modelName: effectiveModel
+          instruction: instruction.trim(),
+          listing: { ...listing, partNumber },
+          model: effectiveModel,
         }),
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        handleUpdate("description", data.result);
+      const data = await response.json();
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || data.detail || "AI edit failed");
       }
+      applyAiEdit(data.edit || {});
+      setAiHistory((prev) => [{
+        instruction: instruction.trim(),
+        edit: data.edit,
+        rationale: data.edit?.rationale,
+        warnings: data.edit?.warnings,
+        model: data.model,
+        ts: new Date().toISOString(),
+      }, ...prev].slice(0, 30));
+      setAiInstruction("");
     } catch (error) {
-      console.error("Error generating description:", error);
+      const msg = error instanceof Error ? error.message : String(error);
+      setAiError(msg);
+      console.error("AI instruction error:", error);
+    } finally {
+      setIsRunningAi(false);
+    }
+  };
+
+  const undoLastAi = () => {
+    if (!undoStack.length) return;
+    const prev = undoStack[undoStack.length - 1];
+    setUndoStack((s) => s.slice(0, -1));
+    setListing(prev);
+  };
+
+  const generateDescription = async () => {
+    setIsGeneratingDescription(true);
+    try {
+      await runAiInstruction("Rewrite the listing description. Keep it concise, professional, suitable for eBay. Do not invent specs or claims.");
     } finally {
       setIsGeneratingDescription(false);
     }
@@ -213,38 +281,14 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const optimizeSpecs = async () => {
     setIsOptimizingSpecs(true);
     try {
-      const response = await fetch("/api/ebay/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "specs",
-          partNumber,
-          currentData: listing,
-          modelName: effectiveModel
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setListing((prev) => ({
-          ...prev,
-          specs: {
-            ...(prev.specs || {}),
-            ...data.result,
-          },
-        }));
-      }
-    } catch (error) {
-      console.error("Error optimizing specs:", error);
+      await runAiInstruction("Normalize and fill in the item specifics (brand, mpn, type, color, material, compatibility). Use empty strings for unknown values. Do not guess.");
     } finally {
       setIsOptimizingSpecs(false);
     }
   };
 
   const saveChanges = async () => {
-    persistListing(listing, "manual").catch(() => {
-      // Error is already surfaced in the sidebar save message.
-    });
+    persistListing(listing, "manual").catch(() => {});
   };
 
   const candidates = listing.imageCandidates || [];
@@ -531,7 +575,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
 
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">AI Actions</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">AI Command</label>
                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-50 border border-blue-100">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                   <span className="text-[10px] font-bold text-blue-600 truncate max-w-[100px]">
@@ -539,22 +583,95 @@ export default function ListingEditor({ initialListing, partNumber }) {
                   </span>
                 </div>
               </div>
-              <button 
-                onClick={generateDescription}
-                disabled={isGeneratingDescription}
-                className="w-full text-left p-3 rounded-xl border border-slate-100 hover:bg-slate-50 text-xs font-medium transition-all disabled:opacity-50 flex justify-between items-center bg-white group"
-              >
-                <span className="group-hover:text-blue-600">Generate Description</span>
-                {isGeneratingDescription ? <span className="text-blue-500">...</span> : <span>AI</span>}
-              </button>
-              <button 
-                onClick={optimizeSpecs}
-                disabled={isOptimizingSpecs}
-                className="w-full text-left p-3 rounded-xl border border-slate-100 hover:bg-slate-50 text-xs font-medium transition-all disabled:opacity-50 flex justify-between items-center bg-white group"
-              >
-                <span className="group-hover:text-blue-600">Optimize Specifics</span>
-                {isOptimizingSpecs ? <span className="text-blue-500">...</span> : <span>AI</span>}
-              </button>
+
+              {/* Free-form AI instruction */}
+              <div className="relative">
+                <textarea
+                  value={aiInstruction}
+                  onChange={(e) => setAiInstruction(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !isRunningAi) {
+                      e.preventDefault();
+                      runAiInstruction(aiInstruction);
+                    }
+                  }}
+                  placeholder="Tell the AI what to change... e.g. 'Make the title more SEO-friendly' or 'Set price to $45 and add compatibility with Hotpoint models'"
+                  className="w-full rounded-xl border border-blue-200 bg-white p-3 text-xs leading-relaxed text-slate-700 resize-none outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder:text-slate-400"
+                  rows={3}
+                  disabled={isRunningAi}
+                />
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={() => runAiInstruction(aiInstruction)}
+                    disabled={isRunningAi || !aiInstruction.trim()}
+                    className={`flex-1 rounded-lg py-2 text-xs font-bold text-white transition-all ${
+                      isRunningAi || !aiInstruction.trim()
+                        ? "bg-slate-300 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 active:scale-95"
+                    }`}
+                  >
+                    {isRunningAi ? "Running..." : "Run AI Edit"}
+                  </button>
+                  {undoStack.length > 0 && (
+                    <button
+                      onClick={undoLastAi}
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-95"
+                      title="Undo last AI edit"
+                    >
+                      Undo
+                    </button>
+                  )}
+                </div>
+                <div className="mt-1 text-[9px] text-slate-400">Ctrl+Enter to run</div>
+              </div>
+
+              {aiError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-[11px] text-red-700 font-medium">
+                  {aiError}
+                </div>
+              )}
+
+              {/* Quick presets */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</span>
+                {[
+                  { label: "Rewrite Description", action: generateDescription, loading: isGeneratingDescription },
+                  { label: "Optimize Specifics", action: optimizeSpecs, loading: isOptimizingSpecs },
+                  { label: "SEO Title", action: () => runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type."), loading: false },
+                  { label: "Add Seller Notes", action: () => runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims."), loading: false },
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    onClick={preset.action}
+                    disabled={preset.loading || isRunningAi}
+                    className="w-full text-left p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 text-[11px] font-medium transition-all disabled:opacity-50 flex justify-between items-center bg-white group"
+                  >
+                    <span className="group-hover:text-blue-600">{preset.label}</span>
+                    {preset.loading ? <span className="text-blue-500 text-[10px]">...</span> : <span className="text-slate-400 text-[10px]">AI</span>}
+                  </button>
+                ))}
+              </div>
+
+              {/* AI History */}
+              {aiHistory.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent AI Edits</span>
+                  <div className="max-h-48 overflow-y-auto flex flex-col gap-1.5">
+                    {aiHistory.slice(0, 8).map((entry, i) => (
+                      <div key={i} className="rounded-lg border border-slate-100 bg-slate-50/50 p-2.5">
+                        <div className="text-[11px] font-medium text-slate-700 line-clamp-2">{entry.instruction}</div>
+                        {entry.rationale && (
+                          <div className="mt-1 text-[10px] text-slate-500 italic line-clamp-2">{entry.rationale}</div>
+                        )}
+                        {entry.warnings?.length > 0 && (
+                          <div className="mt-1 text-[10px] text-amber-600 font-medium">{entry.warnings.join("; ")}</div>
+                        )}
+                        <div className="mt-1 text-[9px] text-slate-400">{entry.model} &bull; {new Date(entry.ts).toLocaleTimeString()}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
            {/* Audit Stats */}
