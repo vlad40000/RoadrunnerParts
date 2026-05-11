@@ -33,6 +33,13 @@ export default function ListingEditor({ initialListing, partNumber }) {
     condition: initialListing.condition || "Used",
     quantity: initialListing.quantity || 1,
     shipping: initialListing.shipping || "Ground",
+    packageDetails: {
+      weightLb: initialListing.packageDetails?.weightLb || "",
+      weightOz: initialListing.packageDetails?.weightOz || "",
+      lengthIn: initialListing.packageDetails?.lengthIn || "",
+      widthIn: initialListing.packageDetails?.widthIn || "",
+      heightIn: initialListing.packageDetails?.heightIn || "",
+    },
     returns: initialListing.returns !== undefined ? initialListing.returns : true,
     status: initialListing.status || "draft"
   });
@@ -43,6 +50,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const [customModel, setCustomModel] = useState("");
   const [showCustomModel, setShowCustomModel] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [editorEnabled, setEditorEnabled] = useState(true);
 
   const calculateQualityScore = () => {
     let score = 0;
@@ -96,7 +104,18 @@ export default function ListingEditor({ initialListing, partNumber }) {
     }));
   };
 
+  const handlePackageUpdate = (field, value) => {
+    setListing((prev) => ({
+      ...prev,
+      packageDetails: {
+        ...(prev.packageDetails || {}),
+        [field]: value,
+      },
+    }));
+  };
+
   const handleImagesChange = (imageCandidates) => {
+    if (!editorEnabled) return;
     setListing((prev) => ({
       ...prev,
       imageCandidates,
@@ -160,6 +179,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
   };
 
   const saveChanges = async () => {
+    if (!editorEnabled) return;
     setIsSaving(true);
     try {
       const response = await fetch("/api/ebay/save", {
@@ -175,6 +195,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
             condition: listing.condition,
             quantity: listing.quantity,
             shipping: listing.shipping,
+            packageDetails: listing.packageDetails || {},
             returns: listing.returns,
             status: listing.status,
             imageCandidates: listing.imageCandidates || []
@@ -196,13 +217,44 @@ export default function ListingEditor({ initialListing, partNumber }) {
 
   const candidates = listing.imageCandidates || [];
   const specs = listing.specs || {};
+  const packageDetails = listing.packageDetails || {};
+  const inputModeClass = editorEnabled ? "" : "pointer-events-none select-none opacity-95";
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F5F5F5]">
+      <div className="fixed right-5 top-5 z-50 flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-lg">
+        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+          Editor
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditorEnabled((enabled) => !enabled)}
+          aria-pressed={editorEnabled}
+          className={`relative h-7 w-14 rounded-full transition-colors ${
+            editorEnabled ? "bg-blue-600" : "bg-slate-300"
+          }`}
+        >
+          <span
+            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+              editorEnabled ? "translate-x-7" : "translate-x-1"
+            }`}
+          />
+          <span className="sr-only">{editorEnabled ? "Turn editor off" : "Turn editor on"}</span>
+        </button>
+        <span className={`text-xs font-extrabold ${editorEnabled ? "text-blue-700" : "text-slate-500"}`}>
+          {editorEnabled ? "ON" : "OFF"}
+        </span>
+      </div>
       {/* Main Canvas / Preview */}
       <div className="flex-1 overflow-y-auto p-12">
         <div className="mx-auto max-w-4xl rounded-xl bg-white shadow-sm ring-1 ring-black/5 overflow-hidden">
+          {!editorEnabled && (
+            <div className="border-b border-emerald-200 bg-emerald-50 px-8 py-3 text-xs font-bold uppercase tracking-wide text-emerald-800">
+              Preview mode - editor controls are off
+            </div>
+          )}
           {/* Header Area */}
+          <fieldset disabled={!editorEnabled} className={inputModeClass}>
           <div className="p-8 border-b border-slate-100 bg-white">
              <input
               type="text"
@@ -225,7 +277,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 candidates={candidates} 
                 title={listing.title} 
                 partNumber={partNumber} 
-                onChange={handleImagesChange}
+                onChange={editorEnabled ? handleImagesChange : null}
               />
             </div>
 
@@ -341,11 +393,37 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 </div>
               </div>
             </div>
+            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
+              {[
+                { label: "Weight lb", field: "weightLb", step: "1" },
+                { label: "Weight oz", field: "weightOz", step: "1" },
+                { label: "Length in", field: "lengthIn", step: "0.1" },
+                { label: "Width in", field: "widthIn", step: "0.1" },
+                { label: "Height in", field: "heightIn", step: "0.1" },
+              ].map((item) => (
+                <label key={item.field} className="flex flex-col gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {item.label}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step={item.step}
+                    value={packageDetails[item.field] || ""}
+                    onChange={(event) => handlePackageUpdate(item.field, event.target.value)}
+                    className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    placeholder="0"
+                  />
+                </label>
+              ))}
+            </div>
           </div>
+          </fieldset>
         </div>
       </div>
 
       {/* Right Sidebar: Properties / Controls */}
+      {editorEnabled && (
       <div className="w-80 bg-white border-l border-slate-200 flex flex-col shadow-xl">
         <div className="p-6 border-b border-slate-100">
           <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -484,6 +562,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

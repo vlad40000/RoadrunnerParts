@@ -26,9 +26,27 @@ function cleanUpdates(value) {
     condition: String(input.condition || "").slice(0, 120),
     quantity: Number.isFinite(quantity) ? Math.max(1, quantity) : 1,
     shipping: String(input.shipping || "").slice(0, 120),
+    packageDetails: cleanPackageDetails(input.packageDetails),
     returns: input.returns !== false,
     status: String(input.status || "draft").slice(0, 40),
     imageCandidates: cleanImageCandidates(input.imageCandidates),
+  };
+}
+
+function cleanPackageNumber(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < 0) return "";
+  return String(number).slice(0, 12);
+}
+
+function cleanPackageDetails(value) {
+  const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return {
+    weightLb: cleanPackageNumber(input.weightLb),
+    weightOz: cleanPackageNumber(input.weightOz),
+    lengthIn: cleanPackageNumber(input.lengthIn),
+    widthIn: cleanPackageNumber(input.widthIn),
+    heightIn: cleanPackageNumber(input.heightIn),
   };
 }
 

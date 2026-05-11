@@ -4,6 +4,8 @@
 - **AI Backend**: Gemini-only office-editor route accepts `modelName` / custom `gemini-*` selection, including Nano Banana image-model IDs for operator experiments.
 - **Model Selection**: eBay/editor defaults now normalize to `gemini-3.1-flash-lite`; stale saved IDs are upgraded automatically, and image-only selections fall back for text/JSON actions until an image edit route exists.
 - **Frontend Editor**: `/ebay/{partNumber}` supports live edits for title, price, description, specifics, condition, quantity, shipping, returns, status, and image candidates.
+- **Shipping Fields**: Detail editor includes package weight and dimensions: pounds, ounces, length, width, and height.
+- **Editor Mode Switch**: `/ebay/{partNumber}` has one master Editor ON/OFF switch; ON exposes all controls, OFF shows a partner/review preview with editing disabled.
 - **Image Control**: Operators can paste an image URL, add it to the gallery, set it as the lead image, or remove watermarked/bad candidates before saving.
 - **Multi-Image Guardrail**: Detail editor image saves must merge uploaded/operator images with existing candidates; a saved one-image edit must not collapse the full gallery.
 - **Save Path**: Detail editor saves to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is configured and falls back to the local normalized listing JSON in local development.
