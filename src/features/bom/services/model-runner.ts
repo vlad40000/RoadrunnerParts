@@ -9,9 +9,10 @@ export type ModelRunToolConfig = {
 
 export type GeminiModelId =
   | "gemini-3.1-flash-lite-preview"
-  | "gemini-3-flash-preview";
+  | "gemini-3-flash-preview"
+  | `gemini-${string}`;
 
-export type ModelAlias = "fast" | "pro" | "lite";
+export type ModelAlias = "fast" | "pro" | "lite" | "nano-banana";
 
 export type ModelRunInput = {
   model?: GeminiModelId | ModelAlias;
@@ -45,25 +46,40 @@ export type TextRunResult = {
 
 const DEFAULT_MODEL: GeminiModelId = "gemini-3.1-flash-lite-preview";
 
+function isGeminiModelId(value: unknown): value is GeminiModelId {
+  return typeof value === "string" && /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(value.trim());
+}
+
 function resolveModelId(
   model: ModelRunInput["model"],
   context?: { stage?: string; reason?: string },
 ): GeminiModelId {
-  // Legacy aliases always resolve to flash-lite
-  if (!model || model === "fast" || model === "lite" || model === "pro") {
-    return DEFAULT_MODEL;
+  if (!model || model === "lite" || model === "fast") {
+    return "gemini-3.1-flash-lite-preview";
   }
-  // Explicit full model ID — pass through but log it so it's auditable
-  const modelId = model === "gemini-3-flash-preview" ? model : DEFAULT_MODEL;
 
+  if (model === "pro") {
+    return "gemini-3-pro-preview";
+  }
+
+  if (model === "nano-banana") {
+    return "gemini-2.5-flash-image";
+  }
+
+  if (!isGeminiModelId(model)) {
+    throw new Error(`Unsupported model provider: ${String(model)}. Roadrunner AI runs are Gemini-only.`);
+  }
+
+  const modelId = model.trim() as GeminiModelId;
   if (modelId !== DEFAULT_MODEL) {
     console.warn(
-      `[model-runner] Non-default model used: model=${modelId}` +
+      `[model-runner] Operator-selected Gemini model: model=${modelId}` +
         (context?.stage ? ` stage=${context.stage}` : "") +
         (context?.reason ? ` reason=${context.reason}` : "") +
         " | BOM truth rules still apply: model output is not source evidence.",
     );
   }
+
   return modelId;
 }
 
@@ -123,13 +139,18 @@ export async function runStructuredJson<T>(
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  const modelId = resolveModelId(input.model);
+  const modelId = resolveModelId(input.model, {
+    stage: "structured-json",
+    reason: "runStructuredJson",
+  });
 
   const modelConfig: any = {
     model: modelId,
     generationConfig: {
       responseMimeType: "application/json",
       temperature: input.temperature ?? 1,
+      topP: input.topP,
+      maxOutputTokens: input.maxOutputTokens,
     },
     systemInstruction: input.systemInstruction,
   };
@@ -208,7 +229,10 @@ export async function runTextDetailed(input: ModelRunInput): Promise<TextRunResu
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const modelId = resolveModelId(input.model);
+  const modelId = resolveModelId(input.model, {
+    stage: "text",
+    reason: "runTextDetailed",
+  });
 
   const modelConfig: any = {
     model: modelId,

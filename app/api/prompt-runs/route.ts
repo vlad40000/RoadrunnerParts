@@ -27,8 +27,9 @@ const MAX_URL_CONTEXT_URLS = 20;
 type FunctionCallingMode = "AUTO" | "ANY" | "NONE" | "VALIDATED";
 
 function normalizePromptModel(value: unknown): ModelSlot["modelName"] {
-  if (value === "gemini-3-flash-preview") return "gemini-3-flash-preview";
-  if (value === "gemini-3.1-flash-lite-preview") return "gemini-3.1-flash-lite-preview";
+  if (typeof value === "string" && /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(value.trim())) {
+    return value.trim() as ModelSlot["modelName"];
+  }
   return "gemini-3.1-flash-lite-preview";
 }
 

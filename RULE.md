@@ -1,12 +1,27 @@
 # Build Rules for Profix Parts Finder
 
-## Model Configuration (STRICT LOCK)
-You MUST use these specific Gemini models. **DO NOT change these identifiers under any circumstances unless explicitly instructed by the USER.**
+## Model Configuration
 
-- **Gemini 3.1 Flash Lite Preview (`gemini-3.1-flash-lite-preview`)**: Use for Roadrunner AI stages, including planning, source review, nameplate OCR, identity review, prompt runs, and BOM support tasks.
+Roadrunner has two different AI lanes:
 
-> [!IMPORTANT]
-> **NO UNAUTHORIZED MODEL CHANGES**: Changing the model strings in `lib/gemini.js` or elsewhere to any older versions (1.5, 2.0, etc.) is STRICTLY PROHIBITED.
+1. **Evidence automation lane**: BOM extraction, source review, nameplate OCR, supplier routing, listing-material generation, and any workflow that claims facts needed to post to eBay.
+2. **Office editor lane**: Frontend/back-office editing tools where an operator is changing listing text, layout, wording, or review fields on the fly.
+
+### Evidence Automation Lane
+- Use the Gemini API via `@google/generative-ai`.
+- Default to `gemini-3.1-flash-lite-preview` unless the operator explicitly selects another Gemini model for that run.
+- Model output is not source evidence. OEM part rows, prices, compatibility, condition, images, and completeness claims still require provider evidence, captured JSON, manuals, database records, or operator approval.
+
+### Office Editor Lane
+- Use the Gemini API, but expose full Gemini API model selection to the operator.
+- Operators may select any Gemini model ID enabled for the configured `GEMINI_API_KEY`, including stable, preview, latest, and experimental Gemini IDs.
+- Image/visual editor tools may use image-capable Gemini models such as Nano Banana / Gemini 2.5 Flash Image (`gemini-2.5-flash-image`) when the operator selects them.
+- Custom model IDs are allowed when they start with `gemini-`.
+- Editor output is a draft/change suggestion applied to frontend fields. It does not become source evidence or eBay posting truth by itself.
+
+### Provider Boundary
+- Do not switch Roadrunner AI stages to OpenAI, Anthropic, OpenRouter, or other non-Gemini providers unless explicitly instructed by the USER.
+- Model choices must stay visible in the request, UI, logs, or saved config.
 
 ## Core Technical Stack
 - **Framework**: [Next.js](https://nextjs.org) using **App Router** and **React Server Components (RSC)**.
@@ -16,5 +31,5 @@ You MUST use these specific Gemini models. **DO NOT change these identifiers und
 
 ## AI Implementation Guideline
 - Use the **Gemini API** via `@google/generative-ai` only.
-- Never suggest or use OpenAI models.
+- Never suggest or use OpenAI, Anthropic, OpenRouter, or other non-Gemini providers unless explicitly instructed by the USER.
 - Ensure all backend keys (e.g., `GEMINI_API_KEY`) are NOT prefixed with `NEXT_PUBLIC_`.

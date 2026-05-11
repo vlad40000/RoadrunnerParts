@@ -21,21 +21,25 @@ Before any search, browser, or extraction tool is called:
    - Merge cached parts and new parts into a single valid JSON object.
    - Do not provide prose; return JSON only.
 
-## Gemini 3 Model, Temperature & Reliability Policy
+## Gemini Model, Temperature & Reliability Policy
 
-For Gemini 3 agents, **keep temperature at default 1.0.**
+For Gemini agents, **keep temperature at default 1.0** unless the operator explicitly changes it for a run.
 
-Allowed Roadrunner Gemini agent models:
+Roadrunner has two AI lanes:
 
-- `gemini-3.1-flash-lite-preview` - default frontline model for high-frequency Roadrunner stages.
-- `gemini-3-flash-preview` - optional Flash Preview model for operator-selected or stage-specific runs.
+- **Evidence automation lane**: BOM extraction, source review, nameplate OCR, supplier routing, listing-material generation, and any workflow that claims facts needed to post to eBay. Default to `gemini-3.1-flash-lite-preview` unless the operator explicitly selects another Gemini model for that run.
+- **Office editor lane**: Frontend/back-office editing tools where an operator changes listing text, layout, wording, or review fields on the fly. Expose full Gemini API model selection to the operator.
+- Provider is Gemini-only by default in both lanes.
+- Operators may select any Gemini API model ID enabled for the project key, including stable, preview, latest, and experimental Gemini IDs.
+- Image/visual editor tools may use image-capable Gemini models such as Nano Banana / Gemini 2.5 Flash Image (`gemini-2.5-flash-image`) when the operator selects them.
+- Custom model IDs are allowed when they start with `gemini-`.
 
 Do not silently switch models. Any non-default model run must be explicit in saved agent input/config and remain visible in logs or run metadata.
 
 - **Do not create a Temp-0 frontline agent.** 
 - Reliability must come from narrow tool exposure, mode `ANY` for required calls, explicit `allowed_function_names`, flat schemas, Zod validation, deterministic DB writes, and completion gates.
-- **Fallback Protocol:** Fallback means a narrower repair prompt, tighter schema, reduced `allowed_function_names`, or explicitly selecting `gemini-3-flash-preview` in the agent config. Model changes must be operator-approved and never automatic. Any non-default model run is logged by `model-runner` with model, stage, and reason. BOM truth rules are unchanged regardless of model: non-default model output is not source evidence.
-- **Exceptions:** Only use a low temperature if testing proves a specific non-Gemini-3 model/stage benefits from it. Do not apply Temp-0 as a general reliability mechanism for Gemini 3.
+- **Fallback Protocol:** Fallback means a narrower repair prompt, tighter schema, reduced `allowed_function_names`, or operator-selected Gemini model change. Model changes must be operator-approved and never automatic. Any non-default model run is logged by `model-runner` with model, stage, and reason. Evidence automation truth rules are unchanged regardless of model: non-default model output is not source evidence.
+- **Exceptions:** Only use a low temperature if testing proves a specific Gemini model/stage benefits from it. Do not apply Temp-0 as a general reliability mechanism.
 
 ## Frontline vs Fallback Configuration
 
@@ -47,7 +51,7 @@ Do not silently switch models. Any non-default model run must be explicit in sav
 - Purpose: Choose the next required function call
 
 **Recommended Fallback Setup:**
-- Model: `gemini-3.1-flash-lite-preview` (preferred) or `gemini-3-flash-preview` (approved step-up)
+- Model: operator-selected Gemini model ID; use `gemini-3.1-flash-lite-preview` when no explicit selection is provided
 - Temperature: `1.0` (Default)
 - Mode: `ANY` or `AUTO` by stage
 - Allowed Functions: Narrowed to repair tools only

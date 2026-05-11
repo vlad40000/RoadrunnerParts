@@ -114,6 +114,16 @@ type SupplierCard = {
 };
 
 const RUN_HISTORY_KEY = "bom-prompt-workspace:runs";
+const OFFICE_EDITOR_SESSION_KEY = "rrp:office-editor:gemini-session";
+
+const OFFICE_EDITOR_MODEL_PRESETS: Array<{ value: ModelSlot["modelName"]; label: string }> = [
+  { value: "gemini-3.1-flash-lite-preview", label: "Gemini 3.1 Flash Lite Preview" },
+  { value: "gemini-3-flash-preview", label: "Gemini 3 Flash Preview" },
+  { value: "gemini-3-pro-preview", label: "Gemini 3 Pro Preview" },
+  { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+  { value: "gemini-2.5-flash-preview-09-2025", label: "Gemini 2.5 Flash Preview 09-2025" },
+  { value: "gemini-2.5-flash-image", label: "Nano Banana / Gemini 2.5 Flash Image" },
+];
 const MAX_PROMPT_ATTACHMENT_BYTES = 2_000_000;
 const MAX_URL_CONTEXT_URLS = 20;
 
@@ -153,7 +163,7 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     cost: "Text output model",
     cutoff: "January 2025",
     releaseDate: "Latest update: December 2025",
-    selectable: true,
+    selectable: false,
   },
   {
     id: "gemini-3-flash-preview",
@@ -172,12 +182,12 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     name: "Gemini 3 Pro Preview",
     alias: "gemini-3-pro-preview",
     category: "Gemini",
-    description: "Legacy stronger-model fallback entry retained for reference; Roadrunner prompt runs normalize to Lite.",
+    description: "Stronger Gemini option for complex office-editor edits and operator-selected deep reasoning runs.",
     context: "Input: 1,048,576 / Output: 65,536",
     cost: "Text output model",
     cutoff: "January 2025",
     releaseDate: "Latest update: November 2025",
-    selectable: false,
+    selectable: true,
   },
   {
     id: "gemini-3-pro-image-preview",
@@ -189,7 +199,7 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     cost: "Image output model",
     cutoff: "January 2025",
     releaseDate: "Latest update: November 2025",
-    selectable: false,
+    selectable: true,
   },
   {
     id: "gemini-2.5-pro",
@@ -201,7 +211,19 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     cost: "Stable text output model",
     cutoff: "January 2025",
     releaseDate: "Latest update: June 2025",
-    selectable: false,
+    selectable: true,
+  },
+  {
+    id: "gemini-2.5-flash-preview-09-2025",
+    name: "Gemini 2.5 Flash Preview 09-2025",
+    alias: "gemini-2.5-flash-preview-09-2025",
+    category: "Gemini",
+    description: "Preview Flash model available as an explicit office-editor preset.",
+    context: "Input: 1,048,576 / Output: 65,536",
+    cost: "Preview text output model",
+    cutoff: "January 2025",
+    releaseDate: "Latest update: September 2025",
+    selectable: true,
   },
   {
     id: "gemini-2.5-flash",
@@ -237,7 +259,7 @@ const MODEL_CATALOG: ModelCatalogItem[] = [
     cost: "Stable image output model",
     cutoff: "June 2025",
     releaseDate: "Latest update: October 2025",
-    selectable: false,
+    selectable: true,
   },
   {
     id: "gemini-2.5-flash-native-audio-preview-12-2025",
@@ -730,6 +752,7 @@ export function BomPromptWorkspace({
   const [modelFilter, setModelFilter] = useState<(typeof MODEL_FILTERS)[number]>("All");
   const [toolsPopoverSlot, setToolsPopoverSlot] = useState<ModelSlot["id"] | null>(null);
   const [isInstructionsDrawerOpen, setIsInstructionsDrawerOpen] = useState(false);
+  const [officeEditorStatus, setOfficeEditorStatus] = useState("");
 
   useEffect(() => {
     (window as any).openInstructionsDrawer = () => setIsInstructionsDrawerOpen(true);
@@ -1037,6 +1060,27 @@ export function BomPromptWorkspace({
     setWorkspaceDrawerOpen(true);
   }
 
+  function saveOfficeEditorSession(slot: ModelSlot) {
+    if (typeof window === "undefined") return;
+    const modelName = /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(slot.modelName)
+      ? slot.modelName
+      : "gemini-3.1-flash-lite-preview";
+    const session = {
+      source: "bom-workspace",
+      lane: "office-editor",
+      slotId: slot.id,
+      model: modelName,
+      apiOptions: {
+        temperature: slot.temperature ?? 1,
+        topP: slot.topP ?? 0.8,
+        maxOutputTokens: slot.maxOutputTokens ?? 1800,
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(OFFICE_EDITOR_SESSION_KEY, JSON.stringify(session));
+    setOfficeEditorStatus(`Office editor session saved: ${modelName}`);
+  }
+
   function queueCapture(kind: BrowserSourceCapture["captureKind"], label: string) {
     setCaptures((items) => [
       {
@@ -1323,6 +1367,8 @@ export function BomPromptWorkspace({
               instructionWarnings={instructionWarnings}
               onOpenModelDrawer={(slotId) => setModelDrawerSlot(slotId)}
               onPatch={updateSlot}
+              onSaveOfficeEditorSession={saveOfficeEditorSession}
+              officeEditorStatus={officeEditorStatus}
               onClose={() => setMissionSettingsOpen(false)}
             />
           ) : null}
@@ -1447,9 +1493,11 @@ export function BomPromptWorkspace({
               setSystemPrompt={setSystemPrompt}
               instructionChips={instructionChips}
               instructionWarnings={instructionWarnings}
-              onOpenModelDrawer={() => setModelDrawerSlot(activeSlots[0].id)}
-              onPatch={(patch) => updateSlot(activeSlots[0].id, patch)}
-            />
+                  onOpenModelDrawer={() => setModelDrawerSlot(activeSlots[0].id)}
+                  onPatch={(patch) => updateSlot(activeSlots[0].id, patch)}
+                  onSaveOfficeEditorSession={saveOfficeEditorSession}
+                  officeEditorStatus={officeEditorStatus}
+                />
           ) : null}
         </div>
 
@@ -1807,6 +1855,8 @@ function RunSettingsSidebar({
   instructionWarnings,
   onOpenModelDrawer,
   onPatch,
+  onSaveOfficeEditorSession,
+  officeEditorStatus,
 }: {
   slot: ModelSlot;
   systemPrompt: string;
@@ -1815,6 +1865,8 @@ function RunSettingsSidebar({
   instructionWarnings: string[];
   onOpenModelDrawer: () => void;
   onPatch: (patch: Partial<ModelSlot>) => void;
+  onSaveOfficeEditorSession?: (slot: ModelSlot) => void;
+  officeEditorStatus?: string;
 }) {
   const tools = slot.tools || DEFAULT_MODEL_TOOLS;
   return (
@@ -1828,6 +1880,42 @@ function RunSettingsSidebar({
         <span>{slot.modelName}</span>
         <small>{modelDescriptionFor(slot.modelName)}</small>
       </button>
+      <div className="ai-setting-block">
+        <span>Office editor session</span>
+        <label className="ai-select-setting">
+          <span>Preset</span>
+          <select
+            value={OFFICE_EDITOR_MODEL_PRESETS.some((preset) => preset.value === slot.modelName) ? slot.modelName : "custom"}
+            onChange={(event) => {
+              if (event.target.value !== "custom") {
+                onPatch({ modelName: event.target.value as ModelSlot["modelName"] });
+              }
+            }}
+          >
+            {OFFICE_EDITOR_MODEL_PRESETS.map((preset) => (
+              <option key={preset.value} value={preset.value}>{preset.label}</option>
+            ))}
+            <option value="custom">Custom Gemini model ID</option>
+          </select>
+        </label>
+        <label className="ai-inline-input">
+          <span>Model ID</span>
+          <input
+            value={slot.modelName}
+            onChange={(event) => onPatch({ modelName: event.target.value as ModelSlot["modelName"] })}
+            placeholder="gemini-*"
+          />
+        </label>
+        <button
+          type="button"
+          className="ai-drawer-trigger-button"
+          onClick={() => onSaveOfficeEditorSession?.(slot)}
+        >
+          <Settings2 size={14} />
+          USE FOR EBAY EDITOR
+        </button>
+        {officeEditorStatus ? <small className="text-[10px] font-semibold text-white/45">{officeEditorStatus}</small> : null}
+      </div>
       <div className="ai-setting-block">
         <span>System instructions</span>
         <button 
@@ -1936,6 +2024,8 @@ function MissionRunSettingsRail({
   instructionWarnings,
   onOpenModelDrawer,
   onPatch,
+  onSaveOfficeEditorSession,
+  officeEditorStatus,
   onClose,
 }: {
   modelSlots: ModelSlot[];
@@ -1947,6 +2037,8 @@ function MissionRunSettingsRail({
   instructionWarnings: string[];
   onOpenModelDrawer: (slotId: ModelSlot["id"]) => void;
   onPatch: (slotId: ModelSlot["id"], patch: Partial<ModelSlot>) => void;
+  onSaveOfficeEditorSession: (slot: ModelSlot) => void;
+  officeEditorStatus: string;
   onClose: () => void;
 }) {
   const slots = modelSlots.slice(0, 2);
@@ -1990,6 +2082,8 @@ function MissionRunSettingsRail({
         instructionWarnings={instructionWarnings}
         onOpenModelDrawer={() => onOpenModelDrawer(activeSlot.id)}
         onPatch={(patch) => onPatch(activeSlot.id, patch)}
+        onSaveOfficeEditorSession={onSaveOfficeEditorSession}
+        officeEditorStatus={officeEditorStatus}
       />
     </aside>
   );
@@ -2171,15 +2265,18 @@ function ModelOutputView({ output }: { output: PromptRun["outputs"][number] }) {
 }
 
 function modelNameFor(modelName: ModelSlot["modelName"]) {
+  const preset = OFFICE_EDITOR_MODEL_PRESETS.find((item) => item.value === modelName);
+  if (preset) return preset.label;
   if (modelName === "gemini-3-flash-preview") return "Gemini 3 Flash Preview";
-  return "Gemini 3.1 Flash Lite Preview";
+  return modelName;
 }
 
 function modelDescriptionFor(modelName: ModelSlot["modelName"]) {
-  if (modelName === "gemini-3-flash-preview") {
-    return "Gemini 3 Flash Preview: optional operator-selected Roadrunner fallback model.";
-  }
-  return "Gemini 3.1 Flash Lite Preview: Roadrunner default for prompt runs and BOM support tasks.";
+  if (modelName === "gemini-2.5-flash-image") return "Nano Banana image-capable Gemini model for office-editor visual workflows.";
+  if (modelName === "gemini-3-pro-preview" || modelName === "gemini-2.5-pro") return "Stronger Gemini model for operator-selected office-editor sessions.";
+  if (modelName === "gemini-3-flash-preview") return "Gemini 3 Flash Preview: balanced Gemini option for operator-selected runs.";
+  if (modelName === "gemini-2.5-flash-preview-09-2025") return "Gemini 2.5 Flash preview option for explicit session selection.";
+  return "Gemini 3.1 Flash Lite Preview: default fast Gemini setting.";
 }
 
 function groupedScenarios(scenarios: PromptScenario[]) {

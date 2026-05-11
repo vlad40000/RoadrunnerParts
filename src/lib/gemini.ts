@@ -17,13 +17,18 @@ const MODEL_MAP = {
   reviewer: DEFAULT_GEMINI_MODEL,
   analyzer: DEFAULT_GEMINI_MODEL,
   discovery: DEFAULT_GEMINI_MODEL,
-  'gemini-3-flash': 'gemini-3.1-flash-lite-preview',
+  lite: DEFAULT_GEMINI_MODEL,
+  fast: DEFAULT_GEMINI_MODEL,
+  pro: 'gemini-3-pro-preview',
+  'nano-banana': 'gemini-2.5-flash-image',
+  'nano banana': 'gemini-2.5-flash-image',
+  'gemini-3-flash': 'gemini-3-flash-preview',
   'gemini-3-flash-preview': 'gemini-3-flash-preview',
   'gemini-3.1-flash-lite-preview': 'gemini-3.1-flash-lite-preview',
-  'gemini-3.1-flash-preview': 'gemini-3.1-flash-lite-preview',
-  'gemini-3-pro': 'gemini-3.1-flash-lite-preview',
-  'gemini-3-pro-preview': 'gemini-3.1-flash-lite-preview',
-  'gemini-3.1-pro-preview': 'gemini-3.1-flash-lite-preview',
+  'gemini-3-pro': 'gemini-3-pro-preview',
+  'gemini-3-pro-preview': 'gemini-3-pro-preview',
+  'gemini-2.5-flash-image': 'gemini-2.5-flash-image',
+  'gemini-2.5-flash-image-preview': 'gemini-2.5-flash-image-preview',
 };
 
 const ALL_SOURCES = [
@@ -34,7 +39,11 @@ const ALL_SOURCES = [
 ];
 
 function resolveModelName(modelOrRole) {
-  return MODEL_MAP[modelOrRole] || modelOrRole || DEFAULT_GEMINI_MODEL;
+  const resolved = MODEL_MAP[modelOrRole] || modelOrRole || DEFAULT_GEMINI_MODEL;
+  if (!String(resolved).match(/^gemini-[a-z0-9][a-z0-9._-]*$/i)) {
+    throw new Error(`Unsupported model provider: ${String(modelOrRole)}. Roadrunner AI runs are Gemini-only.`);
+  }
+  return resolved;
 }
 
 function createClient() {
