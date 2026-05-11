@@ -64,6 +64,23 @@ function mergeImageCandidates(baseCandidates, editCandidates) {
   return merged;
 }
 
+function moneyLabel(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return `$${value.toFixed(2)}`;
+  const text = String(value || "").trim();
+  return text;
+}
+
+function resolvePriceLabel(edit, listing) {
+  return (
+    moneyLabel(edit?.ebayBuyNow) ||
+    moneyLabel(edit?.price) ||
+    moneyLabel(listing.ebayBuyNow) ||
+    moneyLabel(listing.price) ||
+    moneyLabel(listing.specs?.ebayBuyNow) ||
+    ""
+  );
+}
+
 async function loadListings() {
   const listings = loadBaseListings();
   const edits = await loadDetailEditorEdits();
@@ -71,11 +88,14 @@ async function loadListings() {
   return listings.map((listing) => {
     const partNumber = cleanPartNumber(listing.partNumber);
     if (!edits[partNumber]) return listing;
+    const edit = edits[partNumber];
     return {
       ...listing,
-      ...edits[partNumber],
-      imageCandidate: edits[partNumber].imageCandidates?.[0] || listing.imageCandidate || null,
-      imageCandidates: mergeImageCandidates(listing.imageCandidates, edits[partNumber].imageCandidates),
+      ...edit,
+      price: typeof edit.price === "number" && Number.isFinite(edit.price) ? edit.price : listing.price,
+      ebayBuyNow: resolvePriceLabel(edit, listing),
+      imageCandidate: edit.imageCandidates?.[0] || listing.imageCandidate || null,
+      imageCandidates: mergeImageCandidates(listing.imageCandidates, edit.imageCandidates),
     };
   });
 }

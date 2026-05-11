@@ -27,9 +27,15 @@ function isImageWorkflowModel(model) {
   return normalizeEditorModel(model) === IMAGE_WORKFLOW_MODEL;
 }
 
+function moneyLabel(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return `$${value.toFixed(2)}`;
+  return String(value || "").trim();
+}
+
 export default function ListingEditor({ initialListing, partNumber }) {
   const [listing, setListing] = useState({
     ...initialListing,
+    ebayBuyNow: moneyLabel(initialListing.ebayBuyNow) || moneyLabel(initialListing.price) || moneyLabel(initialListing.specs?.ebayBuyNow),
     condition: initialListing.condition || "Used",
     quantity: initialListing.quantity || 1,
     shipping: initialListing.shipping || "Ground",
