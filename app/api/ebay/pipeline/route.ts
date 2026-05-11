@@ -49,6 +49,7 @@ async function loadPipelineSnapshot(limit: number) {
         (SELECT count(*)::int FROM part_market_signal) AS market_signals,
         (SELECT count(*)::int FROM part_market_signal WHERE raw->>'brandPriority' = 'bread_and_butter') AS bread_and_butter_signals,
         (SELECT count(*)::int FROM part_market_signal WHERE COALESCE((raw->>'inCurrent41')::boolean, false) = false) AS overlooked_signals,
+        (SELECT count(*)::int FROM part_market_signal WHERE confidence = 'blocked') AS blocked_signals,
         (SELECT count(*)::int FROM channel_listing WHERE channel = 'ebay' AND listing_status = 'draft') AS draft_listings
     `),
     sql.query(
@@ -163,6 +164,7 @@ async function loadPipelineSnapshot(limit: number) {
       marketSignals: Number(stats.market_signals || 0),
       breadAndButterSignals: Number(stats.bread_and_butter_signals || 0),
       overlookedSignals: Number(stats.overlooked_signals || 0),
+      blockedSignals: Number(stats.blocked_signals || 0),
       draftListings: Number(stats.draft_listings || 0),
     },
     signals,
@@ -203,6 +205,8 @@ async function prepareDraftListings(input: {
       ON s.part_number = i.part_number
      AND m.id = i.machine_id
     WHERE s.net_expected >= $1
+      AND COALESCE(s.confidence, '') NOT IN ('blocked', 'none')
+      AND COALESCE(array_length(s.warnings, 1), 0) = 0
       AND i.id IS NULL
     ORDER BY s.part_number, s.normalized_model, m.id, s.net_expected DESC NULLS LAST
     LIMIT $2

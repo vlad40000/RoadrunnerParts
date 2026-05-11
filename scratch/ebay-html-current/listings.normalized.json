@@ -19,28 +19,8 @@
         "supersedes": "WE19M1477",
         "ebayBuyNow": "$25.73"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE49X22294.webp",
-        "thumbnailUrl": "../image-evidence/WE49X22294.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE49X22294.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE49X22294 local operator image",
-          "imageUrl": "../image-evidence/WE49X22294.webp",
-          "thumbnailUrl": "../image-evidence/WE49X22294.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE49X22294.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE19M1713",
@@ -61,28 +41,8 @@
         "supersedes": "",
         "ebayBuyNow": "$69.32"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/GEN-WE19M1713_1.webp",
-        "thumbnailUrl": "../image-evidence/GEN-WE19M1713_1.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\GEN-WE19M1713_1.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE19M1713 local operator image",
-          "imageUrl": "../image-evidence/GEN-WE19M1713_1.webp",
-          "thumbnailUrl": "../image-evidence/GEN-WE19M1713_1.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\GEN-WE19M1713_1.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M416",
@@ -125,28 +85,8 @@
         "supersedes": "",
         "ebayBuyNow": "$31.37"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/GEN-WE19M1481_2.webp",
-        "thumbnailUrl": "../image-evidence/GEN-WE19M1481_2.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\GEN-WE19M1481_2.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE19M1481 local operator image",
-          "imageUrl": "../image-evidence/GEN-WE19M1481_2.webp",
-          "thumbnailUrl": "../image-evidence/GEN-WE19M1481_2.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\GEN-WE19M1481_2.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M255",
@@ -167,28 +107,8 @@
         "supersedes": "",
         "ebayBuyNow": "$13.60"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/GEN-WE4M255_0.webp",
-        "thumbnailUrl": "../image-evidence/GEN-WE4M255_0.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\GEN-WE4M255_0.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M255 local operator image",
-          "imageUrl": "../image-evidence/GEN-WE4M255_0.webp",
-          "thumbnailUrl": "../image-evidence/GEN-WE4M255_0.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\GEN-WE4M255_0.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M404",
@@ -209,28 +129,8 @@
         "supersedes": "",
         "ebayBuyNow": "$16.39"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/GEN-WE4M404_2.webp",
-        "thumbnailUrl": "../image-evidence/GEN-WE4M404_2.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\GEN-WE4M404_2.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M404 local operator image",
-          "imageUrl": "../image-evidence/GEN-WE4M404_2.webp",
-          "thumbnailUrl": "../image-evidence/GEN-WE4M404_2.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\GEN-WE4M404_2.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M532",
@@ -251,28 +151,8 @@
         "supersedes": "",
         "ebayBuyNow": "$48.38"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/GEN-WE4M532_0.webp",
-        "thumbnailUrl": "../image-evidence/GEN-WE4M532_0.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\GEN-WE4M532_0.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M532 local operator image",
-          "imageUrl": "../image-evidence/GEN-WE4M532_0.webp",
-          "thumbnailUrl": "../image-evidence/GEN-WE4M532_0.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\GEN-WE4M532_0.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE16X20393",
@@ -293,28 +173,8 @@
         "supersedes": "",
         "ebayBuyNow": "$21.51"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/GEN-WE16X20393_1.webp",
-        "thumbnailUrl": "../image-evidence/GEN-WE16X20393_1.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\GEN-WE16X20393_1.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE16X20393 local operator image",
-          "imageUrl": "../image-evidence/GEN-WE16X20393_1.webp",
-          "thumbnailUrl": "../image-evidence/GEN-WE16X20393_1.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\GEN-WE16X20393_1.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1X921",
@@ -357,28 +217,8 @@
         "supersedes": "",
         "ebayBuyNow": "$20.12"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE13M39.webp",
-        "thumbnailUrl": "../image-evidence/WE13M39.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE13M39.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE13M39 local operator image",
-          "imageUrl": "../image-evidence/WE13M39.webp",
-          "thumbnailUrl": "../image-evidence/WE13M39.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE13M39.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE03X20434",
@@ -399,28 +239,8 @@
         "supersedes": "",
         "ebayBuyNow": "$47.69"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE03X20434.jpg",
-        "thumbnailUrl": "../image-evidence/WE03X20434.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE03X20434.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE03X20434 local operator image",
-          "imageUrl": "../image-evidence/WE03X20434.jpg",
-          "thumbnailUrl": "../image-evidence/WE03X20434.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE03X20434.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE03X31620",
@@ -463,28 +283,8 @@
         "supersedes": "",
         "ebayBuyNow": "$29.23"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE14X20392.webp",
-        "thumbnailUrl": "../image-evidence/WE14X20392.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE14X20392.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE14X20392 local operator image",
-          "imageUrl": "../image-evidence/WE14X20392.webp",
-          "thumbnailUrl": "../image-evidence/WE14X20392.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE14X20392.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE20X20412",
@@ -505,28 +305,8 @@
         "supersedes": "",
         "ebayBuyNow": "$36.43"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE20X20412.webp",
-        "thumbnailUrl": "../image-evidence/WE20X20412.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE20X20412.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE20X20412 local operator image",
-          "imageUrl": "../image-evidence/WE20X20412.webp",
-          "thumbnailUrl": "../image-evidence/WE20X20412.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE20X20412.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M127",
@@ -547,28 +327,8 @@
         "supersedes": "",
         "ebayBuyNow": "$11.17"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/We4M127.jpg",
-        "thumbnailUrl": "../image-evidence/We4M127.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\We4M127.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M127 local operator image",
-          "imageUrl": "../image-evidence/We4M127.jpg",
-          "thumbnailUrl": "../image-evidence/We4M127.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\We4M127.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE13X20394",
@@ -611,28 +371,8 @@
         "supersedes": "WE10X20418",
         "ebayBuyNow": "$72.84"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE49X22295.jpg",
-        "thumbnailUrl": "../image-evidence/WE49X22295.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE49X22295.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE49X22295 local operator image",
-          "imageUrl": "../image-evidence/WE49X22295.jpg",
-          "thumbnailUrl": "../image-evidence/WE49X22295.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE49X22295.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE10X20468",
@@ -653,28 +393,8 @@
         "supersedes": "",
         "ebayBuyNow": "$26.98"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE10X20468.webp",
-        "thumbnailUrl": "../image-evidence/WE10X20468.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE10X20468.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE10X20468 local operator image",
-          "imageUrl": "../image-evidence/WE10X20468.webp",
-          "thumbnailUrl": "../image-evidence/WE10X20468.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE10X20468.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE3M56",
@@ -717,28 +437,8 @@
         "supersedes": "",
         "ebayBuyNow": "$12.53"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/we4m415-dryer-door-switch-for-ge-775220_994x994.webp",
-        "thumbnailUrl": "../image-evidence/we4m415-dryer-door-switch-for-ge-775220_994x994.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\we4m415-dryer-door-switch-for-ge-775220_994x994.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M415 local operator image",
-          "imageUrl": "../image-evidence/we4m415-dryer-door-switch-for-ge-775220_994x994.webp",
-          "thumbnailUrl": "../image-evidence/we4m415-dryer-door-switch-for-ge-775220_994x994.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\we4m415-dryer-door-switch-for-ge-775220_994x994.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE20X20417",
@@ -781,28 +481,8 @@
         "supersedes": "",
         "ebayBuyNow": "$22.93"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE20X20406.webp",
-        "thumbnailUrl": "../image-evidence/WE20X20406.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE20X20406.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE20X20406 local operator image",
-          "imageUrl": "../image-evidence/WE20X20406.webp",
-          "thumbnailUrl": "../image-evidence/WE20X20406.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE20X20406.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE20X20391",
@@ -823,28 +503,8 @@
         "supersedes": "",
         "ebayBuyNow": "$32.83"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE20X20391.webp",
-        "thumbnailUrl": "../image-evidence/WE20X20391.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE20X20391.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE20X20391 local operator image",
-          "imageUrl": "../image-evidence/WE20X20391.webp",
-          "thumbnailUrl": "../image-evidence/WE20X20391.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE20X20391.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1M1003",
@@ -865,28 +525,8 @@
         "supersedes": "",
         "ebayBuyNow": "$16.18"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE1M1003.webp",
-        "thumbnailUrl": "../image-evidence/WE1M1003.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE1M1003.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE1M1003 local operator image",
-          "imageUrl": "../image-evidence/WE1M1003.webp",
-          "thumbnailUrl": "../image-evidence/WE1M1003.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE1M1003.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1M1002",
@@ -929,28 +569,8 @@
         "supersedes": "",
         "ebayBuyNow": "$8.50"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/GEN-WE4M525_0.webp",
-        "thumbnailUrl": "../image-evidence/GEN-WE4M525_0.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\GEN-WE4M525_0.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M525 local operator image",
-          "imageUrl": "../image-evidence/GEN-WE4M525_0.webp",
-          "thumbnailUrl": "../image-evidence/GEN-WE4M525_0.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\GEN-WE4M525_0.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE20X20396",
@@ -971,28 +591,8 @@
         "supersedes": "",
         "ebayBuyNow": "$34.18"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/Panel_WE20X20396.jpg",
-        "thumbnailUrl": "../image-evidence/Panel_WE20X20396.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\Panel_WE20X20396.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE20X20396 local operator image",
-          "imageUrl": "../image-evidence/Panel_WE20X20396.jpg",
-          "thumbnailUrl": "../image-evidence/Panel_WE20X20396.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\Panel_WE20X20396.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1M1007",
@@ -1035,28 +635,8 @@
         "supersedes": "WE21X20407",
         "ebayBuyNow": "$204.57"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/We21X20562.jpg",
-        "thumbnailUrl": "../image-evidence/We21X20562.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\We21X20562.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE21X20562 local operator image",
-          "imageUrl": "../image-evidence/We21X20562.jpg",
-          "thumbnailUrl": "../image-evidence/We21X20562.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\We21X20562.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE11X29438",
@@ -1099,28 +679,8 @@
         "supersedes": "",
         "ebayBuyNow": "$59.40"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE4M160%20.jpg",
-        "thumbnailUrl": "../image-evidence/WE4M160%20.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE4M160 .jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M160 local operator image",
-          "imageUrl": "../image-evidence/WE4M160%20.jpg",
-          "thumbnailUrl": "../image-evidence/WE4M160%20.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE4M160 .jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M181",
@@ -1141,28 +701,8 @@
         "supersedes": "",
         "ebayBuyNow": "$29.59"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE4M181.jpg",
-        "thumbnailUrl": "../image-evidence/WE4M181.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE4M181.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE4M181 local operator image",
-          "imageUrl": "../image-evidence/WE4M181.jpg",
-          "thumbnailUrl": "../image-evidence/WE4M181.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE4M181.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE4M137",
@@ -1205,28 +745,8 @@
         "supersedes": "",
         "ebayBuyNow": "$64.08"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE11X20397_.jpg",
-        "thumbnailUrl": "../image-evidence/WE11X20397_.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE11X20397_.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE11X20397 local operator image",
-          "imageUrl": "../image-evidence/WE11X20397_.jpg",
-          "thumbnailUrl": "../image-evidence/WE11X20397_.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE11X20397_.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE11M10002",
@@ -1269,28 +789,8 @@
         "supersedes": "",
         "ebayBuyNow": "$64.18"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE11M10001-a.jpg",
-        "thumbnailUrl": "../image-evidence/WE11M10001-a.jpg",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE11M10001-a.jpg"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE11M10001 local operator image",
-          "imageUrl": "../image-evidence/WE11M10001-a.jpg",
-          "thumbnailUrl": "../image-evidence/WE11M10001-a.jpg",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE11M10001-a.jpg"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE01X20419",
@@ -1333,28 +833,8 @@
         "supersedes": "WE17M66",
         "ebayBuyNow": "$72.44"
       },
-      "imageCandidate": {
-        "imageUrl": "../image-evidence/WE17X22217.webp",
-        "thumbnailUrl": "../image-evidence/WE17X22217.webp",
-        "pageUrl": "",
-        "sourceDomain": "local-scratch",
-        "score": 1000,
-        "reviewStatus": "local_operator_image",
-        "localImagePath": "scratch\\image-evidence\\WE17X22217.webp"
-      },
-      "imageCandidates": [
-        {
-          "title": "WE17X22217 local operator image",
-          "imageUrl": "../image-evidence/WE17X22217.webp",
-          "thumbnailUrl": "../image-evidence/WE17X22217.webp",
-          "pageUrl": "",
-          "sourceDomain": "local-scratch",
-          "source": "local_operator_drop",
-          "score": 1000,
-          "reviewStatus": "local_operator_image",
-          "localImagePath": "scratch\\image-evidence\\WE17X22217.webp"
-        }
-      ]
+      "imageCandidate": null,
+      "imageCandidates": []
     },
     {
       "partNumber": "WE1M650",

@@ -3819,6 +3819,7 @@ function PricingPanel(props: {
     marketSignals: number;
     breadAndButterSignals: number;
     overlookedSignals: number;
+    blockedSignals: number;
     draftListings: number;
   }>({
     pendingSurvey: 0,
@@ -3826,6 +3827,7 @@ function PricingPanel(props: {
     marketSignals: 0,
     breadAndButterSignals: 0,
     overlookedSignals: 0,
+    blockedSignals: 0,
     draftListings: 0,
   });
   const [pipelineSignals, setPipelineSignals] = useState<PipelineSignal[]>([]);
@@ -3848,6 +3850,7 @@ function PricingPanel(props: {
           marketSignals: 0,
           breadAndButterSignals: 0,
           overlookedSignals: 0,
+          blockedSignals: 0,
           draftListings: 0,
         },
       );
@@ -3887,6 +3890,7 @@ function PricingPanel(props: {
           marketSignals: 0,
           breadAndButterSignals: 0,
           overlookedSignals: 0,
+          blockedSignals: 0,
           draftListings: 0,
         },
       );
@@ -3987,6 +3991,7 @@ function PricingPanel(props: {
             ["Market Signals", String(pipelineStats.marketSignals)],
             ["Bread & Butter", String(pipelineStats.breadAndButterSignals)],
             ["Overlooked", String(pipelineStats.overlookedSignals)],
+            ["Blocked", String(pipelineStats.blockedSignals)],
             ["Surveyed", String(pipelineStats.surveyed)],
             ["Draft Listings", String(pipelineStats.draftListings)],
           ].map(([label, value]) => (
