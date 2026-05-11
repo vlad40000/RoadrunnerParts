@@ -1607,17 +1607,17 @@ const html = `<!DOCTYPE html>
           <div class="ai-model-grid">
             <label>Model preset
               <select id="aiModelPreset">
-                <option value="gemini-3.1-flash-lite-preview">3.1 Flash Lite Preview</option>
+                <option value="gemini-3.1-flash-lite">3.1 Flash Lite</option>
                 <option value="gemini-3-flash-preview">3 Flash Preview</option>
-                <option value="gemini-3-pro-preview">3 Pro Preview</option>
+                <option value="gemini-3.1-pro-preview">3.1 Pro Preview</option>
                 <option value="gemini-2.5-pro">2.5 Pro</option>
-                <option value="gemini-2.5-flash-preview-09-2025">2.5 Flash Preview 09-2025</option>
-                <option value="gemini-2.5-flash-image">Nano Banana / 2.5 Flash Image</option>
+                <option value="gemini-2.5-flash">2.5 Flash</option>
+                <option value="gemini-3.1-flash-image-preview">Nano Banana 2 / Image workflow only</option>
                 <option value="custom">Custom Gemini ID</option>
               </select>
             </label>
             <label>Model ID
-              <input id="aiModelId" value="gemini-3.1-flash-lite-preview" spellcheck="false">
+              <input id="aiModelId" value="gemini-3.1-flash-lite" spellcheck="false">
             </label>
           </div>
           <textarea id="aiPrompt" spellcheck="true">Rewrite the description to sound more natural for a used appliance part without adding unsupported claims.</textarea>
@@ -2183,7 +2183,7 @@ const html = `<!DOCTYPE html>
       const instruction = mode === "description"
         ? "Rewrite only descriptionText. Keep it natural for a used appliance part and do not add unsupported compatibility, testing, OEM, or condition claims. Operator note: " + aiPrompt.value.trim()
         : aiPrompt.value.trim();
-      const model = session.model || aiModelId.value.trim() || "gemini-3.1-flash-lite-preview";
+      const model = session.model || aiModelId.value.trim() || "gemini-3.1-flash-lite";
       if (!instruction) {
         aiStatus.textContent = "Enter an instruction first.";
         return;
