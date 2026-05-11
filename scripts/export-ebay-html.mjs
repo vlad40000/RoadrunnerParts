@@ -231,11 +231,67 @@ function preferredLocalImageCandidate(partNumber, localImageMap, fromDir) {
   const base = String(partNumber || "").trim().toLowerCase();
   if (!base) return null;
 
+  // Pass 1: exact match (original behavior)
   for (const ext of [".jpg", ".jpeg", ".png", ".webp", ".gif"]) {
     const localImagePath = localImageMap.get(`${base}${ext}`);
-    if (!localImagePath) continue;
+    if (localImagePath) {
+      const localUrl = toHtmlPath(localImagePath, fromDir);
+      return {
+        title: `${partNumber} local operator image`,
+        imageUrl: localUrl,
+        thumbnailUrl: localUrl,
+        pageUrl: "",
+        sourceDomain: "local-scratch",
+        source: "local_operator_drop",
+        score: 1000,
+        reviewStatus: "local_operator_image",
+        localImagePath,
+      };
+    }
+  }
 
-    const localUrl = toHtmlPath(localImagePath, fromDir);
+  // Pass 2: fuzzy match — GEN- prefix, suffixed names, partial matches
+  let bestPath = "";
+  let bestSize = 0;
+  for (const [key, filePath] of localImageMap.entries()) {
+    const keyUpper = key.toUpperCase();
+    const partUpper = base.toUpperCase();
+    const hit =
+      keyUpper.startsWith(partUpper) ||
+      keyUpper.startsWith(`GEN-${partUpper}`) ||
+      keyUpper.startsWith(`${partUpper}_`) ||
+      keyUpper.startsWith(`${partUpper}-`) ||
+      keyUpper.startsWith(`${partUpper}__`);
+    if (!hit) continue;
+    try {
+      const size = fs.statSync(filePath).size;
+      if (size > bestSize) {
+        bestSize = size;
+        bestPath = filePath;
+      }
+    } catch {
+      if (!bestPath) bestPath = filePath;
+    }
+  }
+
+  // Pass 3: substring containment (e.g. Panel_WE20X20396.jpg)
+  if (!bestPath) {
+    for (const [key, filePath] of localImageMap.entries()) {
+      if (!key.toUpperCase().includes(base.toUpperCase())) continue;
+      try {
+        const size = fs.statSync(filePath).size;
+        if (size > bestSize) {
+          bestSize = size;
+          bestPath = filePath;
+        }
+      } catch {
+        if (!bestPath) bestPath = filePath;
+      }
+    }
+  }
+
+  if (bestPath) {
+    const localUrl = toHtmlPath(bestPath, fromDir);
     return {
       title: `${partNumber} local operator image`,
       imageUrl: localUrl,
@@ -245,7 +301,7 @@ function preferredLocalImageCandidate(partNumber, localImageMap, fromDir) {
       source: "local_operator_drop",
       score: 1000,
       reviewStatus: "local_operator_image",
-      localImagePath,
+      localImagePath: bestPath,
     };
   }
 
