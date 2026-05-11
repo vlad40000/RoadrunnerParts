@@ -209,9 +209,117 @@
     }
 
     .page {
-      max-width: 1618px;
-      margin: 0 auto;
+      max-width: none;
+      margin: 0;
       padding: 0 0 64px;
+    }
+
+    .editor-frame {
+      max-width: 1880px;
+      margin: 0 auto;
+      padding: 0 18px 64px;
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .layer-panel {
+      position: sticky;
+      top: 18px;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      border: 1px solid #d6dce7;
+      border-radius: 12px;
+      background: #f8fafc;
+      padding: 12px;
+      box-shadow: 0 14px 38px rgba(17, 24, 39, 0.06);
+    }
+
+    .layer-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 4px 10px;
+    }
+
+    .layer-panel-head strong {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .layer-panel-head span {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .layer-list {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 14px;
+    }
+
+    .layer-item {
+      width: 100%;
+      min-height: 36px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: #273445;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 8px;
+      font-size: 12px;
+      font-weight: 780;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .layer-item:hover {
+      background: #eef3ff;
+      border-color: #d6e1ff;
+    }
+
+    .layer-item.active {
+      background: #eaf0ff;
+      border-color: var(--blue);
+      color: var(--blue);
+      box-shadow: 0 0 0 1px rgba(54, 101, 243, 0.08);
+    }
+
+    .layer-icon {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #cfd7e6;
+      border-radius: 5px;
+      background: white;
+      color: #64748b;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .layer-item.active .layer-icon {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .canvas-area {
+      min-width: 0;
+    }
+
+    .canvas-highlight {
+      outline: 2px solid var(--blue);
+      outline-offset: 6px;
+      border-radius: 12px;
+      transition: outline-color 0.2s;
     }
 
     .product-grid {
@@ -884,10 +992,24 @@
 
     @media (max-width: 1100px) {
       .site-header,
-      .scope-strip,
-      .page {
+      .scope-strip {
         padding-left: 22px;
         padding-right: 22px;
+      }
+
+      .editor-frame {
+        grid-template-columns: 1fr;
+        padding-left: 22px;
+        padding-right: 22px;
+      }
+
+      .layer-panel {
+        position: static;
+        max-height: none;
+      }
+
+      .layer-list {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
       .site-header {
@@ -941,6 +1063,21 @@
         padding-top: 18px;
       }
 
+      .editor-frame {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .layer-list {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+
+      .layer-item {
+        min-width: 132px;
+      }
+
       .media-row {
         grid-template-columns: 1fr;
       }
@@ -981,6 +1118,32 @@
   <div class="promo"><span class="promo-live">LIVE</span><span>Shop live events</span><span>Discover exclusive drops and deals</span><button class="promo-button" id="liveBtn">See what's live</button></div>
 
 
+  <div class="editor-frame">
+    <aside class="layer-panel" aria-label="Frontend editor layers">
+      <div class="layer-panel-head">
+        <strong>Layers</strong>
+        <span id="layerPartLabel"></span>
+      </div>
+      <div class="layer-list" id="layerList">
+        <button class="layer-item active" data-layer-target=".media-row" data-layer-name="Gallery"><span class="layer-icon">G</span><span>Gallery</span></button>
+        <button class="layer-item" data-layer-target=".buy-box" data-layer-name="Buy box"><span class="layer-icon">B</span><span>Buy box</span></button>
+        <button class="layer-item" data-layer-target=".item-specifics" data-layer-name="Specifics"><span class="layer-icon">S</span><span>Specifics</span></button>
+        <button class="layer-item" data-layer-target=".description-section" data-layer-name="Description"><span class="layer-icon">D</span><span>Description</span></button>
+        <button class="layer-item" data-layer-target=".tab-section" data-layer-name="Shipping"><span class="layer-icon">T</span><span>Shipping</span></button>
+        <button class="layer-item" data-layer-target=".similar" data-layer-name="Similar"><span class="layer-icon">R</span><span>Similar</span></button>
+      </div>
+      <div class="layer-panel-head">
+        <strong>Properties</strong>
+        <span>Edit</span>
+      </div>
+      <div class="layer-list">
+        <button class="layer-item" data-editor-target="imageEditor"><span class="layer-icon">I</span><span>Images</span></button>
+        <button class="layer-item" data-editor-target="textEditor"><span class="layer-icon">P</span><span>Text fields</span></button>
+        <button class="layer-item" data-editor-target="specificsTable"><span class="layer-icon">#</span><span>Item fields</span></button>
+      </div>
+    </aside>
+
+    <div class="canvas-area">
   <main class="page">
     <section class="product-grid">
       <div class="media-column">
@@ -1143,6 +1306,8 @@
     </section>
 
   </main>
+    </div>
+  </div>
 
   <footer class="ebay-footer">
     <div class="footer-links">
@@ -1212,6 +1377,8 @@
     const editSellerNotes = document.getElementById("editSellerNotes");
     const imageUpload = document.getElementById("imageUpload");
     const imageUploadMeta = document.getElementById("imageUploadMeta");
+    const layerPartLabel = document.getElementById("layerPartLabel");
+    const layerItems = Array.from(document.querySelectorAll("[data-layer-target]"));
     const editorFields = Array.from(document.querySelectorAll("[data-edit-key]"));
     const draftStoragePrefix = "rrp-live-ebay-mockup:";
     const pendingImageUploads = new Map();
@@ -1409,6 +1576,26 @@
       toast.textContent = message;
       toast.classList.add("show");
       toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    function selectLayer(targetSelector, shouldScroll = true) {
+      const target = document.querySelector(targetSelector);
+      if (!target) return;
+      layerItems.forEach((item) => item.classList.toggle("active", item.getAttribute("data-layer-target") === targetSelector));
+      document.querySelectorAll(".canvas-highlight").forEach((item) => item.classList.remove("canvas-highlight"));
+      target.classList.add("canvas-highlight");
+      window.setTimeout(() => target.classList.remove("canvas-highlight"), 1600);
+      if (shouldScroll) target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    function focusEditorPanel(panelId) {
+      const panel = document.getElementById(panelId);
+      if (!panel) return;
+      panel.scrollIntoView({ behavior: "smooth", block: "center" });
+      panel.classList.add("canvas-highlight");
+      window.setTimeout(() => panel.classList.remove("canvas-highlight"), 1600);
+      const focusTarget = panel.querySelector("input, textarea, button");
+      if (focusTarget) focusTarget.focus({ preventScroll: true });
     }
 
     function downloadJson(filename, value) {
@@ -1751,6 +1938,7 @@
 
       renderDetails(listing, view);
       renderSimilar();
+      if (layerPartLabel) layerPartLabel.textContent = listing.partNumber;
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -2005,6 +2193,18 @@
       if (action === "see-all") {
         document.querySelector(".part-strip").scrollIntoView({ behavior: "smooth", block: "center" });
         notify("Showing current 41-part scope");
+      }
+    });
+
+    document.querySelector(".layer-panel").addEventListener("click", (event) => {
+      const layerButton = event.target.closest("[data-layer-target]");
+      if (layerButton) {
+        selectLayer(layerButton.getAttribute("data-layer-target"), true);
+        return;
+      }
+      const editorButton = event.target.closest("[data-editor-target]");
+      if (editorButton) {
+        focusEditorPanel(editorButton.getAttribute("data-editor-target"));
       }
     });
 
