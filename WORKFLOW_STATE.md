@@ -7,6 +7,7 @@
 - **Shipping Fields**: Detail editor includes package weight and dimensions: pounds, ounces, length, width, and height.
 - **Editor Mode Switch**: `/ebay/{partNumber}` has one master Editor ON/OFF switch; ON exposes all controls, OFF shows a partner/review preview with editing disabled.
 - **Image Control**: Operators can paste an image URL, add it to the gallery, set it as the lead image, or remove watermarked/bad candidates before saving.
+- **Obsidian Image Mirror**: Detail editor file uploads save live Blob URLs for the listing and also mirror the original files plus a markdown image note into `eBay Related/Listing Images/{PART_NUMBER}` when `OBSIDIAN_VAULT_PATH` points at the operator vault.
 - **Multi-Image Guardrail**: Detail editor image saves must merge uploaded/operator images with existing candidates; a saved one-image edit must not collapse the full gallery.
 - **Save Path**: Detail editor saves to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is configured and falls back to the local normalized listing JSON in local development.
 - **Obsidian Outbox**: `/bom-workflow` Run Settings includes an Obsidian note outbox backed by `/api/obsidian/notes`; set `OBSIDIAN_VAULT_PATH` locally to write directly into a vault.

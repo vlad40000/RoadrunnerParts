@@ -69,6 +69,10 @@ function cleanImageCandidates(value) {
         blobPathname: String(input.blobPathname || "").trim().slice(0, 500),
         remoteImageUrl: String(input.remoteImageUrl || "").trim().slice(0, 1200),
         localImagePath: String(input.localImagePath || "").trim().slice(0, 500),
+        vaultPath: String(input.vaultPath || "").trim().slice(0, 1200),
+        vaultRelativePath: String(input.vaultRelativePath || "").trim().slice(0, 500),
+        vaultNotePath: String(input.vaultNotePath || "").trim().slice(0, 1200),
+        vaultNoteRelativePath: String(input.vaultNoteRelativePath || "").trim().slice(0, 500),
       };
     })
     .filter(Boolean)

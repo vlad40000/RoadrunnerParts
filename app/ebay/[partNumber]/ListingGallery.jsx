@@ -15,6 +15,10 @@ function cleanImageCandidate(candidate) {
     blobPathname: String(candidate.blobPathname || "").trim(),
     remoteImageUrl: String(candidate.remoteImageUrl || "").trim(),
     localImagePath: String(candidate.localImagePath || "").trim(),
+    vaultPath: String(candidate.vaultPath || "").trim(),
+    vaultRelativePath: String(candidate.vaultRelativePath || "").trim(),
+    vaultNotePath: String(candidate.vaultNotePath || "").trim(),
+    vaultNoteRelativePath: String(candidate.vaultNoteRelativePath || "").trim(),
   };
 }
 
@@ -84,7 +88,12 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
       }
 
       const skipped = Array.isArray(data.skipped) ? data.skipped.length : 0;
-      setUploadMessage(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded${skipped ? `, ${skipped} skipped` : ""}.`);
+      const vaultText = data.vaultMirror?.persisted
+        ? " Mirrored to Obsidian vault."
+        : data.vaultMirror?.warning
+          ? ` Vault mirror skipped: ${data.vaultMirror.warning}`
+          : "";
+      setUploadMessage(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded${skipped ? `, ${skipped} skipped` : ""}.${vaultText}`);
     } catch (error) {
       setUploadMessage(error instanceof Error ? error.message : String(error));
     } finally {
