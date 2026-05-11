@@ -714,7 +714,7 @@ const html = `<!DOCTYPE html>
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 8px;
-      margin: 0 0 16px;
+      margin: 28px 0 16px;
     }
 
     .operator-actions button {
@@ -1281,6 +1281,41 @@ const html = `<!DOCTYPE html>
       </div>
 
       <aside class="buy-box">
+        <h1 class="title" id="title"></h1>
+        <div class="seller">
+          <div class="seller-avatar">R</div>
+          <div>
+            <div class="seller-name">RoadRunnerParts</div>
+            <div class="seller-meta">99.2% positive - Seller's other items</div>
+          </div>
+          <button class="sell-pill" data-action="message" style="margin-left:auto;height:36px;">Message</button>
+        </div>
+
+        <div class="price" id="price">US <input type="text" class="price-input" id="priceInput"></div>
+        <div class="pay-later" id="payLater"></div>
+
+        <div class="row"><span>Condition:</span><strong id="conditionText">Used</strong></div>
+        <div class="row"><span>Quantity:</span><div class="qty-control"><button data-action="qty-down">-</button><span id="qtyValue">1</span><button data-action="qty-up">+</button></div></div>
+
+        <div class="button-stack">
+          <button class="cta primary" data-action="buy-now">Buy It Now</button>
+          <button class="cta" data-action="cart">Add to cart</button>
+          <button class="cta muted" data-action="watch">Add to Watchlist</button>
+        </div>
+
+        <div class="service">
+          <strong>Additional service available</strong>
+          <label class="checkline"><input type="checkbox" id="protectionInput"> 3-year protection plan from Allstate - review before listing</label>
+        </div>
+        <div class="listing-alert" id="listingAlert"></div>
+
+        <div class="policy-list">
+          <div class="policy"><div class="policy-icon">R</div><div><strong>Breathe easy. Returns accepted.</strong></div></div>
+          <div class="policy"><div class="policy-icon">S</div><div><strong>Shipping, returns, and payments</strong>Free Standard Shipping. Final shipping class requires packed weight and dimensions.</div></div>
+          <div class="policy"><div class="policy-icon">L</div><div><strong>Located in</strong>United States</div></div>
+          <div class="policy"><div class="policy-icon">30</div><div><strong>Returns</strong>30 days returns. Buyer pays for return shipping.</div></div>
+        </div>
+
         <div class="operator-actions">
           <button data-action="save">Save</button>
           <button data-action="reset">Reset</button>
@@ -1322,40 +1357,6 @@ const html = `<!DOCTYPE html>
             <label class="editor-field full">Description<textarea id="editDescription" data-edit-key="descriptionText" rows="6" spellcheck="true"></textarea></label>
             <label class="editor-field full">Seller notes<textarea id="editSellerNotes" data-edit-key="sellerNotes" rows="4" spellcheck="true"></textarea></label>
           </div>
-        </div>
-        <h1 class="title" id="title"></h1>
-        <div class="seller">
-          <div class="seller-avatar">R</div>
-          <div>
-            <div class="seller-name">RoadRunnerParts</div>
-            <div class="seller-meta">99.2% positive - Seller's other items</div>
-          </div>
-          <button class="sell-pill" data-action="message" style="margin-left:auto;height:36px;">Message</button>
-        </div>
-
-        <div class="price" id="price">US <input type="text" class="price-input" id="priceInput"></div>
-        <div class="pay-later" id="payLater"></div>
-
-        <div class="row"><span>Condition:</span><strong id="conditionText">Used</strong></div>
-        <div class="row"><span>Quantity:</span><div class="qty-control"><button data-action="qty-down">-</button><span id="qtyValue">1</span><button data-action="qty-up">+</button></div></div>
-
-        <div class="button-stack">
-          <button class="cta primary" data-action="buy-now">Buy It Now</button>
-          <button class="cta" data-action="cart">Add to cart</button>
-          <button class="cta muted" data-action="watch">Add to Watchlist</button>
-        </div>
-
-        <div class="service">
-          <strong>Additional service available</strong>
-          <label class="checkline"><input type="checkbox" id="protectionInput"> 3-year protection plan from Allstate - review before listing</label>
-        </div>
-        <div class="listing-alert" id="listingAlert"></div>
-
-        <div class="policy-list">
-          <div class="policy"><div class="policy-icon">R</div><div><strong>Breathe easy. Returns accepted.</strong></div></div>
-          <div class="policy"><div class="policy-icon">S</div><div><strong>Shipping, returns, and payments</strong>Free Standard Shipping. Final shipping class requires packed weight and dimensions.</div></div>
-          <div class="policy"><div class="policy-icon">L</div><div><strong>Located in</strong>United States</div></div>
-          <div class="policy"><div class="policy-icon">30</div><div><strong>Returns</strong>30 days returns. Buyer pays for return shipping.</div></div>
         </div>
       </aside>
     </section>
@@ -2295,6 +2296,7 @@ const html = `<!DOCTYPE html>
       const index = listings.findIndex((item) => item.partNumber === token);
       if (index >= 0) showListing(index);
     }
+    loadLiveState();
   </script>
 </body>
 </html>

@@ -438,9 +438,9 @@
 
     .operator-actions {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 8px;
-      margin: 0 0 16px;
+      margin: 28px 0 16px;
     }
 
     .operator-actions button {
@@ -1007,11 +1007,47 @@
       </div>
 
       <aside class="buy-box">
+        <h1 class="title" id="title"></h1>
+        <div class="seller">
+          <div class="seller-avatar">R</div>
+          <div>
+            <div class="seller-name">RoadRunnerParts</div>
+            <div class="seller-meta">99.2% positive - Seller's other items</div>
+          </div>
+          <button class="sell-pill" data-action="message" style="margin-left:auto;height:36px;">Message</button>
+        </div>
+
+        <div class="price" id="price">US <input type="text" class="price-input" id="priceInput"></div>
+        <div class="pay-later" id="payLater"></div>
+
+        <div class="row"><span>Condition:</span><strong id="conditionText">Used</strong></div>
+        <div class="row"><span>Quantity:</span><div class="qty-control"><button data-action="qty-down">-</button><span id="qtyValue">1</span><button data-action="qty-up">+</button></div></div>
+
+        <div class="button-stack">
+          <button class="cta primary" data-action="buy-now">Buy It Now</button>
+          <button class="cta" data-action="cart">Add to cart</button>
+          <button class="cta muted" data-action="watch">Add to Watchlist</button>
+        </div>
+
+        <div class="service">
+          <strong>Additional service available</strong>
+          <label class="checkline"><input type="checkbox" id="protectionInput"> 3-year protection plan from Allstate - review before listing</label>
+        </div>
+        <div class="listing-alert" id="listingAlert"></div>
+
+        <div class="policy-list">
+          <div class="policy"><div class="policy-icon">R</div><div><strong>Breathe easy. Returns accepted.</strong></div></div>
+          <div class="policy"><div class="policy-icon">S</div><div><strong>Shipping, returns, and payments</strong>Free Standard Shipping. Final shipping class requires packed weight and dimensions.</div></div>
+          <div class="policy"><div class="policy-icon">L</div><div><strong>Located in</strong>United States</div></div>
+          <div class="policy"><div class="policy-icon">30</div><div><strong>Returns</strong>30 days returns. Buyer pays for return shipping.</div></div>
+        </div>
+
         <div class="operator-actions">
           <button data-action="save">Save</button>
           <button data-action="reset">Reset</button>
           <button data-action="copy">Copy</button>
           <button data-action="export">Export</button>
+          <button data-action="publish">Publish</button>
           <button data-action="commit">Commit</button>
         </div>
         <div class="image-editor" id="imageEditor">
@@ -1047,40 +1083,6 @@
             <label class="editor-field full">Description<textarea id="editDescription" data-edit-key="descriptionText" rows="6" spellcheck="true"></textarea></label>
             <label class="editor-field full">Seller notes<textarea id="editSellerNotes" data-edit-key="sellerNotes" rows="4" spellcheck="true"></textarea></label>
           </div>
-        </div>
-        <h1 class="title" id="title"></h1>
-        <div class="seller">
-          <div class="seller-avatar">R</div>
-          <div>
-            <div class="seller-name">RoadRunnerParts</div>
-            <div class="seller-meta">99.2% positive - Seller's other items</div>
-          </div>
-          <button class="sell-pill" data-action="message" style="margin-left:auto;height:36px;">Message</button>
-        </div>
-
-        <div class="price" id="price">US <input type="text" class="price-input" id="priceInput"></div>
-        <div class="pay-later" id="payLater"></div>
-
-        <div class="row"><span>Condition:</span><strong id="conditionText">Used</strong></div>
-        <div class="row"><span>Quantity:</span><div class="qty-control"><button data-action="qty-down">-</button><span id="qtyValue">1</span><button data-action="qty-up">+</button></div></div>
-
-        <div class="button-stack">
-          <button class="cta primary" data-action="buy-now">Buy It Now</button>
-          <button class="cta" data-action="cart">Add to cart</button>
-          <button class="cta muted" data-action="watch">Add to Watchlist</button>
-        </div>
-
-        <div class="service">
-          <strong>Additional service available</strong>
-          <label class="checkline"><input type="checkbox" id="protectionInput"> 3-year protection plan from Allstate - review before listing</label>
-        </div>
-        <div class="listing-alert" id="listingAlert"></div>
-
-        <div class="policy-list">
-          <div class="policy"><div class="policy-icon">R</div><div><strong>Breathe easy. Returns accepted.</strong></div></div>
-          <div class="policy"><div class="policy-icon">S</div><div><strong>Shipping, returns, and payments</strong>Free Standard Shipping. Final shipping class requires packed weight and dimensions.</div></div>
-          <div class="policy"><div class="policy-icon">L</div><div><strong>Located in</strong>United States</div></div>
-          <div class="policy"><div class="policy-icon">30</div><div><strong>Returns</strong>30 days returns. Buyer pays for return shipping.</div></div>
         </div>
       </aside>
     </section>
@@ -1495,6 +1497,89 @@
       return { ok: response.ok, status: response.status, body };
     }
 
+    async function postLiveState(packet) {
+      const response = await fetch("/api/ebay/mockup-live-state", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(packet),
+      });
+      const body = await response.json().catch(() => ({}));
+      return { ok: response.ok, status: response.status, body };
+    }
+
+    function applyRemoteState(state) {
+      if (!state || typeof state !== "object") return false;
+      const edits = Array.isArray(state.edits) ? state.edits : [];
+      edits.forEach((edit) => {
+        const partNumber = String(edit.partNumber || "").toUpperCase();
+        const listing = listings.find((item) => item.partNumber === partNumber);
+        if (!listing) return;
+        [
+          "title",
+          "displayPartNumber",
+          "fitmentLinkText",
+          "reviewLinkText",
+          "condition",
+          "descriptionText",
+          "sellerNotes",
+          "brand",
+          "mpn",
+          "fitment",
+          "location",
+          "shipping",
+          "returns",
+        ].forEach((key) => {
+          if (typeof edit[key] === "string" && edit[key].trim()) listing[key] = edit[key].trim();
+        });
+        if (Number.isFinite(Number(edit.price))) listing.price = Number(edit.price);
+        if (Number.isFinite(Number(edit.quantity))) listing.quantity = Math.max(1, Number(edit.quantity));
+        if ("protection" in edit) listing.protection = Boolean(edit.protection);
+      });
+
+      const imageManifest = Array.isArray(state.imageManifest) ? state.imageManifest : [];
+      imageManifest.forEach((image) => {
+        const partNumber = String(image.partNumber || "").toUpperCase();
+        const imageUrl = String(image.url || image.downloadUrl || "").trim();
+        const listing = listings.find((item) => item.partNumber === partNumber);
+        if (!listing || !imageUrl) return;
+        listing.approvedImage = imageUrl;
+        listing.publicImageUrl = imageUrl;
+        listing.imageFiles = [imageUrl, ...(Array.isArray(listing.imageFiles) ? listing.imageFiles.filter((url) => url !== imageUrl) : [])];
+        listing.hasPhoto = true;
+        listing.photoGate = "operator_sale_photo_ready";
+      });
+      return edits.length > 0 || imageManifest.length > 0;
+    }
+
+    async function loadLiveState() {
+      try {
+        const response = await fetch("/api/ebay/mockup-live-state", { cache: "no-store" });
+        const body = await response.json().catch(() => ({}));
+        if (response.ok && body.state && applyRemoteState(body.state)) {
+          showListing(activeIndex);
+        }
+      } catch {
+        // Live state is optional; the static generated data remains the fallback.
+      }
+    }
+
+    async function publishLiveState() {
+      const packet = buildEditPacket();
+      const result = await postLiveState(packet);
+      if (!result.ok) {
+        downloadJson("roadrunner-ebay-live-publish-packet.json", packet);
+        notify((result.body && result.body.error ? result.body.error + ". " : "") + "Downloaded publish packet.");
+        return;
+      }
+      applyRemoteState(result.body.state);
+      pendingImageUploads.forEach((image) => {
+        if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+      });
+      pendingImageUploads.clear();
+      showListing(activeIndex);
+      notify("Published live edits/images");
+    }
+
     async function commitCurrentEdits() {
       const packet = buildEditPacket();
       try {
@@ -1838,6 +1923,10 @@
         notify("Downloaded current browser edits");
         return;
       }
+      if (action === "publish") {
+        await publishLiveState();
+        return;
+      }
       if (action === "commit") {
         await commitCurrentEdits();
         return;
@@ -1933,6 +2022,7 @@
       const index = listings.findIndex((item) => item.partNumber === token);
       if (index >= 0) showListing(index);
     }
+    loadLiveState();
   </script>
 </body>
 </html>
