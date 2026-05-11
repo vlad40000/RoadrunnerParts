@@ -40,11 +40,17 @@ function cleanImageCandidates(value) {
       const imageUrl = String(input.imageUrl || input.thumbnailUrl || "").trim().slice(0, 1200);
       if (!imageUrl) return null;
       return {
+        title: String(input.title || "").trim().slice(0, 220),
         imageUrl,
         thumbnailUrl: String(input.thumbnailUrl || imageUrl).trim().slice(0, 1200),
+        pageUrl: String(input.pageUrl || imageUrl).trim().slice(0, 1200),
         sourceDomain: String(input.sourceDomain || "operator-added").trim().slice(0, 120),
+        source: String(input.source || "detail_editor").trim().slice(0, 120),
         reviewStatus: String(input.reviewStatus || "operator_added_needs_review").trim().slice(0, 160),
         score: Number(input.score || 0),
+        blobPathname: String(input.blobPathname || "").trim().slice(0, 500),
+        remoteImageUrl: String(input.remoteImageUrl || "").trim().slice(0, 1200),
+        localImagePath: String(input.localImagePath || "").trim().slice(0, 500),
       };
     })
     .filter(Boolean)

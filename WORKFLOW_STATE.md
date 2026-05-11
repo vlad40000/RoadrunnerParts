@@ -5,6 +5,7 @@
 - **Model Selection**: eBay/editor defaults now normalize to `gemini-3.1-flash-lite`; stale saved IDs are upgraded automatically, and image-only selections fall back for text/JSON actions until an image edit route exists.
 - **Frontend Editor**: `/ebay/{partNumber}` supports live edits for title, price, description, specifics, condition, quantity, shipping, returns, status, and image candidates.
 - **Image Control**: Operators can paste an image URL, add it to the gallery, set it as the lead image, or remove watermarked/bad candidates before saving.
+- **Multi-Image Guardrail**: Detail editor image saves must merge uploaded/operator images with existing candidates; a saved one-image edit must not collapse the full gallery.
 - **Save Path**: Detail editor saves to Vercel Blob when `BLOB_READ_WRITE_TOKEN` is configured and falls back to the local normalized listing JSON in local development.
 - **Obsidian Outbox**: `/bom-workflow` Run Settings includes an Obsidian note outbox backed by `/api/obsidian/notes`; set `OBSIDIAN_VAULT_PATH` locally to write directly into a vault.
 - **Quality Control**: Real-time listing quality score remains visible in the editor sidebar.

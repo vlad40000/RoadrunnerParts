@@ -41,13 +41,42 @@ async function loadDetailEditorEdits() {
   }
 }
 
+function imageCandidateKey(candidate) {
+  return String(candidate?.imageUrl || candidate?.thumbnailUrl || candidate?.remoteImageUrl || "")
+    .trim()
+    .toLowerCase();
+}
+
+function mergeImageCandidates(baseCandidates, editCandidates) {
+  const merged = [];
+  const seen = new Set();
+
+  for (const candidate of [
+    ...(Array.isArray(editCandidates) ? editCandidates : []),
+    ...(Array.isArray(baseCandidates) ? baseCandidates : []),
+  ]) {
+    const key = imageCandidateKey(candidate);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(candidate);
+  }
+
+  return merged;
+}
+
 async function loadListings() {
   const listings = loadBaseListings();
   const edits = await loadDetailEditorEdits();
   if (!Object.keys(edits).length) return listings;
   return listings.map((listing) => {
     const partNumber = cleanPartNumber(listing.partNumber);
-    return edits[partNumber] ? { ...listing, ...edits[partNumber] } : listing;
+    if (!edits[partNumber]) return listing;
+    return {
+      ...listing,
+      ...edits[partNumber],
+      imageCandidate: edits[partNumber].imageCandidates?.[0] || listing.imageCandidate || null,
+      imageCandidates: mergeImageCandidates(listing.imageCandidates, edits[partNumber].imageCandidates),
+    };
   });
 }
 

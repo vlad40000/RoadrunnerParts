@@ -4,17 +4,25 @@ import { useState } from "react";
 
 function cleanImageCandidate(candidate) {
   return {
+    title: String(candidate.title || "").trim(),
     imageUrl: String(candidate.imageUrl || candidate.thumbnailUrl || "").trim(),
     thumbnailUrl: String(candidate.thumbnailUrl || candidate.imageUrl || "").trim(),
+    pageUrl: String(candidate.pageUrl || "").trim(),
     sourceDomain: String(candidate.sourceDomain || "operator-upload").trim(),
+    source: String(candidate.source || "detail_editor").trim(),
     reviewStatus: String(candidate.reviewStatus || "operator_added_needs_review").trim(),
     score: Number(candidate.score || 0),
+    blobPathname: String(candidate.blobPathname || "").trim(),
+    remoteImageUrl: String(candidate.remoteImageUrl || "").trim(),
+    localImagePath: String(candidate.localImagePath || "").trim(),
   };
 }
 
 export default function ListingGallery({ candidates, title, partNumber, onChange }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
   const activeImage = candidates[activeIndex] || null;
   const canEdit = typeof onChange === "function";
 
@@ -26,20 +34,62 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
   function addImage() {
     const imageUrl = newImageUrl.trim();
     if (!imageUrl) return;
+    const urls = imageUrl
+      .split(/\r?\n/)
+      .map((value) => value.trim())
+      .filter(Boolean);
     updateCandidates(
       [
         ...candidates,
-        cleanImageCandidate({
-          imageUrl,
-          thumbnailUrl: imageUrl,
-          sourceDomain: "operator-added",
-          reviewStatus: "operator_added_needs_review",
-          score: 100,
-        }),
+        ...urls.map((url) =>
+          cleanImageCandidate({
+            imageUrl: url,
+            thumbnailUrl: url,
+            pageUrl: url,
+            sourceDomain: "operator-added",
+            reviewStatus: "operator_added_needs_review",
+            score: 100,
+          }),
+        ),
       ],
-      candidates.length,
+      candidates.length + urls.length - 1,
     );
     setNewImageUrl("");
+  }
+
+  async function uploadFiles(files) {
+    const imageFiles = Array.from(files || []).filter((file) => file.type?.startsWith("image/"));
+    if (!imageFiles.length) return;
+
+    setIsUploading(true);
+    setUploadMessage("");
+    try {
+      const formData = new FormData();
+      formData.append("partNumber", partNumber);
+      imageFiles.forEach((file) => formData.append("images", file));
+
+      const response = await fetch("/api/ebay/image-upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || data.details || "Image upload failed");
+      }
+
+      const uploaded = Array.isArray(data.uploaded) ? data.uploaded.map(cleanImageCandidate) : [];
+      if (uploaded.length) {
+        updateCandidates([...candidates, ...uploaded], candidates.length + uploaded.length - 1);
+      }
+
+      const skipped = Array.isArray(data.skipped) ? data.skipped.length : 0;
+      setUploadMessage(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded${skipped ? `, ${skipped} skipped` : ""}.`);
+    } catch (error) {
+      setUploadMessage(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   function removeActiveImage() {
@@ -161,30 +211,51 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
         {canEdit ? (
           <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
             <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Add or replace listing image
+              Add listing images
             </label>
-            <div className="flex gap-2">
-              <input
-                type="url"
+            <div className="grid gap-2">
+              <textarea
                 value={newImageUrl}
                 onChange={(event) => setNewImageUrl(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter") addImage();
+                  if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) addImage();
                 }}
-                className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                placeholder="Paste image URL"
+                rows={3}
+                className="min-w-0 resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                placeholder="Paste one or more image URLs, one per line"
               />
-              <button
-                type="button"
-                onClick={addImage}
-                disabled={!newImageUrl.trim()}
-                className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-              >
-                Add
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <label className="cursor-pointer rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700 hover:border-blue-500 hover:bg-blue-50">
+                  Upload images
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    multiple
+                    capture="environment"
+                    className="hidden"
+                    onChange={(event) => {
+                      uploadFiles(event.target.files);
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={addImage}
+                  disabled={!newImageUrl.trim()}
+                  className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
+                  Add URL(s)
+                </button>
+              </div>
             </div>
+            {isUploading || uploadMessage ? (
+              <p className={`mt-2 text-[10px] font-bold ${uploadMessage.includes("failed") || uploadMessage.includes("Missing") ? "text-red-600" : "text-blue-700"}`}>
+                {isUploading ? "Uploading images..." : uploadMessage}
+              </p>
+            ) : null}
             <p className="mt-2 text-[10px] font-medium text-slate-500">
-              Added images save with this listing. Put the clean operator-owned image first before export.
+              Select multiple files or paste multiple URLs. Put the clean operator-owned lead photo first before export.
             </p>
           </div>
         ) : null}
