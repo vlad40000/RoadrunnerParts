@@ -83,7 +83,9 @@ async function readBlobState() {
   const result = await list({ prefix: DETAIL_STATE_PATH, limit: 1 });
   const blob = result.blobs.find((item) => item.pathname === DETAIL_STATE_PATH);
   if (!blob) return null;
-  const response = await fetch(blob.url, { cache: "no-store" });
+  const stateUrl = new URL(blob.url);
+  stateUrl.searchParams.set("rrpStateTs", String(Date.now()));
+  const response = await fetch(stateUrl.toString(), { cache: "no-store" });
   if (!response.ok) return null;
   return response.json();
 }
@@ -160,11 +162,45 @@ export async function POST(request) {
       storage: blobUrl ? "vercel-blob" : localListing ? "local-file" : "memory-only",
       stateUrl: blobUrl,
       listing: edits[partNumber],
+      imageCount: edits[partNumber].imageCandidates?.length || 0,
+      leadImageUrl: edits[partNumber].imageCandidates?.[0]?.imageUrl || "",
     });
   } catch (error) {
     return NextResponse.json(
       {
         error: "Save error",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const partNumber = cleanPartNumber(searchParams.get("partNumber"));
+    if (!partNumber) {
+      return NextResponse.json({ error: "Missing partNumber" }, { status: 400 });
+    }
+
+    const state = process.env.BLOB_READ_WRITE_TOKEN ? await readBlobState().catch(() => null) : null;
+    const edits = state && typeof state.edits === "object" && !Array.isArray(state.edits)
+      ? state.edits
+      : {};
+    const listing = edits[partNumber] || null;
+
+    return NextResponse.json({
+      ok: true,
+      persisted: Boolean(listing),
+      listing,
+      imageCount: listing?.imageCandidates?.length || 0,
+      leadImageUrl: listing?.imageCandidates?.[0]?.imageUrl || "",
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: "Save state read error",
         details: error instanceof Error ? error.message : String(error),
       },
       { status: 500 },

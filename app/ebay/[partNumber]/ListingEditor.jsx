@@ -154,9 +154,12 @@ export default function ListingEditor({ initialListing, partNumber }) {
 
       const savedAt = new Date();
       setLastSaved(savedAt);
+      if (reason === "images" && Number(data.imageCount || 0) < Number(draftListing.imageCandidates?.length || 0)) {
+        throw new Error(`Only ${data.imageCount || 0} of ${draftListing.imageCandidates?.length || 0} images were confirmed in storage`);
+      }
       setSaveMessage(
         reason === "images"
-          ? `Images saved (${draftListing.imageCandidates?.length || 0})`
+          ? `Images saved (${data.imageCount ?? draftListing.imageCandidates?.length ?? 0})`
           : "Saved",
       );
       return data;

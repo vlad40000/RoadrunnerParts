@@ -34,7 +34,9 @@ async function loadDetailEditorEdits() {
     const result = await list({ prefix: DETAIL_STATE_PATH, limit: 1 });
     const blob = result.blobs.find((item) => item.pathname === DETAIL_STATE_PATH);
     if (!blob) return {};
-    const response = await fetch(blob.url, { cache: "no-store" });
+    const stateUrl = new URL(blob.url);
+    stateUrl.searchParams.set("rrpStateTs", String(Date.now()));
+    const response = await fetch(stateUrl.toString(), { cache: "no-store" });
     if (!response.ok) return {};
     const state = await response.json();
     return state && typeof state.edits === "object" && !Array.isArray(state.edits)
