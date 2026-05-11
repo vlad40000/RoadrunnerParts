@@ -1,9 +1,12 @@
 import fs from "fs";
 import path from "path";
+import crypto from "crypto";
 
 const scopePath = "scratch/current-ebay-scope.json";
 const outputPath = "public/ebay_mockup_gallery.html";
 const publicGalleryPath = "/ebay_mockup_gallery.html";
+const publicImageDir = "public/ebay-current-images";
+const publicImageBasePath = "/ebay-current-images";
 const coverageOutputPath = "scratch/current-ebay-image-coverage.json";
 const approvedImageRoot = "scratch/approved-images";
 const imageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif"]);
@@ -89,8 +92,30 @@ function imagePriority(filePath) {
 }
 
 function fileToUrl(filePath) {
+  return copyImageToPublic(filePath).url;
+}
+
+function copyImageToPublic(filePath) {
   const normalized = filePath.replaceAll("\\", "/");
-  return `/api/ebay/current-image?path=${encodeURIComponent(normalized)}`;
+  const ext = path.extname(normalized).toLowerCase();
+  const hash = crypto.createHash("sha1").update(normalized).digest("hex").slice(0, 10);
+  const base = sanitizeAssetName(path.basename(normalized, ext));
+  const fileName = `${base}-${hash}${ext}`;
+  const outputFile = path.join(publicImageDir, fileName);
+  fs.mkdirSync(publicImageDir, { recursive: true });
+  fs.copyFileSync(normalized, outputFile);
+  return {
+    filePath: outputFile.replaceAll("\\", "/"),
+    url: `${publicImageBasePath}/${fileName}`,
+  };
+}
+
+function sanitizeAssetName(value) {
+  return String(value || "part-image")
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80) || "part-image";
 }
 
 const projectImages = Array.from(new Set(imageSearchRoots.flatMap((root) => walkImages(root))))
@@ -109,7 +134,11 @@ function readParts() {
   return rows.map((row, index) => {
     const partNumber = String(row.partNumber || "").trim().toUpperCase();
     const imageFiles = localImagesForPart(partNumber);
-    const approvedImage = imageFiles[0] ? fileToUrl(imageFiles[0]) : "";
+    const publicImages = imageFiles.map((filePath) => ({
+      sourcePath: filePath,
+      ...copyImageToPublic(filePath),
+    }));
+    const approvedImage = publicImages[0]?.url || "";
     const description = String(row.description || "Appliance Part").trim();
     const category = partCategory(description);
     return {
@@ -124,8 +153,10 @@ function readParts() {
       priceLabel: dollars(row.price),
       title: `GE ${partNumber} ${titleCase(description)} Used Dryer Part`,
       approvedImage,
-      imageFiles: imageFiles.map(fileToUrl),
+      imageFiles: publicImages.map((image) => image.url),
       imageSourcePath: imageFiles[0] || "",
+      publicImagePath: publicImages[0]?.filePath || "",
+      publicImageUrl: publicImages[0]?.url || "",
       hasPhoto: Boolean(approvedImage),
       photoPlan: photoPlan(description),
     };
@@ -1170,6 +1201,7 @@ fs.writeFileSync(
       scopePath,
       outputPath,
       publicGalleryPath,
+      publicImageDir,
       totalParts: parts.length,
       localImagesAttached: partsWithImages,
       missingCount: missingImages.length,
@@ -1186,6 +1218,8 @@ fs.writeFileSync(
           partNumber: part.partNumber,
           imageCount: part.imageFiles.length,
           primaryImage: part.imageSourcePath,
+          publicPrimaryImage: part.publicImageUrl,
+          publicPrimaryImagePath: part.publicImagePath,
         })),
     },
     null,

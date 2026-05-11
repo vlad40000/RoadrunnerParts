@@ -1,8 +1,9 @@
 {
-  "generatedAt": "2026-05-11T11:29:08.601Z",
+  "generatedAt": "2026-05-11T11:35:49.285Z",
   "scopePath": "scratch/current-ebay-scope.json",
   "outputPath": "public/ebay_mockup_gallery.html",
   "publicGalleryPath": "/ebay_mockup_gallery.html",
+  "publicImageDir": "public/ebay-current-images",
   "totalParts": 41,
   "localImagesAttached": 31,
   "missingCount": 10,
@@ -62,157 +63,219 @@
     {
       "partNumber": "WE49X22294",
       "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22294.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22294.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE49X22294-bea2b58a90.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE49X22294-bea2b58a90.jpg"
     },
     {
       "partNumber": "WE19M1713",
       "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/GEHWE19M1713.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/GEHWE19M1713.jpg",
+      "publicPrimaryImage": "/ebay-current-images/GEHWE19M1713-7e59fa70d5.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/GEHWE19M1713-7e59fa70d5.jpg"
     },
     {
       "partNumber": "WE19M1481",
       "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE19M1481.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE19M1481.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE19M1481-cb1a651dc6.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE19M1481-cb1a651dc6.jpg"
     },
     {
       "partNumber": "WE4M255",
       "imageCount": 2,
-      "primaryImage": "scratch/image-evidence/GEN-WE4M255_0.webp"
+      "primaryImage": "scratch/image-evidence/GEN-WE4M255_0.webp",
+      "publicPrimaryImage": "/ebay-current-images/GEN-WE4M255_0-0a9d541258.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE4M255_0-0a9d541258.webp"
     },
     {
       "partNumber": "WE4M404",
       "imageCount": 6,
-      "primaryImage": "scratch/image-evidence/GEN-WE4M404_1.webp"
+      "primaryImage": "scratch/image-evidence/GEN-WE4M404_1.webp",
+      "publicPrimaryImage": "/ebay-current-images/GEN-WE4M404_1-84b9506359.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE4M404_1-84b9506359.webp"
     },
     {
       "partNumber": "WE4M532",
       "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M532.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M532.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE4M532-a3a52a39f8.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE4M532-a3a52a39f8.jpg"
     },
     {
       "partNumber": "WE16X20393",
       "imageCount": 6,
-      "primaryImage": "scratch/image-evidence/GEN-WE16X20393_0.webp"
+      "primaryImage": "scratch/image-evidence/GEN-WE16X20393_0.webp",
+      "publicPrimaryImage": "/ebay-current-images/GEN-WE16X20393_0-583eb3e760.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE16X20393_0-583eb3e760.webp"
     },
     {
       "partNumber": "WE1X921",
       "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1X921.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1X921.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE1X921-8fe0a2b12b.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE1X921-8fe0a2b12b.jpg"
     },
     {
       "partNumber": "WE13M39",
       "imageCount": 8,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE13M39.webp"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE13M39.webp",
+      "publicPrimaryImage": "/ebay-current-images/WE13M39-8518695f54.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE13M39-8518695f54.webp"
     },
     {
       "partNumber": "WE03X20434",
       "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE03X20434.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE03X20434.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE03X20434-b973d84181.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE03X20434-b973d84181.jpg"
     },
     {
       "partNumber": "WE14X20392",
       "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE14X20392.webp"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE14X20392.webp",
+      "publicPrimaryImage": "/ebay-current-images/WE14X20392-b292c2cdbd.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE14X20392-b292c2cdbd.webp"
     },
     {
       "partNumber": "WE20X20412",
       "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20412.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20412.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE20X20412-0891735fa6.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20412-0891735fa6.jpg"
     },
     {
       "partNumber": "WE4M127",
       "imageCount": 4,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M127t.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M127t.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE4M127t-d61b5959b2.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE4M127t-d61b5959b2.jpg"
     },
     {
       "partNumber": "WE49X22295",
       "imageCount": 9,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22295.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE49X22295.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE49X22295-6e4365b16b.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE49X22295-6e4365b16b.jpg"
     },
     {
       "partNumber": "WE10X20468",
       "imageCount": 4,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE10X20468.webp"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE10X20468.webp",
+      "publicPrimaryImage": "/ebay-current-images/WE10X20468-b93f7e0052.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE10X20468-b93f7e0052.webp"
     },
     {
       "partNumber": "WE4M415",
       "imageCount": 8,
-      "primaryImage": "scratch/image-evidence/we4m415-dryer-door-switch-for-ge-294882_994x994.webp"
+      "primaryImage": "scratch/image-evidence/we4m415-dryer-door-switch-for-ge-294882_994x994.webp",
+      "publicPrimaryImage": "/ebay-current-images/we4m415-dryer-door-switch-for-ge-294882_994x994-af53476b8c.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/we4m415-dryer-door-switch-for-ge-294882_994x994-af53476b8c.webp"
     },
     {
       "partNumber": "WE20X20417",
       "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20417.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20417.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE20X20417-f4165ba361.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20417-f4165ba361.jpg"
     },
     {
       "partNumber": "WE20X20406",
       "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20406.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20406.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE20X20406-c73f65e784.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20406-c73f65e784.jpg"
     },
     {
       "partNumber": "WE20X20391",
       "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20391.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE20X20391.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE20X20391-188518a91a.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE20X20391-188518a91a.jpg"
     },
     {
       "partNumber": "WE1M1003",
       "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1M1003.webp"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1M1003.webp",
+      "publicPrimaryImage": "/ebay-current-images/WE1M1003-6dad2af1dd.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE1M1003-6dad2af1dd.webp"
     },
     {
       "partNumber": "WE4M525",
       "imageCount": 4,
-      "primaryImage": "scratch/image-evidence/GEN-WE4M525_0.webp"
+      "primaryImage": "scratch/image-evidence/GEN-WE4M525_0.webp",
+      "publicPrimaryImage": "/ebay-current-images/GEN-WE4M525_0-dadc056d15.webp",
+      "publicPrimaryImagePath": "public/ebay-current-images/GEN-WE4M525_0-dadc056d15.webp"
     },
     {
       "partNumber": "WE20X20396",
       "imageCount": 2,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/Panel_WE20X20396.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/Panel_WE20X20396.jpg",
+      "publicPrimaryImage": "/ebay-current-images/Panel_WE20X20396-150b8f3d1a.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/Panel_WE20X20396-150b8f3d1a.jpg"
     },
     {
       "partNumber": "WE1M1007",
       "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1M1007.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE1M1007.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE1M1007-42e4f72838.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE1M1007-42e4f72838.jpg"
     },
     {
       "partNumber": "WE21X20562",
       "imageCount": 3,
-      "primaryImage": "scratch/approved-images/WE21X20562.jpg"
+      "primaryImage": "scratch/approved-images/WE21X20562.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE21X20562-f3f7c0e731.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE21X20562-f3f7c0e731.jpg"
     },
     {
       "partNumber": "WE4M160",
       "imageCount": 7,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M160.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M160.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE4M160-f916b2900e.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE4M160-f916b2900e.jpg"
     },
     {
       "partNumber": "WE4M181",
       "imageCount": 6,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M181.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M181.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE4M181-792207ee7d.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE4M181-792207ee7d.jpg"
     },
     {
       "partNumber": "WE4M137",
       "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M137.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE4M137.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE4M137-81ea001400.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE4M137-81ea001400.jpg"
     },
     {
       "partNumber": "WE11X20397",
       "imageCount": 5,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11X20397.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11X20397.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE11X20397-b7116553b3.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE11X20397-b7116553b3.jpg"
     },
     {
       "partNumber": "WE11M10001",
       "imageCount": 3,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11M10001.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE11M10001.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE11M10001-e6ae72e511.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE11M10001-e6ae72e511.jpg"
     },
     {
       "partNumber": "WE01X20419",
       "imageCount": 1,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE01X20419.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE01X20419.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE01X20419-415deffb7b.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE01X20419-415deffb7b.jpg"
     },
     {
       "partNumber": "WE17X22217",
       "imageCount": 7,
-      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE17X22217.jpg"
+      "primaryImage": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE17X22217.jpg",
+      "publicPrimaryImage": "/ebay-current-images/WE17X22217-314013cfdc.jpg",
+      "publicPrimaryImagePath": "public/ebay-current-images/WE17X22217-314013cfdc.jpg"
     }
   ]
 }

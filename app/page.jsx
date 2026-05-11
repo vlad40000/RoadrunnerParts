@@ -7,11 +7,6 @@ export const dynamic = 'force-dynamic';
 const scopePath = path.join(process.cwd(), 'scratch/current-ebay-scope.json');
 const coveragePath = path.join(process.cwd(), 'scratch/current-ebay-image-coverage.json');
 
-const toImageApiUrl = (filePath) => {
-  if (!filePath) return '';
-  return `/api/ebay/current-image?path=${encodeURIComponent(filePath)}`;
-};
-
 function loadCurrentEbayBatch() {
   try {
     const scope = JSON.parse(fs.readFileSync(scopePath, 'utf8'));
@@ -30,6 +25,7 @@ function loadCurrentEbayBatch() {
       const partNumber = String(part.partNumber || '').toUpperCase();
       const attached = attachedByPart.get(partNumber);
       const imagePath = attached?.primaryImage || '';
+      const imageUrl = attached?.publicPrimaryImage || '';
       return {
         partNumber,
         diagramId: String(part.diagramId || ''),
@@ -37,9 +33,9 @@ function loadCurrentEbayBatch() {
         supersedes: String(part.supersedes || ''),
         price: typeof part.price === 'number' ? part.price : null,
         imageCount: Number(attached?.imageCount || 0),
-        imageUrl: toImageApiUrl(imagePath),
+        imageUrl,
         imagePath,
-        status: imagePath ? 'ready_now' : 'photo_pending',
+        status: imageUrl ? 'ready_now' : 'photo_pending',
       };
     });
 
