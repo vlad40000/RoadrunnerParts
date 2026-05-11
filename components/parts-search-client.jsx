@@ -292,7 +292,7 @@ function EbayMarketPanel({
           disabled={loading || !ebayCaptureText.trim()}
           className="mt-3 rounded-2xl bg-slate-900 px-5 py-3 text-xs font-black uppercase tracking-[0.2em] text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? 'Analyzing...' : 'Analyze Resale'}
+          {loading ? 'Analyzing...' : 'eBay Resale ↓'}
         </button>
       </div>
 
@@ -1121,12 +1121,12 @@ export default function PartsSearchClient() {
                     {loadingMode === 'identity' && !jobId ? (
                       <>
                         <RefreshCw className="h-4 w-4 animate-spin" />
-                        Creating Identity Job
+                        Identifying Appliance...
                       </>
                     ) : (
                       <>
                         <Search className="h-4 w-4" />
-                        Start from Manual Identity
+                        Identify Appliance
                       </>
                     )}
                   </button>
@@ -1140,12 +1140,12 @@ export default function PartsSearchClient() {
                     {countLookupBusy ? (
                       <>
                         <RefreshCw className="h-4 w-4 animate-spin" />
-                        Checking Sears Count
+                        Checking Part Count...
                       </>
                     ) : (
                       <>
                         <BarChart3 className="h-4 w-4" />
-                        Complete BOM
+                        Check Expected Count
                       </>
                     )}
                   </button>
@@ -1428,7 +1428,7 @@ export default function PartsSearchClient() {
                         ) : (
                           <>
                             <Zap className="h-4 w-4" />
-                            Build My List
+                            Compile Full BOM
                           </>
                         )}
                       </button>
@@ -1440,7 +1440,7 @@ export default function PartsSearchClient() {
                   <div className="flex flex-col gap-3 rounded-2xl bg-blue-600 p-6 text-white shadow-lg shadow-blue-200">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-bold uppercase tracking-wider text-blue-100 text-[10px]">Active Diagram Group</h4>
+                        <h4 className="font-bold uppercase tracking-wider text-blue-100 text-[10px]">Next Group to Extract </h4>
                         <div className="text-xl font-bold">
                           {diagramGroups.find((g) => g.id === activeGroupId)?.groupName}
                         </div>
@@ -1459,7 +1459,7 @@ export default function PartsSearchClient() {
                         ) : (
                           <>
                             <Zap className="h-4 w-4" />
-                            Run Next Group
+                            Extract This Group
                           </>
                         )}
                       </button>
@@ -1692,9 +1692,13 @@ export default function PartsSearchClient() {
                           </div>
 
                           <p className="mb-4 text-xs font-medium text-slate-500">
-                            {isPricingEnabled
-                              ? `Pricing gate released. You have ${selectedRowIds.length > 0 ? `${selectedRowIds.length} items manually selected` : `${filteredParts.length} visible items filtered`}.`
-                              : `System enforces narrowing before pricing. Apply a filter or select rows to enable the Pricing Run.`}
+                            {!isPricingEnabled
+                              ? 'Run BOM compilation first to enable pricing.'
+                              : selectedRowIds.length > 0
+                                ? `Ready. Pricing ${selectedRowIds.length} selected row${selectedRowIds.length === 1 ? '' : 's'}.`
+                                : selectedSections.length > 0
+                                  ? `Ready. Pricing ${filteredParts.length} filtered row${filteredParts.length === 1 ? '' : 's'} (${selectedSections.length} category filter${selectedSections.length === 1 ? '' : 's'} active).`
+                                  : `Ready. Will price all ${filteredParts.length} parts. Use category filters or row checkboxes to narrow scope.`}
                           </p>
 
                           <button
@@ -1706,7 +1710,15 @@ export default function PartsSearchClient() {
                               }`}
                           >
                             <DollarSign size={16} />
-                            {pricingBusy ? 'Searching Market Data...' : isPricingEnabled ? (selectedRowIds.length > 0 ? `Price ${selectedRowIds.length} Selected Rows` : 'Price Narrowed Subset') : 'Pricing Locked (Narrow First)'}
+                            {pricingBusy
+                              ? 'Fetching Market Prices...'
+                              : !isPricingEnabled
+                                ? 'Run BOM Compile First'
+                                : selectedRowIds.length > 0
+                                  ? `Price ${selectedRowIds.length} Selected`
+                                  : selectedSections.length > 0
+                                    ? `Price ${filteredParts.length} Filtered`
+                                    : `Price All ${filteredParts.length} Parts`}
                           </button>
 
                           {pricingMessage ? (
@@ -1907,7 +1919,7 @@ export default function PartsSearchClient() {
                                           onClick={() => setSelectedMarketPart(part)}
                                           className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:border-blue-300 hover:text-blue-600"
                                         >
-                                          Analyze Resale
+                                          eBay Resale ↓
                                         </button>
                                       </div>
                                     </td>

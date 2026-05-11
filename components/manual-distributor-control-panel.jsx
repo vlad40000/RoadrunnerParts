@@ -391,7 +391,7 @@ export default function ManualDistributorControlPanel({
     }
   }
 
-  const pricingLocked = !results?.parts?.length && !identityReview?.partsComplete;
+  const pricingLocked = !results?.parts?.length;
   const tierKeys = Object.keys(SOURCE_TIERS);
 
   return (
@@ -409,7 +409,7 @@ export default function ManualDistributorControlPanel({
               Manual Distributor Control
             </div>
             <h3 className="text-3xl font-black tracking-tight text-slate-900">
-              Supplier Index <ArrowRight className="inline-block text-slate-300" size={24} /> Assembly Multi-Select <ArrowRight className="inline-block text-slate-300" size={24} /> GO
+              1. Pick Tier <ArrowRight className="inline-block text-slate-300" size={24} /> 2. Lock &amp; Load <ArrowRight className="inline-block text-slate-300" size={24} /> 3. Select Assemblies <ArrowRight className="inline-block text-slate-300" size={24} /> 4. GO
             </h3>
             <p className="mt-2 max-w-2xl text-sm font-medium leading-relaxed text-slate-500">
               Manually resolve diagrams when automated extraction needs guidance. Use the indexed URL when available to bypass generic searching.
@@ -530,38 +530,30 @@ export default function ManualDistributorControlPanel({
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
-                        onClick={() => lockSupplier(row)}
-                        disabled={busyKey !== null || row.targetStatus === "complete"}
-                        className={`group flex h-10 items-center gap-2 rounded-xl border px-4 text-xs font-black transition-all ${
-                            row.targetStatus === "complete"
-                            ? "border-emerald-100 bg-emerald-50 text-emerald-600 opacity-80"
-                            : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:bg-slate-50 active:scale-95 disabled:opacity-50"
-                        }`}
-                      >
-                        {row.targetStatus === "complete" ? (
-                            <CheckCircle2 size={14} />
-                        ) : (
-                            <Lock size={14} className="text-slate-400 group-hover:text-slate-600" />
-                        )}
-                        Lock
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => loadSupplierIndex(row)}
+                        onClick={async () => {
+                          await lockSupplier(row);
+                          await loadSupplierIndex(row);
+                        }}
                         disabled={busyKey !== null}
-                        className={`flex h-10 items-center gap-2 rounded-xl px-5 text-xs font-black text-white shadow-lg transition-all active:scale-95 disabled:opacity-50 ${
-                            row.indexStatus === "complete"
-                            ? "bg-emerald-600 shadow-emerald-100"
-                            : "bg-blue-600 shadow-blue-200 hover:bg-blue-700 hover:shadow-blue-300"
+                        title={row.targetStatus === 'complete' ? 'Supplier locked and index loaded' : 'Locks this supplier as the active target and loads its part index'}
+                        className={`group flex h-10 items-center gap-2 rounded-xl border px-4 text-xs font-black transition-all ${
+                          row.targetStatus === 'complete' && row.indexStatus === 'complete'
+                            ? 'border-emerald-100 bg-emerald-50 text-emerald-600 opacity-80'
+                            : 'border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50 active:scale-95 disabled:opacity-50'
                         }`}
                       >
-                        {busyKey === `${row.supplier}:index` ? (
-                          <Loader2 size={14} className="animate-spin" />
+                        {busyKey === `${row.supplier}:index` || busyKey === `${row.supplier}:lock` ? (
+                          <Loader2 size={14} className="animate-spin text-blue-500" />
+                        ) : row.targetStatus === 'complete' && row.indexStatus === 'complete' ? (
+                          <CheckCircle2 size={14} />
                         ) : (
-                          <RefreshCw size={14} />
+                          <Lock size={14} className="text-slate-400 group-hover:text-blue-600" />
                         )}
-                        {row.indexStatus === "complete" ? "Refresh Index" : "Load Index"}
+                        {row.targetStatus === 'complete' && row.indexStatus === 'complete'
+                          ? 'Locked & Loaded'
+                          : row.indexStatus === 'complete'
+                            ? 'Refresh Index'
+                            : 'Lock & Load Index'}
                       </button>
                     </div>
                   </div>
