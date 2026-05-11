@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-11T05:10:03.449Z",
+  "generatedAt": "2026-05-11T11:02:33.877Z",
   "sourceCsv": "C:\\Users\\bradv\\OneDrive\\Attachments\\Documents\\ebay pricing .csv",
   "usageBoundary": "Current eBay listing scope only. Do not generate listings, image searches, mockups, prompt-chain pages, or marketplace drafts for parts outside this file unless the operator replaces the scope.",
   "activePartCount": 41,

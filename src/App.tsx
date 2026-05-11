@@ -257,8 +257,152 @@ type EbayManualDraft = {
   url: string;
 };
 
+type CurrentEbayItem = {
+  partNumber: string;
+  diagramId: string;
+  description: string;
+  supersedes: string;
+  price: number | null;
+  imageCount: number;
+  imageUrl: string;
+  imagePath: string;
+  status: 'ready_now' | 'photo_pending';
+};
 
-export default function App() {
+type CurrentEbayBatch = {
+  generatedAt: string;
+  sourceCsv: string;
+  totalParts: number;
+  readyCount: number;
+  pendingCount: number;
+  items: CurrentEbayItem[];
+};
+
+function formatBatchPrice(value: number | null) {
+  return typeof value === 'number' && Number.isFinite(value) ? `$${value.toFixed(2)}` : 'Price pending';
+}
+
+function CurrentEbayHomePanel({ batch }: { batch: CurrentEbayBatch | null }) {
+  if (!batch || batch.items.length === 0) return null;
+
+  const readyItems = batch.items.filter((item) => item.status === 'ready_now');
+  const pendingItems = batch.items.filter((item) => item.status !== 'ready_now');
+
+  return (
+    <section className="pro-card overflow-hidden rounded-lg border-pro-slate-200">
+      <div className="flex flex-col gap-4 border-b border-pro-slate-200 bg-white px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+              Current eBay batch
+            </span>
+            <span className="rounded-md bg-pro-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-pro-slate-500">
+              HTDX100ED3WW
+            </span>
+          </div>
+          <h2 className="mt-2 text-xl font-black uppercase tracking-tight text-pro-navy">
+            {batch.readyCount} listings can move now
+          </h2>
+          <p className="mt-1 text-xs font-semibold text-pro-slate-500">
+            Descriptions and prices are loaded from the current 41-part operator CSV. Photo-pending rows stay held.
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-lg border border-pro-slate-200 bg-pro-slate-50 px-3 py-2">
+            <div className="text-lg font-black text-pro-navy">{batch.totalParts}</div>
+            <div className="text-[9px] font-black uppercase tracking-widest text-pro-slate-400">Scoped</div>
+          </div>
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <div className="text-lg font-black text-emerald-700">{batch.readyCount}</div>
+            <div className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Ready</div>
+          </div>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            <div className="text-lg font-black text-amber-700">{batch.pendingCount}</div>
+            <div className="text-[9px] font-black uppercase tracking-widest text-amber-700">Hold</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <div className="max-h-[620px] overflow-y-auto p-4">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {readyItems.map((item) => (
+              <article key={item.partNumber} className="rounded-lg border border-pro-slate-200 bg-white p-3 shadow-sm">
+                <div className="aspect-square overflow-hidden rounded-md border border-pro-slate-100 bg-pro-slate-50">
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={`${item.partNumber} ${item.description}`}
+                      className="h-full w-full object-contain p-2"
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center text-[10px] font-black uppercase tracking-widest text-pro-slate-300">
+                      Photo pending
+                    </div>
+                  )}
+                </div>
+                <div className="mt-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-mono text-sm font-black text-pro-navy">{item.partNumber}</div>
+                    <div className="mt-1 line-clamp-2 min-h-[2.5rem] text-xs font-bold leading-snug text-pro-slate-700">
+                      {item.description}
+                    </div>
+                  </div>
+                  <span className="shrink-0 rounded bg-emerald-50 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-emerald-700">
+                    Now
+                  </span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] font-bold uppercase tracking-wider text-pro-slate-500">
+                  <span>Diag {item.diagramId || 'N/A'}</span>
+                  <span className="text-right text-pro-navy">{formatBatchPrice(item.price)}</span>
+                  {item.supersedes && <span className="col-span-2 truncate">Supersedes {item.supersedes}</span>}
+                  <span className="col-span-2">{item.imageCount} local image files</span>
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <a
+                    href={ebaySearchUrl(item.partNumber)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-md border border-pro-slate-200 bg-white px-2 py-2 text-center text-[10px] font-black uppercase tracking-wider text-pro-slate-600 hover:border-pro-blue hover:text-pro-blue"
+                  >
+                    Search eBay
+                  </a>
+                  <a
+                    href={ebaySoldSearchUrl(item.partNumber)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-md border border-pro-slate-200 bg-white px-2 py-2 text-center text-[10px] font-black uppercase tracking-wider text-pro-slate-600 hover:border-pro-blue hover:text-pro-blue"
+                  >
+                    Sold comps
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <aside className="border-t border-pro-slate-200 bg-pro-slate-50 p-4 lg:border-l lg:border-t-0">
+          <h3 className="text-[11px] font-black uppercase tracking-[0.18em] text-pro-slate-500">
+            Photo pending
+          </h3>
+          <div className="mt-3 space-y-2">
+            {pendingItems.map((item) => (
+              <div key={item.partNumber} className="rounded-md border border-amber-200 bg-white px-3 py-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-xs font-black text-pro-navy">{item.partNumber}</span>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-700">Hold</span>
+                </div>
+                <p className="mt-1 text-[11px] font-semibold leading-snug text-pro-slate-600">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+export default function App({ currentEbayBatch = null }: { currentEbayBatch?: CurrentEbayBatch | null }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [modelEntry, setModelEntry] = useState('');
   const [selectedSections, setSelectedSections] = useState<string[]>([]);
@@ -1465,6 +1609,8 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
         {/* Parts Explorer */}
         <section className="space-y-4 overflow-hidden">
+          <CurrentEbayHomePanel batch={currentEbayBatch} />
+
           <div className="flex flex-col gap-6">
             <h1 className="lg:hidden text-2xl font-semibold text-[#435572]">{selectedSectionLabel}</h1>
 
