@@ -10,6 +10,7 @@ const publicImageBasePath = "/ebay-current-images";
 const coverageOutputPath = "scratch/current-ebay-image-coverage.json";
 const approvedImageRoot = "scratch/approved-images";
 const descriptionEvidencePath = "scratch/description-evidence/reliableparts-descriptions - Copy.json";
+const frontendEditsPath = "scratch/frontend-ebay-edits/current-live-edits.json";
 const imageExtensions = new Set([".jpg", ".jpeg", ".png", ".webp", ".avif"]);
 const imageSearchRoots = [
   "scratch/approved-images",
@@ -169,6 +170,37 @@ function loadDescriptionEvidence() {
 
 const descriptionMap = loadDescriptionEvidence();
 
+function loadFrontendEdits() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(frontendEditsPath, "utf8"));
+    const edits = Array.isArray(raw.edits) ? raw.edits : [];
+    const map = new Map();
+    for (const edit of edits) {
+      const pn = String(edit.partNumber || "").trim().toUpperCase();
+      if (pn) map.set(pn, edit);
+    }
+    console.log(`Loaded ${map.size} frontend edit(s) from ${frontendEditsPath}.`);
+    return map;
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      console.warn(`Could not load frontend edits: ${err.message}`);
+    }
+    return new Map();
+  }
+}
+
+function editString(edit, key, fallback) {
+  const value = edit && typeof edit[key] === "string" ? edit[key].trim() : "";
+  return value || fallback;
+}
+
+function editNumber(edit, key, fallback) {
+  const value = Number(edit?.[key]);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+const frontendEditMap = loadFrontendEdits();
+
 function readParts() {
   const parsed = JSON.parse(fs.readFileSync(scopePath, "utf8"));
   const rows = Array.isArray(parsed.parts) ? parsed.parts : [];
@@ -185,29 +217,37 @@ function readParts() {
     const category = partCategory(description);
     const evidence = descriptionMap.get(partNumber) || {};
     const evidenceDescription = evidence.descriptionText || "";
+    const frontendEdit = frontendEditMap.get(partNumber) || {};
+    const priceValue = editNumber(frontendEdit, "price", Number(row.price || 0));
+    const quantityValue = Math.max(1, editNumber(frontendEdit, "quantity", 1));
+    const displayPartNumber = editString(frontendEdit, "displayPartNumber", evidence.sku || partNumber);
+    const title = editString(frontendEdit, "title", `GE ${partNumber} ${titleCase(description)} Used Dryer Part`);
+    const descriptionText = editString(frontendEdit, "descriptionText", evidenceDescription);
     return {
       index,
       partNumber,
       diagramId: String(row.diagramId || row["diagram id"] || "").trim(),
       description,
       displayDescription: titleCase(description),
-      descriptionText: evidenceDescription,
+      descriptionText,
       category,
       supersedes: String(row.supersedes || "").trim(),
-      price: Number(row.price || 0),
-      priceLabel: dollars(row.price),
-      title: `GE ${partNumber} ${titleCase(description)} Used Dryer Part`,
-      condition: "Used",
-      quantity: 1,
-      displayPartNumber: evidence.sku || partNumber,
-      fitmentLinkText: "Does this part fit my appliance?",
-      reviewLinkText: "Be the first to review this product",
-      location: "United States",
-      shipping: "Free Standard Shipping",
-      returns: "30 days returns. Buyer pays return shipping.",
-      brand: "GE / Hotpoint family",
-      mpn: partNumber,
-      fitment: "Verify model compatibility before purchase",
+      price: priceValue,
+      priceLabel: dollars(priceValue),
+      title,
+      condition: editString(frontendEdit, "condition", "Used"),
+      quantity: quantityValue,
+      displayPartNumber,
+      fitmentLinkText: editString(frontendEdit, "fitmentLinkText", "Does this part fit my appliance?"),
+      reviewLinkText: editString(frontendEdit, "reviewLinkText", "Be the first to review this product"),
+      location: editString(frontendEdit, "location", "United States"),
+      shipping: editString(frontendEdit, "shipping", "Free Standard Shipping"),
+      returns: editString(frontendEdit, "returns", "30 days returns. Buyer pays return shipping."),
+      brand: editString(frontendEdit, "brand", "GE / Hotpoint family"),
+      mpn: editString(frontendEdit, "mpn", partNumber),
+      fitment: editString(frontendEdit, "fitment", "Verify model compatibility before purchase"),
+      sellerNotes: editString(frontendEdit, "sellerNotes", ""),
+      protection: Boolean(frontendEdit.protection),
       approvedImage,
       imageFiles: publicImages.map((image) => image.url),
       imageSourcePath: imageFiles[0] || "",
@@ -701,6 +741,14 @@ const html = `<!DOCTYPE html>
       margin: 0 0 18px;
     }
 
+    .image-editor {
+      border: 1px solid #d6dce7;
+      border-radius: 12px;
+      background: #fff;
+      padding: 14px;
+      margin: 0 0 18px;
+    }
+
     .text-editor-head {
       display: flex;
       justify-content: space-between;
@@ -767,6 +815,45 @@ const html = `<!DOCTYPE html>
       outline: none;
       border-color: var(--blue);
       box-shadow: 0 0 0 2px rgba(54, 101, 243, 0.12);
+    }
+
+    .image-upload-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .image-upload-row input {
+      width: 100%;
+      border: 1px dashed #cfd7e6;
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 9px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .image-upload-row button {
+      height: 38px;
+      border: 1px solid #d6dce7;
+      border-radius: 999px;
+      background: #fff;
+      color: #2f3a49;
+      font-size: 11px;
+      font-weight: 850;
+      cursor: pointer;
+      padding: 0 12px;
+      white-space: nowrap;
+    }
+
+    .image-upload-meta {
+      min-height: 18px;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      font-weight: 700;
     }
 
     .seller {
@@ -1201,6 +1288,17 @@ const html = `<!DOCTYPE html>
           <button data-action="export">Export</button>
           <button data-action="commit">Commit</button>
         </div>
+        <div class="image-editor" id="imageEditor">
+          <div class="text-editor-head">
+            <strong>Listing image editor</strong>
+            <span>Live preview</span>
+          </div>
+          <div class="image-upload-row">
+            <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp,image/avif">
+            <button type="button" data-action="clear-upload">Clear image</button>
+          </div>
+          <div class="image-upload-meta" id="imageUploadMeta"></div>
+        </div>
         <div class="text-editor" id="textEditor">
           <div class="text-editor-head">
             <strong>Listing text editor</strong>
@@ -1384,8 +1482,11 @@ const html = `<!DOCTYPE html>
     const editReturns = document.getElementById("editReturns");
     const editDescription = document.getElementById("editDescription");
     const editSellerNotes = document.getElementById("editSellerNotes");
+    const imageUpload = document.getElementById("imageUpload");
+    const imageUploadMeta = document.getElementById("imageUploadMeta");
     const editorFields = Array.from(document.querySelectorAll("[data-edit-key]"));
     const draftStoragePrefix = "rrp-live-ebay-mockup:";
+    const pendingImageUploads = new Map();
     let toastTimer = 0;
     let descriptionExpanded = false;
 
@@ -1401,12 +1502,60 @@ const html = `<!DOCTYPE html>
       return draftStoragePrefix + partNumber;
     }
 
+    function formatFileSize(bytes) {
+      const value = Number(bytes || 0);
+      if (value > 1024 * 1024) return (value / 1024 / 1024).toFixed(1) + " MB";
+      if (value > 1024) return Math.round(value / 1024) + " KB";
+      return value + " B";
+    }
+
+    function pendingImageFor(listing) {
+      return pendingImageUploads.get(listing.partNumber) || null;
+    }
+
+    function imageFilesFor(listing) {
+      const pending = pendingImageFor(listing);
+      const existing = Array.isArray(listing.imageFiles) ? listing.imageFiles : [];
+      return pending ? [pending.previewUrl, ...existing.filter((url) => url !== listing.approvedImage)] : existing;
+    }
+
+    function primaryImageFor(listing) {
+      const pending = pendingImageFor(listing);
+      return pending ? pending.previewUrl : listing.approvedImage;
+    }
+
+    function hasListingPhoto(listing) {
+      return Boolean(primaryImageFor(listing));
+    }
+
+    function refreshImageEditor(listing) {
+      imageUpload.value = "";
+      const pending = pendingImageFor(listing);
+      if (pending) {
+        imageUploadMeta.textContent = "Selected: " + pending.name + " (" + formatFileSize(pending.size) + "). Commit to publish it.";
+        return;
+      }
+      imageUploadMeta.textContent = listing.hasPhoto
+        ? "Current approved image is attached. Choose a new file to replace the lead preview."
+        : "No approved image yet. Choose an operator-owned sale photo for this listing.";
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error || new Error("Could not read image file"));
+        reader.readAsDataURL(file);
+      });
+    }
+
     function defaultDescription(listing) {
       if (listing.descriptionText) return listing.descriptionText;
       return "Replacement " + listing.displayDescription.toLowerCase() + " for GE/Hotpoint-family dryers. Use this text area for the customer-facing listing copy: condition notes, visible wear, included hardware, fitment limits, and any testing you performed. Verify the exact model and part number before publishing.";
     }
 
     function defaultNotes(listing) {
+      if (listing.sellerNotes) return listing.sellerNotes;
       return listing.hasPhoto
         ? "Photo candidate attached for operator review. Confirm watermark status, rights, cosmetic condition, and bench-test notes before final staging."
         : "Photo pending. Provider/reference images are held out of the listing preview. Add operator-owned sale photos before this listing can be staged.";
@@ -1434,7 +1583,7 @@ const html = `<!DOCTYPE html>
         condition: draft.condition || listing.condition,
         descriptionText: draft.descriptionText || defaultDescription(listing),
         sellerNotes: draft.sellerNotes || defaultNotes(listing),
-        protection: Boolean(draft.protection),
+        protection: "protection" in draft ? Boolean(draft.protection) : Boolean(listing.protection),
         brand: draft.brand || listing.brand,
         mpn: draft.mpn || listing.mpn,
         fitment: draft.fitment || listing.fitment,
@@ -1563,13 +1712,23 @@ const html = `<!DOCTYPE html>
 
     function buildEditPacket() {
       saveCurrentDraft(false);
+      const images = Array.from(pendingImageUploads.values()).map((image) => ({
+        partNumber: image.partNumber,
+        name: image.name,
+        type: image.type,
+        size: image.size,
+        dataUrl: image.dataUrl,
+      }));
       return {
         source: "roadrunner-ebay-live-mockup-gallery",
         exportedAt: new Date().toISOString(),
         activePartNumber: listings[activeIndex].partNumber,
         editCount: listings.length,
+        imageCount: images.length,
+        images,
         edits: listings.map((item) => {
           const view = effectiveListing(item);
+          const pendingImage = pendingImageFor(item);
           return {
             partNumber: item.partNumber,
             displayPartNumber: view.displayPartNumber,
@@ -1590,8 +1749,9 @@ const html = `<!DOCTYPE html>
             shipping: view.shipping,
             returns: view.returns,
             protection: view.protection,
-            hasPhoto: item.hasPhoto,
+            hasPhoto: item.hasPhoto || Boolean(pendingImage),
             approvedImage: item.approvedImage || "",
+            pendingImageName: pendingImage ? pendingImage.name : "",
           };
         }),
       };
@@ -1621,7 +1781,7 @@ const html = `<!DOCTYPE html>
         if (result.ok) {
           const url = result.body && result.body.commitUrl ? result.body.commitUrl : "";
           if (url) await copyText(url);
-          notify(url ? "Committed edits; commit URL copied" : "Committed edits");
+          notify(url ? "Committed edits/images; commit URL copied" : "Committed edits/images");
           return;
         }
         downloadJson("roadrunner-ebay-commit-packet.json", packet);
@@ -1641,8 +1801,9 @@ const html = `<!DOCTYPE html>
     }
 
     function renderThumbs(listing) {
-      if (listing.hasPhoto) {
-        thumbs.innerHTML = listing.imageFiles.slice(0, 6).map((url, index) => (
+      const files = imageFilesFor(listing);
+      if (files.length) {
+        thumbs.innerHTML = files.slice(0, 6).map((url, index) => (
           '<button class="thumb ' + (index === 0 ? 'active' : '') + '" onclick="setMainPhoto(' + activeIndex + ', ' + index + ', this)"><img src="' + url + '" alt="' + listing.partNumber + ' photo ' + (index + 1) + '"></button>'
         )).join("");
         return;
@@ -1655,9 +1816,10 @@ const html = `<!DOCTYPE html>
 
     function setMainPhoto(index, imageIndex, thumbButton) {
       const listing = listings[index];
-      if (!listing.hasPhoto) return;
+      if (!hasListingPhoto(listing)) return;
       activePhotoIndex = imageIndex;
-      const imageUrl = listing.imageFiles[imageIndex] || listing.approvedImage;
+      const files = imageFilesFor(listing);
+      const imageUrl = files[imageIndex] || primaryImageFor(listing);
       mainImage.innerHTML = '<button class="media-float float-expand" data-action="expand-photo">+</button><button class="media-float float-heart" data-action="favorite-photo">H</button><button class="media-float float-prev" data-action="photo-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" data-action="photo-next" onclick="nextPhoto()">&gt;</button><img src="' + imageUrl + '" alt="' + listing.title + '">';
       document.querySelectorAll(".thumb").forEach((thumb, i) => {
         thumb.classList.toggle("active", i === imageIndex);
@@ -1666,22 +1828,25 @@ const html = `<!DOCTYPE html>
 
     function prevPhoto() {
       const listing = listings[activeIndex];
-      if (!listing.hasPhoto || listing.imageFiles.length < 2) return;
-      const newIndex = (activePhotoIndex - 1 + listing.imageFiles.length) % listing.imageFiles.length;
+      const files = imageFilesFor(listing);
+      if (!hasListingPhoto(listing) || files.length < 2) return;
+      const newIndex = (activePhotoIndex - 1 + files.length) % files.length;
       setMainPhoto(activeIndex, newIndex);
     }
 
     function nextPhoto() {
       const listing = listings[activeIndex];
-      if (!listing.hasPhoto || listing.imageFiles.length < 2) return;
-      const newIndex = (activePhotoIndex + 1) % listing.imageFiles.length;
+      const files = imageFilesFor(listing);
+      if (!hasListingPhoto(listing) || files.length < 2) return;
+      const newIndex = (activePhotoIndex + 1) % files.length;
       setMainPhoto(activeIndex, newIndex);
     }
 
     function renderMainImage(listing) {
       activePhotoIndex = 0;
-      if (listing.hasPhoto) {
-        mainImage.innerHTML = '<button class="media-float float-expand" data-action="expand-photo">+</button><button class="media-float float-heart" data-action="favorite-photo">H</button><button class="media-float float-prev" data-action="photo-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" data-action="photo-next" onclick="nextPhoto()">&gt;</button><img src="' + listing.approvedImage + '" alt="' + listing.title + '">';
+      const imageUrl = primaryImageFor(listing);
+      if (imageUrl) {
+        mainImage.innerHTML = '<button class="media-float float-expand" data-action="expand-photo">+</button><button class="media-float float-heart" data-action="favorite-photo">H</button><button class="media-float float-prev" data-action="photo-prev" onclick="prevPhoto()">&lt;</button><button class="media-float float-next" data-action="photo-next" onclick="nextPhoto()">&gt;</button><img src="' + imageUrl + '" alt="' + listing.title + '">';
         return;
       }
 
@@ -1697,6 +1862,8 @@ const html = `<!DOCTYPE html>
     }
 
     function renderDetails(listing, view) {
+      const pendingImage = pendingImageFor(listing);
+      const photoGate = pendingImage ? "operator_sale_photo_uploaded_pending_commit" : listing.photoGate;
       specificsTable.innerHTML = [
         ["condition", "Condition", view.condition, false],
         ["brand", "Brand", view.brand, false],
@@ -1709,7 +1876,7 @@ const html = `<!DOCTYPE html>
         ["location", "Item Location", view.location, false],
         ["shipping", "Shipping", view.shipping, false],
         ["returns", "Returns", view.returns, false],
-        ["photoGate", "Photo Gate", listing.photoGate, true],
+        ["photoGate", "Photo Gate", photoGate, true],
         ["heldReferenceImageCount", "Reference Images Held", String(listing.heldReferenceImageCount || 0), true]
       ].map(([key, label, value, readonly]) => (
         '<tr><td>' + label + '</td><td><input data-spec-key="' + key + '" value="' + escapeHtmlAttr(value) + '"' + (readonly ? ' readonly tabindex="-1"' : '') + '></td></tr>'
