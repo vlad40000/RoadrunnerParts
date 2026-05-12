@@ -312,7 +312,9 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const candidates = listing.imageCandidates || [];
   const specs = listing.specs || {};
   const packageDetails = listing.packageDetails || {};
-  const inputModeClass = editorEnabled ? "" : "pointer-events-none select-none opacity-95";
+  const inputModeClass = editorEnabled
+    ? ""
+    : "[&_input]:pointer-events-none [&_textarea]:pointer-events-none [&_select]:pointer-events-none [&_input]:select-none [&_textarea]:select-none [&_select]:select-none opacity-95";
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F5F5F5]">
@@ -348,7 +350,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
             </div>
           )}
           {/* Header Area */}
-          <fieldset disabled={!editorEnabled} className={inputModeClass}>
+          <div className={inputModeClass}>
           <div className="p-8 border-b border-slate-100 bg-white">
              <input
               type="text"
@@ -512,7 +514,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
               ))}
             </div>
           </div>
-          </fieldset>
+          </div>
         </div>
       </div>
 
