@@ -166,12 +166,12 @@ export default async function ListingDetail({ params }) {
           >
             Batch Dashboard
           </Link>
-          <Link
+          <a
             href="/ebay_mockup_gallery.html"
             className="rounded-lg border border-blue-600 bg-white px-4 py-2 text-xs font-bold text-blue-700 transition-all hover:bg-blue-600 hover:text-white"
           >
             Live Mockups
-          </Link>
+          </a>
         </div>
       </header>
 
