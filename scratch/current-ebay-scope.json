@@ -2,7 +2,7 @@
   "generatedAt": "2026-05-11T21:26:05.623Z",
   "sourceCsv": "C:\\Users\\bradv\\OneDrive\\Attachments\\Documents\\ebay pricing .csv",
   "usageBoundary": "Current eBay listing scope only. Do not generate listings, image searches, mockups, prompt-chain pages, or marketplace drafts for parts outside this file unless the operator replaces the scope.",
-  "activePartCount": 41,
+  "activePartCount": 42,
   "parts": [
     {
       "partNumber": "WE49X22294",
@@ -969,6 +969,30 @@
       "assemblySource": {
         "workbook": "Drum_Parts.xlsx",
         "sheet": "Drum"
+      }
+    },
+    {
+      "partNumber": "WE14X20425",
+      "diagramId": "311",
+      "description": "Trap Duct",
+      "supersedes": "WE14X25080",
+      "price": 23.38,
+      "diagId": "311",
+      "partTitle": "Trap Duct",
+      "title": "GE WE14X20425 Trap Duct Used Dryer Part",
+      "ebayBuyNow": "$23.38",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE14X20425",
+        "type": "Trap Duct",
+        "condition": "Used",
+        "diagramId": "311",
+        "supersedes": "WE14X25080",
+        "ebayBuyNow": "$23.38"
+      },
+      "assemblySource": {
+        "workbook": "manual-live-addition",
+        "sheet": "ReliableParts diagram 311"
       }
     }
   ],
@@ -2075,5 +2099,6 @@
         }
       }
     ]
-  }
+  },
+  "updatedAt": "2026-05-12T16:03:48.581Z"
 }

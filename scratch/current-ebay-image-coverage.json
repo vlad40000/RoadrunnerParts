@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-05-11T21:26:25.697Z",
+  "generatedAt": "2026-05-12T16:05:59.745Z",
   "scopePath": "scratch/current-ebay-scope.json",
   "outputPath": "public/ebay_mockup_gallery.html",
   "publicGalleryPath": "/ebay_mockup_gallery.html",
   "publicImageDir": "public/ebay-current-images",
-  "totalParts": 41,
+  "totalParts": 42,
   "approvedSaleImagesAttached": 1,
   "heldReferenceImageCount": 123,
-  "missingCount": 40,
+  "missingCount": 41,
   "missingParts": [
     {
       "partNumber": "WE49X22294",
@@ -247,6 +247,12 @@
       "partNumber": "WE1M300",
       "diagramId": "3102",
       "description": "Dryer Drum Bearing Bracket",
+      "heldReferenceImageCount": 0
+    },
+    {
+      "partNumber": "WE14X20425",
+      "diagramId": "311",
+      "description": "Trap Duct",
       "heldReferenceImageCount": 0
     }
   ],

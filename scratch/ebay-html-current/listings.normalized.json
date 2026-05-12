@@ -2021,6 +2021,98 @@
           "reviewStatus": "candidate_needs_operator_review"
         }
       ]
+    },
+    {
+      "partNumber": "WE14X20425",
+      "originalPartNumber": "WE14X20425",
+      "currentServicePartNumber": "WE14X25080",
+      "title": "Trap Duct",
+      "description": "<b>Genuine GE OEM WE14X20425 Trap Duct</b>\n\nRoadrunnerParts Genuine OEM WE14X20425 Trap Duct Assembly (Diagram ID 311). WE14X20425 is replaced by current service part WE14X25080.\n\n<b>Diagram ID:</b> 311\n\n<b>Product Features:</b>\n- This component guides hot, moist air into the lint filter area\n- It plays a critical role in directing airflow and preventing excessive lint buildup inside the dryer cabinet\n- Replace if cracked or warped to restore venting efficiency\n\n<b>Compatibility:</b>\nFits various models including: GE Electric Dryers, GE Gas Dryers\n\n<b>Professional Quality from RoadrunnerParts</b>\nWe specialize in high-fidelity, verified appliance components to ensure your repair is successful the first time.\n\n<b>Quality Assurance:</b>\nThis part has been professionally inspected and prepared for resale. We ensure every component is tested for structural integrity and mechanical performance.",
+      "specs": {
+        "brand": "GE",
+        "mpn": "WE14X20425",
+        "originalPartNumber": "WE14X20425",
+        "currentServicePartNumber": "WE14X25080",
+        "type": "Lint Trap Duct",
+        "compatibleModels": [
+          "GE Electric Dryers",
+          "GE Gas Dryers"
+        ],
+        "condition": "Used",
+        "diagramId": "311",
+        "retail": "$51.95",
+        "ebayBuyNow": "$23.38"
+      },
+      "originalTitle": "GE Genuine OEM WE14X20425 Trap Duct - Replaced by WE14X25080",
+      "partTitle": "Trap Duct",
+      "diagId": "311",
+      "retail": "$51.95",
+      "ebayBuyNow": "$23.38",
+      "imageCandidate": {
+        "imageUrl": "/ebay-current-images/WE14X25080-ge-official.jpg",
+        "thumbnailUrl": "/ebay-current-images/WE14X25080-ge-official.jpg",
+        "pageUrl": "/ebay-current-images/WE14X25080-ge-official.jpg",
+        "source": "local usable image inventory",
+        "sourcePath": "public/ebay-current-images/WE14X25080-ge-official.jpg",
+        "title": "WE14X20425 Trap Duct local image",
+        "reviewStatus": "local_usable_image_attached",
+        "matchType": "current_or_cross_part_number",
+        "matchedPartNumber": "WE14X25080"
+      },
+      "imageCandidates": [
+        {
+          "imageUrl": "/ebay-current-images/WE14X25080-ge-official.jpg",
+          "thumbnailUrl": "/ebay-current-images/WE14X25080-ge-official.jpg",
+          "pageUrl": "/ebay-current-images/WE14X25080-ge-official.jpg",
+          "source": "local usable image inventory",
+          "sourcePath": "public/ebay-current-images/WE14X25080-ge-official.jpg",
+          "title": "WE14X20425 Trap Duct local image",
+          "reviewStatus": "local_usable_image_attached",
+          "matchType": "current_or_cross_part_number",
+          "matchedPartNumber": "WE14X25080"
+        },
+        {
+          "imageUrl": "/ebay-current-images/WE14X25080-ab8b510001.webp",
+          "thumbnailUrl": "/ebay-current-images/WE14X25080-ab8b510001.webp",
+          "pageUrl": "/ebay-current-images/WE14X25080-ab8b510001.webp",
+          "source": "local usable image inventory",
+          "sourcePath": "scratch/HTDX100ED3WW Nameplate_Diagrams_Parts_Images/WE14X25080.webp",
+          "title": "WE14X20425 Trap Duct local image",
+          "reviewStatus": "local_usable_image_attached",
+          "matchType": "current_or_cross_part_number",
+          "matchedPartNumber": "WE14X25080"
+        },
+        {
+          "imageUrl": "https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2.webp",
+          "thumbnailUrl": "https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2.webp",
+          "pageUrl": "https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2.webp",
+          "source": "reliableparts.com",
+          "title": "WE14X20425 Trap Duct repo image-map candidate",
+          "reviewStatus": "candidate_needs_watermark_review",
+          "matchType": "exact_part_number",
+          "matchedPartNumber": "WE14X20425"
+        },
+        {
+          "imageUrl": "https://static.reliableparts.com/media/catalog/product/a/e/ae1fc029-30e5-42c8-9e85-3b3e37804aef.jpg?width=800&height=800&store=reliableparts&image-type=small_image",
+          "thumbnailUrl": "https://static.reliableparts.com/media/catalog/product/a/e/ae1fc029-30e5-42c8-9e85-3b3e37804aef.jpg?width=800&height=800&store=reliableparts&image-type=small_image",
+          "pageUrl": "https://static.reliableparts.com/media/catalog/product/a/e/ae1fc029-30e5-42c8-9e85-3b3e37804aef.jpg?width=800&height=800&store=reliableparts&image-type=small_image",
+          "source": "reliableparts.com",
+          "title": "WE14X20425 Trap Duct repo image-map candidate",
+          "reviewStatus": "candidate_needs_watermark_review",
+          "matchType": "exact_part_number",
+          "matchedPartNumber": "WE14X20425"
+        },
+        {
+          "imageUrl": "https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2_small.webp",
+          "thumbnailUrl": "https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2_small.webp",
+          "pageUrl": "https://cdn.amplifi.pattern.com/0f8108e5-9245-404d-99c9-180039e55ad2_small.webp",
+          "source": "reliableparts.com",
+          "title": "WE14X20425 Trap Duct repo image-map candidate",
+          "reviewStatus": "candidate_needs_watermark_review",
+          "matchType": "exact_part_number",
+          "matchedPartNumber": "WE14X20425"
+        }
+      ]
     }
   ]
 }

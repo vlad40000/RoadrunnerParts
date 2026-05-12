@@ -118,7 +118,6 @@ function resetPublicImageDir() {
   if (resolved !== expected) {
     throw new Error(`Refusing to reset unexpected image output directory: ${resolved}`);
   }
-  fs.rmSync(resolved, { recursive: true, force: true });
   fs.mkdirSync(resolved, { recursive: true });
 }
 
@@ -247,7 +246,6 @@ function readParts() {
       mpn: editString(frontendEdit, "mpn", partNumber),
       fitment: editString(frontendEdit, "fitment", "Verify model compatibility before purchase"),
       sellerNotes: editString(frontendEdit, "sellerNotes", ""),
-      protection: Boolean(frontendEdit.protection),
       approvedImage,
       imageFiles: publicImages.map((image) => image.url),
       imageSourcePath: imageFiles[0] || "",
@@ -264,8 +262,8 @@ function readParts() {
 
 resetPublicImageDir();
 const parts = readParts();
-if (parts.length !== 41) {
-  throw new Error(`Expected 41 current-scope parts, found ${parts.length}.`);
+if (parts.length < 1) {
+  throw new Error("No current-scope parts found.");
 }
 const partsWithImages = parts.filter((part) => part.hasPhoto).length;
 const missingImages = parts.filter((part) => !part.hasPhoto).map((part) => part.partNumber);
@@ -277,7 +275,7 @@ const html = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RoadrunnerParts Current 41 eBay Mockups</title>
+  <title>RoadrunnerParts Current eBay Mockups</title>
   <style>
     :root {
       --blue: #3665f3;
@@ -1316,6 +1314,28 @@ const html = `<!DOCTYPE html>
     .save-btn:hover { background: var(--soft); }
     .save-btn.primary { background: var(--blue); color: white; border-color: var(--blue); }
     .save-btn.primary:hover { background: var(--blue-dark); }
+    .editor-toggle { height: 36px; border: 1px solid var(--line); background: white; color: var(--text); border-radius: 18px; padding: 0 14px; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .editor-toggle[aria-pressed="false"] { background: #111820; color: white; border-color: #111820; }
+    body.editor-off .layer-panel,
+    body.editor-off .operator-actions,
+    body.editor-off .image-editor,
+    body.editor-off .ai-editor,
+    body.editor-off .text-editor,
+    body.editor-off .description-edit,
+    body.editor-off .save-bar {
+      display: none !important;
+    }
+    body.editor-off .editor-frame {
+      grid-template-columns: 1fr;
+    }
+    body.editor-off .canvas-area {
+      padding-left: 32px;
+    }
+    body.editor-off [data-spec-key],
+    body.editor-off #priceInput {
+      pointer-events: none;
+      border-color: transparent;
+    }
 
     .fullscreen-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 200; place-items: center; cursor: zoom-out; }
     .fullscreen-overlay.open { display: grid; }
@@ -1487,6 +1507,7 @@ const html = `<!DOCTYPE html>
     <div class="search"><div class="search-icon">Q</div><input class="search-input" id="searchInput" value="GE dryer parts"><div class="search-category">All Categories v</div></div>
     <button class="search-button" id="searchBtn">Search</button>
     <button class="advanced" id="advancedBtn">Advanced</button>
+    <button class="editor-toggle" id="editorToggle" type="button" aria-pressed="true">Editor ON</button>
   </header>
 
   <div class="promo"><span class="promo-live">LIVE</span><span>Shop live events</span><span>Discover exclusive drops and deals</span><button class="promo-button" id="liveBtn">See what's live</button></div>
@@ -1537,7 +1558,7 @@ const html = `<!DOCTYPE html>
 
         <section class="scope-strip">
           <div class="scope-copy">
-            <strong>RoadrunnerParts current 41-part review</strong>
+            <strong>RoadrunnerParts current listing review</strong>
             <span>Mockups are visual review only. Photos remain pending until operator-approved sale photos pass rights and watermark review.</span>
           </div>
           <div class="part-strip" id="partStrip"></div>
@@ -1567,10 +1588,6 @@ const html = `<!DOCTYPE html>
           <button class="cta muted" data-action="watch">Add to Watchlist</button>
         </div>
 
-        <div class="service">
-          <strong>Additional service available</strong>
-          <label class="checkline"><input type="checkbox" id="protectionInput"> 3-year protection plan from Allstate - review before listing</label>
-        </div>
         <div class="listing-alert" id="listingAlert"></div>
 
         <div class="policy-list">
@@ -1761,7 +1778,7 @@ const html = `<!DOCTYPE html>
     const qtyValue = document.getElementById("qtyValue");
     const listingAlert = document.getElementById("listingAlert");
     const savePartLabel = document.getElementById("savePartLabel");
-    const protectionInput = document.getElementById("protectionInput");
+    const editorToggle = document.getElementById("editorToggle");
     const toast = document.getElementById("toast");
     const editTitle = document.getElementById("editTitle");
     const editDisplayPartNumber = document.getElementById("editDisplayPartNumber");
@@ -1886,7 +1903,6 @@ const html = `<!DOCTYPE html>
         condition: draft.condition || listing.condition,
         descriptionText: draft.descriptionText || defaultDescription(listing),
         sellerNotes: draft.sellerNotes || defaultNotes(listing),
-        protection: "protection" in draft ? Boolean(draft.protection) : Boolean(listing.protection),
         brand: draft.brand || listing.brand,
         mpn: draft.mpn || listing.mpn,
         fitment: draft.fitment || listing.fitment,
@@ -1912,7 +1928,6 @@ const html = `<!DOCTYPE html>
         condition: editCondition.value.trim() || specs.condition || conditionText.textContent.trim() || "Used",
         descriptionText: editDescription.value.trim() || description.value.trim() || defaultDescription(listing),
         sellerNotes: editSellerNotes.value.trim() || defaultNotes(listing),
-        protection: protectionInput.checked,
         brand: editBrand.value.trim() || specs.brand || listing.brand,
         mpn: editMpn.value.trim() || specs.mpn || listing.mpn,
         fitment: editFitment.value.trim() || specs.fitment || listing.fitment,
@@ -2071,7 +2086,6 @@ const html = `<!DOCTYPE html>
             location: view.location,
             shipping: view.shipping,
             returns: view.returns,
-            protection: view.protection,
             hasPhoto: item.hasPhoto || Boolean(pendingImage),
             approvedImage: item.approvedImage || "",
             pendingImageName: pendingImage ? pendingImage.name : "",
@@ -2242,7 +2256,6 @@ const html = `<!DOCTYPE html>
         });
         if (Number.isFinite(Number(edit.price))) listing.price = Number(edit.price);
         if (Number.isFinite(Number(edit.quantity))) listing.quantity = Math.max(1, Number(edit.quantity));
-        if ("protection" in edit) listing.protection = Boolean(edit.protection);
       });
 
       const imageManifest = Array.isArray(state.imageManifest) ? state.imageManifest : [];
@@ -2448,7 +2461,6 @@ const html = `<!DOCTYPE html>
       priceInput.value = money(view.price);
       qtyValue.textContent = String(view.quantity);
       conditionText.textContent = view.condition;
-      protectionInput.checked = view.protection;
       payLater.textContent = "as low as " + money(view.price / 4) + "/mo with Klarna. Learn more";
       description.value = view.descriptionText;
       renderDescriptionPreview(view);
@@ -2498,10 +2510,6 @@ const html = `<!DOCTYPE html>
     description.addEventListener("input", () => {
       editDescription.value = description.value;
       applyTextEditorToPreview(true);
-    });
-    protectionInput.addEventListener("change", () => {
-      saveCurrentDraft(false);
-      renderDetails(listings[activeIndex], effectiveListing(listings[activeIndex]));
     });
     imageUpload.addEventListener("change", async () => {
       const file = imageUpload.files && imageUpload.files[0];
@@ -2722,7 +2730,7 @@ const html = `<!DOCTYPE html>
       }
       if (action === "see-all") {
         document.querySelector(".part-strip").scrollIntoView({ behavior: "smooth", block: "center" });
-        notify("Showing current 41-part scope");
+        notify("Showing current listing scope");
       }
     });
 
@@ -2750,8 +2758,13 @@ const html = `<!DOCTYPE html>
       if (index >= 0) showListing(index);
       notify(index >= 0 ? "Opened " + listings[index].partNumber : "No current-scope match");
     });
-    document.getElementById("advancedBtn").addEventListener("click", () => notify("Advanced filters are represented by the 41-part strip."));
+    document.getElementById("advancedBtn").addEventListener("click", () => notify("Advanced filters are represented by the current part strip."));
     document.getElementById("liveBtn").addEventListener("click", () => document.querySelector(".scope-strip").scrollIntoView({ behavior: "smooth", block: "center" }));
+    editorToggle.addEventListener("click", () => {
+      const nextOn = document.body.classList.toggle("editor-off") === false;
+      editorToggle.setAttribute("aria-pressed", String(nextOn));
+      editorToggle.textContent = nextOn ? "Editor ON" : "Editor OFF";
+    });
     window.addEventListener("beforeunload", () => saveCurrentDraft(false));
     if (location.hash) {
       const token = decodeURIComponent(location.hash.slice(1)).toUpperCase();
