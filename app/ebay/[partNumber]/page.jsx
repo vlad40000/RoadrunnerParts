@@ -130,7 +130,13 @@ export default async function ListingDetail({ params }) {
           </Link>
           <div className="flex flex-col">
             <h1 className="text-sm font-bold text-slate-900 leading-none">Editor</h1>
-            <span className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mt-1">RoadrunnerParts / {partNumber}</span>
+            <span className="mt-1 font-[var(--font-display)] text-[10px] tracking-normal">
+              <span className="text-blue-600">Road</span>
+              <span className="text-slate-950">Runner</span>
+              <span className="text-slate-950">-</span>
+              <span className="text-emerald-600">Parts</span>
+              <span className="font-sans font-bold text-slate-400"> / {partNumber}</span>
+            </span>
           </div>
         </div>
 

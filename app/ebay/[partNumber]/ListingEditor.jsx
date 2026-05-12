@@ -22,7 +22,6 @@ function normalizeEditorModel(value) {
   if (model === "gemini-2.5-flash-image" || /^nano[-\s]?banana$/i.test(model)) return IMAGE_WORKFLOW_MODEL;
   return /^gemini-[a-z0-9][a-z0-9._-]*$/i.test(model) ? model : TEXT_FALLBACK_MODEL;
 }
-
 function isImageWorkflowModel(model) {
   return normalizeEditorModel(model) === IMAGE_WORKFLOW_MODEL;
 }
@@ -72,10 +71,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
     if (listing.ebayBuyNow && listing.ebayBuyNow !== "US $") score += 15;
     if (listing.imageCandidates?.length > 0) score += 20;
     
-    const specCount = Object.values(listing.specs || {}).filter((value) => {
-      if (Array.isArray(value)) return value.length > 0;
-      return String(value || "").trim() !== "";
-    }).length;
+    const specCount = Object.values(listing.specs || {}).filter(v => v && v.trim() !== "").length;
     if (specCount >= 4) score += 20;
     else score += (specCount * 5);
 
@@ -315,251 +311,326 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const candidates = listing.imageCandidates || [];
   const specs = listing.specs || {};
   const packageDetails = listing.packageDetails || {};
-  const inputModeClass = editorEnabled
-    ? ""
-    : "[&_input]:pointer-events-none [&_textarea]:pointer-events-none [&_select]:pointer-events-none [&_input]:select-none [&_textarea]:select-none [&_select]:select-none opacity-95";
+
+  const priceRaw = listing.ebayBuyNow?.replace("US $", "").replace("$", "").trim() || "";
+
+  /* Tab state for shipping/returns/payment */
+  const [activeTab, setActiveTab] = useState("shipping");
+
+  const specEntries = [
+    { label: "Brand", field: "brand" },
+    { label: "MPN", field: "mpn" },
+    { label: "Type", field: "type" },
+    { label: "Color", field: "color" },
+    { label: "Material", field: "material" },
+    { label: "Compatibility", field: "compatibility" },
+    { label: "Bundle Listing", field: "bundle" },
+    { label: "Custom", field: "custom" },
+  ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F5F5F5]">
+    <div className="flex h-screen overflow-hidden bg-white">
+      {/* Editor Toggle - Fixed */}
       <div className="fixed right-5 top-5 z-50 flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-lg">
-        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
-          Editor
-        </span>
+        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Editor</span>
         <button
           type="button"
-          onClick={() => setEditorEnabled((enabled) => !enabled)}
+          onClick={() => setEditorEnabled((v) => !v)}
           aria-pressed={editorEnabled}
-          className={`relative h-7 w-14 rounded-full transition-colors ${
-            editorEnabled ? "bg-blue-600" : "bg-slate-300"
-          }`}
+          className={`relative h-7 w-14 rounded-full transition-colors ${editorEnabled ? "bg-blue-600" : "bg-slate-300"}`}
         >
-          <span
-            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-              editorEnabled ? "translate-x-7" : "translate-x-1"
-            }`}
-          />
-          <span className="sr-only">{editorEnabled ? "Turn editor off" : "Turn editor on"}</span>
+          <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${editorEnabled ? "translate-x-7" : "translate-x-1"}`} />
         </button>
-        <span className={`text-xs font-extrabold ${editorEnabled ? "text-blue-700" : "text-slate-500"}`}>
-          {editorEnabled ? "ON" : "OFF"}
-        </span>
+        <span className={`text-xs font-extrabold ${editorEnabled ? "text-blue-700" : "text-slate-500"}`}>{editorEnabled ? "ON" : "OFF"}</span>
       </div>
-      {/* Main Canvas / Preview */}
-      <div className="flex-1 overflow-y-auto p-12">
-        <div className="mx-auto max-w-4xl rounded-xl bg-white shadow-sm ring-1 ring-black/5 overflow-hidden">
+
+      {/* ════════════ MAIN CONTENT ════════════ */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-[1200px] px-6 py-8">
           {!editorEnabled && (
-            <div className="border-b border-emerald-200 bg-emerald-50 px-8 py-3 text-xs font-bold uppercase tracking-wide text-emerald-800">
-              Preview mode - editor controls are off
+            <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-emerald-800">
+              Preview Mode — editor controls hidden
             </div>
           )}
-          {/* Header Area */}
-          <div className={inputModeClass}>
-          <div className="p-8 border-b border-slate-100 bg-white">
-             <input
-              type="text"
-              value={listing.title || ""}
-              onChange={(e) => handleUpdate("title", e.target.value)}
-              className="w-full text-3xl font-bold leading-tight text-slate-900 bg-transparent border-none focus:ring-0 focus:outline-none placeholder:text-slate-300"
-              placeholder="Listing Title"
-            />
-            <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
-               <span className="font-medium text-slate-800">Part: {partNumber}</span>
-               <span className="text-slate-300">&bull;</span>
-               <span>RoadrunnerParts Official Listing</span>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-            {/* Left: Gallery */}
+          {/* ── Top Section: Gallery + Purchase Panel ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+            {/* LEFT: Gallery */}
             <div>
-              <ListingGallery 
-                candidates={candidates} 
-                title={listing.title} 
-                partNumber={partNumber} 
+              <ListingGallery
+                candidates={candidates}
+                title={listing.title}
+                partNumber={partNumber}
                 onChange={editorEnabled ? handleImagesChange : null}
               />
             </div>
 
-            {/* Right: Summary Info */}
-            <div className="flex flex-col gap-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Price</label>
-                  <div className="flex items-center gap-1">
-                    <span className="text-lg font-bold text-slate-900">$</span>
+            {/* RIGHT: Purchase / Info Stack */}
+            <div className="flex flex-col gap-5">
+              {/* Title */}
+              <div>
+                {editorEnabled ? (
+                  <input
+                    type="text"
+                    value={listing.title || ""}
+                    onChange={(e) => handleUpdate("title", e.target.value)}
+                    className="w-full text-xl font-bold text-[#191919] bg-transparent border-b-2 border-dashed border-blue-200 pb-1 focus:border-blue-500 focus:outline-none transition-colors"
+                    placeholder="Listing Title"
+                  />
+                ) : (
+                  <h1 className="text-xl font-bold text-[#191919] leading-tight">{listing.title || "Untitled Listing"}</h1>
+                )}
+              </div>
+
+              {/* Seller Row */}
+              <div className="flex items-center gap-2 text-sm">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-[11px] font-bold text-white">R</div>
+                <span className="font-medium text-[#3665F3] hover:underline cursor-pointer">roadrunnerparts</span>
+                <span className="text-slate-400">|</span>
+                <span className="text-xs text-slate-500">100% positive feedback</span>
+              </div>
+
+              {/* Price */}
+              <div className="border-t border-b border-slate-200 py-4">
+                <div className="text-xs text-slate-500 mb-1">Price:</div>
+                {editorEnabled ? (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold text-[#191919]">US $</span>
                     <input
                       type="text"
-                      value={listing.ebayBuyNow?.replace("US $", "").replace("$", "") || ""}
+                      value={priceRaw}
                       onChange={(e) => handleUpdate("ebayBuyNow", `US $${e.target.value}`)}
-                      className="w-full text-xl font-bold text-slate-900 bg-transparent border-none p-0 focus:ring-0 focus:outline-none"
+                      className="text-2xl font-bold text-[#191919] bg-transparent border-b-2 border-dashed border-blue-200 w-32 focus:border-blue-500 focus:outline-none"
                       placeholder="0.00"
                     />
                   </div>
+                ) : (
+                  <div className="text-2xl font-bold text-[#191919]">US ${priceRaw || "—"}</div>
+                )}
+              </div>
+
+              {/* Condition & Quantity */}
+              <div className="flex items-center gap-6 text-sm">
+                <div>
+                  <span className="text-slate-500">Condition: </span>
+                  {editorEnabled ? (
+                    <select
+                      value={listing.condition || "Used"}
+                      onChange={(e) => handleUpdate("condition", e.target.value)}
+                      className="font-medium text-[#191919] bg-transparent border-b border-dashed border-blue-200 focus:outline-none cursor-pointer"
+                    >
+                      <option value="New">New</option>
+                      <option value="New other (see details)">New other</option>
+                      <option value="Open box">Open box</option>
+                      <option value="Used">Used</option>
+                      <option value="For parts or not working">For parts</option>
+                    </select>
+                  ) : (
+                    <span className="font-medium text-[#191919]">{listing.condition || "Used"}</span>
+                  )}
                 </div>
-                <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Quantity</label>
-                  <input
-                    type="number"
-                    value={listing.quantity || 1}
-                    onChange={(e) => handleUpdate("quantity", Number(e.target.value) || 1)}
-                    className="w-full text-xl font-bold text-slate-900 bg-transparent border-none p-0 focus:ring-0 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Condition</label>
-                <select 
-                  className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                  value={listing.condition || "Used"}
-                  onChange={(e) => handleUpdate("condition", e.target.value)}
-                >
-                  <option value="New">New</option>
-                  <option value="New other (see details)">New other (see details)</option>
-                  <option value="Open box">Open box</option>
-                  <option value="Used">Used</option>
-                  <option value="For parts or not working">For parts or not working</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Item Description</label>
-                <textarea
-                  value={listing.description || ""}
-                  onChange={(e) => handleUpdate("description", e.target.value)}
-                  className="w-full h-64 rounded-xl border border-slate-200 p-4 text-sm leading-relaxed text-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none resize-none"
-                  placeholder="Enter part description, compatibility notes, and condition details..."
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Item Specifics Grid */}
-          <div className="p-8 border-t border-slate-100 bg-slate-50/30">
-            <h3 className="text-sm font-bold text-slate-900 mb-6">Item Specifics</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-12">
-               {[
-                 { label: "Brand", field: "brand" },
-                 { label: "MPN", field: "mpn" },
-                 { label: "Type", field: "type" },
-                 { label: "Color", field: "color" },
-                 { label: "Material", field: "material" },
-                 { label: "Compatibility", field: "compatibility" },
-                 { label: "Bundle", field: "bundle" },
-                 { label: "Custom", field: "custom" },
-               ].map((spec) => (
-                 <div key={spec.field} className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-medium text-slate-400">{spec.label}</span>
+                <div>
+                  <span className="text-slate-500">Qty: </span>
+                  {editorEnabled ? (
                     <input
-                      type="text"
-                      value={specs[spec.field] || ""}
-                      onChange={(e) => handleSpecUpdate(spec.field, e.target.value)}
-                      className="text-[13px] font-bold text-slate-800 bg-transparent border-none p-0 focus:ring-0 focus:outline-none placeholder:font-normal placeholder:text-slate-300"
-                      placeholder={`Set ${spec.label.toLowerCase()}...`}
+                      type="number"
+                      min="1"
+                      value={listing.quantity || 1}
+                      onChange={(e) => handleUpdate("quantity", Number(e.target.value) || 1)}
+                      className="w-12 font-medium text-[#191919] bg-transparent border-b border-dashed border-blue-200 focus:outline-none text-center"
                     />
-                 </div>
-               ))}
+                  ) : (
+                    <span className="font-medium text-[#191919]">{listing.quantity || 1}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Buy It Now / Add to Cart */}
+              <div className="flex flex-col gap-2.5">
+                <button type="button" className="ebay-buy-now-btn">Buy It Now</button>
+                <button type="button" className="ebay-add-cart-btn">Add to cart</button>
+                <button type="button" className="ebay-watchlist-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                  Add to Watchlist
+                </button>
+              </div>
+
+              {/* Shipping summary */}
+              <div className="rounded-lg border border-slate-200 p-4 text-sm">
+                <div className="flex items-center gap-2 text-emerald-700 font-medium">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  {/ground|free|standard/i.test(listing.shipping || "") ? "FREE Standard Shipping" : /priority|expedited/i.test(listing.shipping || "") ? "Expedited $9.99" : "Next Day $29.99"}
+                </div>
+                <div className="mt-1 text-xs text-slate-500">Estimated delivery: 3-7 business days</div>
+                <div className="mt-2 text-xs text-slate-500">
+                  {listing.returns !== false ? "30 day returns · Buyer pays return shipping" : "No returns accepted"}
+                </div>
+              </div>
+
+              {/* Part number badge */}
+              <div className="text-xs text-slate-400">
+                Part #: <span className="font-mono font-medium text-slate-600">{partNumber}</span>
+              </div>
             </div>
           </div>
 
-          {/* Shipping & Returns */}
-          <div className="p-8 border-t border-slate-100 bg-white">
-            <h3 className="text-sm font-bold text-slate-900 mb-6">Shipping & Returns</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="flex flex-col gap-4">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Shipping Service</label>
-                <select 
-                  className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
-                  value={listing.shipping || "Ground"}
-                  onChange={(e) => handleUpdate("shipping", e.target.value)}
-                >
-                  <option value="Ground">Standard Ground (Free)</option>
-                  <option value="Priority">Expedited Priority ($9.99)</option>
-                  <option value="Overnight">Next Day Air ($29.99)</option>
-                </select>
+          {/* ── Description Section ── */}
+          <div className="mt-10 border-t border-slate-200 pt-8">
+            <h2 className="text-lg font-bold text-[#191919] mb-4">Item description from the seller</h2>
+            {editorEnabled ? (
+              <textarea
+                value={listing.description || ""}
+                onChange={(e) => handleUpdate("description", e.target.value)}
+                className="w-full min-h-[200px] rounded-lg border-2 border-dashed border-blue-200 p-4 text-sm leading-relaxed text-slate-700 focus:border-blue-500 focus:outline-none resize-y bg-blue-50/30"
+                placeholder="Enter part description, compatibility notes, and condition details..."
+              />
+            ) : (
+              <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap leading-relaxed">
+                {listing.description || "No description provided."}
               </div>
-              <div className="flex flex-col gap-4">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Return Policy</label>
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50">
-                  <input 
-                    type="checkbox" 
-                    id="returns"
-                    checked={listing.returns !== false}
-                    onChange={(e) => handleUpdate("returns", e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <label htmlFor="returns" className="text-sm font-medium text-slate-700">Allow 30-day returns</label>
+            )}
+          </div>
+
+          {/* ── Item Specifics Table ── */}
+          <div className="mt-10 border-t border-slate-200 pt-8">
+            <h2 className="text-lg font-bold text-[#191919] mb-4">Item specifics</h2>
+            <div className="ebay-specifics-table">
+              {specEntries.map((spec) => (
+                <div key={spec.field} className="ebay-specifics-row">
+                  <div className="ebay-specifics-label">{spec.label}</div>
+                  <div className="ebay-specifics-value">
+                    {editorEnabled ? (
+                      <input
+                        type="text"
+                        value={specs[spec.field] || ""}
+                        onChange={(e) => handleSpecUpdate(spec.field, e.target.value)}
+                        className="w-full bg-transparent border-b border-dashed border-blue-200 py-0.5 text-sm focus:border-blue-500 focus:outline-none"
+                        placeholder={`—`}
+                      />
+                    ) : (
+                      <span className="text-sm">{specs[spec.field] || "—"}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
-              {[
-                { label: "Weight lb", field: "weightLb", step: "1" },
-                { label: "Weight oz", field: "weightOz", step: "1" },
-                { label: "Length in", field: "lengthIn", step: "0.1" },
-                { label: "Width in", field: "widthIn", step: "0.1" },
-                { label: "Height in", field: "heightIn", step: "0.1" },
-              ].map((item) => (
-                <label key={item.field} className="flex flex-col gap-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {item.label}
-                  </span>
-                  <input
-                    type="number"
-                    min="0"
-                    step={item.step}
-                    value={packageDetails[item.field] || ""}
-                    onChange={(event) => handlePackageUpdate(item.field, event.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-white p-3 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                    placeholder="0"
-                  />
-                </label>
               ))}
             </div>
           </div>
+
+          {/* ── Shipping / Returns / Payments Tabs ── */}
+          <div className="mt-10 border-t border-slate-200 pt-8 pb-12">
+            <div className="ebay-tabs">
+              {["shipping", "returns", "payments"].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setActiveTab(tab)}
+                  className={`ebay-tab ${activeTab === tab ? "ebay-tab-active" : ""}`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 text-sm text-slate-700">
+              {activeTab === "shipping" && (
+                <div className="flex flex-col gap-3">
+                  {editorEnabled ? (
+                    <select
+                      className="w-64 rounded-lg border border-slate-200 p-2.5 text-sm bg-white focus:border-blue-500 focus:outline-none"
+                      value={listing.shipping || "Ground"}
+                      onChange={(e) => handleUpdate("shipping", e.target.value)}
+                    >
+                      <option value="Ground">Standard Ground (Free)</option>
+                      <option value="Priority">Expedited Priority ($9.99)</option>
+                      <option value="Overnight">Next Day Air ($29.99)</option>
+                    </select>
+                  ) : (
+                    <div>{listing.shipping === "Ground" ? "FREE Standard Ground Shipping" : listing.shipping === "Priority" ? "Expedited Priority — $9.99" : "Next Day Air — $29.99"}</div>
+                  )}
+                  <div className="text-xs text-slate-500">Ships from: United States</div>
+                  {/* Package dimensions */}
+                  {editorEnabled && (
+                    <div className="mt-2 grid grid-cols-5 gap-3">
+                      {[
+                        { label: "Weight lb", field: "weightLb", step: "1" },
+                        { label: "Weight oz", field: "weightOz", step: "1" },
+                        { label: "Length″", field: "lengthIn", step: "0.1" },
+                        { label: "Width″", field: "widthIn", step: "0.1" },
+                        { label: "Height″", field: "heightIn", step: "0.1" },
+                      ].map((item) => (
+                        <label key={item.field} className="flex flex-col gap-1">
+                          <span className="text-[10px] font-bold uppercase text-slate-400">{item.label}</span>
+                          <input
+                            type="number" min="0" step={item.step}
+                            value={packageDetails[item.field] || ""}
+                            onChange={(e) => handlePackageUpdate(item.field, e.target.value)}
+                            className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm font-medium outline-none focus:border-blue-500"
+                            placeholder="0"
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {activeTab === "returns" && (
+                <div className="flex flex-col gap-2">
+                  {editorEnabled ? (
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={listing.returns !== false}
+                        onChange={(e) => handleUpdate("returns", e.target.checked)}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600"
+                      />
+                      <span className="text-sm font-medium">Accept 30-day returns</span>
+                    </label>
+                  ) : (
+                    <div>{listing.returns !== false ? "30 day returns. Buyer pays for return shipping." : "No returns accepted."}</div>
+                  )}
+                </div>
+              )}
+              {activeTab === "payments" && (
+                <div>PayPal, Visa, Mastercard, American Express, Discover</div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right Sidebar: Properties / Controls */}
+      {/* ════════════ EDITOR SIDEBAR ════════════ */}
       {editorEnabled && (
-      <div className="w-80 bg-white border-l border-slate-200 flex flex-col shadow-xl">
-        <div className="p-6 border-b border-slate-100">
-          <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-blue-500" />
-            Listing Properties
-          </h2>
-        </div>
+        <div className="w-[340px] shrink-0 border-l border-slate-200 bg-slate-50 flex flex-col shadow-xl overflow-hidden">
+          <div className="p-5 border-b border-slate-200 bg-white">
+            <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              Listing Controls
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
+            {/* Status */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status</label>
+              <select
+                className="w-full rounded-lg border border-slate-200 p-2.5 text-sm bg-white"
+                value={listing.status || "draft"}
+                onChange={(e) => handleUpdate("status", e.target.value)}
+              >
+                <option value="draft">Draft</option>
+                <option value="ready">Ready for Export</option>
+                <option value="published">Published</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
 
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-8">
-           {/* Listing Status */}
-           <div className="flex flex-col gap-3">
-             <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Status</label>
-             <select 
-               className="w-full rounded-lg border border-slate-200 p-2.5 text-sm bg-slate-50 focus:bg-white transition-colors"
-               value={listing.status || "draft"}
-               onChange={(e) => handleUpdate("status", e.target.value)}
-             >
-               <option value="draft">Draft</option>
-               <option value="ready">Ready for Export</option>
-               <option value="published">Published</option>
-               <option value="archived">Archived</option>
-             </select>
-           </div>
-
-           {/* AI Configuration */}
-            <div className="flex flex-col gap-3 p-4 rounded-xl border border-blue-100 bg-blue-50/50">
-              <label className="text-xs font-bold text-blue-600 uppercase tracking-tight">AI Engine</label>
-              <select 
-                className="w-full rounded-lg border border-blue-200 p-2 text-xs bg-white focus:ring-2 focus:ring-blue-200 outline-none"
+            {/* AI Engine */}
+            <div className="flex flex-col gap-2 p-3.5 rounded-xl border border-blue-100 bg-blue-50/50">
+              <label className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">AI Engine</label>
+              <select
+                className="w-full rounded-lg border border-blue-200 p-2 text-xs bg-white outline-none"
                 value={showCustomModel ? "custom" : selectedModel}
                 onChange={(e) => {
-                  if (e.target.value === "custom") {
-                    setShowCustomModel(true);
-                  } else {
-                    setShowCustomModel(false);
-                    setSelectedModel(normalizeEditorModel(e.target.value));
-                  }
+                  if (e.target.value === "custom") { setShowCustomModel(true); }
+                  else { setShowCustomModel(false); setSelectedModel(normalizeEditorModel(e.target.value)); }
                 }}
               >
                 <optgroup label="Stable">
@@ -570,183 +641,107 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 <optgroup label="Preview">
                   <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
                   <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
-                  <option value="gemini-3.1-flash-image-preview">Gemini Image Preview (text AI disabled)</option>
+                  <option value="gemini-3.1-flash-image-preview">Gemini Image Preview</option>
                 </optgroup>
                 <option value="custom">Custom Model ID...</option>
               </select>
-
               {showCustomModel && (
-                <input
-                  type="text"
-                  placeholder="gemini-*"
-                  value={customModel}
-                  onChange={(e) => setCustomModel(e.target.value)}
-                  className="mt-2 w-full rounded-lg border border-blue-200 p-2 text-xs bg-white focus:ring-2 focus:ring-blue-200 outline-none font-mono"
-                />
+                <input type="text" placeholder="gemini-*" value={customModel} onChange={(e) => setCustomModel(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-blue-200 p-2 text-xs bg-white outline-none font-mono" />
               )}
               {requestedModel !== (showCustomModel ? customModel.trim() : selectedModel) && (
-                <div className="text-[10px] font-semibold text-blue-700">
-                  Resolved model: {requestedModel}
-                </div>
+                <div className="text-[10px] font-semibold text-blue-700">Resolved: {requestedModel}</div>
               )}
               {imageWorkflowSelected && (
-                <div className="text-[10px] font-semibold text-amber-700">
-                  Image model selected. Text AI actions will use {TEXT_FALLBACK_MODEL} until the image workflow is wired.
-                </div>
+                <div className="text-[10px] font-semibold text-amber-700">Text AI uses {TEXT_FALLBACK_MODEL}</div>
               )}
             </div>
 
-            <div className="flex flex-col gap-3">
+            {/* AI Command */}
+            <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">AI Command</label>
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-blue-50 border border-blue-100">
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">AI Command</label>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100">
                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                  <span className="text-[10px] font-bold text-blue-600 truncate max-w-[100px]">
-                    {effectiveModel.replace("gemini-", "")}
-                  </span>
+                  <span className="text-[9px] font-bold text-blue-600 truncate max-w-[80px]">{effectiveModel.replace("gemini-","")}</span>
                 </div>
               </div>
-
-              {/* Free-form AI instruction */}
-              <div className="relative">
-                <textarea
-                  value={aiInstruction}
-                  onChange={(e) => setAiInstruction(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !isRunningAi) {
-                      e.preventDefault();
-                      runAiInstruction(aiInstruction);
-                    }
-                  }}
-                  placeholder="e.g. 'Rewrite the title under 80 chars with the part number and brand'  ·  'Set price to $45'  ·  'Add Hotpoint and GE compatibility to specifics'  ·  'Write honest seller notes about condition'"
-                  className="w-full rounded-xl border border-blue-200 bg-white p-3 text-xs leading-relaxed text-slate-700 resize-none outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder:text-slate-400"
-                  rows={3}
-                  disabled={isRunningAi}
-                />
-                <div className="mt-2 flex gap-2">
-                  <button
-                    onClick={() => runAiInstruction(aiInstruction)}
-                    disabled={isRunningAi || !aiInstruction.trim()}
-                    className={`flex-1 rounded-lg py-2 text-xs font-bold text-white transition-all ${
-                      isRunningAi || !aiInstruction.trim()
-                        ? "bg-slate-300 cursor-not-allowed"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 active:scale-95"
-                    }`}
-                  >
-                    {isRunningAi && !isRunningAiPreset ? "Running..." : "Apply AI Instruction  (Ctrl+Enter)"}
-                  </button>
-                  <button
-                    onClick={undoLastAi}
-                    disabled={undoStack.length === 0}
-                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-                    title={undoStack.length === 0 ? "No AI edits to undo yet" : "Undo last AI edit"}
-                  >
-                    Undo
-                  </button>
-                </div>
+              <textarea
+                value={aiInstruction} onChange={(e) => setAiInstruction(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !isRunningAi) { e.preventDefault(); runAiInstruction(aiInstruction); } }}
+                placeholder="e.g. 'Rewrite title under 80 chars' · 'Set price to $45'"
+                className="w-full rounded-xl border border-blue-200 bg-white p-3 text-xs leading-relaxed resize-none outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                rows={3} disabled={isRunningAi}
+              />
+              <div className="flex gap-2">
+                <button onClick={() => runAiInstruction(aiInstruction)} disabled={isRunningAi || !aiInstruction.trim()}
+                  className={`flex-1 rounded-lg py-2 text-xs font-bold text-white transition-all ${isRunningAi || !aiInstruction.trim() ? "bg-slate-300 cursor-not-allowed" : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 active:scale-95"}`}
+                >{isRunningAi && !isRunningAiPreset ? "Running..." : "Apply (Ctrl+Enter)"}</button>
+                <button onClick={undoLastAi} disabled={undoStack.length === 0}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                >Undo</button>
               </div>
-
-              {aiError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-[11px] text-red-700 font-medium">
-                  {aiError}
-                </div>
-              )}
-
-              {/* Quick presets */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</span>
-                {[
-                  { label: "Rewrite Description", key: "description", action: generateDescription, loading: isGeneratingDescription },
-                  { label: "Optimize Specifics", key: "specs", action: optimizeSpecs, loading: isOptimizingSpecs },
-                  { label: "SEO Title", key: "seo_title", action: () => {
-                    setIsRunningAiPreset("seo_title");
-                    runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type.").finally(() => setIsRunningAiPreset(null));
-                  }, loading: isRunningAiPreset === "seo_title" },
-                  { label: "Add Seller Notes", key: "seller_notes", action: () => {
-                    setIsRunningAiPreset("seller_notes");
-                    runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims.").finally(() => setIsRunningAiPreset(null));
-                  }, loading: isRunningAiPreset === "seller_notes" },
-                ].map((preset) => (
-                  <button
-                    key={preset.key}
-                    onClick={preset.action}
-                    disabled={preset.loading || isRunningAi}
-                    className="w-full text-left p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 text-[11px] font-medium transition-all disabled:opacity-50 flex justify-between items-center bg-white group"
-                  >
-                    <span className="group-hover:text-blue-600">{preset.label}</span>
-                    {preset.loading
-                      ? <span className="text-blue-500 text-[10px] animate-pulse">Running...</span>
-                      : <span className="text-slate-400 text-[10px]">AI</span>}
-                  </button>
-                ))}
-              </div>
-
-              {/* AI History */}
-              {aiHistory.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent AI Edits</span>
-                  <div className="max-h-48 overflow-y-auto flex flex-col gap-1.5">
-                    {aiHistory.slice(0, 8).map((entry, i) => (
-                      <div key={i} className="rounded-lg border border-slate-100 bg-slate-50/50 p-2.5">
-                        <div className="text-[11px] font-medium text-slate-700 line-clamp-2">{entry.instruction}</div>
-                        {entry.rationale && (
-                          <div className="mt-1 text-[10px] text-slate-500 italic line-clamp-2">{entry.rationale}</div>
-                        )}
-                        {entry.warnings?.length > 0 && (
-                          <div className="mt-1 text-[10px] text-amber-600 font-medium">{entry.warnings.join("; ")}</div>
-                        )}
-                        <div className="mt-1 text-[9px] text-slate-400">{entry.model} &bull; {new Date(entry.ts).toLocaleTimeString()}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
-           {/* Audit Stats */}
-           <div className="p-4 rounded-xl bg-[#162033] text-white flex flex-col gap-3 shadow-lg">
-              <div className="text-[10px] font-bold text-slate-400 uppercase">Listing Quality Score</div>
+            {aiError && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-[11px] text-red-700 font-medium">{aiError}</div>}
+
+            {/* Quick Actions */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</span>
+              {[
+                { label: "Rewrite Description", key: "description", action: generateDescription, loading: isGeneratingDescription },
+                { label: "Optimize Specifics", key: "specs", action: optimizeSpecs, loading: isOptimizingSpecs },
+                { label: "SEO Title", key: "seo_title", action: () => { setIsRunningAiPreset("seo_title"); runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seo_title" },
+                { label: "Add Seller Notes", key: "seller_notes", action: () => { setIsRunningAiPreset("seller_notes"); runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seller_notes" },
+              ].map((p) => (
+                <button key={p.key} onClick={p.action} disabled={p.loading || isRunningAi}
+                  className="w-full text-left p-2.5 rounded-lg border border-slate-100 hover:bg-white text-[11px] font-medium disabled:opacity-50 flex justify-between items-center bg-white/60 group"
+                >
+                  <span className="group-hover:text-blue-600">{p.label}</span>
+                  {p.loading ? <span className="text-blue-500 text-[10px] animate-pulse">Running...</span> : <span className="text-slate-400 text-[10px]">AI</span>}
+                </button>
+              ))}
+            </div>
+
+            {/* AI History */}
+            {aiHistory.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent AI Edits</span>
+                <div className="max-h-40 overflow-y-auto flex flex-col gap-1.5">
+                  {aiHistory.slice(0, 6).map((entry, i) => (
+                    <div key={i} className="rounded-lg border border-slate-100 bg-white/60 p-2.5">
+                      <div className="text-[11px] font-medium text-slate-700 line-clamp-2">{entry.instruction}</div>
+                      {entry.rationale && <div className="mt-1 text-[10px] text-slate-500 italic line-clamp-1">{entry.rationale}</div>}
+                      {entry.warnings?.length > 0 && <div className="mt-1 text-[10px] text-amber-600 font-medium">{entry.warnings.join("; ")}</div>}
+                      <div className="mt-1 text-[9px] text-slate-400">{entry.model} &bull; {new Date(entry.ts).toLocaleTimeString()}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quality Score */}
+            <div className="p-4 rounded-xl bg-[#162033] text-white flex flex-col gap-2">
+              <div className="text-[10px] font-bold text-slate-400 uppercase">Quality Score</div>
               <div className="flex items-end gap-2">
                 <span className="text-2xl font-bold">{qualityScore}%</span>
-                {qualityScore > 80 && (
-                  <span className="text-[10px] text-emerald-400 font-bold pb-1">Excellent</span>
-                )}
+                {qualityScore > 80 && <span className="text-[10px] text-emerald-400 font-bold pb-1">Excellent</span>}
               </div>
               <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] ${
-                    qualityScore < 50 ? 'bg-red-500' : qualityScore < 80 ? 'bg-amber-500' : 'bg-emerald-500'
-                  }`} 
-                  style={{ width: `${qualityScore}%` }} 
-                />
+                <div className={`h-full transition-all duration-500 ${qualityScore < 50 ? 'bg-red-500' : qualityScore < 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${qualityScore}%` }} />
               </div>
-           </div>
-        </div>
+            </div>
+          </div>
 
-        <div className="p-6 border-t border-slate-100 bg-slate-50/50">
-          <button
-            onClick={saveChanges}
-            disabled={isSaving}
-            className={`w-full rounded-xl py-4 text-sm font-bold text-white shadow-lg transition-all active:scale-95 ${
-              isSaving ? "bg-slate-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/25"
-            }`}
-          >
-            {isSaving ? "Saving..." : "Apply & Save Changes"}
-          </button>
-          {lastSaved && (
-            <div className="mt-3 text-center text-[10px] text-slate-400 font-medium">
-              Saved at {lastSaved.toLocaleTimeString()}
-            </div>
-          )}
-          {saveMessage && (
-            <div className={`mt-2 text-center text-[10px] font-bold ${
-              saveMessage.startsWith("Save failed") ? "text-red-600" : "text-emerald-700"
-            }`}>
-              {saveMessage}
-            </div>
-          )}
+          {/* Save Button */}
+          <div className="p-5 border-t border-slate-200 bg-white">
+            <button onClick={saveChanges} disabled={isSaving}
+              className={`w-full rounded-xl py-3.5 text-sm font-bold text-white shadow-lg transition-all active:scale-95 ${isSaving ? "bg-slate-400" : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/25"}`}
+            >{isSaving ? "Saving..." : "Save Changes"}</button>
+            {lastSaved && <div className="mt-2 text-center text-[10px] text-slate-400">Saved {lastSaved.toLocaleTimeString()}</div>}
+            {saveMessage && <div className={`mt-1 text-center text-[10px] font-bold ${saveMessage.startsWith("Save failed") ? "text-red-600" : "text-emerald-700"}`}>{saveMessage}</div>}
+          </div>
         </div>
-      </div>
       )}
     </div>
   );

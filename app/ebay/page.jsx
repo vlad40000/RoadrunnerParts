@@ -107,7 +107,7 @@ function StatusBadge({ listing }) {
   }
   return (
     <span className="inline-block rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">
-      {top.sourceDomain || "Ready"}
+      Ready
     </span>
   );
 }
@@ -125,15 +125,18 @@ export default async function EbayDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="relative overflow-hidden border-b-4 border-blue-600 bg-[#162033] px-5 py-16 text-center text-white">
+      <header className="relative overflow-hidden border-b border-slate-200 bg-white px-5 py-12 text-center text-slate-900">
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute -left-1/2 -top-1/2 h-[200%] w-[200%] bg-[radial-gradient(circle,rgba(37,99,235,0.12)_0%,transparent_70%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-600 via-slate-900 to-emerald-600" />
         </div>
         <div className="relative z-10 mx-auto max-w-5xl">
-          <h1 className="mb-2 font-[Outfit,sans-serif] text-5xl font-extrabold tracking-tight">
-            Roadrunner<span className="text-blue-500">Parts</span> Audit
+          <h1 className="mb-2 font-[var(--font-display)] text-4xl leading-tight tracking-normal sm:text-5xl">
+            <span className="text-blue-600">Road</span>
+            <span className="text-slate-950">Runner</span>
+            <span className="text-slate-950">-</span>
+            <span className="text-emerald-600">Parts</span>
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm font-semibold text-slate-500">
             Live eBay listing dashboard — operator review
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
@@ -141,9 +144,9 @@ export default async function EbayDashboard() {
             <Stat label="With Images" value={withImages.length} />
             <Stat label="Pending" value={withoutImages} />
             <Stat label="Watermark Review" value={watermarkReview} />
-            <div className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold backdrop-blur-sm">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700">
               Pipeline:{" "}
-              <span className="font-extrabold text-blue-400">LIVE</span>
+              <span className="font-extrabold text-blue-600">LIVE</span>
             </div>
           </div>
         </div>
@@ -179,7 +182,7 @@ export default async function EbayDashboard() {
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
-                  <div className="mb-1 font-[Outfit,sans-serif] text-lg font-bold text-[#162033]">
+                  <div className="mb-1 font-[var(--font-display)] text-lg font-bold text-[#162033]">
                     {listing.partNumber}
                   </div>
                   <div className="mb-4 line-clamp-2 min-h-[40px] text-xs leading-relaxed text-slate-500">
@@ -201,7 +204,7 @@ export default async function EbayDashboard() {
       </main>
 
       <footer className="border-t border-slate-200 bg-slate-100 px-10 py-12 text-center text-xs text-slate-500">
-        &copy; 2026 RoadrunnerParts Advanced Systems. Built for serialized
+        &copy; 2026 RoadRunner-Parts Advanced Systems. Built for serialized
         appliance resale.
       </footer>
     </div>
@@ -210,8 +213,8 @@ export default async function EbayDashboard() {
 
 function Stat({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold backdrop-blur-sm">
-      <span className="mr-1 text-base font-extrabold text-blue-400">
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700">
+      <span className="mr-1 text-base font-extrabold text-blue-600">
         {value}
       </span>
       {label}

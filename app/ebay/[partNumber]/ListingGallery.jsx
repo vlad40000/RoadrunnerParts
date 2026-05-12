@@ -54,6 +54,7 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const activeImage = candidates[activeIndex] || null;
   const canEdit = typeof onChange === "function";
 
@@ -159,170 +160,270 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
     );
   }
 
-  async function copyListingLink() {
-    const path = `/ebay/${encodeURIComponent(partNumber)}`;
-    const url = typeof window === "undefined" ? path : `${window.location.origin}${path}`;
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      window.prompt("Listing link", url);
-    }
+  function goPrev() {
+    setActiveIndex((i) => (i > 0 ? i - 1 : candidates.length - 1));
+  }
+
+  function goNext() {
+    setActiveIndex((i) => (i < candidates.length - 1 ? i + 1 : 0));
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row">
-      {candidates.length > 0 ? (
-        <div className="flex flex-row gap-3 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
-          {candidates.map((candidate, index) => {
-            const isWatermarked = String(candidate.reviewStatus || "").includes("watermark");
-            return (
-              <button
-                key={`${candidate.imageUrl || candidate.thumbnailUrl || "image"}-${index}`}
-                type="button"
-                onClick={() => setActiveIndex(index)}
-                className={`group relative flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 transition-all duration-200 ${
-                  index === activeIndex
-                    ? "border-blue-600 bg-blue-50 ring-2 ring-blue-600/10"
-                    : "border-slate-200 bg-white hover:border-slate-400"
-                } ${isWatermarked ? "opacity-80" : ""}`}
-              >
-                <img
-                  src={candidate.imageUrl || candidate.thumbnailUrl}
-                  alt={`Thumbnail ${index + 1}`}
-                  className="max-h-full max-w-full object-contain p-1.5 transition-transform group-hover:scale-110"
-                />
-                {isWatermarked ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-amber-500/10">
-                    <div className="rounded bg-amber-500 px-1 py-0.5 text-[8px] font-bold uppercase tracking-tighter text-white">
-                      WMARK
+    <>
+    <div className="flex flex-col gap-4">
+      {/* Gallery: thumbnail strip + hero */}
+      <div className="flex gap-3">
+        {/* Vertical Thumbnail Strip */}
+        {candidates.length > 0 && (
+          <div className="flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: 480 }}>
+            {candidates.map((candidate, index) => {
+              const isWatermarked = String(candidate.reviewStatus || "").includes("watermark");
+              const isActive = index === activeIndex;
+              return (
+                <button
+                  key={`${candidate.imageUrl || candidate.thumbnailUrl || "img"}-${index}`}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  className={`ebay-thumb ${isActive ? "ebay-thumb-active" : ""} ${isWatermarked ? "opacity-70" : ""}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={candidate.imageUrl || candidate.thumbnailUrl}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="h-full w-full object-contain p-1"
+                  />
+                  {isWatermarked && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-amber-500/20">
+                      <span className="rounded bg-amber-600 px-1 py-px text-[7px] font-bold uppercase text-white">WM</span>
                     </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Hero Image */}
+        <div className="relative flex-1">
+          <div className="ebay-hero-container">
+            {activeImage?.imageUrl ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activeImage.imageUrl}
+                  alt={title || partNumber}
+                  className="ebay-hero-image"
+                />
+                {/* Viewed Today Badge */}
+                {candidates.length > 1 && (
+                  <div className="absolute left-3 top-3 z-10 rounded bg-red-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
+                    {candidates.length} PHOTOS
                   </div>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="hidden flex-col gap-3 lg:flex">
-          {[1, 2, 3, 4].map((index) => (
-            <div
-              key={index}
-              className="h-20 w-20 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50"
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="min-w-0 flex-1">
-        <div className="relative aspect-square overflow-hidden rounded-2xl border border-slate-100 bg-white p-4 shadow-sm lg:p-8">
-          {activeImage?.imageUrl ? (
-            <img
-              src={activeImage.imageUrl}
-              alt={title || partNumber}
-              className="h-full w-full object-contain"
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-2xl text-slate-300">
-                +
+                )}
+                {/* Zoom / expand icon */}
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  className="absolute left-3 bottom-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-sm backdrop-blur-sm hover:bg-white transition-all cursor-pointer"
+                  title="Expand image"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+                </button>
+                {/* Heart icon */}
+                <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-slate-500 shadow-sm backdrop-blur-sm hover:text-red-500 hover:bg-white transition-all"
+                    title="Watch"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-3xl text-slate-300">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                </div>
+                <div className="text-sm font-bold tracking-tight text-slate-400">
+                  PHOTO PENDING
+                </div>
+                <div className="text-xs text-slate-400">
+                  Upload images or paste URLs below
+                </div>
               </div>
-              <div className="text-lg font-bold tracking-tight text-slate-400">
-                PHOTO PENDING
-              </div>
-            </div>
-          )}
-        </div>
+            )}
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 px-2">
+            {/* Prev / Next arrows */}
+            {candidates.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  className="ebay-arrow ebay-arrow-left"
+                  aria-label="Previous image"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className="ebay-arrow ebay-arrow-right"
+                  aria-label="Next image"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Image controls — edit mode only */}
+      {canEdit && (
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={setActiveAsLead}
-            disabled={!canEdit || !activeImage || activeIndex === 0}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-blue-500 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!activeImage || activeIndex === 0}
+            className="ebay-img-action-btn"
           >
             Set as main
           </button>
           <button
             type="button"
             onClick={removeActiveImage}
-            disabled={!canEdit || !activeImage}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-red-300 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!activeImage}
+            className="ebay-img-action-btn hover:border-red-300 hover:text-red-600"
           >
-            Remove image
-          </button>
-          <button
-            type="button"
-            onClick={copyListingLink}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 hover:border-blue-500 hover:text-blue-600"
-          >
-            Copy link
+            Remove
           </button>
         </div>
+      )}
 
-        {canEdit ? (
-          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Add listing images
-            </label>
-            <div className="grid gap-2">
-              <textarea
-                value={newImageUrl}
-                onChange={(event) => setNewImageUrl(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) addImage();
-                }}
-                rows={3}
-                className="min-w-0 resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                placeholder="Paste one or more image URLs, one per line"
-              />
-              <div className="flex flex-wrap gap-2">
-                <label className="cursor-pointer rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs font-bold text-blue-700 hover:border-blue-500 hover:bg-blue-50">
-                  Upload images
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/avif"
-                    multiple
-                    className="hidden"
-                    onChange={(event) => {
-                      uploadFiles(event.target.files);
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
-                <label className="cursor-pointer rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-bold text-emerald-700 hover:border-emerald-500 hover:bg-emerald-50">
-                  Take photo
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/avif"
-                    capture="environment"
-                    className="hidden"
-                    onChange={(event) => {
-                      uploadFiles(event.target.files);
-                      event.target.value = "";
-                    }}
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={addImage}
-                  disabled={!newImageUrl.trim()}
-                  className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                >
-                  Add URL(s)
-                </button>
-              </div>
+      {/* Upload section — edit mode only */}
+      {canEdit && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            Add images
+          </label>
+          <div className="grid gap-2">
+            <textarea
+              value={newImageUrl}
+              onChange={(event) => setNewImageUrl(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) addImage();
+              }}
+              rows={2}
+              className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              placeholder="Paste one or more image URLs, one per line"
+            />
+            <div className="flex flex-wrap gap-2">
+              <label className="cursor-pointer rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[11px] font-bold text-blue-700 hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                Upload files
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  multiple
+                  className="hidden"
+                  onChange={(event) => {
+                    uploadFiles(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+              <label className="cursor-pointer rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-[11px] font-bold text-emerald-700 hover:border-emerald-400 hover:bg-emerald-50 transition-colors">
+                Camera
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(event) => {
+                    uploadFiles(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={addImage}
+                disabled={!newImageUrl.trim()}
+                className="rounded-lg bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 transition-colors"
+              >
+                Add URL(s)
+              </button>
             </div>
-            {isUploading || uploadMessage ? (
-              <p className={`mt-2 text-[10px] font-bold ${uploadMessage.includes("failed") || uploadMessage.includes("Missing") ? "text-red-600" : "text-blue-700"}`}>
-                {isUploading ? "Uploading images..." : uploadMessage}
-              </p>
-            ) : null}
-            <p className="mt-2 text-[10px] font-medium text-slate-500">
-              Select multiple files or paste multiple URLs. Put the clean operator-owned lead photo first before export.
-            </p>
           </div>
-        ) : null}
-      </div>
+          {(isUploading || uploadMessage) && (
+            <p className={`mt-2 text-[10px] font-bold ${uploadMessage.includes("failed") || uploadMessage.includes("Missing") ? "text-red-600" : "text-blue-700"}`}>
+              {isUploading ? "Uploading images..." : uploadMessage}
+            </p>
+          )}
+        </div>
+      )}
     </div>
+
+      {/* ── Lightbox overlay ── */}
+      {lightboxOpen && activeImage && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setLightboxOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setLightboxOpen(false);
+            if (e.key === "ArrowRight" && candidates.length > 1) setActiveIndex((i) => (i + 1) % candidates.length);
+            if (e.key === "ArrowLeft" && candidates.length > 1) setActiveIndex((i) => (i - 1 + candidates.length) % candidates.length);
+          }}
+          tabIndex={0}
+          role="dialog"
+          ref={(el) => el?.focus()}
+        >
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            className="absolute right-5 top-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            title="Close"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+
+          {/* Counter */}
+          {candidates.length > 1 && (
+            <div className="absolute top-5 left-1/2 -translate-x-1/2 z-10 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-white backdrop-blur-sm">
+              {activeIndex + 1} / {candidates.length}
+            </div>
+          )}
+
+          {/* Prev / Next arrows */}
+          {candidates.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setActiveIndex((i) => (i - 1 + candidates.length) % candidates.length); }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setActiveIndex((i) => (i + 1) % candidates.length); }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </>
+          )}
+
+          {/* Main image */}
+          <img
+            src={activeImage.imageUrl}
+            alt={title || partNumber}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+          />
+        </div>
+      )}
+    </>
   );
 }

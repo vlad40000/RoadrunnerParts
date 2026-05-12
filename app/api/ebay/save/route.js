@@ -17,26 +17,37 @@ function cleanPartNumber(value) {
 
 function cleanUpdates(value) {
   const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
-  const quantity = Number(input.quantity || 1);
-  const updates = {
-    title: String(input.title || "").slice(0, 220),
-    ebayBuyNow: String(input.ebayBuyNow || "").slice(0, 80),
-    description: String(input.description || "").slice(0, 5000),
-    specs: input.specs && typeof input.specs === "object" && !Array.isArray(input.specs) ? input.specs : {},
-    condition: String(input.condition || "").slice(0, 120),
-    quantity: Number.isFinite(quantity) ? Math.max(1, quantity) : 1,
-    shipping: String(input.shipping || "").slice(0, 120),
-    packageDetails: cleanPackageDetails(input.packageDetails),
-    returns: input.returns !== false,
-    status: String(input.status || "draft").slice(0, 40),
-  };
+  const updates = {};
 
-  if (Object.prototype.hasOwnProperty.call(input, "imageCandidates")) {
-    updates.imageCandidates = cleanImageCandidates(input.imageCandidates);
+  // Only include fields that are explicitly present in the input
+  if (Object.prototype.hasOwnProperty.call(input, "title"))
+    updates.title = String(input.title || "").slice(0, 220);
+  if (Object.prototype.hasOwnProperty.call(input, "ebayBuyNow"))
+    updates.ebayBuyNow = String(input.ebayBuyNow || "").slice(0, 80);
+  if (Object.prototype.hasOwnProperty.call(input, "description"))
+    updates.description = String(input.description || "").slice(0, 5000);
+  if (Object.prototype.hasOwnProperty.call(input, "specs"))
+    updates.specs = input.specs && typeof input.specs === "object" && !Array.isArray(input.specs) ? input.specs : {};
+  if (Object.prototype.hasOwnProperty.call(input, "condition"))
+    updates.condition = String(input.condition || "").slice(0, 120);
+  if (Object.prototype.hasOwnProperty.call(input, "quantity")) {
+    const quantity = Number(input.quantity || 1);
+    updates.quantity = Number.isFinite(quantity) ? Math.max(1, quantity) : 1;
   }
+  if (Object.prototype.hasOwnProperty.call(input, "shipping"))
+    updates.shipping = String(input.shipping || "").slice(0, 120);
+  if (Object.prototype.hasOwnProperty.call(input, "packageDetails"))
+    updates.packageDetails = cleanPackageDetails(input.packageDetails);
+  if (Object.prototype.hasOwnProperty.call(input, "returns"))
+    updates.returns = input.returns !== false;
+  if (Object.prototype.hasOwnProperty.call(input, "status"))
+    updates.status = String(input.status || "draft").slice(0, 40);
+  if (Object.prototype.hasOwnProperty.call(input, "imageCandidates"))
+    updates.imageCandidates = cleanImageCandidates(input.imageCandidates);
 
   return updates;
 }
+
 
 function cleanPackageNumber(value) {
   const number = Number(value);
