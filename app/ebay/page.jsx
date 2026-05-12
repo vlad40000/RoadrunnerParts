@@ -3,6 +3,7 @@ import path from "path";
 import { list } from "@vercel/blob";
 
 const DETAIL_STATE_PATH = "ebay/detail-editor-state/current.json";
+const COVERAGE_PATH = "scratch/current-ebay-image-coverage.json";
 
 async function readJsonResponse(response) {
   const text = await response.text();
@@ -32,6 +33,22 @@ function loadBaseListings() {
   if (!fs.existsSync(filePath)) return [];
   const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
   return data.listings || [];
+}
+
+function loadImageCoverage() {
+  const filePath = path.join(process.cwd(), COVERAGE_PATH);
+  if (!fs.existsSync(filePath)) return new Map();
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  return new Map(
+    (Array.isArray(data.attachedParts) ? data.attachedParts : []).map((part) => [
+      cleanPartNumber(part.partNumber),
+      {
+        imageCount: Number(part.imageCount || 0),
+        publicPrimaryImage: String(part.publicPrimaryImage || ""),
+        primaryImage: String(part.primaryImage || ""),
+      },
+    ]),
+  );
 }
 
 async function loadDetailEditorEdits() {
@@ -77,7 +94,15 @@ function mergeImageCandidates(baseCandidates, editCandidates) {
 }
 
 async function loadListings() {
-  const listings = loadBaseListings();
+  const approvedImages = loadImageCoverage();
+  const listings = loadBaseListings().map((listing) => {
+    const partNumber = cleanPartNumber(listing.partNumber);
+    const approved = approvedImages.get(partNumber) || null;
+    return {
+      ...listing,
+      approvedSaleImage: approved,
+    };
+  });
   const edits = await loadDetailEditorEdits();
   if (!Object.keys(edits).length) return listings;
   return listings.map((listing) => {
@@ -89,11 +114,19 @@ async function loadListings() {
       ...edit,
       imageCandidate: edit.imageCandidates?.[0] || listing.imageCandidate || null,
       imageCandidates: mergeImageCandidates(listing.imageCandidates, edit.imageCandidates),
+      approvedSaleImage: listing.approvedSaleImage,
     };
   });
 }
 
 function StatusBadge({ listing }) {
+  if (listing.approvedSaleImage?.publicPrimaryImage) {
+    return (
+      <span className="inline-block rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">
+        Approved Photo
+      </span>
+    );
+  }
   const candidates = listing.imageCandidates || [];
   const top = candidates[0];
   if (!top) {
@@ -112,19 +145,23 @@ function StatusBadge({ listing }) {
     );
   }
   return (
-    <span className="inline-block rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">
-      Ready
+    <span className="inline-block rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-blue-700">
+      Candidate Review
     </span>
   );
 }
 
 export default async function EbayDashboard() {
   const listings = await loadListings();
-  const withImages = listings.filter(
-    (l) => l.imageCandidates && l.imageCandidates.length > 0
+  const approvedPhotos = listings.filter(
+    (l) => l.approvedSaleImage?.publicPrimaryImage
   );
-  const withoutImages = listings.length - withImages.length;
+  const candidateReview = listings.filter(
+    (l) => !l.approvedSaleImage?.publicPrimaryImage && l.imageCandidates && l.imageCandidates.length > 0
+  );
+  const photoPending = listings.length - approvedPhotos.length - candidateReview.length;
   const watermarkReview = listings.filter((l) =>
+    !l.approvedSaleImage?.publicPrimaryImage &&
     String(l.imageCandidates?.[0]?.reviewStatus || "").includes("watermark")
   ).length;
 
@@ -147,8 +184,9 @@ export default async function EbayDashboard() {
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
             <Stat label="Total Parts" value={listings.length} />
-            <Stat label="With Images" value={withImages.length} />
-            <Stat label="Pending" value={withoutImages} />
+            <Stat label="Approved Photos" value={approvedPhotos.length} />
+            <Stat label="Candidate Review" value={candidateReview.length} />
+            <Stat label="Photo Pending" value={photoPending} />
             <Stat label="Watermark Review" value={watermarkReview} />
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700">
               Pipeline:{" "}
@@ -163,7 +201,11 @@ export default async function EbayDashboard() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {listings.map((listing, i) => {
             const top = listing.imageCandidates?.[0];
-            const imgSrc = top?.imageUrl || top?.thumbnailUrl || null;
+            const imgSrc =
+              listing.approvedSaleImage?.publicPrimaryImage ||
+              top?.imageUrl ||
+              top?.thumbnailUrl ||
+              null;
             return (
               <a
                 key={listing.partNumber || i}
