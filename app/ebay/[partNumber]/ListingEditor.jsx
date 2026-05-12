@@ -691,42 +691,79 @@ export default function ListingEditor({ initialListing, partNumber }) {
               </div>
             </div>
 
-            {aiError && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-[11px] text-red-700 font-medium">{aiError}</div>}
-
-            {/* Quick Actions */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</span>
-              {[
-                { label: "Rewrite Description", key: "description", action: generateDescription, loading: isGeneratingDescription },
-                { label: "Optimize Specifics", key: "specs", action: optimizeSpecs, loading: isOptimizingSpecs },
-                { label: "SEO Title", key: "seo_title", action: () => { setIsRunningAiPreset("seo_title"); runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seo_title" },
-                { label: "Add Seller Notes", key: "seller_notes", action: () => { setIsRunningAiPreset("seller_notes"); runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seller_notes" },
-              ].map((p) => (
-                <button key={p.key} onClick={p.action} disabled={p.loading || isRunningAi}
-                  className="w-full text-left p-2.5 rounded-lg border border-slate-100 hover:bg-white text-[11px] font-medium disabled:opacity-50 flex justify-between items-center bg-white/60 group"
-                >
-                  <span className="group-hover:text-blue-600">{p.label}</span>
-                  {p.loading ? <span className="text-blue-500 text-[10px] animate-pulse">Running...</span> : <span className="text-slate-400 text-[10px]">AI</span>}
-                </button>
-              ))}
-            </div>
-
-            {/* AI History */}
-            {aiHistory.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent AI Edits</span>
-                <div className="max-h-40 overflow-y-auto flex flex-col gap-1.5">
-                  {aiHistory.slice(0, 6).map((entry, i) => (
-                    <div key={i} className="rounded-lg border border-slate-100 bg-white/60 p-2.5">
-                      <div className="text-[11px] font-medium text-slate-700 line-clamp-2">{entry.instruction}</div>
-                      {entry.rationale && <div className="mt-1 text-[10px] text-slate-500 italic line-clamp-1">{entry.rationale}</div>}
-                      {entry.warnings?.length > 0 && <div className="mt-1 text-[10px] text-amber-600 font-medium">{entry.warnings.join("; ")}</div>}
-                      <div className="mt-1 text-[9px] text-slate-400">{entry.model} &bull; {new Date(entry.ts).toLocaleTimeString()}</div>
-                    </div>
-                  ))}
+            {/* AI Chat / Feedback */}
+            <div className="flex min-h-[260px] flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+              <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">AI Chat</div>
+                  <div className="text-[10px] font-semibold text-slate-400">Commands, errors, and applied changes</div>
                 </div>
+                <span className={`rounded-full px-2 py-0.5 text-[9px] font-extrabold uppercase ${isRunningAi ? "bg-blue-50 text-blue-700" : aiError ? "bg-red-50 text-red-700" : "bg-slate-50 text-slate-500"}`}>
+                  {isRunningAi ? "Running" : aiError ? "Needs review" : "Ready"}
+                </span>
               </div>
-            )}
+
+              <div className="flex max-h-64 flex-1 flex-col gap-2 overflow-y-auto bg-slate-50/60 p-3">
+                {!aiHistory.length && !aiError && !isRunningAi && (
+                  <div className="rounded-lg border border-dashed border-slate-200 bg-white p-3 text-[11px] leading-relaxed text-slate-500">
+                    Send an AI command above. The response, changed fields, warnings, and failures will appear here.
+                  </div>
+                )}
+                {isRunningAi && (
+                  <div className="max-w-[88%] rounded-lg bg-blue-600 px-3 py-2 text-[11px] font-semibold text-white shadow-sm">
+                    Running your request with {effectiveModel}...
+                  </div>
+                )}
+                {aiError && (
+                  <div className="max-w-[92%] rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-semibold leading-relaxed text-red-700">
+                    <div className="mb-1 text-[10px] font-extrabold uppercase tracking-wide">Error</div>
+                    {aiError}
+                  </div>
+                )}
+                {aiHistory.slice(0, 6).map((entry, i) => (
+                  <div key={`${entry.ts}-${i}`} className="flex flex-col gap-1.5">
+                    <div className="ml-auto max-w-[88%] rounded-lg bg-slate-900 px-3 py-2 text-[11px] font-semibold leading-relaxed text-white">
+                      {entry.instruction}
+                    </div>
+                    <div className="max-w-[92%] rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] leading-relaxed text-slate-700 shadow-sm">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="font-extrabold text-emerald-700">Applied edit</span>
+                        <span className="shrink-0 text-[9px] font-semibold text-slate-400">{new Date(entry.ts).toLocaleTimeString()}</span>
+                      </div>
+                      {entry.rationale ? (
+                        <div>{entry.rationale}</div>
+                      ) : (
+                        <div>AI returned a structured edit and the listing fields were updated.</div>
+                      )}
+                      {entry.warnings?.length > 0 && (
+                        <div className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-[10px] font-semibold text-amber-800">
+                          {entry.warnings.join("; ")}
+                        </div>
+                      )}
+                      <div className="mt-1 text-[9px] font-semibold text-slate-400">{entry.model}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 border-t border-slate-100 bg-white p-2">
+                {[
+                  { label: "Description", key: "description", action: generateDescription, loading: isGeneratingDescription },
+                  { label: "Specifics", key: "specs", action: optimizeSpecs, loading: isOptimizingSpecs },
+                  { label: "SEO Title", key: "seo_title", action: () => { setIsRunningAiPreset("seo_title"); runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seo_title" },
+                  { label: "Seller Notes", key: "seller_notes", action: () => { setIsRunningAiPreset("seller_notes"); runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seller_notes" },
+                ].map((p) => (
+                  <button
+                    key={p.key}
+                    onClick={p.action}
+                    disabled={p.loading || isRunningAi}
+                    className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-[10px] font-bold text-slate-700 transition-colors hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {p.loading ? "Running..." : p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* Quality Score */}
             <div className="p-4 rounded-xl bg-[#162033] text-white flex flex-col gap-2">
