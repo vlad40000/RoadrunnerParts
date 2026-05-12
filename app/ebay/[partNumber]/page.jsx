@@ -129,9 +129,9 @@ export default async function ListingDetail({ params }) {
   return (
     <div className="min-h-screen bg-white">
       {/* Top Header / Nav */}
-      <header className="border-b border-slate-200 bg-white px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-slate-200 bg-white px-6 py-4 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Link href="/ebay" className="text-slate-400 hover:text-slate-600 transition-colors">
+          <Link href="/ebay" className="text-slate-400 hover:text-slate-600 transition-colors" aria-label="Back to eBay batch dashboard">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </Link>
           <div className="flex flex-col">
@@ -146,7 +146,7 @@ export default async function ListingDetail({ params }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <div className="flex -space-x-2">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-7 w-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">
@@ -155,10 +155,22 @@ export default async function ListingDetail({ params }) {
             ))}
           </div>
           <Link
-            href="/ebay"
-            className="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-slate-800 transition-all"
+            href="/"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition-all hover:border-blue-500 hover:text-blue-700"
           >
-            Dashboard
+            Home
+          </Link>
+          <Link
+            href="/ebay"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold text-white transition-all hover:bg-slate-800"
+          >
+            Batch Dashboard
+          </Link>
+          <Link
+            href="/ebay_mockup_gallery.html"
+            className="rounded-lg border border-blue-600 bg-white px-4 py-2 text-xs font-bold text-blue-700 transition-all hover:bg-blue-600 hover:text-white"
+          >
+            Live Mockups
           </Link>
         </div>
       </header>

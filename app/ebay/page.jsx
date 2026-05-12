@@ -193,6 +193,20 @@ export default async function EbayDashboard() {
           <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-600 via-slate-900 to-emerald-600" />
         </div>
         <div className="relative z-10 mx-auto max-w-5xl">
+          <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
+            <a
+              href="/"
+              className="inline-flex h-10 items-center rounded-lg border border-slate-300 bg-white px-4 text-xs font-extrabold uppercase tracking-wide text-slate-700 hover:border-blue-500 hover:text-blue-700"
+            >
+              Home
+            </a>
+            <a
+              href="/ebay_mockup_gallery.html"
+              className="inline-flex h-10 items-center rounded-lg border border-blue-600 bg-blue-600 px-4 text-xs font-extrabold uppercase tracking-wide text-white hover:bg-slate-900"
+            >
+              Live Mockups
+            </a>
+          </div>
           <h1 className="mb-2 text-4xl font-black leading-tight tracking-normal sm:text-5xl">
             <span className="text-blue-600">Road</span>
             <span className="text-slate-950">Runner</span>
@@ -264,6 +278,9 @@ export default async function EbayDashboard() {
                         {listing.ebayBuyNow}
                       </span>
                     )}
+                  </div>
+                  <div className="mt-4 rounded-lg border border-slate-200 bg-white px-3 py-2 text-center text-[10px] font-extrabold uppercase tracking-wide text-slate-700 transition-colors group-hover:border-blue-500 group-hover:text-blue-700">
+                    Open Editor
                   </div>
                 </div>
               </a>
