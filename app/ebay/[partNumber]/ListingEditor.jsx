@@ -72,7 +72,10 @@ export default function ListingEditor({ initialListing, partNumber }) {
     if (listing.ebayBuyNow && listing.ebayBuyNow !== "US $") score += 15;
     if (listing.imageCandidates?.length > 0) score += 20;
     
-    const specCount = Object.values(listing.specs || {}).filter(v => v && v.trim() !== "").length;
+    const specCount = Object.values(listing.specs || {}).filter((value) => {
+      if (Array.isArray(value)) return value.length > 0;
+      return String(value || "").trim() !== "";
+    }).length;
     if (specCount >= 4) score += 20;
     else score += (specCount * 5);
 
