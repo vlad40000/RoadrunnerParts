@@ -176,14 +176,21 @@ export default async function EbayDashboard() {
   const approvedPhotos = listings.filter(
     (l) => l.approvedSaleImage?.publicPrimaryImage
   );
-  const candidateReview = listings.filter(
-    (l) => !l.approvedSaleImage?.publicPrimaryImage && l.imageCandidates && l.imageCandidates.length > 0
+  // watermark listings are a subset of candidate listings — separate them to avoid double-counting
+  const watermarkReview = listings.filter(
+    (l) =>
+      !l.approvedSaleImage?.publicPrimaryImage &&
+      l.imageCandidates?.length > 0 &&
+      String(l.imageCandidates[0]?.reviewStatus || "").includes("watermark"),
   );
-  const photoPending = listings.length - approvedPhotos.length - candidateReview.length;
-  const watermarkReview = listings.filter((l) =>
-    !l.approvedSaleImage?.publicPrimaryImage &&
-    String(l.imageCandidates?.[0]?.reviewStatus || "").includes("watermark")
-  ).length;
+  const candidateReview = listings.filter(
+    (l) =>
+      !l.approvedSaleImage?.publicPrimaryImage &&
+      l.imageCandidates?.length > 0 &&
+      !String(l.imageCandidates[0]?.reviewStatus || "").includes("watermark"),
+  );
+  const photoPending =
+    listings.length - approvedPhotos.length - candidateReview.length - watermarkReview.length;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -221,7 +228,7 @@ export default async function EbayDashboard() {
             <Stat label="Approved Photos" value={approvedPhotos.length} tone="emerald" />
             <Stat label="Candidate Review" value={candidateReview.length} tone="blue" />
             <Stat label="Photo Pending" value={photoPending} tone="amber" />
-            <Stat label="Watermark Review" value={watermarkReview} tone="orange" />
+            <Stat label="Watermark Review" value={watermarkReview.length} tone="orange" />
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700">
               Pipeline:{" "}
               <span className="font-extrabold text-blue-600">LIVE</span>

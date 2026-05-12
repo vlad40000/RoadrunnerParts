@@ -159,7 +159,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || data.ok === false) {
-        throw new Error(data.error || data.details || "Save failed");
+        throw new Error(data.details || data.error || "Save failed");
       }
 
       const savedAt = new Date();
@@ -180,7 +180,9 @@ export default function ListingEditor({ initialListing, partNumber }) {
         }
       }
       setSaveMessage(
-        reason === "images"
+        data.warning
+          ? "Saved locally (Blob unavailable)"
+          : reason === "images"
           ? `Images saved (${data.imageCount ?? draftListing.imageCandidates?.length ?? 0})`
           : "Saved",
       );
@@ -305,7 +307,12 @@ export default function ListingEditor({ initialListing, partNumber }) {
   };
 
   const saveChanges = async () => {
-    persistListing(listing, "manual").catch(() => {});
+    try {
+      await persistListing(listing, "manual");
+    } catch (error) {
+      // Error surfaced via setSaveMessage inside persistListing.
+      console.error("[eBay editor] Save failed:", error);
+    }
   };
 
   const candidates = listing.imageCandidates || [];

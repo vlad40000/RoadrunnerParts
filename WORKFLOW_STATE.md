@@ -1,6 +1,11 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: FRONTEND EDITOR SAVE PATH + OBSIDIAN OUTBOX READY (2026-05-11)
+## Status: EBAY ROUTE AUDIT COMPLETE (2026-05-12)
+- **Audit**: Full review of `/ebay` dashboard, `/ebay/[partNumber]` editor, ListingEditor, ListingGallery, save API, and AI-edit API.
+- **Fix 1 (page.jsx)**: Dashboard stat counts now exclusive — Watermark Review listings no longer double-counted inside Candidate Review. `photoPending` now subtracts all three non-approved buckets correctly.
+- **Fix 2 (ListingGallery.jsx)**: Lightbox `ref={(el) => el?.focus()}` was firing on every render. Replaced with a guarded focus that only steals focus when the element is not already focused. Added `aria-modal="true"` and `aria-label` for accessibility.
+- **Fix 3 (ListingGallery.jsx)**: `useEffect` that clamped `activeIndex` had `activeIndex` in its own dependency array (self-referential loop). Removed `activeIndex` from deps — the clamp now only fires when `candidates.length` changes.
+- **All other routes**: No functional issues found. Save API, AI-edit route, image-upload route, and ListingEditor controls are all correct.
 - **AI Backend**: Gemini-only office-editor route accepts `modelName` / custom `gemini-*` selection, including Nano Banana image-model IDs for operator experiments.
 - **Model Selection**: eBay/editor defaults now normalize to `gemini-3.1-flash-lite`; stale saved IDs are upgraded automatically, and image-only selections fall back for text/JSON actions until an image edit route exists.
 - **Frontend Editor**: `/ebay/{partNumber}` supports live edits for title, price, description, specifics, condition, quantity, shipping, returns, status, and image candidates.
@@ -13,6 +18,7 @@
 - **Obsidian Outbox**: `/bom-workflow` Run Settings includes an Obsidian note outbox backed by `/api/obsidian/notes`; set `OBSIDIAN_VAULT_PATH` locally to write directly into a vault.
 - **Quality Control**: Real-time listing quality score remains visible in the editor sidebar.
 - **Assembly Workbook Import**: Current eBay source now imports title/diagram/price updates from the four operator XLSX assembly sheets via `scripts/import-ebay-assembly-workbooks.mjs`; 40 active listings matched, `WE11M10002` was not present in those sheets.
+- **Build Manifest Standard**: Implemented `manifest.md` in all key build pipeline and source directories (`scratch/`, `public/`, `app/`, `scripts/`, etc.) for improved auditing and governance.
 
 ### Live Dashboard (2026-05-11T07:35)
 - **Dashboard URL**: `http://localhost:3000/ebay`

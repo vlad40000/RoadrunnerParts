@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function cleanImageCandidate(candidate) {
   return {
@@ -54,19 +54,20 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [isDragActive, setIsDragActive] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const fileInputRef = useRef(null);
   const activeImage = candidates[activeIndex] || null;
   const canEdit = typeof onChange === "function";
 
   useEffect(() => {
     if (!candidates.length) {
       setActiveIndex(0);
-      return;
-    }
-    if (activeIndex > candidates.length - 1) {
+    } else if (activeIndex > candidates.length - 1) {
       setActiveIndex(candidates.length - 1);
     }
-  }, [activeIndex, candidates.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidates.length]);
 
   function updateCandidates(nextCandidates, nextIndex = activeIndex) {
     const cleanCandidates = uniqueImageCandidates(nextCandidates);
@@ -141,6 +142,30 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
     }
   }
 
+  function handleDragOver(event) {
+    if (!canEdit) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(true);
+  }
+
+  function handleDragLeave(event) {
+    if (!canEdit) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setIsDragActive(false);
+    }
+  }
+
+  function handleDrop(event) {
+    if (!canEdit) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(false);
+    uploadFiles(event.dataTransfer?.files);
+  }
+
   function removeActiveImage() {
     if (!activeImage) return;
     updateCandidates(
@@ -205,7 +230,12 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
 
         {/* Hero Image */}
         <div className="relative flex-1">
-          <div className="ebay-hero-container">
+          <div
+            className={`ebay-hero-container ${canEdit && isDragActive ? "ring-4 ring-blue-400 ring-offset-2" : ""}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             {activeImage?.imageUrl ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -249,8 +279,13 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
                   PHOTO PENDING
                 </div>
                 <div className="text-xs text-slate-400">
-                  Upload images or paste URLs below
+                  Drop images here or upload files below
                 </div>
+              </div>
+            )}
+            {canEdit && isDragActive && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center rounded-[inherit] border-2 border-dashed border-blue-500 bg-blue-50/90 text-sm font-extrabold uppercase tracking-wide text-blue-700">
+                Drop images to upload
               </div>
             )}
 
@@ -303,35 +338,50 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
 
       {/* Upload section — edit mode only */}
       {canEdit && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div
+          className={`rounded-lg border p-3 ${isDragActive ? "border-blue-500 bg-blue-50" : "border-slate-200 bg-slate-50"}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
           <label className="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500">
             Add images
           </label>
           <div className="grid gap-2">
-            <textarea
-              value={newImageUrl}
-              onChange={(event) => setNewImageUrl(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) addImage();
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`flex min-h-28 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed px-4 py-5 text-center transition-colors ${
+                isDragActive
+                  ? "border-blue-500 bg-white text-blue-700"
+                  : "border-blue-200 bg-white text-slate-600 hover:border-blue-400 hover:bg-blue-50"
+              }`}
+            >
+              <span className="text-sm font-extrabold">
+                {isDragActive ? "Drop images to upload" : "Drag images here"}
+              </span>
+              <span className="mt-1 text-[11px] font-semibold text-slate-500">
+                or click to choose files
+              </span>
+              <span className="mt-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                JPG, PNG, WebP, AVIF. Up to 24 at a time.
+              </span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              multiple
+              className="hidden"
+              onChange={(event) => {
+                uploadFiles(event.target.files);
+                event.target.value = "";
               }}
-              rows={2}
-              className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-              placeholder="Paste one or more image URLs, one per line"
             />
             <div className="flex flex-wrap gap-2">
-              <label className="cursor-pointer rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-[11px] font-bold text-blue-700 hover:border-blue-400 hover:bg-blue-50 transition-colors">
-                Upload files
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/avif"
-                  multiple
-                  className="hidden"
-                  onChange={(event) => {
-                    uploadFiles(event.target.files);
-                    event.target.value = "";
-                  }}
-                />
-              </label>
               <label className="cursor-pointer rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-[11px] font-bold text-emerald-700 hover:border-emerald-400 hover:bg-emerald-50 transition-colors">
                 Camera
                 <input
@@ -345,15 +395,32 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
                   }}
                 />
               </label>
-              <button
-                type="button"
-                onClick={addImage}
-                disabled={!newImageUrl.trim()}
-                className="rounded-lg bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300 transition-colors"
-              >
-                Add URL(s)
-              </button>
             </div>
+            <details className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+              <summary className="cursor-pointer text-[11px] font-bold text-slate-500">
+                Optional: paste image URLs
+              </summary>
+              <div className="mt-2 grid gap-2">
+                <textarea
+                  value={newImageUrl}
+                  onChange={(event) => setNewImageUrl(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) addImage();
+                  }}
+                  rows={2}
+                  className="w-full resize-y rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  placeholder="Paste one or more image URLs, one per line"
+                />
+                <button
+                  type="button"
+                  onClick={addImage}
+                  disabled={!newImageUrl.trim()}
+                  className="w-fit rounded-lg bg-blue-600 px-3 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                >
+                  Add URL(s)
+                </button>
+              </div>
+            </details>
           </div>
           {(isUploading || uploadMessage) && (
             <p className={`mt-2 text-[10px] font-bold ${uploadMessage.includes("failed") || uploadMessage.includes("Missing") ? "text-red-600" : "text-blue-700"}`}>
@@ -374,9 +441,11 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
             if (e.key === "ArrowRight" && candidates.length > 1) setActiveIndex((i) => (i + 1) % candidates.length);
             if (e.key === "ArrowLeft" && candidates.length > 1) setActiveIndex((i) => (i - 1 + candidates.length) % candidates.length);
           }}
-          tabIndex={0}
+          tabIndex={-1}
           role="dialog"
-          ref={(el) => el?.focus()}
+          aria-modal="true"
+          aria-label={`Image gallery for ${partNumber}`}
+          ref={(el) => { if (el && document.activeElement !== el) el.focus(); }}
         >
           {/* Close button */}
           <button
