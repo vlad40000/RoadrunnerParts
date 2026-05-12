@@ -60,6 +60,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const [editorEnabled, setEditorEnabled] = useState(true);
   const [aiInstruction, setAiInstruction] = useState("");
   const [isRunningAi, setIsRunningAi] = useState(false);
+  const [isRunningAiPreset, setIsRunningAiPreset] = useState(null); // tracks which preset fired
   const [aiError, setAiError] = useState("");
   const [aiHistory, setAiHistory] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
@@ -131,24 +132,29 @@ export default function ListingEditor({ initialListing, partNumber }) {
     setIsSaving(true);
     setSaveMessage("");
     try {
+      const updates = {
+        title: draftListing.title,
+        ebayBuyNow: draftListing.ebayBuyNow,
+        description: draftListing.description,
+        specs: draftListing.specs,
+        condition: draftListing.condition,
+        quantity: draftListing.quantity,
+        shipping: draftListing.shipping,
+        packageDetails: draftListing.packageDetails || {},
+        returns: draftListing.returns,
+        status: draftListing.status,
+      };
+      if (reason === "images") {
+        updates.imageCandidates = draftListing.imageCandidates || [];
+      }
+
       const response = await fetch("/api/ebay/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           partNumber,
-          updates: {
-            title: draftListing.title,
-            ebayBuyNow: draftListing.ebayBuyNow,
-            description: draftListing.description,
-            specs: draftListing.specs,
-            condition: draftListing.condition,
-            quantity: draftListing.quantity,
-            shipping: draftListing.shipping,
-            packageDetails: draftListing.packageDetails || {},
-            returns: draftListing.returns,
-            status: draftListing.status,
-            imageCandidates: draftListing.imageCandidates || []
-          },
+          updates,
+          imageSaveMode: reason === "images" ? "replace" : "preserve",
         }),
       });
       const data = await response.json().catch(() => ({}));
@@ -161,6 +167,18 @@ export default function ListingEditor({ initialListing, partNumber }) {
       setLastSaved(savedAt);
       if (reason === "images" && Number(data.imageCount || 0) < Number(draftListing.imageCandidates?.length || 0)) {
         throw new Error(`Only ${data.imageCount || 0} of ${draftListing.imageCandidates?.length || 0} images were confirmed in storage`);
+      }
+      if (reason === "images") {
+        const verifyResponse = await fetch(`/api/ebay/save?partNumber=${encodeURIComponent(partNumber)}&ts=${Date.now()}`, {
+          cache: "no-store",
+        });
+        const verified = await verifyResponse.json().catch(() => ({}));
+        if (!verifyResponse.ok || verified.ok === false) {
+          throw new Error(verified.error || verified.details || "Image save verification failed");
+        }
+        if (Number(verified.imageCount || 0) < Number(draftListing.imageCandidates?.length || 0)) {
+          throw new Error(`Verified only ${verified.imageCount || 0} of ${draftListing.imageCandidates?.length || 0} images after save`);
+        }
       }
       setSaveMessage(
         reason === "images"
@@ -547,7 +565,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 <optgroup label="Preview">
                   <option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option>
                   <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview</option>
-                  <option value="gemini-3.1-flash-image-preview">Nano Banana 2 / Image workflow only</option>
+                  <option value="gemini-3.1-flash-image-preview">Gemini Image Preview (text AI disabled)</option>
                 </optgroup>
                 <option value="custom">Custom Model ID...</option>
               </select>
@@ -595,7 +613,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
                       runAiInstruction(aiInstruction);
                     }
                   }}
-                  placeholder="Tell the AI what to change... e.g. 'Make the title more SEO-friendly' or 'Set price to $45 and add compatibility with Hotpoint models'"
+                  placeholder="e.g. 'Rewrite the title under 80 chars with the part number and brand'  ·  'Set price to $45'  ·  'Add Hotpoint and GE compatibility to specifics'  ·  'Write honest seller notes about condition'"
                   className="w-full rounded-xl border border-blue-200 bg-white p-3 text-xs leading-relaxed text-slate-700 resize-none outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 placeholder:text-slate-400"
                   rows={3}
                   disabled={isRunningAi}
@@ -610,19 +628,17 @@ export default function ListingEditor({ initialListing, partNumber }) {
                         : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20 active:scale-95"
                     }`}
                   >
-                    {isRunningAi ? "Running..." : "Run AI Edit"}
+                    {isRunningAi && !isRunningAiPreset ? "Running..." : "Apply AI Instruction  (Ctrl+Enter)"}
                   </button>
-                  {undoStack.length > 0 && (
-                    <button
-                      onClick={undoLastAi}
-                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-95"
-                      title="Undo last AI edit"
-                    >
-                      Undo
-                    </button>
-                  )}
+                  <button
+                    onClick={undoLastAi}
+                    disabled={undoStack.length === 0}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                    title={undoStack.length === 0 ? "No AI edits to undo yet" : "Undo last AI edit"}
+                  >
+                    Undo
+                  </button>
                 </div>
-                <div className="mt-1 text-[9px] text-slate-400">Ctrl+Enter to run</div>
               </div>
 
               {aiError && (
@@ -635,19 +651,27 @@ export default function ListingEditor({ initialListing, partNumber }) {
               <div className="flex flex-col gap-1.5">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Actions</span>
                 {[
-                  { label: "Rewrite Description", action: generateDescription, loading: isGeneratingDescription },
-                  { label: "Optimize Specifics", action: optimizeSpecs, loading: isOptimizingSpecs },
-                  { label: "SEO Title", action: () => runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type."), loading: false },
-                  { label: "Add Seller Notes", action: () => runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims."), loading: false },
+                  { label: "Rewrite Description", key: "description", action: generateDescription, loading: isGeneratingDescription },
+                  { label: "Optimize Specifics", key: "specs", action: optimizeSpecs, loading: isOptimizingSpecs },
+                  { label: "SEO Title", key: "seo_title", action: () => {
+                    setIsRunningAiPreset("seo_title");
+                    runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type.").finally(() => setIsRunningAiPreset(null));
+                  }, loading: isRunningAiPreset === "seo_title" },
+                  { label: "Add Seller Notes", key: "seller_notes", action: () => {
+                    setIsRunningAiPreset("seller_notes");
+                    runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims.").finally(() => setIsRunningAiPreset(null));
+                  }, loading: isRunningAiPreset === "seller_notes" },
                 ].map((preset) => (
                   <button
-                    key={preset.label}
+                    key={preset.key}
                     onClick={preset.action}
                     disabled={preset.loading || isRunningAi}
                     className="w-full text-left p-2.5 rounded-lg border border-slate-100 hover:bg-slate-50 text-[11px] font-medium transition-all disabled:opacity-50 flex justify-between items-center bg-white group"
                   >
                     <span className="group-hover:text-blue-600">{preset.label}</span>
-                    {preset.loading ? <span className="text-blue-500 text-[10px]">...</span> : <span className="text-slate-400 text-[10px]">AI</span>}
+                    {preset.loading
+                      ? <span className="text-blue-500 text-[10px] animate-pulse">Running...</span>
+                      : <span className="text-slate-400 text-[10px]">AI</span>}
                   </button>
                 ))}
               </div>

@@ -18,7 +18,7 @@ function cleanPartNumber(value) {
 function cleanUpdates(value) {
   const input = value && typeof value === "object" && !Array.isArray(value) ? value : {};
   const quantity = Number(input.quantity || 1);
-  return {
+  const updates = {
     title: String(input.title || "").slice(0, 220),
     ebayBuyNow: String(input.ebayBuyNow || "").slice(0, 80),
     description: String(input.description || "").slice(0, 5000),
@@ -29,8 +29,13 @@ function cleanUpdates(value) {
     packageDetails: cleanPackageDetails(input.packageDetails),
     returns: input.returns !== false,
     status: String(input.status || "draft").slice(0, 40),
-    imageCandidates: cleanImageCandidates(input.imageCandidates),
   };
+
+  if (Object.prototype.hasOwnProperty.call(input, "imageCandidates")) {
+    updates.imageCandidates = cleanImageCandidates(input.imageCandidates);
+  }
+
+  return updates;
 }
 
 function cleanPackageNumber(value) {
@@ -117,6 +122,7 @@ export async function POST(request) {
     const body = await request.json();
     const partNumber = cleanPartNumber(body.partNumber);
     const updates = cleanUpdates(body.updates);
+    const imageSaveMode = String(body.imageSaveMode || "").trim();
 
     if (!partNumber) {
       return NextResponse.json({ error: "Missing partNumber" }, { status: 400 });
@@ -127,12 +133,30 @@ export async function POST(request) {
     const edits = previous && typeof previous.edits === "object" && !Array.isArray(previous.edits)
       ? previous.edits
       : {};
-    edits[partNumber] = {
-      ...(edits[partNumber] || {}),
+    const previousPartEdit = edits[partNumber] || {};
+    const previousImages = Array.isArray(previousPartEdit.imageCandidates)
+      ? previousPartEdit.imageCandidates
+      : [];
+    const nextPartEdit = {
+      ...previousPartEdit,
       ...updates,
       partNumber,
       lastModified: savedAt,
     };
+    if (
+      !Object.prototype.hasOwnProperty.call(updates, "imageCandidates") &&
+      previousImages.length
+    ) {
+      nextPartEdit.imageCandidates = previousImages;
+    }
+    if (
+      Object.prototype.hasOwnProperty.call(updates, "imageCandidates") &&
+      imageSaveMode !== "replace" &&
+      previousImages.length > updates.imageCandidates.length
+    ) {
+      nextPartEdit.imageCandidates = previousImages;
+    }
+    edits[partNumber] = nextPartEdit;
 
     let blobUrl = "";
     if (process.env.BLOB_READ_WRITE_TOKEN) {

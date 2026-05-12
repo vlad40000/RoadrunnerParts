@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function cleanImageCandidate(candidate) {
   return {
@@ -22,6 +22,33 @@ function cleanImageCandidate(candidate) {
   };
 }
 
+function imageCandidateKey(candidate) {
+  return String(
+    candidate?.blobPathname ||
+      candidate?.imageUrl ||
+      candidate?.thumbnailUrl ||
+      candidate?.remoteImageUrl ||
+      candidate?.localImagePath ||
+      candidate?.vaultRelativePath ||
+      "",
+  )
+    .trim()
+    .toLowerCase();
+}
+
+function uniqueImageCandidates(nextCandidates) {
+  const next = [];
+  const seen = new Set();
+  for (const rawCandidate of nextCandidates || []) {
+    const candidate = cleanImageCandidate(rawCandidate);
+    const key = imageCandidateKey(candidate);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    next.push(candidate);
+  }
+  return next.slice(0, 24);
+}
+
 export default function ListingGallery({ candidates, title, partNumber, onChange }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [newImageUrl, setNewImageUrl] = useState("");
@@ -30,9 +57,20 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
   const activeImage = candidates[activeIndex] || null;
   const canEdit = typeof onChange === "function";
 
+  useEffect(() => {
+    if (!candidates.length) {
+      setActiveIndex(0);
+      return;
+    }
+    if (activeIndex > candidates.length - 1) {
+      setActiveIndex(candidates.length - 1);
+    }
+  }, [activeIndex, candidates.length]);
+
   function updateCandidates(nextCandidates, nextIndex = activeIndex) {
-    onChange?.(nextCandidates.map(cleanImageCandidate));
-    setActiveIndex(Math.max(0, Math.min(nextIndex, nextCandidates.length - 1)));
+    const cleanCandidates = uniqueImageCandidates(nextCandidates);
+    onChange?.(cleanCandidates);
+    setActiveIndex(Math.max(0, Math.min(nextIndex, cleanCandidates.length - 1)));
   }
 
   function addImage() {
@@ -44,7 +82,7 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
       .filter(Boolean);
     updateCandidates(
       [
-        ...candidates,
+        ...uniqueImageCandidates(candidates),
         ...urls.map((url) =>
           cleanImageCandidate({
             imageUrl: url,
@@ -84,7 +122,8 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
 
       const uploaded = Array.isArray(data.uploaded) ? data.uploaded.map(cleanImageCandidate) : [];
       if (uploaded.length) {
-        updateCandidates([...candidates, ...uploaded], candidates.length + uploaded.length - 1);
+        const existing = uniqueImageCandidates(candidates);
+        updateCandidates([...existing, ...uploaded], existing.length);
       }
 
       const skipped = Array.isArray(data.skipped) ? data.skipped.length : 0;
@@ -104,15 +143,18 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
   function removeActiveImage() {
     if (!activeImage) return;
     updateCandidates(
-      candidates.filter((_, index) => index !== activeIndex),
+      uniqueImageCandidates(candidates).filter((_, index) => index !== activeIndex),
       activeIndex - 1,
     );
   }
 
   function setActiveAsLead() {
     if (!activeImage || activeIndex === 0) return;
+    const cleanCandidates = uniqueImageCandidates(candidates);
+    const selected = cleanCandidates[activeIndex];
+    if (!selected) return;
     updateCandidates(
-      [activeImage, ...candidates.filter((_, index) => index !== activeIndex)],
+      [selected, ...cleanCandidates.filter((_, index) => index !== activeIndex)],
       0,
     );
   }
@@ -240,6 +282,18 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/avif"
                     multiple
+                    className="hidden"
+                    onChange={(event) => {
+                      uploadFiles(event.target.files);
+                      event.target.value = "";
+                    }}
+                  />
+                </label>
+                <label className="cursor-pointer rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-bold text-emerald-700 hover:border-emerald-500 hover:bg-emerald-50">
+                  Take photo
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
                     capture="environment"
                     className="hidden"
                     onChange={(event) => {
