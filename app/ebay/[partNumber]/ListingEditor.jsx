@@ -429,6 +429,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
                       <option value="New">New</option>
                       <option value="New other (see details)">New other</option>
                       <option value="Open box">Open box</option>
+                      <option value="Pre-Owned">Pre-Owned</option>
                       <option value="Used">Used</option>
                       <option value="For parts or not working">For parts</option>
                     </select>
