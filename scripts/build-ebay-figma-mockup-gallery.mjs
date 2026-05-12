@@ -970,6 +970,40 @@ const html = `<!DOCTYPE html>
       font-weight: 700;
     }
 
+    .image-drop-zone {
+      display: flex;
+      min-height: 104px;
+      width: 100%;
+      cursor: pointer;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed #b9c7fb;
+      border-radius: 10px;
+      background: #fff;
+      color: #2f3a49;
+      text-align: center;
+      transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+
+    .image-drop-zone strong {
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .image-drop-zone span {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .image-drop-zone.drag-active {
+      border-color: var(--blue);
+      background: #eef4ff;
+      color: var(--blue);
+    }
+
     .ai-editor textarea {
       width: 100%;
       min-height: 92px;
@@ -1610,8 +1644,12 @@ const html = `<!DOCTYPE html>
             <strong>Listing image editor</strong>
             <span>Live preview</span>
           </div>
+          <button type="button" class="image-drop-zone" id="imageDropZone">
+            <strong>Drag images here</strong>
+            <span>or click to choose files</span>
+          </button>
           <div class="image-upload-row">
-            <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp,image/avif">
+            <input type="file" id="imageUpload" accept="image/jpeg,image/png,image/webp,image/avif" multiple>
             <button type="button" data-action="clear-upload">Clear image</button>
           </div>
           <div class="image-upload-meta" id="imageUploadMeta"></div>
@@ -1796,6 +1834,7 @@ const html = `<!DOCTYPE html>
     const editDescription = document.getElementById("editDescription");
     const editSellerNotes = document.getElementById("editSellerNotes");
     const imageUpload = document.getElementById("imageUpload");
+    const imageDropZone = document.getElementById("imageDropZone");
     const imageUploadMeta = document.getElementById("imageUploadMeta");
     const aiPrompt = document.getElementById("aiPrompt");
     const aiModelPreset = document.getElementById("aiModelPreset");
@@ -1829,14 +1868,20 @@ const html = `<!DOCTYPE html>
       return value + " B";
     }
 
+    function pendingImagesFor(listing) {
+      const pending = pendingImageUploads.get(listing.partNumber);
+      return Array.isArray(pending) ? pending : pending ? [pending] : [];
+    }
+
     function pendingImageFor(listing) {
-      return pendingImageUploads.get(listing.partNumber) || null;
+      return pendingImagesFor(listing)[0] || null;
     }
 
     function imageFilesFor(listing) {
-      const pending = pendingImageFor(listing);
+      const pending = pendingImagesFor(listing);
       const existing = Array.isArray(listing.imageFiles) ? listing.imageFiles : [];
-      return pending ? [pending.previewUrl, ...existing.filter((url) => url !== listing.approvedImage)] : existing;
+      const pendingUrls = pending.map((image) => image.previewUrl).filter(Boolean);
+      return pendingUrls.length ? [...pendingUrls, ...existing.filter((url) => url !== listing.approvedImage)] : existing;
     }
 
     function primaryImageFor(listing) {
@@ -1850,9 +1895,10 @@ const html = `<!DOCTYPE html>
 
     function refreshImageEditor(listing) {
       imageUpload.value = "";
-      const pending = pendingImageFor(listing);
-      if (pending) {
-        imageUploadMeta.textContent = "Selected: " + pending.name + " (" + formatFileSize(pending.size) + "). Commit to publish it.";
+      const pending = pendingImagesFor(listing);
+      if (pending.length) {
+        const totalBytes = pending.reduce((sum, image) => sum + Number(image.size || 0), 0);
+        imageUploadMeta.textContent = "Selected: " + pending.length + " image" + (pending.length === 1 ? "" : "s") + " (" + formatFileSize(totalBytes) + "). Commit to publish.";
         return;
       }
       imageUploadMeta.textContent = listing.hasPhoto
@@ -2050,7 +2096,9 @@ const html = `<!DOCTYPE html>
 
     function buildEditPacket() {
       saveCurrentDraft(false);
-      const images = Array.from(pendingImageUploads.values()).map((image) => ({
+      const images = Array.from(pendingImageUploads.values()).flatMap((pending) => (
+        Array.isArray(pending) ? pending : [pending]
+      )).map((image) => ({
         partNumber: image.partNumber,
         name: image.name,
         type: image.type,
@@ -2066,7 +2114,7 @@ const html = `<!DOCTYPE html>
         images,
         edits: listings.map((item) => {
           const view = effectiveListing(item);
-          const pendingImage = pendingImageFor(item);
+          const pendingImages = pendingImagesFor(item);
           return {
             partNumber: item.partNumber,
             displayPartNumber: view.displayPartNumber,
@@ -2086,9 +2134,9 @@ const html = `<!DOCTYPE html>
             location: view.location,
             shipping: view.shipping,
             returns: view.returns,
-            hasPhoto: item.hasPhoto || Boolean(pendingImage),
+            hasPhoto: item.hasPhoto || Boolean(pendingImages.length),
             approvedImage: item.approvedImage || "",
-            pendingImageName: pendingImage ? pendingImage.name : "",
+            pendingImageName: pendingImages.map((image) => image.name).join(", "),
           };
         }),
       };
@@ -2294,8 +2342,10 @@ const html = `<!DOCTYPE html>
         return;
       }
       applyRemoteState(result.body.state);
-      pendingImageUploads.forEach((image) => {
-        if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+      pendingImageUploads.forEach((pending) => {
+        (Array.isArray(pending) ? pending : [pending]).forEach((image) => {
+          if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+        });
       });
       pendingImageUploads.clear();
       showListing(activeIndex);
@@ -2511,45 +2561,71 @@ const html = `<!DOCTYPE html>
       editDescription.value = description.value;
       applyTextEditorToPreview(true);
     });
-    imageUpload.addEventListener("change", async () => {
-      const file = imageUpload.files && imageUpload.files[0];
-      if (!file) return;
-      if (!["image/jpeg", "image/png", "image/webp", "image/avif"].includes(file.type)) {
-        imageUpload.value = "";
-        notify("Use JPG, PNG, WEBP, or AVIF images");
-        return;
+    async function attachImageFiles(fileList) {
+      const files = Array.from(fileList || []).filter(Boolean).slice(0, 24);
+      if (!files.length) return;
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+      const accepted = [];
+      let skipped = 0;
+      for (const file of files) {
+        if (!allowedTypes.includes(file.type) || file.size > 8 * 1024 * 1024) {
+          skipped += 1;
+          continue;
+        }
+        accepted.push(file);
       }
-      if (file.size > 8 * 1024 * 1024) {
+      if (!accepted.length) {
         imageUpload.value = "";
-        notify("Image is over 8 MB");
+        notify("Use JPG, PNG, WEBP, or AVIF images under 8 MB");
         return;
       }
       const listing = listings[activeIndex];
-      const existing = pendingImageUploads.get(listing.partNumber);
-      if (existing && existing.previewUrl) URL.revokeObjectURL(existing.previewUrl);
+      const existing = pendingImagesFor(listing);
       try {
-        const dataUrl = await readFileAsDataUrl(file);
-        const previewUrl = URL.createObjectURL(file);
-        pendingImageUploads.set(listing.partNumber, {
+        const selectedAt = new Date().toISOString();
+        const nextImages = await Promise.all(accepted.map(async (file) => ({
           partNumber: listing.partNumber,
           name: file.name,
           type: file.type,
           size: file.size,
-          dataUrl,
-          previewUrl,
-          selectedAt: new Date().toISOString(),
-        });
+          dataUrl: await readFileAsDataUrl(file),
+          previewUrl: URL.createObjectURL(file),
+          selectedAt,
+        })));
+        pendingImageUploads.set(listing.partNumber, [...existing, ...nextImages].slice(0, 24));
         refreshImageEditor(listing);
         renderThumbs(listing);
         renderMainImage(listing);
         renderDetails(listing, effectiveListing(listing));
         renderSimilar();
-        listingAlert.textContent = "Uploaded image preview is attached. Commit to publish it into the approved sale-photo folder.";
-        notify("Image preview attached for " + listing.partNumber);
+        listingAlert.textContent = "Uploaded image previews are attached. Commit to publish them into the approved sale-photo folder.";
+        notify(nextImages.length + " image" + (nextImages.length === 1 ? "" : "s") + " attached for " + listing.partNumber + (skipped ? "; " + skipped + " skipped" : ""));
       } catch {
         imageUpload.value = "";
-        notify("Could not read image file");
+        notify("Could not read image files");
       }
+    }
+
+    imageUpload.addEventListener("change", async () => {
+      await attachImageFiles(imageUpload.files);
+    });
+    imageDropZone.addEventListener("click", () => imageUpload.click());
+    ["dragenter", "dragover"].forEach((eventName) => {
+      imageDropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        imageDropZone.classList.add("drag-active");
+      });
+    });
+    ["dragleave", "drop"].forEach((eventName) => {
+      imageDropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (eventName === "drop") {
+          attachImageFiles(event.dataTransfer && event.dataTransfer.files);
+        }
+        imageDropZone.classList.remove("drag-active");
+      });
     });
     specificsTable.addEventListener("input", () => {
       document.querySelectorAll("[data-spec-key]").forEach((input) => {
@@ -2658,8 +2734,10 @@ const html = `<!DOCTYPE html>
         return;
       }
       if (action === "clear-upload") {
-        const pending = pendingImageUploads.get(listing.partNumber);
-        if (pending && pending.previewUrl) URL.revokeObjectURL(pending.previewUrl);
+        const pending = pendingImagesFor(listing);
+        pending.forEach((image) => {
+          if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+        });
         pendingImageUploads.delete(listing.partNumber);
         refreshImageEditor(listing);
         renderThumbs(listing);

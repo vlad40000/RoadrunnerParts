@@ -134,6 +134,15 @@ function saveLocal(partNumber, updates) {
   return listings[index];
 }
 
+function readLocalListing(partNumber) {
+  const filePath = path.join(process.cwd(), "scratch/ebay-html-current/listings.normalized.json");
+  if (!fs.existsSync(filePath)) return null;
+
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  const listings = Array.isArray(data.listings) ? data.listings : [];
+  return listings.find((listing) => cleanPartNumber(listing.partNumber) === partNumber) || null;
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -176,31 +185,56 @@ export async function POST(request) {
     edits[partNumber] = nextPartEdit;
 
     let blobUrl = "";
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const blob = await put(
-        DETAIL_STATE_PATH,
-        JSON.stringify({
-          source: "roadrunner-ebay-detail-editor",
-          savedAt,
-          editCount: Object.keys(edits).length,
-          edits,
-        }, null, 2),
-        {
-          access: "public",
-          contentType: "application/json",
-          allowOverwrite: true,
-        },
-      );
-      blobUrl = blob.url;
+    let blobError = "";
+    let localListing = null;
+    let localError = "";
+
+    try {
+      localListing = saveLocal(partNumber, updates);
+    } catch (error) {
+      localError = error instanceof Error ? error.message : String(error);
     }
 
-    const localListing = saveLocal(partNumber, updates);
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      try {
+        const blob = await put(
+          DETAIL_STATE_PATH,
+          JSON.stringify({
+            source: "roadrunner-ebay-detail-editor",
+            savedAt,
+            editCount: Object.keys(edits).length,
+            edits,
+          }, null, 2),
+          {
+            access: "public",
+            contentType: "application/json",
+            allowOverwrite: true,
+          },
+        );
+        blobUrl = blob.url;
+      } catch (error) {
+        blobError = error instanceof Error ? error.message : String(error);
+      }
+    }
+
+    if (!blobUrl && !localListing) {
+      return NextResponse.json(
+        {
+          error: "Save failed",
+          details: blobError || localError || `No editable listing found for ${partNumber}`,
+          blobError,
+          localError,
+        },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({
       success: true,
       ok: true,
       persisted: Boolean(blobUrl || localListing),
       storage: blobUrl ? "vercel-blob" : localListing ? "local-file" : "memory-only",
+      warning: !blobUrl && blobError ? `Blob save skipped: ${blobError}` : "",
       stateUrl: blobUrl,
       listing: edits[partNumber],
       imageCount: edits[partNumber].imageCandidates?.length || 0,
@@ -229,7 +263,7 @@ export async function GET(request) {
     const edits = state && typeof state.edits === "object" && !Array.isArray(state.edits)
       ? state.edits
       : {};
-    const listing = edits[partNumber] || null;
+    const listing = edits[partNumber] || readLocalListing(partNumber);
 
     return NextResponse.json({
       ok: true,
