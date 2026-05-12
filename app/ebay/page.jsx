@@ -4,6 +4,12 @@ import { list } from "@vercel/blob";
 
 const DETAIL_STATE_PATH = "ebay/detail-editor-state/current.json";
 
+async function readJsonResponse(response) {
+  const text = await response.text();
+  if (!text.trim()) return null;
+  return JSON.parse(text);
+}
+
 export const metadata = {
   title: "eBay Listings Dashboard — RoadrunnerParts",
   description:
@@ -38,7 +44,7 @@ async function loadDetailEditorEdits() {
     stateUrl.searchParams.set("rrpStateTs", String(Date.now()));
     const response = await fetch(stateUrl.toString(), { cache: "no-store" });
     if (!response.ok) return {};
-    const state = await response.json();
+    const state = await readJsonResponse(response);
     return state && typeof state.edits === "object" && !Array.isArray(state.edits)
       ? state.edits
       : {};
@@ -130,7 +136,7 @@ export default async function EbayDashboard() {
           <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-600 via-slate-900 to-emerald-600" />
         </div>
         <div className="relative z-10 mx-auto max-w-5xl">
-          <h1 className="mb-2 font-[var(--font-display)] text-4xl leading-tight tracking-normal sm:text-5xl">
+          <h1 className="mb-2 text-4xl font-black leading-tight tracking-normal sm:text-5xl">
             <span className="text-blue-600">Road</span>
             <span className="text-slate-950">Runner</span>
             <span className="text-slate-950">-</span>
@@ -182,7 +188,7 @@ export default async function EbayDashboard() {
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-5">
-                  <div className="mb-1 font-[var(--font-display)] text-lg font-bold text-[#162033]">
+                  <div className="mb-1 text-lg font-black text-[#162033]">
                     {listing.partNumber}
                   </div>
                   <div className="mb-4 line-clamp-2 min-h-[40px] text-xs leading-relaxed text-slate-500">

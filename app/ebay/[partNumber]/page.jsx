@@ -8,6 +8,12 @@ import ListingEditor from "./ListingEditor";
 export const dynamic = "force-dynamic";
 const DETAIL_STATE_PATH = "ebay/detail-editor-state/current.json";
 
+async function readJsonResponse(response) {
+  const text = await response.text();
+  if (!text.trim()) return null;
+  return JSON.parse(text);
+}
+
 function cleanPartNumber(value) {
   return String(value || "")
     .replace(/[^A-Z0-9-]/gi, "")
@@ -34,7 +40,7 @@ async function loadDetailEditorEdits() {
     stateUrl.searchParams.set("rrpStateTs", String(Date.now()));
     const response = await fetch(stateUrl.toString(), { cache: "no-store" });
     if (!response.ok) return {};
-    const state = await response.json();
+    const state = await readJsonResponse(response);
     return state && typeof state.edits === "object" && !Array.isArray(state.edits)
       ? state.edits
       : {};
@@ -130,7 +136,7 @@ export default async function ListingDetail({ params }) {
           </Link>
           <div className="flex flex-col">
             <h1 className="text-sm font-bold text-slate-900 leading-none">Editor</h1>
-            <span className="mt-1 font-[var(--font-display)] text-[10px] tracking-normal">
+            <span className="mt-1 text-[10px] font-black tracking-normal">
               <span className="text-blue-600">Road</span>
               <span className="text-slate-950">Runner</span>
               <span className="text-slate-950">-</span>

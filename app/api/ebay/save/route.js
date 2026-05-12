@@ -8,6 +8,12 @@ export const dynamic = "force-dynamic";
 
 const DETAIL_STATE_PATH = "ebay/detail-editor-state/current.json";
 
+async function readJsonResponse(response) {
+  const text = await response.text();
+  if (!text.trim()) return null;
+  return JSON.parse(text);
+}
+
 function cleanPartNumber(value) {
   return String(value || "")
     .replace(/[^A-Z0-9-]/gi, "")
@@ -103,7 +109,7 @@ async function readBlobState() {
   stateUrl.searchParams.set("rrpStateTs", String(Date.now()));
   const response = await fetch(stateUrl.toString(), { cache: "no-store" });
   if (!response.ok) return null;
-  return response.json();
+  return readJsonResponse(response);
 }
 
 function saveLocal(partNumber, updates) {

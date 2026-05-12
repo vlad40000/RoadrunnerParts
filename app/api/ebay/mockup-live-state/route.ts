@@ -12,6 +12,12 @@ const ALLOWED_IMAGE_TYPES = new Map([
   ['image/avif', '.avif'],
 ]);
 
+async function readJsonResponse(response: Response) {
+  const text = await response.text();
+  if (!text.trim()) return null;
+  return JSON.parse(text);
+}
+
 function cleanPartNumber(value: unknown): string {
   return String(value || '')
     .replace(/[^A-Z0-9-]/gi, '')
@@ -54,7 +60,7 @@ async function readCurrentState() {
 
   const response = await fetch(blob.url, { cache: 'no-store' });
   if (!response.ok) return null;
-  return response.json();
+  return readJsonResponse(response);
 }
 
 export async function GET() {
