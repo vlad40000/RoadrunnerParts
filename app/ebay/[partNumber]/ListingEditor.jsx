@@ -307,7 +307,12 @@ export default function ListingEditor({ initialListing, partNumber }) {
   };
 
   const saveChanges = async () => {
-    persistListing(listing, "manual").catch(() => {});
+    try {
+      await persistListing(listing, "manual");
+    } catch (error) {
+      // Error surfaced via setSaveMessage inside persistListing.
+      console.error("[eBay editor] Save failed:", error);
+    }
   };
 
   const candidates = listing.imageCandidates || [];

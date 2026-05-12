@@ -209,6 +209,7 @@ export async function POST(request) {
             access: "public",
             contentType: "application/json",
             allowOverwrite: true,
+            addRandomSuffix: false,
           },
         );
         blobUrl = blob.url;
