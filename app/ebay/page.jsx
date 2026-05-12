@@ -120,35 +120,55 @@ async function loadListings() {
 }
 
 function StatusBadge({ listing }) {
+  const visual = getListingVisual(listing);
+  return (
+    <span className={`inline-block rounded-lg border px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide ${visual.badgeClass}`}>
+      {visual.label}
+    </span>
+  );
+}
+
+function getListingVisual(listing) {
   if (listing.approvedSaleImage?.publicPrimaryImage) {
-    return (
-      <span className="inline-block rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">
-        Approved Photo
-      </span>
-    );
+    return {
+      label: "Approved Photo",
+      cardClass: "border-emerald-300 bg-emerald-50 shadow-emerald-100 hover:border-emerald-500 hover:shadow-emerald-200",
+      imageClass: "border-emerald-200 bg-white",
+      badgeClass: "border-emerald-200 bg-emerald-100 text-emerald-800",
+      priceClass: "text-emerald-800",
+    };
   }
+
   const candidates = listing.imageCandidates || [];
   const top = candidates[0];
   if (!top) {
-    return (
-      <span className="inline-block rounded-lg border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-amber-800">
-        Image Pending
-      </span>
-    );
+    return {
+      label: "Photo Pending",
+      cardClass: "border-amber-300 bg-amber-50 shadow-amber-100 hover:border-amber-500 hover:shadow-amber-200",
+      imageClass: "border-amber-200 bg-amber-100",
+      badgeClass: "border-amber-300 bg-amber-100 text-amber-900",
+      priceClass: "text-amber-900",
+    };
   }
+
   const status = String(top.reviewStatus || "");
   if (status.includes("watermark")) {
-    return (
-      <span className="inline-block rounded-lg border border-amber-300 bg-amber-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">
-        Watermark Review
-      </span>
-    );
+    return {
+      label: "Watermark Review",
+      cardClass: "border-orange-300 bg-orange-50 shadow-orange-100 hover:border-orange-500 hover:shadow-orange-200",
+      imageClass: "border-orange-200 bg-white",
+      badgeClass: "border-orange-300 bg-orange-100 text-orange-800",
+      priceClass: "text-orange-900",
+    };
   }
-  return (
-    <span className="inline-block rounded-lg border border-blue-200 bg-blue-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-blue-700">
-      Candidate Review
-    </span>
-  );
+
+  return {
+    label: "Candidate Review",
+    cardClass: "border-blue-300 bg-blue-50 shadow-blue-100 hover:border-blue-500 hover:shadow-blue-200",
+    imageClass: "border-blue-200 bg-white",
+    badgeClass: "border-blue-200 bg-blue-100 text-blue-800",
+    priceClass: "text-blue-900",
+  };
 }
 
 export default async function EbayDashboard() {
@@ -183,11 +203,11 @@ export default async function EbayDashboard() {
             Live eBay listing dashboard — operator review
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
-            <Stat label="Total Parts" value={listings.length} />
-            <Stat label="Approved Photos" value={approvedPhotos.length} />
-            <Stat label="Candidate Review" value={candidateReview.length} />
-            <Stat label="Photo Pending" value={photoPending} />
-            <Stat label="Watermark Review" value={watermarkReview} />
+            <Stat label="Total Parts" value={listings.length} tone="slate" />
+            <Stat label="Approved Photos" value={approvedPhotos.length} tone="emerald" />
+            <Stat label="Candidate Review" value={candidateReview.length} tone="blue" />
+            <Stat label="Photo Pending" value={photoPending} tone="amber" />
+            <Stat label="Watermark Review" value={watermarkReview} tone="orange" />
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700">
               Pipeline:{" "}
               <span className="font-extrabold text-blue-600">LIVE</span>
@@ -206,13 +226,14 @@ export default async function EbayDashboard() {
               top?.imageUrl ||
               top?.thumbnailUrl ||
               null;
+            const visual = getListingVisual(listing);
             return (
               <a
                 key={listing.partNumber || i}
                 href={`/ebay/${encodeURIComponent(listing.partNumber)}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-blue-500 hover:shadow-xl"
+                className={`group flex flex-col overflow-hidden rounded-2xl border shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${visual.cardClass}`}
               >
-                <div className="relative flex aspect-square items-center justify-center border-b border-slate-100 bg-slate-50 p-8">
+                <div className={`relative flex aspect-square items-center justify-center border-b p-8 ${visual.imageClass}`}>
                   {imgSrc ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -239,7 +260,7 @@ export default async function EbayDashboard() {
                   <div className="mt-auto flex items-center justify-between">
                     <StatusBadge listing={listing} />
                     {listing.ebayBuyNow && (
-                      <span className="text-sm font-bold text-[#162033]">
+                      <span className={`text-sm font-bold ${visual.priceClass}`}>
                         {listing.ebayBuyNow}
                       </span>
                     )}
@@ -259,10 +280,18 @@ export default async function EbayDashboard() {
   );
 }
 
-function Stat({ label, value }) {
+function Stat({ label, value, tone = "slate" }) {
+  const toneClass = {
+    slate: "border-slate-200 bg-slate-50 text-slate-700 [&_span]:text-slate-900",
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-800 [&_span]:text-emerald-700",
+    blue: "border-blue-200 bg-blue-50 text-blue-800 [&_span]:text-blue-700",
+    amber: "border-amber-200 bg-amber-50 text-amber-900 [&_span]:text-amber-800",
+    orange: "border-orange-200 bg-orange-50 text-orange-900 [&_span]:text-orange-700",
+  }[tone] || "border-slate-200 bg-slate-50 text-slate-700 [&_span]:text-slate-900";
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700">
-      <span className="mr-1 text-base font-extrabold text-blue-600">
+    <div className={`rounded-xl border px-5 py-2.5 text-sm font-semibold ${toneClass}`}>
+      <span className="mr-1 text-base font-extrabold">
         {value}
       </span>
       {label}
