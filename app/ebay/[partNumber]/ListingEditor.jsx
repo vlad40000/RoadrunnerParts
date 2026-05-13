@@ -84,6 +84,12 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const captureBase64Ref = useRef({ nameplate: null, nameplateType: null, product: null, productType: null });
   const interviewAnswerRef = useRef(null);
 
+  // ── Post-resolve follow-up dialogue ──────────────────────────────────────
+  // Steps: null → 'ask_diagrams' → 'ask_partlist' → 'fetching' → 'show_links' → 'done'
+  const [postResolveStep, setPostResolveStep] = useState(null);
+  const [bomLinks, setBomLinks] = useState(null); // { diagramUrl, partListUrl, model }
+  const [bomLinkError, setBomLinkError] = useState(null);
+
   // Seed from existing lead image on mount so the panel shows on first load
   useEffect(() => {
     const lead = (initialListing.imageCandidates || [])[0];
@@ -339,6 +345,9 @@ export default function ListingEditor({ initialListing, partNumber }) {
     setInterviewState(null);
     setInterviewHistory([]);
     setInterviewError(null);
+    setPostResolveStep(null);
+    setBomLinks(null);
+    setBomLinkError(null);
     try {
       const reader = new FileReader();
       const { base64, mimeType } = await new Promise((resolve, reject) => {
@@ -383,6 +392,39 @@ export default function ListingEditor({ initialListing, partNumber }) {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [captureFeatureCues]);
+
+  // Auto-trigger first post-resolve question when the interview resolves
+  useEffect(() => {
+    if (interviewState?.resolved && postResolveStep === null) {
+      setPostResolveStep('ask_diagrams');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [interviewState?.resolved]);
+
+  // Fetch diagram + part-list URLs from the BOM index for the confirmed model
+  const fetchBomLinks = useCallback(async (model) => {
+    if (!model) return;
+    setPostResolveStep('fetching');
+    setBomLinkError(null);
+    try {
+      const res = await fetch(`/api/bom/encompass-index?model=${encodeURIComponent(model)}`);
+      const data = await res.json().catch(() => ({}));
+      const diagramUrl = data?.canonicalUrls?.explodedViewUrl
+        || data?.selected?.url
+        || data?.fallbackUrl
+        || null;
+      setBomLinks({
+        model,
+        diagramUrl,
+        partListUrl: `/bom-workflow?model=${encodeURIComponent(model)}`,
+        encompassSearchUrl: data?.canonicalUrls?.explodedViewSearchUrl || null,
+      });
+      setPostResolveStep('show_links');
+    } catch (err) {
+      setBomLinkError(err?.message || 'Failed to fetch diagram links');
+      setPostResolveStep('show_links');
+    }
+  }, []);
 
 
   const applyAiEdit = (edit) => {
@@ -1079,6 +1121,129 @@ export default function ListingEditor({ initialListing, partNumber }) {
                         )}
                       </div>
                     )}
+
+                    {/* ── Post-resolve follow-up dialogue ──────────────── */}
+                    {interviewState?.resolved && postResolveStep && postResolveStep !== 'done' && (() => {
+                      const isMachine = interviewState.entityType === 'machine';
+                      const confirmedModel = interviewState.fields?.model || identityResult?.model || '';
+                      const confirmedPart = interviewState.fields?.partNumber || partNumber || '';
+
+                      return (
+                        <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-2.5 flex flex-col gap-2 mt-1">
+                          <div className="text-[9px] font-extrabold uppercase tracking-wide text-indigo-700">Next Steps</div>
+
+                          {/* ask_diagrams — Machine or Part */}
+                          {postResolveStep === 'ask_diagrams' && (
+                            <div className="flex flex-col gap-1.5">
+                              <p className="text-[11px] text-slate-700 font-semibold leading-snug">
+                                {isMachine
+                                  ? 'Do you need Assembly Part Diagrams?'
+                                  : 'Do you need a Diagram for this part?'}
+                              </p>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setPostResolveStep('ask_partlist')}
+                                  className="flex-1 rounded-lg bg-indigo-600 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 transition-colors"
+                                >
+                                  Yes
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setPostResolveStep('done')}
+                                  className="flex-1 rounded-lg bg-slate-200 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-300 transition-colors"
+                                >
+                                  No
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ask_partlist */}
+                          {postResolveStep === 'ask_partlist' && (
+                            <div className="flex flex-col gap-1.5">
+                              <p className="text-[11px] text-slate-700 font-semibold leading-snug">
+                                Do you need a full part list with part numbers for the diagram?
+                              </p>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => fetchBomLinks(isMachine ? confirmedModel : confirmedPart)}
+                                  className="flex-1 rounded-lg bg-indigo-600 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-700 transition-colors"
+                                >
+                                  Yes — Get Parts
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setPostResolveStep('done')}
+                                  className="flex-1 rounded-lg bg-slate-200 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-300 transition-colors"
+                                >
+                                  No
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* fetching */}
+                          {postResolveStep === 'fetching' && (
+                            <div className="flex items-center gap-2 py-1">
+                              <div className="h-3 w-3 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+                              <span className="text-[11px] text-indigo-600">Resolving diagram links…</span>
+                            </div>
+                          )}
+
+                          {/* show_links */}
+                          {postResolveStep === 'show_links' && (
+                            <div className="flex flex-col gap-1.5">
+                              {bomLinkError && (
+                                <p className="text-[10px] text-red-600 font-semibold">{bomLinkError}</p>
+                              )}
+                              {bomLinks?.diagramUrl && (
+                                <a
+                                  href={bomLinks.diagramUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 transition-colors"
+                                >
+                                  <span>📐</span>
+                                  <span>Assembly Diagram</span>
+                                  <span className="ml-auto text-indigo-300">↗</span>
+                                </a>
+                              )}
+                              {bomLinks?.encompassSearchUrl && (
+                                <a
+                                  href={bomLinks.encompassSearchUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-[11px] font-bold text-indigo-700 hover:bg-indigo-50 transition-colors"
+                                >
+                                  <span>🔍</span>
+                                  <span>Search All Diagrams</span>
+                                  <span className="ml-auto text-indigo-300">↗</span>
+                                </a>
+                              )}
+                              <a
+                                href={bomLinks?.partListUrl || `/bom-workflow?model=${encodeURIComponent(interviewState.fields?.model || partNumber || '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                              >
+                                <span>📋</span>
+                                <span>Full Part List with Part Numbers</span>
+                                <span className="ml-auto text-emerald-400">↗</span>
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => setPostResolveStep('done')}
+                                className="text-[9px] text-slate-400 hover:text-slate-600 text-left pt-0.5 transition-colors"
+                              >
+                                Dismiss
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
 
                     {/* Q&A history */}
                     {interviewHistory.length > 0 && (
