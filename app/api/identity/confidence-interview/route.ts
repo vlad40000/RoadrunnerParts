@@ -3,7 +3,7 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────────────────
 
 interface QAPair {
   question: string;
@@ -79,14 +79,14 @@ const RESPONSE_SCHEMA = {
   required: ["confidence", "entityType", "fields", "resolved", "summary"],
 } as const;
 
-// ── Route ─────────────────────────────────────────────────────────────────────
+// ── Route ────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
     const body: InterviewRequest = await req.json();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.1-flash-lite-preview",
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA as never,
