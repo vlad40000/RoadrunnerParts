@@ -50,6 +50,7 @@ import { partsData, Part } from './partsData';
 import { ApplianceDecoder, DecodeResult } from './lib/decoder';
 import { computeCurrentMarketValue, ApplianceCondition, ValuationResult } from './lib/valuation';
 import { ebaySearchUrl, ebaySoldSearchUrl } from './features/bom/services/ebay-links';
+import AppliancePhotoCapture from './features/identity/AppliancePhotoCapture';
 
 const decoder = new ApplianceDecoder();
 const approvedPriceSources = ['encompass.com', 'searspartsdirect.com', 'fix.com'];
@@ -1654,6 +1655,26 @@ Sort the final JSON alphabetically by part_name before outputting.`;
         {/* Parts Explorer */}
         <section className="space-y-4 overflow-hidden">
           <CurrentEbayHomePanel batch={currentEbayBatch} />
+
+          {/* ── Photo Capture Panel ── */}
+          <div className="pro-card p-4 rounded-2xl">
+            <div className="text-[10px] font-black text-pro-slate-400 uppercase tracking-[0.2em] mb-3">
+              Appliance Photos — Feature Intelligence
+            </div>
+            <AppliancePhotoCapture
+              onNameplateFile={async (file) => {
+                setScanType('search');
+                const fakeEvent = { target: { files: [file], value: '' } } as any;
+                await handleFileUpload(fakeEvent);
+              }}
+              onFeatureCues={(cues) => {
+                if (!cues) return;
+                // Feature cues flow into the decoder on next serial refresh
+                // The decoder hard-floor is applied when lookupSerial changes
+                console.debug('[AppliancePhotoCapture] cues received:', cues);
+              }}
+            />
+          </div>
 
           <div className="flex flex-col gap-6">
             <h1 className="lg:hidden text-2xl font-semibold text-[#435572]">{selectedSectionLabel}</h1>

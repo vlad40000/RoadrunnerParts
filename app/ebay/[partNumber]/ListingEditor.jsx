@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import ListingGallery from "./ListingGallery";
+import AppliancePhotoCapture from "@/src/features/identity/AppliancePhotoCapture";
 
 const TEXT_FALLBACK_MODEL = "gemini-3.1-flash-lite";
 const IMAGE_WORKFLOW_MODEL = "gemini-3.1-flash-image-preview";
@@ -781,6 +782,17 @@ export default function ListingEditor({ initialListing, partNumber }) {
               </div>
             </div>
 
+            {/* Photo Capture Panel */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Appliance Photos</label>
+              <AppliancePhotoCapture
+                compact={true}
+                onFeatureCues={(cues) => {
+                  if (!cues) return;
+                  console.debug('[ListingEditor] feature cues:', cues);
+                }}
+              />
+            </div>
             {/* Quality Score */}
             <div className="p-4 rounded-xl bg-[#162033] text-white flex flex-col gap-2">
               <div className="text-[10px] font-bold text-slate-400 uppercase">Quality Score</div>

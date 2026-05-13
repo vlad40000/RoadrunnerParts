@@ -1024,4 +1024,203 @@ export async function chatField({ message, context, history }) {
   return text;
 }
 
+// ─── Feature Cue Extraction ─────────────────────────────────────────────────
+//
+// Detects appliance hardware features from up to 3 photos (front panel,
+// interior, wiring diagram) and returns boolean flags the serial decoder
+// uses as hard year floors (hard_lower_bound_year) and observed_features[].
+
+export interface FeatureCues {
+  touchscreenDispenser?: boolean;    // hard floor: 2015
+  ledInteriorLighting?: boolean;     // hard floor: 2013
+  invertLinearCompressor?: boolean;  // hard floor: 2012
+  digitalInverterMotor?: boolean;    // hard floor: 2013
+  wifiConnected?: boolean;           // → observed_features: ["wifi"], floor 2014
+  thinQEnabled?: boolean;            // → observed_features: ["thinq","wifi"], floor 2018
+  homeConnect?: boolean;             // → observed_features: ["homeconnect"]
+  smartThings?: boolean;             // → observed_features: ["smartthings"]
+  steamCycle?: boolean;              // hard floor: 2010
+  digitalDisplay?: boolean;          // → observed_features: ["modern_style"], floor 2010
+  iceDispenser?: boolean;            // BOM routing only — no year floor
+  confidence: 'high' | 'medium' | 'low';
+  notes?: string;
+}
+
+const FEATURE_CUE_SCHEMA = {
+  type: 'object',
+  properties: {
+    touchscreenDispenser: {
+      type: 'boolean',
+      description:
+        'True if the front panel shows a capacitive/glass touchscreen for ice or water dispensing. Physical push-buttons do NOT qualify.',
+      nullable: true,
+    },
+    ledInteriorLighting: {
+      type: 'boolean',
+      description:
+        'True if the interior shows LED strip lighting (flat bars on ceiling/walls). Incandescent bulbs in sockets do NOT qualify.',
+      nullable: true,
+    },
+    invertLinearCompressor: {
+      type: 'boolean',
+      description:
+        'True if the wiring diagram or back label shows "Linear Compressor", "Inverter Linear", or "BLDC" compressor text.',
+      nullable: true,
+    },
+    digitalInverterMotor: {
+      type: 'boolean',
+      description:
+        'True if the wiring diagram or label shows "Digital Inverter", "Inverter Motor", or "VFD Motor" text.',
+      nullable: true,
+    },
+    wifiConnected: {
+      type: 'boolean',
+      description:
+        'True if a WiFi symbol, "Smart", or wireless network indicator is clearly visible on the panel or label.',
+      nullable: true,
+    },
+    thinQEnabled: {
+      type: 'boolean',
+      description: 'True if LG ThinQ branding or logo is visible anywhere on the unit.',
+      nullable: true,
+    },
+    homeConnect: {
+      type: 'boolean',
+      description: 'True if Bosch/Siemens HomeConnect branding is visible.',
+      nullable: true,
+    },
+    smartThings: {
+      type: 'boolean',
+      description: 'True if Samsung SmartThings branding or logo is visible.',
+      nullable: true,
+    },
+    steamCycle: {
+      type: 'boolean',
+      description:
+        'True if the control panel shows a Steam, SteamFresh, or Steam Clean cycle button or label.',
+      nullable: true,
+    },
+    digitalDisplay: {
+      type: 'boolean',
+      description:
+        'True if the front panel has a digital LED or LCD display (not just indicator lights).',
+      nullable: true,
+    },
+    iceDispenser: {
+      type: 'boolean',
+      description: 'True if any ice or water dispenser is visible (touchscreen or mechanical).',
+      nullable: true,
+    },
+    confidence: {
+      type: 'string',
+      enum: ['high', 'medium', 'low'],
+      description: 'Confidence in the detections given image quality and visibility.',
+    },
+    notes: {
+      type: 'string',
+      description: 'Notable observations about image quality or ambiguous features.',
+      nullable: true,
+    },
+  },
+  required: ['confidence'],
+};
+
+interface ExtractFeatureCuesInput {
+  frontBase64?: string | null;
+  interiorBase64?: string | null;
+  wiringBase64?: string | null;
+  mimeType?: string;
+}
+
+export async function extractFeatureCues(
+  input: ExtractFeatureCuesInput,
+): Promise<FeatureCues> {
+  const {
+    frontBase64,
+    interiorBase64,
+    wiringBase64,
+    mimeType = 'image/jpeg',
+  } = input;
+
+  if (!frontBase64 && !interiorBase64 && !wiringBase64) {
+    return { confidence: 'low', notes: 'No images provided.' };
+  }
+
+  const genAI = createClient();
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-3.1-flash-lite',
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: FEATURE_CUE_SCHEMA as any,
+    },
+  } as any);
+
+  const parts: any[] = [
+    {
+      text: `Analyze these appliance photos and detect features for manufacture-date disambiguation.
+
+Instructions:
+- Only set a flag to true when you clearly see that feature.
+- Do not infer or guess. If the image is unclear, skip the flag (omit or set null).
+- The wiring diagram is the most reliable source for compressor/motor type.
+- The interior photo is most reliable for LED lighting.
+- The front/panel photo is most reliable for touchscreen, WiFi, digital display.
+- Physical push-buttons are NOT touchscreen. Incandescent bulbs are NOT LED.`,
+    },
+  ];
+
+  if (frontBase64)    parts.push({ inlineData: { mimeType, data: frontBase64 } });
+  if (interiorBase64) parts.push({ inlineData: { mimeType, data: interiorBase64 } });
+  if (wiringBase64)   parts.push({ inlineData: { mimeType, data: wiringBase64 } });
+
+  try {
+    const result = await model.generateContent({ contents: [{ role: 'user', parts }] });
+    const text = result.response.text().trim();
+    const parsed = safeJsonParse(stripJsonFence(text), { confidence: 'low' }) as FeatureCues;
+    return parsed;
+  } catch (err) {
+    console.error('[extractFeatureCues] failed:', err);
+    return { confidence: 'low', notes: 'Extraction failed — manual review required.' };
+  }
+}
+
+/**
+ * Maps FeatureCues from photo analysis to the fields decodeSerialNumber() accepts.
+ * Call this after extractFeatureCues() to get observed_features[] and hard_lower_bound_year.
+ */
+export function featureCuesToDecoderOptions(cues: FeatureCues): {
+  observed_features: string[];
+  hard_lower_bound_year: number | null;
+} {
+  const observed_features: string[] = [];
+  let hard_lower_bound_year: number | null = null;
+
+  const setFloor = (year: number) => {
+    if (!hard_lower_bound_year || year > hard_lower_bound_year) {
+      hard_lower_bound_year = year;
+    }
+  };
+
+  if (cues.wifiConnected)          observed_features.push('wifi');
+  if (cues.thinQEnabled)           observed_features.push('thinq', 'wifi');
+  if (cues.homeConnect)            observed_features.push('homeconnect');
+  if (cues.smartThings)            observed_features.push('smartthings');
+  if (cues.digitalDisplay)         observed_features.push('modern_style');
+
+  if (cues.touchscreenDispenser)   setFloor(2015);
+  if (cues.digitalInverterMotor)   setFloor(2013);
+  if (cues.ledInteriorLighting)    setFloor(2013);
+  if (cues.invertLinearCompressor) setFloor(2012);
+  if (cues.steamCycle)             setFloor(2010);
+  if (cues.digitalDisplay)         setFloor(2010);
+  if (cues.wifiConnected)          setFloor(2014);
+  if (cues.thinQEnabled)           setFloor(2018);
+
+  return {
+    observed_features: [...new Set(observed_features)],
+    hard_lower_bound_year,
+  };
+}
+
 export { ALL_SOURCES };
+

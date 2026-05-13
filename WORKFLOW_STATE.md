@@ -1,6 +1,16 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: EBAY ROUTE AUDIT COMPLETE (2026-05-12)
+## Status: FEATURE INTELLIGENCE INTEGRATION COMPLETE (2026-05-13)
+- **Feature**: 4-slot photo capture panel (Listing / Nameplate / Interior / Wiring Diagram) deployed to all three pages.
+- **Gemini Service** (`src/lib/gemini.ts`): Added `extractFeatureCues()` + `featureCuesToDecoderOptions()`. Schema covers 11 boolean feature flags mapping to year floors (touchscreen→2015, LED→2013, inverter→2012, WiFi→2014, ThinQ→2018, etc.).
+- **API Route** (`app/api/identity/extract-feature-cues/route.ts`): POST accepts `{frontBase64?, interiorBase64?, wiringBase64?, mimeType}`, returns `{ok, cues}`.
+- **Component** (`src/features/identity/AppliancePhotoCapture.tsx`): Self-contained 2×2 grid; interior/wiring uploads auto-trigger the feature cue API; detected flags surface as year-floor badges in the UI. Nameplate slot calls `onNameplateFile` → existing OCR pipeline.
+- **BOM Dashboard** (`src/App.tsx`): Photo panel added above the model/serial card grid. Nameplate slot is wired to `handleFileUpload`. Feature cues are logged to console and ready for decoder hard-floor hook.
+- **eBay Editor** (`app/ebay/[partNumber]/ListingEditor.jsx`): Compact photo panel added to the editor sidebar above the Quality Score card. Import uses `@/src/features/identity/AppliancePhotoCapture`.
+- **TypeScript**: Zero errors after integration (`tsc --noEmit --skipLibCheck`).
+- **Next step**: Wire `featureCuesToDecoderOptions(cues)` result into `decoder.decode(serial, model, options)` when the decoder is refreshed — the bridge function is in `src/lib/gemini.ts` and ready.
+
+
 - **Audit**: Full review of `/ebay` dashboard, `/ebay/[partNumber]` editor, ListingEditor, ListingGallery, save API, and AI-edit API.
 - **Fix 1 (page.jsx)**: Dashboard stat counts now exclusive — Watermark Review listings no longer double-counted inside Candidate Review. `photoPending` now subtracts all three non-approved buckets correctly.
 - **Fix 2 (ListingGallery.jsx)**: Lightbox `ref={(el) => el?.focus()}` was firing on every render. Replaced with a guarded focus that only steals focus when the element is not already focused. Added `aria-modal="true"` and `aria-label` for accessibility.
