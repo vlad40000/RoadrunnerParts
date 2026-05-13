@@ -51,6 +51,8 @@ interface AppliancePhotoCaptureProps {
   onNameplateFile?: (file: File) => void;
   onProductFile?: (file: File) => void;
   onFeatureCues?: (cues: FeatureCues | null) => void;
+  /** Controlled Blob/object URL the parent injects (e.g. from gallery upload) */
+  externalProductPreview?: string | null;
   compact?: boolean;
 }
 
@@ -189,6 +191,7 @@ export default function AppliancePhotoCapture({
   onNameplateFile,
   onProductFile,
   onFeatureCues,
+  externalProductPreview,
   compact = false,
 }: AppliancePhotoCaptureProps) {
   const productRef  = useRef<HTMLInputElement>(null);
@@ -303,7 +306,7 @@ export default function AppliancePhotoCapture({
 
         {/* Listing Photo */}
         <PhotoSlot
-          preview={productPreview}
+          preview={externalProductPreview || productPreview}
           isAnalyzing={false}
           inputRef={productRef}
           onChange={handleProduct}

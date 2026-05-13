@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ListingGallery from "./ListingGallery";
 import AppliancePhotoCapture from "@/src/features/identity/AppliancePhotoCapture";
 
@@ -64,6 +64,20 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const [aiError, setAiError] = useState("");
   const [aiHistory, setAiHistory] = useState([]);
   const [undoStack, setUndoStack] = useState([]);
+
+  // ── Photo capture / identity sync ──────────────────────────────────
+  // URL of the first image uploaded to the gallery — feeds the Listing Photo slot
+  const [galleryProductPreview, setGalleryProductPreview] = useState(null);
+  // Identity extraction result from nameplate OCR or feature-cue pass
+  const [identityResult, setIdentityResult] = useState(null);
+  const [identityLoading, setIdentityLoading] = useState(false);
+  const [captureFeatureCues, setCaptureFeatureCues] = useState(null);
+
+  // Seed from existing lead image on mount so the panel shows on first load
+  useEffect(() => {
+    const lead = (initialListing.imageCandidates || [])[0];
+    if (lead?.imageUrl) setGalleryProductPreview(lead.imageUrl);
+  }, [initialListing]);
 
   const calculateQualityScore = () => {
     let score = 0;
@@ -209,6 +223,86 @@ export default function ListingEditor({ initialListing, partNumber }) {
       // Error is already surfaced in the sidebar save message.
     });
   };
+
+  // ── Gallery → AppliancePhotoCapture ──────────────────────────────────
+  // When a new file is uploaded to the gallery, push the first Blob URL into
+  // the Listing Photo slot on the capture panel.
+  const handleGalleryFirstUpload = useCallback((blobUrl) => {
+    setGalleryProductPreview(blobUrl);
+  }, []);
+
+  // ── AppliancePhotoCapture (Listing Photo slot) → Gallery ─────────────
+  // When the operator uses the panel to take/upload a product photo, upload
+  // it through the same image-upload API and add it to the gallery.
+  const handleProductFromCapture = useCallback(async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append("partNumber", partNumber);
+      formData.append("images", file);
+      const res = await fetch("/api/ebay/image-upload", { method: "POST", body: formData });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return;
+      const uploaded = Array.isArray(data.uploaded) ? data.uploaded : [];
+      if (!uploaded.length) return;
+      // Merge into gallery
+      const clean = uploaded.map((c) => ({
+        title: c.title || "",
+        imageUrl: c.imageUrl || c.thumbnailUrl || "",
+        thumbnailUrl: c.thumbnailUrl || c.imageUrl || "",
+        pageUrl: c.pageUrl || "",
+        sourceDomain: c.sourceDomain || "operator-capture",
+        source: c.source || "appliance_photo_panel",
+        reviewStatus: c.reviewStatus || "operator_added_needs_review",
+        score: Number(c.score || 100),
+        blobPathname: c.blobPathname || "",
+        remoteImageUrl: c.remoteImageUrl || "",
+        localImagePath: c.localImagePath || "",
+        vaultPath: c.vaultPath || "",
+        vaultRelativePath: c.vaultRelativePath || "",
+        vaultNotePath: c.vaultNotePath || "",
+        vaultNoteRelativePath: c.vaultNoteRelativePath || "",
+      }));
+      const next = { ...listing, imageCandidates: [...(listing.imageCandidates || []), ...clean] };
+      setListing(next);
+      persistListing(next, "images").catch(() => {});
+      // Also update the listing photo slot preview
+      if (clean[0]?.imageUrl) setGalleryProductPreview(clean[0].imageUrl);
+    } catch { /* silent */ }
+  }, [listing, partNumber, persistListing]);
+
+  // ── AppliancePhotoCapture (Nameplate slot) → identity result ─────────
+  // Uploads the nameplate photo to the nameplate-OCR endpoint and surfaces
+  // the extracted model, serial, brand, and confidence in the sidebar.
+  const handleNameplateFile = useCallback(async (file) => {
+    setIdentityLoading(true);
+    setIdentityResult(null);
+    try {
+      const reader = new FileReader();
+      const { base64, mimeType } = await new Promise((resolve, reject) => {
+        reader.onload = () => {
+          const [prefix, data] = (reader.result || "").split(",");
+          const mime = prefix.match(/data:([^;]+)/)?.[1] || file.type || "image/jpeg";
+          resolve({ base64: data, mimeType: mime });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch("/api/tools/parts/extract-model", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mimeType }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data) {
+        setIdentityResult({ type: "nameplate", ...data });
+      }
+    } catch (err) {
+      setIdentityResult({ type: "nameplate", error: err?.message || "OCR failed" });
+    } finally {
+      setIdentityLoading(false);
+    }
+  }, []);
+
 
   const applyAiEdit = (edit) => {
     setUndoStack((prev) => [...prev.slice(-19), JSON.parse(JSON.stringify(listing))]);
@@ -370,6 +464,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 title={listing.title}
                 partNumber={partNumber}
                 onChange={editorEnabled ? handleImagesChange : null}
+                onFirstUpload={editorEnabled ? handleGalleryFirstUpload : null}
               />
             </div>
 
@@ -787,11 +882,90 @@ export default function ListingEditor({ initialListing, partNumber }) {
               <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Appliance Photos</label>
               <AppliancePhotoCapture
                 compact={true}
+                externalProductPreview={galleryProductPreview}
+                onProductFile={handleProductFromCapture}
+                onNameplateFile={handleNameplateFile}
                 onFeatureCues={(cues) => {
                   if (!cues) return;
-                  console.debug('[ListingEditor] feature cues:', cues);
+                  setCaptureFeatureCues(cues);
                 }}
               />
+
+              {/* Identity Result Card */}
+              {(identityLoading || identityResult || captureFeatureCues) && (
+                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Identity Result</span>
+                    {identityLoading && (
+                      <span className="text-[10px] font-bold text-indigo-600 animate-pulse">Scanning...</span>
+                    )}
+                    {!identityLoading && identityResult && (
+                      <span className={`text-[9px] font-extrabold uppercase rounded-full px-2 py-0.5 ${
+                        (identityResult.confidence?.modelNumber ?? identityResult.confidence ?? 0) >= 0.8
+                          ? "bg-emerald-100 text-emerald-700"
+                          : (identityResult.confidence?.modelNumber ?? identityResult.confidence ?? 0) >= 0.5
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-red-100 text-red-700"
+                      }`}>
+                        {Math.round(((identityResult.confidence?.modelNumber ?? identityResult.confidence ?? 0)) * 100)}% conf
+                      </span>
+                    )}
+                  </div>
+                  <div className="px-3 py-2.5 flex flex-col gap-1.5 text-[11px]">
+                    {identityResult?.error && (
+                      <p className="text-red-600 font-semibold">{identityResult.error}</p>
+                    )}
+                    {identityResult?.modelNumber && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-slate-400 font-semibold">Model</span>
+                        <span className="font-bold text-slate-800 font-mono">{identityResult.modelNumber}</span>
+                      </div>
+                    )}
+                    {identityResult?.serialNumber && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-slate-400 font-semibold">Serial</span>
+                        <span className="font-bold text-slate-800 font-mono">{identityResult.serialNumber}</span>
+                      </div>
+                    )}
+                    {identityResult?.brand && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-slate-400 font-semibold">Brand</span>
+                        <span className="font-bold text-slate-800">{identityResult.brand}</span>
+                      </div>
+                    )}
+                    {identityResult?.productType && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-slate-400 font-semibold">Type</span>
+                        <span className="font-bold text-slate-800">{identityResult.productType}</span>
+                      </div>
+                    )}
+                    {/* Feature cues (from interior/wiring upload) */}
+                    {captureFeatureCues && (() => {
+                      const active = [
+                        captureFeatureCues.thinQEnabled && { label: "ThinQ", floor: "≥2018" },
+                        captureFeatureCues.wifiConnected && { label: "WiFi", floor: "≥2017" },
+                        captureFeatureCues.touchscreenDispenser && { label: "Touchscreen", floor: "≥2015" },
+                        captureFeatureCues.ledInteriorLighting && { label: "LED Interior", floor: "≥2013" },
+                        captureFeatureCues.invertLinearCompressor && { label: "Linear Comp.", floor: "≥2012" },
+                        captureFeatureCues.steamCycle && { label: "Steam", floor: "≥2010" },
+                        captureFeatureCues.digitalDisplay && { label: "Digital Display", floor: "≥2010" },
+                      ].filter(Boolean);
+                      return active.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-100">
+                          {active.map((c) => (
+                            <span key={c.label} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[9px] font-bold text-emerald-700">
+                              {c.label} <span className="text-emerald-400">{c.floor}</span>
+                            </span>
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
+                    {!identityLoading && !identityResult && !captureFeatureCues && (
+                      <p className="text-slate-400">Upload a nameplate to extract model/serial.</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             {/* Quality Score */}
             <div className="p-4 rounded-xl bg-[#162033] text-white flex flex-col gap-2">

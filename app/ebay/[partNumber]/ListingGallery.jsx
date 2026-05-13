@@ -49,7 +49,7 @@ function uniqueImageCandidates(nextCandidates) {
   return next.slice(0, 24);
 }
 
-export default function ListingGallery({ candidates, title, partNumber, onChange }) {
+export default function ListingGallery({ candidates, title, partNumber, onChange, onFirstUpload }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -126,6 +126,10 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
       if (uploaded.length) {
         const existing = uniqueImageCandidates(candidates);
         updateCandidates([...existing, ...uploaded], existing.length);
+        // Notify parent so it can push the first image into AppliancePhotoCapture
+        if (typeof onFirstUpload === "function" && uploaded[0]?.imageUrl) {
+          onFirstUpload(uploaded[0].imageUrl);
+        }
       }
 
       const skipped = Array.isArray(data.skipped) ? data.skipped.length : 0;
