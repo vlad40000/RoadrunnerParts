@@ -244,8 +244,17 @@ export default function ListingEditor({ initialListing, partNumber }) {
     });
   };
 
-  const runAiInstruction = async (instruction) => {
+  const inferAiMode = (instruction, requestedMode = "auto") => {
+    if (requestedMode === "chat" || requestedMode === "edit") return requestedMode;
+    const text = String(instruction || "").trim().toLowerCase();
+    const startsWithEditVerb = /^(rewrite|optimize|set|add|change|update|make|remove|fill|normalize|price|title|describe)\b/.test(text);
+    const looksLikeQuestion = text.includes("?") || /^(do|does|did|can|could|should|why|what|where|when|how|is|are)\b/.test(text);
+    return looksLikeQuestion && !startsWithEditVerb ? "chat" : "edit";
+  };
+
+  const runAiInstruction = async (instruction, requestedMode = "auto") => {
     if (!instruction?.trim()) return;
+    const mode = inferAiMode(instruction, requestedMode);
     setIsRunningAi(true);
     setAiError("");
     try {
@@ -256,16 +265,21 @@ export default function ListingEditor({ initialListing, partNumber }) {
           instruction: instruction.trim(),
           listing: { ...listing, partNumber },
           model: effectiveModel,
+          mode,
         }),
       });
       const data = await response.json();
       if (!response.ok || !data.ok) {
         throw new Error(data.error || data.detail || "AI edit failed");
       }
-      applyAiEdit(data.edit || {});
+      if (data.mode !== "chat") {
+        applyAiEdit(data.edit || {});
+      }
       setAiHistory((prev) => [{
         instruction: instruction.trim(),
+        mode: data.mode || mode,
         edit: data.edit,
+        message: data.message,
         rationale: data.edit?.rationale,
         warnings: data.edit?.warnings,
         model: data.model,
@@ -291,7 +305,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const generateDescription = async () => {
     setIsGeneratingDescription(true);
     try {
-      await runAiInstruction("Rewrite the listing description. Keep it concise, professional, suitable for eBay. Do not invent specs or claims.");
+      await runAiInstruction("Rewrite the listing description. Keep it concise, professional, suitable for eBay. Do not invent specs or claims.", "edit");
     } finally {
       setIsGeneratingDescription(false);
     }
@@ -300,7 +314,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const optimizeSpecs = async () => {
     setIsOptimizingSpecs(true);
     try {
-      await runAiInstruction("Normalize and fill in the item specifics (brand, mpn, type, color, material, compatibility). Use empty strings for unknown values. Do not guess.");
+      await runAiInstruction("Normalize and fill in the item specifics (brand, mpn, type, color, material, compatibility). Use empty strings for unknown values. Do not guess.", "edit");
     } finally {
       setIsOptimizingSpecs(false);
     }
@@ -337,20 +351,6 @@ export default function ListingEditor({ initialListing, partNumber }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-white">
-      {/* Editor Toggle - Fixed */}
-      <div className="fixed right-5 top-5 z-50 flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-lg">
-        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Editor</span>
-        <button
-          type="button"
-          onClick={() => setEditorEnabled((v) => !v)}
-          aria-pressed={editorEnabled}
-          className={`relative h-7 w-14 rounded-full transition-colors ${editorEnabled ? "bg-blue-600" : "bg-slate-300"}`}
-        >
-          <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${editorEnabled ? "translate-x-7" : "translate-x-1"}`} />
-        </button>
-        <span className={`text-xs font-extrabold ${editorEnabled ? "text-blue-700" : "text-slate-500"}`}>{editorEnabled ? "ON" : "OFF"}</span>
-      </div>
-
       {/* ════════════ MAIN CONTENT ════════════ */}
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-[1200px] px-6 py-8">
@@ -608,11 +608,23 @@ export default function ListingEditor({ initialListing, partNumber }) {
       {/* ════════════ EDITOR SIDEBAR ════════════ */}
       {editorEnabled && (
         <div className="w-[340px] shrink-0 border-l border-slate-200 bg-slate-50 flex flex-col shadow-xl overflow-hidden">
-          <div className="p-5 border-b border-slate-200 bg-white">
+          <div className="flex items-center justify-between gap-3 p-5 border-b border-slate-200 bg-white">
             <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-blue-500" />
               Listing Controls
             </h2>
+            <div className="flex shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1">
+              <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-500">Editor</span>
+              <button
+                type="button"
+                onClick={() => setEditorEnabled((v) => !v)}
+                aria-pressed={editorEnabled}
+                className={`relative h-6 w-11 rounded-full transition-colors ${editorEnabled ? "bg-blue-600" : "bg-slate-300"}`}
+              >
+                <span className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-transform ${editorEnabled ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+              <span className={`text-[10px] font-extrabold ${editorEnabled ? "text-blue-700" : "text-slate-500"}`}>{editorEnabled ? "ON" : "OFF"}</span>
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
             {/* Status */}
@@ -624,7 +636,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 onChange={(e) => handleUpdate("status", e.target.value)}
               >
                 <option value="draft">Draft</option>
-                <option value="ready">Ready for Export</option>
+                <option value="ready">Ready</option>
                 <option value="published">Published</option>
                 <option value="archived">Archived</option>
               </select>
@@ -727,10 +739,14 @@ export default function ListingEditor({ initialListing, partNumber }) {
                     </div>
                     <div className="max-w-[92%] rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] leading-relaxed text-slate-700 shadow-sm">
                       <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="font-extrabold text-emerald-700">Applied edit</span>
+                        <span className={`font-extrabold ${entry.mode === "chat" ? "text-blue-700" : "text-emerald-700"}`}>
+                          {entry.mode === "chat" ? "AI response" : "Applied edit"}
+                        </span>
                         <span className="shrink-0 text-[9px] font-semibold text-slate-400">{new Date(entry.ts).toLocaleTimeString()}</span>
                       </div>
-                      {entry.rationale ? (
+                      {entry.mode === "chat" ? (
+                        <div>{entry.message || "No answer returned."}</div>
+                      ) : entry.rationale ? (
                         <div>{entry.rationale}</div>
                       ) : (
                         <div>AI returned a structured edit and the listing fields were updated.</div>
@@ -750,8 +766,8 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 {[
                   { label: "Description", key: "description", action: generateDescription, loading: isGeneratingDescription },
                   { label: "Specifics", key: "specs", action: optimizeSpecs, loading: isOptimizingSpecs },
-                  { label: "SEO Title", key: "seo_title", action: () => { setIsRunningAiPreset("seo_title"); runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seo_title" },
-                  { label: "Seller Notes", key: "seller_notes", action: () => { setIsRunningAiPreset("seller_notes"); runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims.").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seller_notes" },
+                  { label: "SEO Title", key: "seo_title", action: () => { setIsRunningAiPreset("seo_title"); runAiInstruction("Rewrite the title for maximum eBay SEO. Keep under 80 chars. Include part number, brand, and type.", "edit").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seo_title" },
+                  { label: "Seller Notes", key: "seller_notes", action: () => { setIsRunningAiPreset("seller_notes"); runAiInstruction("Write concise seller notes about condition and what's included. Be honest, no invented claims.", "edit").finally(() => setIsRunningAiPreset(null)); }, loading: isRunningAiPreset === "seller_notes" },
                 ].map((p) => (
                   <button
                     key={p.key}

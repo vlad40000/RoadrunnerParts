@@ -129,6 +129,27 @@ function StatusBadge({ listing }) {
 }
 
 function getListingVisual(listing) {
+  const operatorStatus = String(listing.status || "").trim().toLowerCase();
+  if (operatorStatus === "published") {
+    return {
+      label: "Published",
+      cardClass: "border-slate-400 bg-white shadow-slate-100 hover:border-slate-700 hover:shadow-slate-200",
+      imageClass: "border-slate-200 bg-white",
+      badgeClass: "border-slate-300 bg-slate-900 text-white",
+      priceClass: "text-slate-900",
+    };
+  }
+
+  if (operatorStatus === "ready") {
+    return {
+      label: "Ready",
+      cardClass: "border-emerald-300 bg-emerald-50 shadow-emerald-100 hover:border-emerald-500 hover:shadow-emerald-200",
+      imageClass: "border-emerald-200 bg-white",
+      badgeClass: "border-emerald-200 bg-emerald-100 text-emerald-800",
+      priceClass: "text-emerald-800",
+    };
+  }
+
   if (listing.approvedSaleImage?.publicPrimaryImage) {
     return {
       label: "Approved Photo",
@@ -173,24 +194,32 @@ function getListingVisual(listing) {
 
 export default async function EbayDashboard() {
   const listings = await loadListings();
+  const isOperatorFinal = (listing) => {
+    const status = String(listing.status || "").trim().toLowerCase();
+    return status === "ready" || status === "published";
+  };
+  const readyListings = listings.filter((l) => String(l.status || "").trim().toLowerCase() === "ready");
+  const publishedListings = listings.filter((l) => String(l.status || "").trim().toLowerCase() === "published");
   const approvedPhotos = listings.filter(
-    (l) => l.approvedSaleImage?.publicPrimaryImage
+    (l) => !isOperatorFinal(l) && l.approvedSaleImage?.publicPrimaryImage
   );
   // watermark listings are a subset of candidate listings — separate them to avoid double-counting
   const watermarkReview = listings.filter(
     (l) =>
+      !isOperatorFinal(l) &&
       !l.approvedSaleImage?.publicPrimaryImage &&
       l.imageCandidates?.length > 0 &&
       String(l.imageCandidates[0]?.reviewStatus || "").includes("watermark"),
   );
   const candidateReview = listings.filter(
     (l) =>
+      !isOperatorFinal(l) &&
       !l.approvedSaleImage?.publicPrimaryImage &&
       l.imageCandidates?.length > 0 &&
       !String(l.imageCandidates[0]?.reviewStatus || "").includes("watermark"),
   );
   const photoPending =
-    listings.length - approvedPhotos.length - candidateReview.length - watermarkReview.length;
+    listings.length - readyListings.length - publishedListings.length - approvedPhotos.length - candidateReview.length - watermarkReview.length;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -225,6 +254,8 @@ export default async function EbayDashboard() {
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
             <Stat label="Total Parts" value={listings.length} tone="slate" />
+            <Stat label="Published" value={publishedListings.length} tone="slate" />
+            <Stat label="Ready" value={readyListings.length} tone="emerald" />
             <Stat label="Approved Photos" value={approvedPhotos.length} tone="emerald" />
             <Stat label="Candidate Review" value={candidateReview.length} tone="blue" />
             <Stat label="Photo Pending" value={photoPending} tone="amber" />

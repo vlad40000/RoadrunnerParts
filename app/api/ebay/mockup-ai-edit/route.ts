@@ -4,6 +4,7 @@ import {
   isGeminiImageGenerationModel,
   normalizeGeminiModelId,
   runStructuredJson,
+  runText,
 } from '../../../../src/features/bom/services/model-runner';
 
 export const runtime = 'nodejs';
@@ -127,6 +128,7 @@ export async function POST(req: NextRequest) {
     const listing = body?.listing && typeof body.listing === 'object' ? body.listing : null;
     const partNumber = cleanText(listing?.partNumber, 64).toUpperCase();
     const model = cleanGeminiModel(body?.model);
+    const mode = cleanText(body?.mode, 20) === 'chat' ? 'chat' : 'edit';
     const apiOptions = cleanRequestOptions(body?.apiOptions);
 
     if (!instruction || !listing || !partNumber) {
@@ -134,6 +136,48 @@ export async function POST(req: NextRequest) {
         { error: 'Instruction, listing, and partNumber are required.' },
         { status: 400 },
       );
+    }
+
+    if (mode === 'chat') {
+      const chatSystemInstruction = [
+        'You are a RoadrunnerParts office editor assistant embedded in an eBay listing editor.',
+        'Answer operator questions about the current listing, visible editor state, likely save/edit failures, and what a control does.',
+        'Do not claim you can see the operator screen directly. If answering about UI, use the provided editor context and say when it is inferred from the editor code/state.',
+        'Do not make source-evidence or final eBay-ready claims. Keep answers concise and actionable.',
+      ].join('\n');
+      const chatPrompt = [
+        apiOptions.promptPrefix,
+        `Operator question: ${instruction}`,
+        '',
+        'Current listing JSON:',
+        JSON.stringify(listing),
+        '',
+        'Editor UI context:',
+        '- In edit mode, the title field and price field use dashed underline styling to show editable fields.',
+        '- The price field shows a dashed underline below the numeric amount input.',
+        '- The AI command panel can apply structured edits, but normal questions should be answered as chat feedback.',
+        '- Save errors are shown below the Save Changes button and are separate from quality/readiness scoring.',
+        '',
+        'Answer in plain text. If the operator asks whether a visual element exists, answer from the UI context and mention that it is inferred from the editor code/state.',
+        apiOptions.promptSuffix,
+      ].filter(Boolean).join('\n');
+
+      const message = await runText({
+        model,
+        temperature: apiOptions.temperature,
+        topP: apiOptions.topP,
+        maxOutputTokens: Math.min(apiOptions.maxOutputTokens || 900, 1200),
+        systemInstruction: apiOptions.systemInstruction || chatSystemInstruction,
+        prompt: apiOptions.prompt || chatPrompt,
+      });
+
+      return NextResponse.json({
+        ok: true,
+        mode: 'chat',
+        model,
+        partNumber,
+        message: cleanText(message, 1600),
+      });
     }
 
     const defaultSystemInstruction =
