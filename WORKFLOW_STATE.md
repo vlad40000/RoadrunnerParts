@@ -1,14 +1,38 @@
 # Workflow State - eBay Listing Pipeline
 
-## Status: FEATURE INTELLIGENCE INTEGRATION COMPLETE (2026-05-13)
-- **Feature**: 4-slot photo capture panel (Listing / Nameplate / Interior / Wiring Diagram) deployed to all three pages.
-- **Gemini Service** (`src/lib/gemini.ts`): Added `extractFeatureCues()` + `featureCuesToDecoderOptions()`. Schema covers 11 boolean feature flags mapping to year floors (touchscreen→2015, LED→2013, inverter→2012, WiFi→2014, ThinQ→2018, etc.).
-- **API Route** (`app/api/identity/extract-feature-cues/route.ts`): POST accepts `{frontBase64?, interiorBase64?, wiringBase64?, mimeType}`, returns `{ok, cues}`.
-- **Component** (`src/features/identity/AppliancePhotoCapture.tsx`): Self-contained 2×2 grid; interior/wiring uploads auto-trigger the feature cue API; detected flags surface as year-floor badges in the UI. Nameplate slot calls `onNameplateFile` → existing OCR pipeline.
-- **BOM Dashboard** (`src/App.tsx`): Photo panel added above the model/serial card grid. Nameplate slot is wired to `handleFileUpload`. Feature cues are logged to console and ready for decoder hard-floor hook.
-- **eBay Editor** (`app/ebay/[partNumber]/ListingEditor.jsx`): Compact photo panel added to the editor sidebar above the Quality Score card. Import uses `@/src/features/identity/AppliancePhotoCapture`.
-- **TypeScript**: Zero errors after integration (`tsc --noEmit --skipLibCheck`).
-- **Next step**: Wire `featureCuesToDecoderOptions(cues)` result into `decoder.decode(serial, model, options)` when the decoder is refreshed — the bridge function is in `src/lib/gemini.ts` and ready.
+## Status: IDENTITY INTERVIEW + BIDIRECTIONAL PHOTO SYNC COMPLETE (2026-05-13)
+
+### Session Commits
+- `188b4f0` — feat: bidirectional image sync between gallery and photo capture panel, add identity result card
+- `3f1381f` — feat: AI confidence interview loop — targeted Q&A to reach 0.92 confidence for machine/part identity
+
+### Bidirectional Photo Sync (ListingGallery ↔ AppliancePhotoCapture)
+- **Gallery → Panel**: `ListingGallery` exposes `onFirstUpload(blobUrl)`. After any file upload, `ListingEditor` receives the Blob URL and passes it as `externalProductPreview` into `AppliancePhotoCapture`, instantly populating the Listing Photo slot.
+- **Panel → Gallery**: `onProductFile` wired in `ListingEditor.handleProductFromCapture`. Photos taken/dropped in the panel are uploaded via `/api/ebay/image-upload` and merged into `listing.imageCandidates`, updating both the gallery and the Listing Photo slot atomically.
+- **Nameplate → OCR**: `onNameplateFile` wired to `handleNameplateFile`. Uploads nameplate to `/api/tools/parts/extract-model`, stores base64 in `captureBase64Ref` for reuse in the interview API, and resets interview state.
+- **Seed on Mount**: Lead gallery image seeds `galleryProductPreview` state on first render so the panel shows a preview immediately.
+
+### AI Confidence Interview Loop
+- **API Route** (`app/api/identity/confidence-interview/route.ts`): Accepts accumulated evidence (nameplate base64, product base64, OCR result, feature cues, Q&A history). Returns `{confidence, entityType, fields, nextQuestion, resolved, summary}`. Enforces `resolved=true` server-side when `confidence >= 0.92`.
+- **Model**: `gemini-2.5-flash` with `responseMimeType: application/json` and strict `responseSchema`.
+- **Interview targets**: Two paths — (1) Whole Machine: make, model, serial, manufacture year/age; (2) Part: part number, part title, compatible brands.
+- **Auto-trigger**: `useEffect` fires `runInterview()` automatically when OCR result or feature cues land. No manual button needed for the first round.
+- **Loop**: Each answer appended to `interviewHistory`, re-sent with full evidence on next call. Max ~5 questions before the AI stops and declares what it knows.
+- **UI — Identity Interview Card**:
+  - Live confidence bar (0–100%) with a fixed target marker at 92%.
+  - Entity type label: "Whole Machine" / "Part" / "Identifying..."
+  - AI summary text below the bar.
+  - Q&A thread: prior questions in indigo, answers in slate with left-border accent.
+  - Answer input (auto-focused, Enter or Send button).
+  - Resolved state: green "Confirmed Identity" box showing all extracted fields.
+  - Feature cue pills (year-floor badges) from interior/wiring analysis.
+  - "↺ Re-analyze" button to restart the interview with accumulated evidence.
+
+### Next Steps
+- Wire `interviewState.fields` into the listing editor (auto-populate title/brand/model fields on resolve).
+- Decoder bridge: pipe `featureCuesToDecoderOptions(captureFeatureCues)` into `decoder.decode()` to enforce year-floor constraints.
+- Deploy and test end-to-end with a real nameplate photo.
+
 
 
 - **Audit**: Full review of `/ebay` dashboard, `/ebay/[partNumber]` editor, ListingEditor, ListingGallery, save API, and AI-edit API.
