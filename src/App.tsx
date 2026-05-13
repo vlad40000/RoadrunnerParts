@@ -864,8 +864,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
 
       // Generate stable display IDs based on sorted results
       const finalParts = mergedParts
-        .filter(hasApprovedPrice)
-        .sort((a, b) => {
+            .sort((a, b) => {
           const sectionCompare = (a.section || "").localeCompare(b.section || "");
           if (sectionCompare !== 0) return sectionCompare;
           return (a.partNumber || "").localeCompare(b.partNumber || "");
