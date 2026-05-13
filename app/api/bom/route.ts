@@ -4,15 +4,7 @@ import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '
 import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
 import { db } from '../../../src/server/db';
 import { modelSources } from '../../../src/server/db/schema/model-sources';
-
-import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '../../../src/features/bom/services/model-parts-cache';
-import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
-import { db } from '../../../src/server/db';
-import { modelSources } from '../../../src/server/db/schema/model-sources';
-
-export const runtime = 'nodejs';
+export const runtime = 'nodejs';
 export const maxDuration = 120; // Extended to support Google Search + Thinking
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
