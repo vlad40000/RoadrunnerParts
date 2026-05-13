@@ -133,10 +133,10 @@ function getListingVisual(listing) {
   if (operatorStatus === "published") {
     return {
       label: "Published",
-      cardClass: "border-slate-400 bg-white shadow-slate-100 hover:border-slate-700 hover:shadow-slate-200",
-      imageClass: "border-slate-200 bg-white",
-      badgeClass: "border-slate-300 bg-slate-900 text-white",
-      priceClass: "text-slate-900",
+      cardClass: "border-emerald-500 bg-emerald-50 shadow-emerald-100 hover:border-emerald-700 hover:shadow-emerald-200",
+      imageClass: "border-emerald-200 bg-white",
+      badgeClass: "border-emerald-700 bg-emerald-700 text-white",
+      priceClass: "text-emerald-900",
     };
   }
 
