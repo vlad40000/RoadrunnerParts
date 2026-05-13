@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import ListingGallery from "./ListingGallery";
 import AppliancePhotoCapture from "@/src/features/identity/AppliancePhotoCapture";
 
@@ -73,11 +73,70 @@ export default function ListingEditor({ initialListing, partNumber }) {
   const [identityLoading, setIdentityLoading] = useState(false);
   const [captureFeatureCues, setCaptureFeatureCues] = useState(null);
 
+  // ── Confidence interview state ────────────────────────────────────────────
+  // interviewState mirrors the API response shape
+  const [interviewState, setInterviewState] = useState(null);
+  const [interviewHistory, setInterviewHistory] = useState([]);
+  const [interviewAnswer, setInterviewAnswer] = useState("");
+  const [interviewLoading, setInterviewLoading] = useState(false);
+  const [interviewError, setInterviewError] = useState(null);
+  // Base64 snapshots stored when nameplate/product files arrive (for re-sending to interview API)
+  const captureBase64Ref = useRef({ nameplate: null, nameplateType: null, product: null, productType: null });
+  const interviewAnswerRef = useRef(null);
+
   // Seed from existing lead image on mount so the panel shows on first load
   useEffect(() => {
     const lead = (initialListing.imageCandidates || [])[0];
     if (lead?.imageUrl) setGalleryProductPreview(lead.imageUrl);
   }, [initialListing]);
+
+  // ── Core interview runner ─────────────────────────────────────────────────
+  // Calls the confidence-interview API with all accumulated evidence.
+  // Pass pendingAnswer to append an answer before sending (avoids stale-closure issues).
+  const runInterview = useCallback(async (pendingAnswer = null) => {
+    setInterviewLoading(true);
+    setInterviewError(null);
+    try {
+      const history = pendingAnswer
+        ? [
+            ...interviewHistory,
+            { question: interviewState?.nextQuestion || "", answer: pendingAnswer },
+          ]
+        : interviewHistory;
+
+      const body = {
+        ocrResult: identityResult || undefined,
+        featureCues: captureFeatureCues || undefined,
+        history,
+        partNumber,
+        nameplateBase64: captureBase64Ref.current.nameplate || undefined,
+        nameplateType: captureBase64Ref.current.nameplateType || undefined,
+        productBase64: captureBase64Ref.current.product || undefined,
+        productType: captureBase64Ref.current.productType || undefined,
+      };
+
+      const res = await fetch("/api/identity/confidence-interview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Interview API error");
+
+      if (pendingAnswer) {
+        setInterviewHistory(history);
+        setInterviewAnswer("");
+      }
+      setInterviewState(data);
+
+      // Auto-focus the answer input
+      setTimeout(() => interviewAnswerRef.current?.focus(), 80);
+    } catch (err) {
+      setInterviewError(err?.message || "Unknown error");
+    } finally {
+      setInterviewLoading(false);
+    }
+  }, [interviewHistory, interviewState, identityResult, captureFeatureCues, partNumber]);
 
   const calculateQualityScore = () => {
     let score = 0;
@@ -273,9 +332,13 @@ export default function ListingEditor({ initialListing, partNumber }) {
   // ── AppliancePhotoCapture (Nameplate slot) → identity result ─────────
   // Uploads the nameplate photo to the nameplate-OCR endpoint and surfaces
   // the extracted model, serial, brand, and confidence in the sidebar.
+  // Also stores base64 for re-sending to the interview API on each round.
   const handleNameplateFile = useCallback(async (file) => {
     setIdentityLoading(true);
     setIdentityResult(null);
+    setInterviewState(null);
+    setInterviewHistory([]);
+    setInterviewError(null);
     try {
       const reader = new FileReader();
       const { base64, mimeType } = await new Promise((resolve, reject) => {
@@ -287,6 +350,9 @@ export default function ListingEditor({ initialListing, partNumber }) {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+      // Store for interview API re-use
+      captureBase64Ref.current.nameplate = base64;
+      captureBase64Ref.current.nameplateType = mimeType;
       const res = await fetch("/api/tools/parts/extract-model", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -302,6 +368,21 @@ export default function ListingEditor({ initialListing, partNumber }) {
       setIdentityLoading(false);
     }
   }, []);
+
+  // Auto-trigger the first interview question whenever OCR result or feature cues land
+  useEffect(() => {
+    if (identityResult && !identityLoading && !interviewState && !interviewLoading) {
+      runInterview();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [identityResult]);
+
+  useEffect(() => {
+    if (captureFeatureCues && !interviewLoading) {
+      runInterview();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captureFeatureCues]);
 
 
   const applyAiEdit = (edit) => {
@@ -891,55 +972,178 @@ export default function ListingEditor({ initialListing, partNumber }) {
                 }}
               />
 
-              {/* Identity Result Card */}
-              {(identityLoading || identityResult || captureFeatureCues) && (
+              {/* ── Identity / Confidence Interview Card ── */}
+              {(identityLoading || interviewLoading || identityResult || interviewState || captureFeatureCues) && (
                 <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+
+                  {/* Header */}
                   <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 bg-slate-50">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Identity Result</span>
-                    {identityLoading && (
-                      <span className="text-[10px] font-bold text-indigo-600 animate-pulse">Scanning...</span>
-                    )}
-                    {!identityLoading && identityResult && (
-                      <span className={`text-[9px] font-extrabold uppercase rounded-full px-2 py-0.5 ${
-                        (identityResult.confidence?.modelNumber ?? identityResult.confidence ?? 0) >= 0.8
-                          ? "bg-emerald-100 text-emerald-700"
-                          : (identityResult.confidence?.modelNumber ?? identityResult.confidence ?? 0) >= 0.5
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-red-100 text-red-700"
-                      }`}>
-                        {Math.round(((identityResult.confidence?.modelNumber ?? identityResult.confidence ?? 0)) * 100)}% conf
-                      </span>
-                    )}
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Identity Interview</span>
+                    <div className="flex items-center gap-2">
+                      {(identityLoading || interviewLoading) && (
+                        <span className="text-[10px] font-bold text-indigo-600 animate-pulse">Analyzing...</span>
+                      )}
+                      {interviewState && (
+                        <span className={`text-[9px] font-extrabold uppercase rounded-full px-2 py-0.5 ${
+                          interviewState.confidence >= 0.92
+                            ? "bg-emerald-100 text-emerald-700"
+                            : interviewState.confidence >= 0.6
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-red-100 text-red-700"
+                        }`}>
+                          {Math.round(interviewState.confidence * 100)}% conf
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="px-3 py-2.5 flex flex-col gap-1.5 text-[11px]">
-                    {identityResult?.error && (
-                      <p className="text-red-600 font-semibold">{identityResult.error}</p>
+
+                  {/* Confidence bar */}
+                  {interviewState && (
+                    <div className="px-3 pt-2.5 pb-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">
+                          {interviewState.entityType === "machine" ? "Whole Machine" : interviewState.entityType === "part" ? "Part" : "Identifying..."}
+                        </span>
+                        <span className="text-[9px] font-semibold text-slate-400">
+                          Target: 92%
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${
+                            interviewState.confidence >= 0.92 ? "bg-emerald-500" :
+                            interviewState.confidence >= 0.6  ? "bg-amber-400" : "bg-red-400"
+                          }`}
+                          style={{ width: `${Math.round(interviewState.confidence * 100)}%` }}
+                        />
+                      </div>
+                      {/* Target marker */}
+                      <div className="relative" style={{ marginTop: -8 }}>
+                        <div className="absolute" style={{ left: "92%", width: 2, height: 8, background: "#334155", borderRadius: 1 }} />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="px-3 py-2 flex flex-col gap-2">
+
+                    {/* AI summary */}
+                    {interviewState?.summary && (
+                      <p className="text-[11px] text-slate-600 leading-relaxed">{interviewState.summary}</p>
                     )}
-                    {identityResult?.modelNumber && (
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-slate-400 font-semibold">Model</span>
-                        <span className="font-bold text-slate-800 font-mono">{identityResult.modelNumber}</span>
+
+                    {/* Resolved fields */}
+                    {interviewState?.resolved && (
+                      <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2.5 flex flex-col gap-1.5">
+                        <div className="text-[9px] font-extrabold uppercase tracking-wide text-emerald-700 mb-0.5">Confirmed Identity</div>
+                        {interviewState.fields?.make && (
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-emerald-600 font-semibold">Make</span>
+                            <span className="font-bold text-slate-800">{interviewState.fields.make}</span>
+                          </div>
+                        )}
+                        {interviewState.fields?.model && (
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-emerald-600 font-semibold">Model</span>
+                            <span className="font-bold text-slate-800 font-mono">{interviewState.fields.model}</span>
+                          </div>
+                        )}
+                        {interviewState.fields?.serialNumber && (
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-emerald-600 font-semibold">Serial</span>
+                            <span className="font-bold text-slate-800 font-mono">{interviewState.fields.serialNumber}</span>
+                          </div>
+                        )}
+                        {(interviewState.fields?.manufactureYear || interviewState.fields?.ageRange) && (
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-emerald-600 font-semibold">Year/Age</span>
+                            <span className="font-bold text-slate-800">{interviewState.fields.manufactureYear || interviewState.fields.ageRange}</span>
+                          </div>
+                        )}
+                        {interviewState.fields?.partNumber && (
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-emerald-600 font-semibold">Part #</span>
+                            <span className="font-bold text-slate-800 font-mono">{interviewState.fields.partNumber}</span>
+                          </div>
+                        )}
+                        {interviewState.fields?.partTitle && (
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-emerald-600 font-semibold">Title</span>
+                            <span className="font-bold text-slate-800">{interviewState.fields.partTitle}</span>
+                          </div>
+                        )}
+                        {interviewState.fields?.brands?.length > 0 && (
+                          <div className="flex items-start justify-between text-[11px] gap-2">
+                            <span className="text-emerald-600 font-semibold shrink-0">Brands</span>
+                            <span className="font-bold text-slate-800 text-right">{interviewState.fields.brands.join(", ")}</span>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {identityResult?.serialNumber && (
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-slate-400 font-semibold">Serial</span>
-                        <span className="font-bold text-slate-800 font-mono">{identityResult.serialNumber}</span>
+
+                    {/* Q&A history */}
+                    {interviewHistory.length > 0 && (
+                      <div className="flex flex-col gap-1.5 border-t border-slate-100 pt-2">
+                        {interviewHistory.map((h, i) => (
+                          <div key={i} className="flex flex-col gap-0.5">
+                            <div className="text-[10px] font-bold text-indigo-600 leading-snug">{h.question}</div>
+                            <div className="text-[11px] text-slate-700 pl-2 border-l-2 border-indigo-100">{h.answer}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
-                    {identityResult?.brand && (
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-slate-400 font-semibold">Brand</span>
-                        <span className="font-bold text-slate-800">{identityResult.brand}</span>
+
+                    {/* Next question + answer input */}
+                    {!interviewState?.resolved && interviewState?.nextQuestion && (
+                      <div className="flex flex-col gap-1.5 border-t border-slate-100 pt-2">
+                        <div className="text-[10px] font-bold text-indigo-700 leading-snug">
+                          {interviewState.nextQuestion}
+                        </div>
+                        <div className="flex gap-1.5">
+                          <input
+                            ref={interviewAnswerRef}
+                            type="text"
+                            value={interviewAnswer}
+                            onChange={(e) => setInterviewAnswer(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && interviewAnswer.trim() && !interviewLoading) {
+                                e.preventDefault();
+                                runInterview(interviewAnswer.trim());
+                              }
+                            }}
+                            placeholder="Your answer..."
+                            disabled={interviewLoading}
+                            className="flex-1 min-w-0 rounded-lg border border-indigo-200 bg-white px-2.5 py-1.5 text-[11px] outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 disabled:opacity-50"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => interviewAnswer.trim() && runInterview(interviewAnswer.trim())}
+                            disabled={!interviewAnswer.trim() || interviewLoading}
+                            className="shrink-0 rounded-lg bg-indigo-600 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {interviewLoading ? "..." : "Send"}
+                          </button>
+                        </div>
+                        <span className="text-[9px] text-slate-400">Press Enter or Send to continue</span>
                       </div>
                     )}
-                    {identityResult?.productType && (
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-slate-400 font-semibold">Type</span>
-                        <span className="font-bold text-slate-800">{identityResult.productType}</span>
-                      </div>
+
+                    {/* Re-run button */}
+                    {!interviewLoading && (identityResult || captureFeatureCues) && (
+                      <button
+                        type="button"
+                        onClick={() => runInterview()}
+                        className="mt-1 text-[9px] font-bold text-slate-400 hover:text-indigo-600 transition-colors text-left"
+                      >
+                        ↺ Re-analyze
+                      </button>
                     )}
-                    {/* Feature cues (from interior/wiring upload) */}
+
+                    {/* Error */}
+                    {interviewError && (
+                      <p className="text-[10px] font-semibold text-red-600">{interviewError}</p>
+                    )}
+
+                    {/* Feature cue pills */}
                     {captureFeatureCues && (() => {
                       const active = [
                         captureFeatureCues.thinQEnabled && { label: "ThinQ", floor: "≥2018" },
@@ -951,7 +1155,7 @@ export default function ListingEditor({ initialListing, partNumber }) {
                         captureFeatureCues.digitalDisplay && { label: "Digital Display", floor: "≥2010" },
                       ].filter(Boolean);
                       return active.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-100">
+                        <div className="flex flex-wrap gap-1 border-t border-slate-100 pt-1.5">
                           {active.map((c) => (
                             <span key={c.label} className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[9px] font-bold text-emerald-700">
                               {c.label} <span className="text-emerald-400">{c.floor}</span>
@@ -960,9 +1164,6 @@ export default function ListingEditor({ initialListing, partNumber }) {
                         </div>
                       ) : null;
                     })()}
-                    {!identityLoading && !identityResult && !captureFeatureCues && (
-                      <p className="text-slate-400">Upload a nameplate to extract model/serial.</p>
-                    )}
                   </div>
                 </div>
               )}
