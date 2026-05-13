@@ -818,9 +818,7 @@ Sort the final JSON alphabetically by part_name before outputting.`;
     };
 
     const promptText = buildBomPrompt(normalizedQuery, isExhaustive, passNumber, knownPartNumbers);
-    setPendingBomRequest(requestPayload);
-    setPendingBomPrompt(promptText);
-    setIsPromptReviewOpen(true);
+    await runApprovedBomPrompt(requestPayload, promptText);
   };
 
   const runApprovedBomPrompt = async (requestPayload: any, promptText: string) => {
