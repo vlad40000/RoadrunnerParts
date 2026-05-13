@@ -5,6 +5,13 @@ import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-
 import { db } from '../../../src/server/db';
 import { modelSources } from '../../../src/server/db/schema/model-sources';
 
+import { NextResponse } from 'next/server';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '../../../src/features/bom/services/model-parts-cache';
+import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
+import { db } from '../../../src/server/db';
+import { modelSources } from '../../../src/server/db/schema/model-sources';
+
 export const runtime = 'nodejs';
 export const maxDuration = 120; // Extended to support Google Search + Thinking
 
@@ -16,6 +23,9 @@ export const APPROVED_PRICE_SOURCES = [
   'repairclinic.com',
   'appliancepartspros.com',
   'searspartsdirect.com',
+  'encompass.com',
+  'partselect.com',
+  'partsdr.com',
 ] as const;
 
 const SECTION_ENUM = [
@@ -112,22 +122,21 @@ export function normalizeGeneratedParts(parts: any[] | null | undefined) {
   return parts.flatMap((part) => {
     if (!part || typeof part !== 'object') return [];
 
-    // Fallback logic for scrapers (which use retailPrice) vs AI (which uses price)
     const rawPrice = part.price ?? part.retailPrice;
     const rawSource = part.priceSource ?? part.retailPriceSource;
 
     const price = Number(rawPrice);
     const priceSource = normalizePriceSource(rawSource);
-    
-    // We still require a price to consider the part "valid" for the final BOM
-    if (!Number.isFinite(price) || price <= 0 || !priceSource) {
-      return [];
-    }
+
+    // Include part regardless of price validity — flag unverified pricing
+    // so the UI can display the part list and the operator can verify prices manually.
+    const hasApprovedPrice = Number.isFinite(price) && price > 0 && !!priceSource;
 
     return [{
       ...part,
-      price,
-      priceSource,
+      price: hasApprovedPrice ? price : null,
+      priceSource: hasApprovedPrice ? priceSource : (rawSource ? String(rawSource) : 'unverified'),
+      priceVerified: hasApprovedPrice,
     }];
   });
 }
@@ -228,9 +237,6 @@ export async function POST(req: Request) {
           thinkingLevel: 'medium', // Low cuts off too early for multi-section BOM planning
         },
         responseMimeType: 'application/json',
-        // NOTE: No responseSchema — the strict section enum was silently dropping
-        // parts mid-generation whenever a section name didn't exactly match.
-        // We enforce structure via the prompt instead.
       },
       tools: [{ googleSearch: {} }],
     } as any);
@@ -327,25 +333,23 @@ If a part does not fit any section, use the closest match — never omit a part 
     try {
       const parsed = JSON.parse(jsonCandidate);
       parsed.parts = normalizeGeneratedParts(parsed.parts);
-      if (parsed.parts.length === 0) {
-        return NextResponse.json(
-          {
-            error: 'No BOM rows had approved positive prices.',
-            detail: 'Only Fix.com, RepairClinic, AppliancePartsPros, and SearsPartsDirect prices are allowed.',
-          },
-          { status: 502 },
-        );
-      }
-      
-      // ✅ CACHE WRITE — store results after a successful first-pass response
-      if (isFirstPass && parsed.parts?.length > 0) {
-        // Only mark as exhaustive if it truly matches the expected total (if known)
-        const actuallyExhaustive = isExhaustive && (
-          expectedPartCount !== null 
-            ? parsed.parts.length >= expectedPartCount 
-            : false // Default to false if we don't know the total but requested exhaustive
-        );
 
+      // Graceful empty — 200 with flag so the UI degrades instead of hard erroring
+      if (parsed.parts.length === 0) {
+        return NextResponse.json({
+          parts: [],
+          noPricedParts: true,
+          priceNote: 'No parts with verified pricing were returned. Try again or check a parts retailer directly.',
+        });
+      }
+
+      // CACHE WRITE — store results after a successful first-pass response
+      if (isFirstPass && parsed.parts?.length > 0) {
+        const actuallyExhaustive = isExhaustive && (
+          expectedPartCount !== null
+            ? parsed.parts.length >= expectedPartCount
+            : false
+        );
         upsertModelPartsCache({
           model,
           parts: parsed.parts,

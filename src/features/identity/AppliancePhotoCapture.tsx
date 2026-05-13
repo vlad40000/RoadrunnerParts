@@ -3,30 +3,32 @@
 /**
  * AppliancePhotoCapture
  *
- * Renders a 2×2 photo grid:
- *   [Listing Photo]  [Nameplate → OCR]
- *   [Interior]       [Wiring Diagram]
+ * Single universal upload / drag-drop zone.
+ * The AI classifies the image on upload — no separate slots needed.
  *
- * Interior and Wiring uploads automatically call /api/identity/extract-feature-cues
- * and surface detected-feature badges with the year floor each implies.
+ * Routing:
+ *   nameplate → onNameplateFile()
+ *   interior / wiring → onFeatureCues() via /api/identity/extract-feature-cues
+ *   product photo → onProductFile()
+ *   unknown → treated as product photo
  *
  * Props:
- *   onNameplateFile(file)     — called when nameplate slot changes (for OCR pipeline)
- *   onFeatureCues(cues)       — called whenever cues refresh (interior OR wiring upload)
- *   onProductFile(file)       — optional: called when listing-photo slot changes
- *   compact                   — if true, uses slightly smaller padding (editor sidebar mode)
+ *   onNameplateFile(file)      — called when nameplate detected
+ *   onFeatureCues(cues)        — called when interior/wiring cues detected
+ *   onProductFile(file)        — optional: listing-photo slot update
+ *   externalProductPreview     — controlled preview injected by parent (gallery sync)
+ *   compact                    — smaller padding for sidebar mode
  */
 
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
-  Camera,
+  Upload,
   ScanLine,
-  Refrigerator,
-  Zap,
   Loader2,
   CheckCircle,
-  ImageIcon,
   AlertTriangle,
+  Camera,
+  X,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -47,11 +49,12 @@ export interface FeatureCues {
   notes?: string;
 }
 
+type ImageClass = 'nameplate' | 'interior' | 'wiring' | 'product' | 'unknown';
+
 interface AppliancePhotoCaptureProps {
   onNameplateFile?: (file: File) => void;
   onProductFile?: (file: File) => void;
   onFeatureCues?: (cues: FeatureCues | null) => void;
-  /** Controlled Blob/object URL the parent injects (e.g. from gallery upload) */
   externalProductPreview?: string | null;
   compact?: boolean;
 }
@@ -59,15 +62,15 @@ interface AppliancePhotoCaptureProps {
 // ─── Badge config ─────────────────────────────────────────────────────────────
 
 const CUE_BADGES: Array<{ key: keyof FeatureCues; label: string; floor: string }> = [
-  { key: 'thinQEnabled',            label: 'ThinQ',          floor: '≥2018' },
-  { key: 'wifiConnected',           label: 'WiFi',           floor: '≥2017' },
-  { key: 'touchscreenDispenser',    label: 'Touchscreen',    floor: '≥2015' },
-  { key: 'digitalInverterMotor',    label: 'Inv. Motor',     floor: '≥2013' },
-  { key: 'ledInteriorLighting',     label: 'LED Interior',   floor: '≥2013' },
-  { key: 'invertLinearCompressor',  label: 'Linear Comp.',   floor: '≥2012' },
-  { key: 'steamCycle',              label: 'Steam',          floor: '≥2010' },
-  { key: 'digitalDisplay',          label: 'Digital Display',floor: '≥2010' },
-  { key: 'iceDispenser',            label: 'Ice Dispenser',  floor: 'BOM'   },
+  { key: 'thinQEnabled',           label: 'ThinQ',          floor: '≥2018' },
+  { key: 'wifiConnected',          label: 'WiFi',           floor: '≥2017' },
+  { key: 'touchscreenDispenser',   label: 'Touchscreen',    floor: '≥2015' },
+  { key: 'digitalInverterMotor',   label: 'Inv. Motor',     floor: '≥2013' },
+  { key: 'ledInteriorLighting',    label: 'LED Interior',   floor: '≥2013' },
+  { key: 'invertLinearCompressor', label: 'Linear Comp.',   floor: '≥2012' },
+  { key: 'steamCycle',             label: 'Steam',          floor: '≥2010' },
+  { key: 'digitalDisplay',         label: 'Digital Display',floor: '≥2010' },
+  { key: 'iceDispenser',           label: 'Ice Dispenser',  floor: 'BOM'   },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -86,103 +89,13 @@ async function fileToBase64(file: File): Promise<{ base64: string; mimeType: str
   });
 }
 
-function previewUrl(file: File): string {
-  return URL.createObjectURL(file);
-}
-
-// ─── Single photo slot ────────────────────────────────────────────────────────
-
-interface SlotConfig {
-  label: string;
-  sublabel: string;
-  borderColor: string;
-  hoverBorder: string;
-  bgEmpty: string;
-  iconBg: string;
-  icon: React.ReactNode;
-  spinColor: string;
-  analyzingText: string;
-  analyzingColor: string;
-  badge?: React.ReactNode;
-}
-
-interface PhotoSlotProps {
-  preview: string | null;
-  isAnalyzing: boolean;
-  inputRef: React.RefObject<HTMLInputElement | null>;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  config: SlotConfig;
-  compact: boolean;
-}
-
-function PhotoSlot({ preview, isAnalyzing, inputRef, onChange, config, compact }: PhotoSlotProps) {
-  const p = compact ? 'p-2' : 'p-3';
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label={`Upload ${config.label}`}
-      onClick={() => !isAnalyzing && inputRef.current?.click()}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click(); }}
-      className={[
-        'relative aspect-square rounded-2xl border-2 border-dashed cursor-pointer',
-        'flex flex-col items-center justify-center overflow-hidden transition-all select-none',
-        'active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-1',
-        preview
-          ? config.borderColor + ' focus:ring-blue-400'
-          : `border-slate-200 ${config.hoverBorder} ${config.bgEmpty} hover:border-opacity-80 focus:ring-slate-400`,
-        isAnalyzing ? 'cursor-wait opacity-80' : '',
-      ].join(' ')}
-    >
-      {preview ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={preview}
-            alt={config.label}
-            className={`w-full h-full object-contain ${isAnalyzing ? 'opacity-40' : ''}`}
-          />
-          {isAnalyzing && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex flex-col items-center bg-white/90 backdrop-blur-sm px-3 py-2 rounded-xl shadow-sm">
-                <Loader2 className={`animate-spin mb-1 ${config.spinColor}`} size={18} />
-                <span className={`text-[10px] font-bold ${config.analyzingColor}`}>
-                  {config.analyzingText}
-                </span>
-              </div>
-            </div>
-          )}
-          {!isAnalyzing && (
-            <div className="absolute inset-0 bg-black/0 hover:bg-black/15 transition-colors flex items-center justify-center group">
-              <Camera className="text-white opacity-0 group-hover:opacity-100 transition-opacity" size={20} />
-            </div>
-          )}
-          {config.badge && !isAnalyzing && (
-            <div className="absolute bottom-2 right-2">{config.badge}</div>
-          )}
-        </>
-      ) : (
-        <>
-          <div className={`${p} rounded-full shadow-sm mb-1.5 ${config.iconBg}`}>
-            {config.icon}
-          </div>
-          <span className="text-[11px] font-bold text-slate-600 text-center px-1 leading-tight">
-            {config.label}
-          </span>
-          <span className="text-[10px] text-slate-400 text-center leading-tight mt-0.5">
-            {config.sublabel}
-          </span>
-        </>
-      )}
-      <input
-        type="file"
-        ref={inputRef as React.RefObject<HTMLInputElement>}
-        className="hidden"
-        accept="image/*"
-        onChange={onChange}
-      />
-    </div>
-  );
+/** Lightweight heuristic to pre-classify image before hitting the API */
+function heuristicClass(filename: string): ImageClass | null {
+  const n = filename.toLowerCase();
+  if (/nameplate|serial|label|plate|model/.test(n)) return 'nameplate';
+  if (/interior|inside|drum|tub|cavity/.test(n)) return 'interior';
+  if (/wiring|wire|diagram|schematic|back/.test(n)) return 'wiring';
+  return null;
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -194,215 +107,227 @@ export default function AppliancePhotoCapture({
   externalProductPreview,
   compact = false,
 }: AppliancePhotoCaptureProps) {
-  const productRef  = useRef<HTMLInputElement>(null);
-  const nameplateRef = useRef<HTMLInputElement>(null);
-  const interiorRef  = useRef<HTMLInputElement>(null);
-  const wiringRef    = useRef<HTMLInputElement>(null);
-
-  const [productPreview, setProductPreview]   = useState<string | null>(null);
-  const [nameplatePreview, setNameplatePreview] = useState<string | null>(null);
-  const [interiorPreview, setInteriorPreview] = useState<string | null>(null);
-  const [wiringPreview, setWiringPreview]     = useState<string | null>(null);
-
-  const [isAnalyzingInterior, setIsAnalyzingInterior] = useState(false);
-  const [isAnalyzingWiring, setIsAnalyzingWiring]     = useState(false);
-
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [imageClass, setImageClass] = useState<ImageClass | null>(null);
   const [featureCues, setFeatureCues] = useState<FeatureCues | null>(null);
-  const [cueError, setCueError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  // Track latest base64 for each cue-relevant slot so we can send both images together
-  const interiorB64Ref = useRef<string | null>(null);
-  const wiringB64Ref   = useRef<string | null>(null);
-  const mimeTypeRef    = useRef<string>('image/jpeg');
+  // Sync external preview (gallery → capture panel)
+  useEffect(() => {
+    if (externalProductPreview && !preview) {
+      setPreview(externalProductPreview);
+      setImageClass('product');
+    }
+  }, [externalProductPreview, preview]);
 
-  const runFeatureCues = useCallback(async (
-    interiorB64: string | null,
-    wiringB64: string | null,
-    mimeType: string,
-  ) => {
-    if (!interiorB64 && !wiringB64) return;
-    setCueError(null);
+  const classifyAndRoute = useCallback(async (file: File) => {
+    setError(null);
+    setFeatureCues(null);
+    setImageClass(null);
+    setIsAnalyzing(true);
+
+    // Optimistic heuristic so the UI doesn't wait on the API for obvious filenames
+    const hint = heuristicClass(file.name);
+
+    const previewURL = URL.createObjectURL(file);
+    setPreview(previewURL);
+
     try {
-      const res = await fetch('/api/identity/extract-feature-cues', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          interiorBase64: interiorB64 ?? undefined,
-          wiringBase64: wiringB64 ?? undefined,
-          mimeType,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.ok) {
-        setCueError(data.error || 'Feature extraction failed');
-        return;
+      const { base64, mimeType } = await fileToBase64(file);
+
+      // ── Step 1: classify image ──────────────────────────────────────────────
+      let cls: ImageClass = hint ?? 'unknown';
+
+      if (!hint) {
+        try {
+          const res = await fetch('/api/identity/classify-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageBase64: base64, mimeType }),
+          });
+          const data = await res.json().catch(() => ({}));
+          cls = (data.classification as ImageClass) ?? 'unknown';
+        } catch {
+          // Classification failure → treat as nameplate (most common upload intent)
+          cls = 'nameplate';
+        }
       }
-      const cues: FeatureCues = data.cues || { confidence: 'low' };
-      setFeatureCues(cues);
-      onFeatureCues?.(cues);
-    } catch (err) {
-      setCueError(err instanceof Error ? err.message : 'Network error');
-    }
-  }, [onFeatureCues]);
 
-  const handleProduct = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setProductPreview(previewUrl(file));
-    onProductFile?.(file);
-  };
+      setImageClass(cls);
 
-  const handleNameplate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setNameplatePreview(previewUrl(file));
-    onNameplateFile?.(file);
-  };
-
-  const handleInterior = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setInteriorPreview(previewUrl(file));
-    setIsAnalyzingInterior(true);
-    try {
-      const { base64, mimeType } = await fileToBase64(file);
-      interiorB64Ref.current = base64;
-      mimeTypeRef.current = mimeType;
-      await runFeatureCues(base64, wiringB64Ref.current, mimeType);
+      // ── Step 2: route to correct handler ────────────────────────────────────
+      if (cls === 'nameplate') {
+        onNameplateFile?.(file);
+      } else if (cls === 'interior' || cls === 'wiring') {
+        try {
+          const res = await fetch('/api/identity/extract-feature-cues', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              interiorBase64: cls === 'interior' ? base64 : undefined,
+              wiringBase64: cls === 'wiring' ? base64 : undefined,
+              mimeType,
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.ok) {
+            const cues: FeatureCues = data.cues || { confidence: 'low' };
+            setFeatureCues(cues);
+            onFeatureCues?.(cues);
+          } else {
+            setError(data.error || 'Feature extraction failed');
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Network error');
+        }
+      } else {
+        // product or unknown → listing photo
+        onProductFile?.(file);
+      }
     } finally {
-      setIsAnalyzingInterior(false);
+      setIsAnalyzing(false);
     }
-  };
+  }, [onNameplateFile, onProductFile, onFeatureCues]);
 
-  const handleWiring = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (!file) return;
-    setWiringPreview(previewUrl(file));
-    setIsAnalyzingWiring(true);
-    try {
-      const { base64, mimeType } = await fileToBase64(file);
-      wiringB64Ref.current = base64;
-      mimeTypeRef.current = mimeType;
-      await runFeatureCues(interiorB64Ref.current, base64, mimeType);
-    } finally {
-      setIsAnalyzingWiring(false);
-    }
+    if (file) classifyAndRoute(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) classifyAndRoute(file);
   };
 
   const activeCues = featureCues
     ? CUE_BADGES.filter(b => featureCues[b.key] === true)
     : [];
 
-  const gap = compact ? 'gap-2' : 'gap-3';
+  const p = compact ? 'p-4' : 'p-6';
+
+  // Label that reflects what we detected
+  const classLabel: Record<ImageClass, string> = {
+    nameplate: 'Nameplate detected — running OCR',
+    interior: 'Interior photo — extracting feature cues',
+    wiring: 'Wiring diagram — extracting feature cues',
+    product: 'Product photo',
+    unknown: 'Photo received',
+  };
 
   return (
     <div className="space-y-3">
-      {/* 2×2 grid */}
-      <div className={`grid grid-cols-2 ${gap}`}>
+      {/* ── Universal drop zone ─────────────────────────────────────────────── */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Upload appliance photo — nameplate, interior, wiring, or product"
+        onClick={() => !isAnalyzing && inputRef.current?.click()}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click(); }}
+        onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        className={[
+          'relative rounded-2xl border-2 border-dashed cursor-pointer transition-all select-none',
+          'flex flex-col items-center justify-center overflow-hidden',
+          'focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1',
+          'active:scale-[0.98]',
+          compact ? 'min-h-[140px]' : 'min-h-[200px]',
+          p,
+          isDragging
+            ? 'border-indigo-400 bg-indigo-50/60 scale-[1.01]'
+            : preview
+              ? 'border-indigo-300 bg-white'
+              : 'border-slate-200 hover:border-indigo-300 bg-slate-50 hover:bg-indigo-50/20',
+          isAnalyzing ? 'cursor-wait' : '',
+        ].join(' ')}
+      >
+        {preview ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={preview}
+              alt="Uploaded appliance photo"
+              className={`max-h-48 w-full object-contain rounded-xl ${isAnalyzing ? 'opacity-40' : ''}`}
+            />
 
-        {/* Listing Photo */}
-        <PhotoSlot
-          preview={externalProductPreview || productPreview}
-          isAnalyzing={false}
-          inputRef={productRef}
-          onChange={handleProduct}
-          compact={compact}
-          config={{
-            label: 'Listing Photo',
-            sublabel: 'Main image',
-            borderColor: 'border-blue-400',
-            hoverBorder: 'hover:border-blue-300',
-            bgEmpty: 'bg-slate-50',
-            iconBg: 'bg-white shadow-sm',
-            icon: <ImageIcon className="text-slate-400" size={compact ? 16 : 18} />,
-            spinColor: 'text-blue-600',
-            analyzingText: 'Assessing...',
-            analyzingColor: 'text-blue-800',
-          }}
-        />
-
-        {/* Nameplate */}
-        <PhotoSlot
-          preview={nameplatePreview}
-          isAnalyzing={false}
-          inputRef={nameplateRef}
-          onChange={handleNameplate}
-          compact={compact}
-          config={{
-            label: 'Scan Nameplate',
-            sublabel: 'Auto-fill model/serial',
-            borderColor: 'border-indigo-400',
-            hoverBorder: 'hover:border-indigo-400',
-            bgEmpty: 'bg-indigo-50/30',
-            iconBg: 'bg-indigo-100',
-            icon: <ScanLine className="text-indigo-600" size={compact ? 16 : 18} />,
-            spinColor: 'text-indigo-600',
-            analyzingText: 'Reading...',
-            analyzingColor: 'text-indigo-800',
-            badge: nameplatePreview ? (
-              <div className="bg-indigo-600 text-white p-1 rounded-full shadow-lg">
-                <ScanLine size={10} />
+            {isAnalyzing && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="flex flex-col items-center bg-white/90 backdrop-blur-sm px-4 py-3 rounded-2xl shadow-md">
+                  <Loader2 className="animate-spin text-indigo-600 mb-1.5" size={22} />
+                  <span className="text-[11px] font-bold text-indigo-800">
+                    {imageClass ? classLabel[imageClass] : 'Classifying image…'}
+                  </span>
+                </div>
               </div>
-            ) : undefined,
-          }}
-        />
+            )}
 
-        {/* Interior */}
-        <PhotoSlot
-          preview={interiorPreview}
-          isAnalyzing={isAnalyzingInterior}
-          inputRef={interiorRef}
-          onChange={handleInterior}
-          compact={compact}
-          config={{
-            label: 'Interior',
-            sublabel: 'Inside + features',
-            borderColor: 'border-emerald-400',
-            hoverBorder: 'hover:border-emerald-300',
-            bgEmpty: 'bg-emerald-50/30',
-            iconBg: 'bg-emerald-100',
-            icon: <Refrigerator className="text-emerald-600" size={compact ? 16 : 18} />,
-            spinColor: 'text-emerald-600',
-            analyzingText: 'Scanning...',
-            analyzingColor: 'text-emerald-800',
-          }}
-        />
+            {!isAnalyzing && imageClass && (
+              <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-slate-500">
+                <CheckCircle size={11} className="text-emerald-500" />
+                {classLabel[imageClass]}
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); setPreview(null); setImageClass(null); setFeatureCues(null); }}
+                  className="ml-auto p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600"
+                  aria-label="Remove photo"
+                >
+                  <X size={11} />
+                </button>
+              </div>
+            )}
 
-        {/* Wiring Diagram */}
-        <PhotoSlot
-          preview={wiringPreview}
-          isAnalyzing={isAnalyzingWiring}
-          inputRef={wiringRef}
-          onChange={handleWiring}
-          compact={compact}
-          config={{
-            label: 'Wiring Diagram',
-            sublabel: 'Back or cabinet label',
-            borderColor: 'border-amber-400',
-            hoverBorder: 'hover:border-amber-300',
-            bgEmpty: 'bg-amber-50/30',
-            iconBg: 'bg-amber-100',
-            icon: <Zap className="text-amber-600" size={compact ? 16 : 18} />,
-            spinColor: 'text-amber-500',
-            analyzingText: 'Analyzing...',
-            analyzingColor: 'text-amber-800',
-          }}
+            {/* Change photo overlay */}
+            {!isAnalyzing && (
+              <div className="absolute top-2 right-2">
+                <div className="bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm hover:bg-white transition-colors">
+                  <Camera size={12} className="text-slate-500" />
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className={`rounded-full bg-indigo-100 ${compact ? 'p-3 mb-2' : 'p-4 mb-3'} shadow-sm`}>
+              <Upload className="text-indigo-500" size={compact ? 20 : 26} />
+            </div>
+            <span className="text-[12px] font-bold text-slate-600 text-center leading-tight">
+              Drop a photo or click to upload
+            </span>
+            <span className="text-[10px] text-slate-400 text-center mt-1 leading-tight px-2">
+              Nameplate · Interior · Wiring · Product — AI auto-detects
+            </span>
+            {isDragging && (
+              <div className="absolute inset-0 border-2 border-indigo-400 rounded-2xl bg-indigo-50/40 flex items-center justify-center">
+                <span className="text-[12px] font-bold text-indigo-600">Drop to analyze</span>
+              </div>
+            )}
+          </>
+        )}
+
+        <input
+          type="file"
+          ref={inputRef}
+          className="hidden"
+          accept="image/*"
+          onChange={handleChange}
         />
       </div>
 
-      {/* Feature cue error */}
-      {cueError && (
+      {/* ── Error ─────────────────────────────────────────────────────────────── */}
+      {error && (
         <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] font-semibold text-red-700">
           <AlertTriangle size={12} className="mt-0.5 shrink-0" />
-          {cueError}
+          {error}
         </div>
       )}
 
-      {/* Feature cue badges */}
+      {/* ── Feature cue badges ────────────────────────────────────────────────── */}
       {activeCues.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">
@@ -428,11 +353,11 @@ export default function AppliancePhotoCapture({
         </div>
       )}
 
-      {/* Analyzing status when no cues yet */}
-      {(isAnalyzingInterior || isAnalyzingWiring) && activeCues.length === 0 && !cueError && (
+      {/* ── Analyzing status ─────────────────────────────────────────────────── */}
+      {isAnalyzing && activeCues.length === 0 && !error && (
         <div className="flex items-center gap-2 text-[10px] font-semibold text-slate-500">
-          <Loader2 size={11} className="animate-spin text-emerald-500" />
-          Detecting hardware features from photo...
+          <Loader2 size={11} className="animate-spin text-indigo-500" />
+          Detecting image type and routing analysis…
         </div>
       )}
     </div>
