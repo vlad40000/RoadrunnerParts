@@ -133,12 +133,12 @@ export default function ListingGallery({ candidates, title, partNumber, onChange
       }
 
       const skipped = Array.isArray(data.skipped) ? data.skipped.length : 0;
-      const vaultText = data.vaultMirror?.persisted
-        ? " Mirrored to Obsidian vault."
-        : data.vaultMirror?.warning
-          ? ` Vault mirror skipped: ${data.vaultMirror.warning}`
+      const dbText = data.dbPersist?.persisted
+        ? ` Synced ${Number(data.dbPersist.upserted || 0)} record${Number(data.dbPersist.upserted || 0) === 1 ? "" : "s"} to DB.`
+        : data.dbPersist?.warning
+          ? ` DB sync warning: ${data.dbPersist.warning}`
           : "";
-      setUploadMessage(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded${skipped ? `, ${skipped} skipped` : ""}.${vaultText}`);
+      setUploadMessage(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded${skipped ? `, ${skipped} skipped` : ""}.${dbText}`);
     } catch (error) {
       setUploadMessage(error instanceof Error ? error.message : String(error));
     } finally {

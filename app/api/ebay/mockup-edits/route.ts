@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { put } from '@vercel/blob';
 
 export const runtime = 'nodejs';
 
@@ -209,6 +210,7 @@ export async function POST(req: NextRequest) {
       'vlad40000/RoadrunnerParts';
     const branch = process.env.RRP_EBAY_COMMIT_BRANCH || 'main';
     const expectedSecret = process.env.RRP_EBAY_COMMIT_SECRET || '';
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN || '';
 
     if (!token) {
       return NextResponse.json(
@@ -257,20 +259,32 @@ export async function POST(req: NextRequest) {
       const parsed = parseDataUrl(image?.dataUrl);
       if (!imagePartNumber || !parsed) continue;
 
+      if (!blobToken) {
+        return NextResponse.json(
+          {
+            error: 'Image upload for mockup edits requires BLOB_READ_WRITE_TOKEN.',
+          },
+          { status: 501 },
+        );
+      }
+
       const stamp = receivedAt.replace(/[:.]/g, '-');
       const originalStem = cleanFileStem(image?.name);
       const fileName = `${imagePartNumber}-${stamp}-${originalStem}${parsed.extension}`;
-      const filePath = `scratch/approved-images/${imagePartNumber}/${fileName}`;
-      files.push({
-        path: filePath,
-        contentBase64: parsed.contentBase64,
+      const blobPath = `ebay/mockup-approved-images/${imagePartNumber}/${fileName}`;
+      const buffer = Buffer.from(parsed.contentBase64, 'base64');
+      const blob = await put(blobPath, buffer, {
+        access: 'public',
+        contentType: parsed.mimeType,
+        allowOverwrite: true,
       });
       imageManifest.push({
         partNumber: imagePartNumber,
         originalName: String(image?.name || ''),
         mimeType: parsed.mimeType,
         byteLength: parsed.byteLength,
-        filePath,
+        blobUrl: blob.url,
+        blobPathname: blob.pathname,
         role: 'operator_approved_sale_photo',
       });
     }

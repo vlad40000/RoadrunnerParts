@@ -1,7 +1,6 @@
-import { put } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { sql } from "@/src/server/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,100 +30,104 @@ function cleanFileStem(value) {
   );
 }
 
-function safeSegment(value, fallback) {
-  const segment = String(value || "")
-    .replace(/[<>:"/\\|?*\x00-\x1f]/g, "-")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^\.+$/, "")
-    .slice(0, 120);
-  return segment || fallback;
+function cleanText(value, max = 1200) {
+  return String(value || "").trim().slice(0, max);
 }
 
-function vaultRoot() {
-  const configured = String(process.env.OBSIDIAN_VAULT_PATH || "").trim();
-  if (configured) return path.resolve(/*turbopackIgnore: true*/ configured);
-  if (process.env.VERCEL) return "";
-  return path.join(/*turbopackIgnore: true*/ process.cwd(), "obsidian");
-}
+async function upsertImageCandidates(partNumber, records) {
+  let upserted = 0;
+  for (const record of records) {
+    const c = record.candidate || {};
+    const imageUrl = cleanText(c.imageUrl, 1200);
+    if (!imageUrl) continue;
 
-function slashPath(value) {
-  return String(value || "").replace(/\\/g, "/");
-}
+    await sql.query(
+      `
+      INSERT INTO ebay_listing_image_asset (
+        part_number,
+        image_url,
+        thumbnail_url,
+        page_url,
+        title,
+        source_domain,
+        source,
+        review_status,
+        score,
+        blob_pathname,
+        remote_image_url,
+        local_image_path,
+        mime_type,
+        byte_length,
+        metadata,
+        first_seen_at,
+        last_seen_at,
+        updated_at
+      )
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14,
+        $15::jsonb,
+        now(),
+        now(),
+        now()
+      )
+      ON CONFLICT (part_number, image_url)
+      DO UPDATE SET
+        thumbnail_url = EXCLUDED.thumbnail_url,
+        page_url = EXCLUDED.page_url,
+        title = EXCLUDED.title,
+        source_domain = EXCLUDED.source_domain,
+        source = EXCLUDED.source,
+        review_status = EXCLUDED.review_status,
+        score = EXCLUDED.score,
+        blob_pathname = EXCLUDED.blob_pathname,
+        remote_image_url = EXCLUDED.remote_image_url,
+        local_image_path = EXCLUDED.local_image_path,
+        mime_type = EXCLUDED.mime_type,
+        byte_length = EXCLUDED.byte_length,
+        metadata = EXCLUDED.metadata,
+        last_seen_at = now(),
+        updated_at = now()
+    `,
+      [
+        partNumber,
+        imageUrl,
+        cleanText(c.thumbnailUrl || imageUrl, 1200),
+        cleanText(c.pageUrl || imageUrl, 1200),
+        cleanText(c.title, 220),
+        cleanText(c.sourceDomain, 120),
+        cleanText(c.source, 120),
+        cleanText(c.reviewStatus, 160),
+        Number.isFinite(Number(c.score)) ? Number(c.score) : 0,
+        cleanText(c.blobPathname, 500),
+        cleanText(c.remoteImageUrl, 1200),
+        cleanText(c.localImagePath, 500),
+        cleanText(record.mimeType || c.mimeType, 120),
+        Number.isFinite(Number(record.byteLength || c.byteLength)) ? Number(record.byteLength || c.byteLength) : 0,
+        JSON.stringify({
+          uploader: "detail_editor_file_upload",
+          originalName: cleanText(record.originalName, 260),
+          uploadedAt: new Date().toISOString(),
+        }),
+      ],
+    );
 
-function yamlString(value) {
-  return JSON.stringify(String(value ?? ""));
-}
-
-async function mirrorImagesToVault({ partNumber, stamp, records }) {
-  const root = vaultRoot();
-  if (!root) {
-    return {
-      persisted: false,
-      warning: "OBSIDIAN_VAULT_PATH is not configured for this server.",
-      files: [],
-    };
+    upserted += 1;
   }
 
-  const folderSegments = ["eBay Related", "Listing Images", partNumber].map((segment, index) =>
-    safeSegment(segment, index === 2 ? "PART" : "eBay Related"),
-  );
-  const targetDir = path.join(/*turbopackIgnore: true*/ root, ...folderSegments);
-  const savedFiles = [];
-
-  await mkdir(targetDir, { recursive: true });
-
-  for (const [index, record] of records.entries()) {
-    const vaultFileName = safeSegment(record.fileName, `${partNumber}-${stamp}-${index + 1}`);
-    const targetPath = path.join(/*turbopackIgnore: true*/ targetDir, vaultFileName);
-    await writeFile(targetPath, record.buffer);
-    savedFiles.push({
-      fileName: vaultFileName,
-      path: targetPath,
-      relativePath: slashPath(path.relative(root, targetPath)),
-      originalName: record.originalName,
-      blobUrl: record.candidate.imageUrl,
-      mimeType: record.mimeType,
-      byteLength: record.byteLength,
-    });
-  }
-
-  const noteName = safeSegment(`${partNumber}-${stamp}-images.md`, `${partNumber}-images.md`);
-  const notePath = path.join(/*turbopackIgnore: true*/ targetDir, noteName);
-  const noteLines = [
-    "---",
-    `title: ${yamlString(`${partNumber} listing image upload`)}`,
-    `created: ${yamlString(new Date().toISOString())}`,
-    `source: ${yamlString("ebay-detail-editor")}`,
-    `kind: ${yamlString("ebay-listing-images")}`,
-    `partNumber: ${yamlString(partNumber)}`,
-    `tags: [${["roadrunner", "ebay", "listing-images", partNumber.toLowerCase()].map(yamlString).join(", ")}]`,
-    "---",
-    "",
-    `# ${partNumber} Listing Images`,
-    "",
-    "Uploaded through the Roadrunner eBay detail editor.",
-    "",
-    ...savedFiles.flatMap((file, index) => [
-      `## Image ${index + 1}`,
-      "",
-      `![[${file.fileName}]]`,
-      "",
-      `- Original file: ${file.originalName || file.fileName}`,
-      `- Live URL: ${file.blobUrl}`,
-      `- Vault path: ${file.relativePath}`,
-      "",
-    ]),
-  ];
-  await writeFile(notePath, `${noteLines.join("\n")}\n`, "utf8");
-
-  return {
-    persisted: true,
-    root,
-    notePath,
-    noteRelativePath: slashPath(path.relative(root, notePath)),
-    files: savedFiles,
-  };
+  return { upserted };
 }
 
 export async function POST(request) {
@@ -191,7 +194,6 @@ export async function POST(request) {
 
       uploadRecords.push({
         candidate,
-        buffer,
         fileName,
         originalName: file.name,
         byteLength: file.size,
@@ -199,31 +201,52 @@ export async function POST(request) {
       });
     }
 
-    let vaultMirror = { persisted: false, files: [] };
     if (uploadRecords.length) {
       try {
-        vaultMirror = await mirrorImagesToVault({ partNumber, stamp, records: uploadRecords });
-        for (const [index, file] of vaultMirror.files.entries()) {
-          if (!uploadRecords[index]) continue;
-          uploadRecords[index].candidate.vaultPath = file.path;
-          uploadRecords[index].candidate.vaultRelativePath = file.relativePath;
-          uploadRecords[index].candidate.vaultNotePath = vaultMirror.notePath || "";
-          uploadRecords[index].candidate.vaultNoteRelativePath = vaultMirror.noteRelativePath || "";
-        }
+        const dbResult = await upsertImageCandidates(partNumber, uploadRecords);
+        return NextResponse.json({
+          ok: true,
+          uploaded: uploadRecords.map((record) => record.candidate),
+          skipped,
+          dbPersist: {
+            persisted: true,
+            upserted: dbResult.upserted,
+          },
+        });
       } catch (error) {
-        vaultMirror = {
-          persisted: false,
-          warning: error instanceof Error ? error.message : String(error),
-          files: [],
-        };
+        const cleanup = [];
+        for (const record of uploadRecords) {
+          try {
+            await del(record.candidate.imageUrl);
+            cleanup.push({ imageUrl: record.candidate.imageUrl, deleted: true });
+          } catch (cleanupError) {
+            cleanup.push({
+              imageUrl: record.candidate.imageUrl,
+              deleted: false,
+              error: cleanupError instanceof Error ? cleanupError.message : String(cleanupError),
+            });
+          }
+        }
+
+        return NextResponse.json(
+          {
+            error: "Image upload metadata persistence failed",
+            details: error instanceof Error ? error.message : String(error),
+            rollback: cleanup,
+          },
+          { status: 500 },
+        );
       }
     }
 
     return NextResponse.json({
       ok: true,
-      uploaded: uploadRecords.map((record) => record.candidate),
+      uploaded: [],
       skipped,
-      vaultMirror,
+      dbPersist: {
+        persisted: true,
+        upserted: 0,
+      },
     });
   } catch (error) {
     return NextResponse.json(

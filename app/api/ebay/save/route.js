@@ -2,11 +2,110 @@ import { list, put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { sql } from "@/src/server/db";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DETAIL_STATE_PATH = "ebay/detail-editor-state/current.json";
+
+function cleanText(value, max = 1200) {
+  return String(value || "").trim().slice(0, max);
+}
+
+async function upsertImageCandidates(partNumber, candidates) {
+  let upserted = 0;
+  for (const rawCandidate of Array.isArray(candidates) ? candidates : []) {
+    const candidate = rawCandidate && typeof rawCandidate === "object" ? rawCandidate : {};
+    const imageUrl = cleanText(candidate.imageUrl || candidate.thumbnailUrl, 1200);
+    if (!imageUrl) continue;
+
+    await sql.query(
+      `
+      INSERT INTO ebay_listing_image_asset (
+        part_number,
+        image_url,
+        thumbnail_url,
+        page_url,
+        title,
+        source_domain,
+        source,
+        review_status,
+        score,
+        blob_pathname,
+        remote_image_url,
+        local_image_path,
+        mime_type,
+        byte_length,
+        metadata,
+        first_seen_at,
+        last_seen_at,
+        updated_at
+      )
+      VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14,
+        $15::jsonb,
+        now(),
+        now(),
+        now()
+      )
+      ON CONFLICT (part_number, image_url)
+      DO UPDATE SET
+        thumbnail_url = EXCLUDED.thumbnail_url,
+        page_url = EXCLUDED.page_url,
+        title = EXCLUDED.title,
+        source_domain = EXCLUDED.source_domain,
+        source = EXCLUDED.source,
+        review_status = EXCLUDED.review_status,
+        score = EXCLUDED.score,
+        blob_pathname = EXCLUDED.blob_pathname,
+        remote_image_url = EXCLUDED.remote_image_url,
+        local_image_path = EXCLUDED.local_image_path,
+        mime_type = EXCLUDED.mime_type,
+        byte_length = EXCLUDED.byte_length,
+        metadata = EXCLUDED.metadata,
+        last_seen_at = now(),
+        updated_at = now()
+    `,
+      [
+        partNumber,
+        imageUrl,
+        cleanText(candidate.thumbnailUrl || imageUrl, 1200),
+        cleanText(candidate.pageUrl || imageUrl, 1200),
+        cleanText(candidate.title, 220),
+        cleanText(candidate.sourceDomain, 120),
+        cleanText(candidate.source, 120),
+        cleanText(candidate.reviewStatus, 160),
+        Number.isFinite(Number(candidate.score)) ? Number(candidate.score) : 0,
+        cleanText(candidate.blobPathname, 500),
+        cleanText(candidate.remoteImageUrl, 1200),
+        cleanText(candidate.localImagePath, 500),
+        cleanText(candidate.mimeType, 120),
+        Number.isFinite(Number(candidate.byteLength)) ? Number(candidate.byteLength) : 0,
+        JSON.stringify({
+          uploader: "detail_editor_save",
+          savedAt: new Date().toISOString(),
+        }),
+      ],
+    );
+    upserted += 1;
+  }
+
+  return { upserted };
+}
 
 async function readJsonResponse(response) {
   const text = await response.text();
@@ -184,6 +283,20 @@ export async function POST(request) {
     }
     edits[partNumber] = nextPartEdit;
 
+    let dbPersist = { persisted: false, upserted: 0, warning: "" };
+    if (Array.isArray(nextPartEdit.imageCandidates) && nextPartEdit.imageCandidates.length) {
+      try {
+        const result = await upsertImageCandidates(partNumber, nextPartEdit.imageCandidates);
+        dbPersist = { persisted: true, upserted: result.upserted, warning: "" };
+      } catch (error) {
+        dbPersist = {
+          persisted: false,
+          upserted: 0,
+          warning: error instanceof Error ? error.message : String(error),
+        };
+      }
+    }
+
     let blobUrl = "";
     let blobError = "";
     let localListing = null;
@@ -240,6 +353,7 @@ export async function POST(request) {
       listing: edits[partNumber],
       imageCount: edits[partNumber].imageCandidates?.length || 0,
       leadImageUrl: edits[partNumber].imageCandidates?.[0]?.imageUrl || "",
+      dbPersist,
     });
   } catch (error) {
     return NextResponse.json(
