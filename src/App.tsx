@@ -2787,15 +2787,7 @@ Focus on:
     </div>
   );
 }
-  ...part,
-  ebayPrice: undefined,
-  ebay_price: undefined,
-  ebayPriceSource: '',
-  ebay_price_source: '',
-  ebayPriceUrl: '',
-  ebay_price_url: '',
-});
-
+  
 const parseManualEbayPrice = (value: string) => {
   const text = String(value || '').trim();
   if (!text) return null;
