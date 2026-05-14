@@ -4,7 +4,8 @@ import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '
 import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
 import { db } from '../../../src/server/db';
 import { modelSources } from '../../../src/server/db/schema/model-sources';
-export const runtime = 'nodejs';
+
+export const runtime = 'nodejs';
 export const maxDuration = 120; // Extended to support Google Search + Thinking
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -99,14 +100,6 @@ function normalizePriceSource(value: unknown) {
   }) || '';
 }
 
-function hasInvalidMarketPrices(parts: any[] | null | undefined) {
-  return Array.isArray(parts)
-    ? parts.some((part) => {
-        const price = Number(part?.price);
-        return !Number.isFinite(price) || price <= 0 || !normalizePriceSource(part?.priceSource);
-      })
-    : false;
-}
 
 export function normalizeGeneratedParts(parts: any[] | null | undefined) {
   if (!Array.isArray(parts)) return [];
@@ -158,30 +151,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing model' }, { status: 400 });
     }
 
-    // ✅ CACHE CHECK — return instantly if we've seen this model before
+    // CACHE CHECK — return instantly if we've seen this model before. Do not discard rows only because pricing is missing.
     const isFirstPass = !knownPartNumbers || knownPartNumbers.length === 0;
     if (isFirstPass) {
       const cached = await findCachedModelParts(model);
-      if (cached) {
+      if (cached?.parts && Array.isArray(cached.parts) && cached.parts.length > 0) {
         const cachedIsExhaustive = cached.isExhaustive === 'true';
-        if (hasInvalidMarketPrices(cached.parts)) {
-          console.log(`[BOM Route] Cache/seed HIT for ${normalizeModelKey(model)} but pricing is incomplete or unapproved; continuing retrieval`);
-          cached.parts = null;
-        }
-        if (!cached.parts) {
-          console.log(`[BOM Route] Cache MISS for ${normalizeModelKey(model)} after pricing validation`);
-        } else {
         console.log(`[BOM Route] Cache HIT for ${normalizeModelKey(model)} (Exhaustive: ${cachedIsExhaustive}) — returning stored data`);
-        
+
         return NextResponse.json({
           parts: normalizeGeneratedParts(cached.parts),
           modelMSRP: cached.msrp ? parseFloat(cached.msrp) : undefined,
           fromCache: true,
           isExhaustive: cachedIsExhaustive,
         });
-        }
       }
-      if (!hasPromptOverride) {
+
       console.log(`[BOM Route] Cache MISS for ${normalizeModelKey(model)} — checking deterministic sources`);
       try {
         const result = await orchestrateBomRetrieval({
@@ -192,17 +177,18 @@ export async function POST(req: Request) {
         });
 
         if (result.sourceType === 'deterministic' && result.parts.length > 0) {
-          console.log(`[BOM Route] DETERMINISTIC HIT for ${normalizeModelKey(model)} — Found ${result.parts.length} parts`);
-          
+          const parts = normalizeGeneratedParts(result.parts);
+          console.log(`[BOM Route] DETERMINISTIC HIT for ${normalizeModelKey(model)} — Found ${parts.length} parts`);
+
           upsertModelPartsCache({
             model,
-            parts: result.parts,
+            parts,
             msrp: result.modelMSRP,
             isExhaustive: result.isExhaustive || false,
           }).catch(err => console.error('[BOM Route] Cache write failed (deterministic):', err));
 
           return NextResponse.json({
-            parts: result.parts,
+            parts,
             modelMSRP: result.modelMSRP,
             fromCache: false,
             isExhaustive: result.isExhaustive,
@@ -213,7 +199,6 @@ export async function POST(req: Request) {
         console.error('[BOM Route] Deterministic extraction failed:', detError);
       }
       console.log(`[BOM Route] Deterministic path yielded no results — calling Gemini`);
-      }
     }
 
     if (hasPromptOverride) {
@@ -233,6 +218,13 @@ export async function POST(req: Request) {
       tools: [{ googleSearch: {} }],
     } as any);
 
+    const resolvedPassInstruction =
+      typeof passInstruction === 'string' && passInstruction.trim().length > 0
+        ? passInstruction
+        : `QUICK BOM PASS:
+Target approximately 40 valid OEM/serviceable parts with broad coverage across major categories.
+Focus on speed and reliability for the most common source-backed parts.`;
+
     const prompt = promptOverride || `You are an expert appliance parts researcher. Generate a Bill of Materials (BOM) for appliance model: ${model}.
 ${serial ? `Serial Number: ${serial}` : ''}
 ${manufactureDate ? `Approximate Manufacture Date: ${manufactureDate}` : ''}
@@ -240,25 +232,23 @@ ${expectedPartCount ? `EXPECTED TOTAL PART COUNT (OEM BOM): ${expectedPartCount}
 
 CURRENT PASS NUMBER: ${passNumber}
 
-${passInstruction}
+${resolvedPassInstruction}
 
-KNONW PART NUMBERS ALREADY FOUND (DO NOT REPEAT THESE):
+KNOWN PART NUMBERS ALREADY FOUND (DO NOT REPEAT THESE):
 ${knownPartNumbers.length > 0 ? knownPartNumbers.join(', ') : 'NONE'}
 
 INSTRUCTIONS:
 - Use GOOGLE SEARCH to find the actual OEM parts list for this exact model on searspartsdirect.com, fix.com, repairclinic.com, or appliancepartspros.com.
 - Use REAL manufacturer OEM part numbers only.
 - Do NOT include any part number already in the known list above.
-- Return only valid, serviceable, or diagram-listed parts that also have a verified positive market price from the required pricing fallback chain.
-- TARGET: Return approximately 40 parts per pass. 
+- Return valid, serviceable, or diagram-listed parts even when a verified market price is unavailable.
+- TARGET: Return approximately 40 parts per pass.
 - BATCHING LOGIC: If an EXPECTED TOTAL PART COUNT is provided, continue targeting ~40 parts per pass until the remaining count is less than 40, then deliver only that remainder.
 - If the real OEM BOM has fewer than 40 serviceable parts total, return all of them and stop immediately — do NOT invent or pad parts.
 - Only return parts that genuinely exist in OEM service documentation or real parts retailer sites for this exact model.
-- Pricing is mandatory for every returned part: search searspartsdirect.com, or fix.com.
-- Do not return 0, $0.00, free, blank, placeholder, or estimated prices.
-- Every returned part MUST include a real positive "price" and "priceSource".
-- Set "priceSource" to exactly "searspartsdirect.com", or "fix.com".
-- Do not use any other retailer, marketplace, blog, unrelated URL, or manufacturer landing page as a price source.
+- Pricing is preferred but not mandatory: search searspartsdirect.com, fix.com, repairclinic.com, appliancepartspros.com, encompass.com, partselect.com, or partsdr.com.
+- If a verified positive price is unavailable, set "price" to null and set "priceSource" to the source that backed the part row, or "unverified" if no pricing source exists.
+- Do not invent prices, use $0.00 placeholders, or discard source-backed OEM rows only because they are unpriced.
 
 OUTPUT FORMAT — return ONLY a valid JSON object, no markdown, no explanation:
 {
@@ -331,7 +321,7 @@ If a part does not fit any section, use the closest match — never omit a part 
         return NextResponse.json({
           parts: [],
           noPricedParts: true,
-          priceNote: 'No parts with verified pricing were returned. Try again or check a parts retailer directly.',
+          priceNote: 'No source-backed parts were returned. Try again or check a parts retailer directly.',
         });
       }
 
