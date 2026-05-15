@@ -172,6 +172,31 @@ async function loadSourceTruth(normalizedModel: string) {
   };
 }
 
+function buildDiagramParseForUi(existingDiagramParse: unknown, sourceTruth: Awaited<ReturnType<typeof loadSourceTruth>>) {
+  const existing = existingDiagramParse && typeof existingDiagramParse === "object" && !Array.isArray(existingDiagramParse)
+    ? existingDiagramParse as Record<string, any>
+    : {};
+  const existingVisualTruth = existing.visualTruth && typeof existing.visualTruth === "object" && !Array.isArray(existing.visualTruth)
+    ? existing.visualTruth as Record<string, any>
+    : {};
+  const assemblyNames = sourceTruth.assemblySections
+    .map((section) => cleanSectionName(section.sectionNameClean || section.sectionLabelRaw || section.normalizedSection))
+    .filter(Boolean);
+
+  return {
+    ...existing,
+    visualTruth: {
+      ...existingVisualTruth,
+      // This is intentionally source-backed only. The UI already prefers this field;
+      // do not allow model-generated part.section labels to masquerade as diagram assemblies.
+      assemblyNames,
+      assemblySource: sourceTruth.sectionSource,
+      sourceBacked: assemblyNames.length > 0,
+      sourceBackedPartCount: sourceTruth.sourceBackedCanonicalPartCount,
+    },
+  };
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const model = searchParams.get("model");
@@ -193,6 +218,7 @@ export async function GET(request: Request) {
     ]);
 
     const existing = existingRows[0];
+    const diagramParse = buildDiagramParseForUi(existing?.diagramParse, sourceTruth);
 
     if (!existing) {
       if (!sourceTruth.hasProviderPartRows && !sourceTruth.hasProviderAssemblySections) {
@@ -220,6 +246,7 @@ export async function GET(request: Request) {
         actualPartCount: sourceTruth.sourceBackedRowCount,
         partsComplete: false,
         retrievalState: "parts_seeded_pricing_needed",
+        diagramParse,
         diagramAssemblySections: sourceTruth.assemblySections,
         sourceTruth: {
           ...sourceTruth,
@@ -234,6 +261,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       ...existing,
+      diagramParse,
       trustedTotalPartCount,
       actualCanonicalPartCount: existing.actualCanonicalPartCount || sourceTruth.sourceBackedCanonicalPartCount,
       actualPartCount: existing.actualPartCount || sourceTruth.sourceBackedRowCount,
