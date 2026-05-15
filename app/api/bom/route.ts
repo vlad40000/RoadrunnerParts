@@ -4,6 +4,7 @@ import { scheduleGeminiCall } from '../../../src/lib/gemini-call-scheduler';
 import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '../../../src/features/bom/services/model-parts-cache';
 import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
 import { hydrateBomPricesFromDb, buildPricingSummary } from '../../../src/features/bom/services/part-pricing-hydrator';
+import { findNextDbBomBatch } from '../../../src/features/bom/services/db-bom-batch';
 import { db } from '../../../src/server/db';
 import { modelSources } from '../../../src/server/db/schema/model-sources';
 
@@ -171,8 +172,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing model' }, { status: 400 });
     }
 
+    const excludePartNumbers = Array.isArray(knownPartNumbers) ? knownPartNumbers : [];
+
+    // DB-FIRST SOURCE-BACKED BATCH — applies to first pass and continuation passes.
+    // If provider/retrieval rows exist, return them before cache/deterministic/Gemini so the app does not burn model calls for rows already known.
+    const dbBatch = await findNextDbBomBatch({
+      model,
+      excludePartNumbers,
+      limit: 40,
+    });
+
+    if (dbBatch.parts.length > 0) {
+      const finalized = await finalizeBomParts({ model, parts: dbBatch.parts });
+      console.log(`[BOM Route] DB-FIRST batch for ${normalizeModelKey(model)} — returned ${finalized.parts.length}/${dbBatch.totalSourceBackedParts}; priced ${finalized.pricingSummary.priced}/${finalized.pricingSummary.total}`);
+
+      if (!excludePartNumbers.length) {
+        upsertModelPartsCache({
+          model,
+          parts: finalized.parts,
+          isExhaustive: dbBatch.retrievalState === 'bom_complete',
+        }).catch(err => console.error('[BOM Route] Cache write failed (db batch):', err));
+      }
+
+      return NextResponse.json({
+        parts: finalized.parts,
+        pricingSummary: finalized.pricingSummary,
+        pricingRequired: finalized.pricingSummary.missing > 0,
+        fromCache: false,
+        source: dbBatch.source,
+        retrievalState: dbBatch.retrievalState,
+        isExhaustive: dbBatch.retrievalState === 'bom_complete',
+        totalSourceBackedParts: dbBatch.totalSourceBackedParts,
+        returnedPartCount: dbBatch.returnedPartCount,
+        remainingPartCount: dbBatch.remainingPartCount,
+        excludedPartCount: dbBatch.excludedPartCount,
+      });
+    }
+
     // CACHE CHECK — return instantly if we've seen this model before. Pricing is still hydrated from supplier DB.
-    const isFirstPass = !knownPartNumbers || knownPartNumbers.length === 0;
+    const isFirstPass = excludePartNumbers.length === 0;
     if (isFirstPass) {
       const cached = await findCachedModelParts(model);
       if (cached?.parts && Array.isArray(cached.parts) && cached.parts.length > 0) {
@@ -187,6 +225,7 @@ export async function POST(req: Request) {
           modelMSRP: cached.msrp ? parseFloat(cached.msrp) : undefined,
           fromCache: true,
           isExhaustive: cachedIsExhaustive,
+          retrievalState: cachedIsExhaustive ? 'bom_complete' : 'parts_partial',
         });
       }
 
@@ -217,6 +256,7 @@ export async function POST(req: Request) {
             modelMSRP: result.modelMSRP,
             fromCache: false,
             isExhaustive: result.isExhaustive,
+            retrievalState: result.isExhaustive ? 'bom_complete' : 'parts_partial',
             source: 'deterministic',
           });
         }
@@ -352,6 +392,7 @@ If a part does not fit any section, use the closest match — never omit a part 
       parsed.parts = finalized.parts;
       parsed.pricingSummary = finalized.pricingSummary;
       parsed.pricingRequired = finalized.pricingSummary.missing > 0;
+      parsed.retrievalState = finalized.parts.length > 0 ? 'parts_partial' : 'no_result';
 
       // Graceful empty — 200 with flag so the UI degrades instead of hard erroring
       if (parsed.parts.length === 0) {
@@ -361,6 +402,7 @@ If a part does not fit any section, use the closest match — never omit a part 
           pricingRequired: true,
           noPricedParts: true,
           priceNote: 'No source-backed parts were returned. Try again or check a parts retailer directly.',
+          retrievalState: 'no_result',
         });
       }
 
