@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { scheduleGeminiCall } from "../../../lib/gemini-call-scheduler";
 
 export interface MarketSnapshot {
   medianSoldPrice: number;
@@ -10,13 +11,15 @@ export interface MarketSnapshot {
   lowestActivePrice?: number;
 }
 
+const MARKET_MODEL = process.env.MARKET_LITE_MODEL || process.env.GEMINI_LITE_MODEL || "gemini-3.1-flash-lite";
+
 export class PricingResearcher {
   private model: any;
 
   constructor(apiKey: string) {
     const genAI = new GoogleGenerativeAI(apiKey);
     this.model = genAI.getGenerativeModel({
-      model: "gemini-3.1-flash-lite",
+      model: MARKET_MODEL,
       tools: [{ googleSearch: {} }]
     } as any);
   }
@@ -50,7 +53,15 @@ export class PricingResearcher {
     }`;
 
     try {
-      const result = await this.model.generateContent(prompt);
+      const result = await scheduleGeminiCall({
+        tool: "market",
+        bucket: "lite",
+        model: MARKET_MODEL,
+        grounded: true,
+        route: "PricingResearcher.analyzePart",
+        requestId: partNumber,
+        run: () => this.model.generateContent(prompt),
+      });
       const response = await result.response;
       const text = response.text();
       
