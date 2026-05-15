@@ -12,6 +12,13 @@ function rep(name, a, b) {
   changed = true;
   console.log(`[pricing-ui-patch] ${name}`);
 }
+function before(name, a, b) {
+  if (s.includes(b.trim())) return;
+  if (!s.includes(a)) { console.warn(`[pricing-ui-patch] missing ${name}`); return; }
+  s = s.replace(a, b + a);
+  changed = true;
+  console.log(`[pricing-ui-patch] ${name}`);
+}
 function after(name, a, b) {
   if (s.includes(b.trim())) return;
   if (!s.includes(a)) { console.warn(`[pricing-ui-patch] missing ${name}`); return; }
@@ -61,7 +68,7 @@ after('pricing reset',
 `    setDbCheckStatus(null);\n`,
 `    setPricingPipelineSummary(null);\n`);
 
-after('pricing handler',
+before('pricing handler',
 `  const handleResetIdentity = () => {\n`,
 `  const handlePricingCleanup = async () => {\n    const model = normalizeModelId(stripLookupLabel(lookupModel || modelEntry || searchTerm || ''));\n    if (!model) {\n      setDbCheckStatus('Enter or load a model before running pricing cleanup.');\n      return;\n    }\n    setIsPricingCleanupLoading(true);\n    setDbCheckStatus(null);\n    try {\n      const response = await fetch('/api/bom/pricing-cleanup', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ model, parts: aiParts }),\n      });\n      const payload = await response.json().catch(() => ({}));\n      if (!response.ok || !payload.ok) throw new Error(payload.error || 'Pricing cleanup failed.');\n      const rows = Array.isArray(payload.parts) ? payload.parts : [];\n      if (rows.length > 0) {\n        setAIParts(rows.map((part: any, index: number) => ({\n          ...stripManualEbayDisplayFields(part),\n          id: index + 1,\n          partNumber: normalizeModelId(part.partNumber),\n          description: part.description || 'Appliance Part',\n          section: part.section || 'Source-backed BOM',\n          compatibleModels: Array.isArray(part.compatibleModels) ? part.compatibleModels.filter(Boolean) : [model],\n          avgRating: Number(part.avgRating) || 0,\n          reviewCount: Number(part.reviewCount) || 0,\n        })));\n      }\n      setLookupModel(model);\n      setModelEntry(model);\n      setPricingPipelineSummary(payload);\n      setDbCheckStatus(\n        'Pricing cleanup complete: ' +\n          (payload.cleanupSummary?.pricesWrittenToDb || 0) +\n          ' DB price row(s) written/promoted. Priced ' +\n          (payload.pricingSummary?.priced || 0) +\n          '/' +\n          (payload.pricingSummary?.total || rows.length || aiParts.length) +\n          '.',\n      );\n    } catch (error) {\n      const message = error instanceof Error ? error.message : 'Pricing cleanup failed.';\n      setDbCheckStatus(message);\n      alert(message);\n    } finally {\n      setIsPricingCleanupLoading(false);\n    }\n  };\n\n`);
 
