@@ -1,0 +1,8 @@
+Trigger Vercel deploy after fixing the pricing UI JSX insertion bug.
+
+Expected deployment head:
+1d86ad8b14fb09a605c8eb22e4f5b0bb9334ecb9 or later
+
+Purpose:
+- Ensure Vercel no longer builds stale commit 9dba491.
+- Validate pricing cleanup UI patch on the latest main branch.
