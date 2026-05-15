@@ -1,6 +1,8 @@
 import "server-only";
 import { GoogleGenerativeAI, type FunctionDeclaration } from "@google/generative-ai";
 import { GoogleGenAI } from "@google/genai";
+import { scheduleGeminiCall } from "../../../lib/gemini-call-scheduler";
+import type { GeminiBucketName, GeminiToolName } from "../../../lib/gemini-tool-policies";
 
 export type ModelRunToolConfig = {
   functionCallingMode?: "AUTO" | "ANY" | "NONE" | "VALIDATED";
@@ -36,6 +38,11 @@ export type ModelRunInput = {
   maxOutputTokens?: number;
   responseMimeType?: "application/json" | "text/plain";
   schema?: any;
+  schedulerTool?: GeminiToolName | string;
+  schedulerBucket?: GeminiBucketName;
+  schedulerRoute?: string;
+  schedulerJobId?: string;
+  schedulerRequestId?: string;
 };
 
 export type TextRunResult = {
@@ -136,6 +143,18 @@ function urlContextText(urls: string[] | undefined) {
   ].join("\n");
 }
 
+function schedulerContext(input: ModelRunInput, modelId: GeminiModelId, routeFallback: string) {
+  return {
+    tool: input.schedulerTool || "bom",
+    bucket: input.schedulerBucket,
+    model: modelId,
+    grounded: Boolean(input.enableSearch),
+    route: input.schedulerRoute || routeFallback,
+    jobId: input.schedulerJobId,
+    requestId: input.schedulerRequestId,
+  };
+}
+
 export async function runStructuredJson<T>(
   input: ModelRunInput,
 ): Promise<T> {
@@ -215,8 +234,11 @@ export async function runStructuredJson<T>(
     parts.push(...fileParts);
   }
 
-  const result = await model.generateContent({
-    contents: [{ role: "user", parts }],
+  const result = await scheduleGeminiCall({
+    ...schedulerContext(input, modelId, "bom.runStructuredJson"),
+    run: () => model.generateContent({
+      contents: [{ role: "user", parts }],
+    }),
   });
 
   const responseText = result.response.text();
@@ -302,8 +324,11 @@ export async function runTextDetailed(input: ModelRunInput): Promise<TextRunResu
     parts.push(...fileParts);
   }
 
-  const result = await model.generateContent({
-    contents: [{ role: "user", parts }],
+  const result = await scheduleGeminiCall({
+    ...schedulerContext(input, modelId, "bom.runTextDetailed"),
+    run: () => model.generateContent({
+      contents: [{ role: "user", parts }],
+    }),
   });
 
   const response = result.response as any;
@@ -326,6 +351,11 @@ export async function runGeminiCodeExecution(input: {
   context?: Record<string, unknown>;
   stage?: string;
   reason?: string;
+  schedulerTool?: GeminiToolName | string;
+  schedulerBucket?: GeminiBucketName;
+  schedulerRoute?: string;
+  schedulerJobId?: string;
+  schedulerRequestId?: string;
 }) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -337,20 +367,29 @@ export async function runGeminiCodeExecution(input: {
     stage: input.stage,
     reason: input.reason,
   });
-  const response = await ai.models.generateContent({
+  const response = await scheduleGeminiCall({
+    tool: input.schedulerTool || "bom",
+    bucket: input.schedulerBucket,
     model: modelId,
-    contents: [
-      "Run this operator-supplied Python/code-execution block for preflight validation.",
-      "If the block is an SDK request template that cannot run inside the code sandbox, validate the configuration and report that it is a template rather than executable evidence.",
-      "Do not create final BOM truth. Return only execution output, validation notes, and any tool/code results.",
-      `Context JSON:\n${JSON.stringify(input.context || {}, null, 2)}`,
-      `Code:\n${input.code}`,
-    ].join("\n\n"),
-    config: {
-      temperature: 1,
-      tools: [{ codeExecution: {} }],
-    },
-  } as any);
+    grounded: false,
+    route: input.schedulerRoute || "bom.runGeminiCodeExecution",
+    jobId: input.schedulerJobId,
+    requestId: input.schedulerRequestId,
+    run: () => ai.models.generateContent({
+      model: modelId,
+      contents: [
+        "Run this operator-supplied Python/code-execution block for preflight validation.",
+        "If the block is an SDK request template that cannot run inside the code sandbox, validate the configuration and report that it is a template rather than executable evidence.",
+        "Do not create final BOM truth. Return only execution output, validation notes, and any tool/code results.",
+        `Context JSON:\n${JSON.stringify(input.context || {}, null, 2)}`,
+        `Code:\n${input.code}`,
+      ].join("\n\n"),
+      config: {
+        temperature: 1,
+        tools: [{ codeExecution: {} }],
+      },
+    } as any),
+  });
 
   const candidate = response.candidates?.[0];
   const parts = candidate?.content?.parts || [];
