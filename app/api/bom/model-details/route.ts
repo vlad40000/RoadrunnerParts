@@ -44,6 +44,11 @@ function normalizePartNumber(value: unknown) {
     .trim();
 }
 
+function positiveNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 async function loadSourceTruth(normalizedModel: string) {
   const partModelWhere = sql`upper(regexp_replace(${providerPartSeedRows.model}, '[^A-Z0-9]', '', 'g')) = ${normalizedModel}`;
   const sectionModelWhere = sql`upper(regexp_replace(${providerAssemblySections.model}, '[^A-Z0-9]', '', 'g')) = ${normalizedModel}`;
@@ -157,6 +162,9 @@ async function loadSourceTruth(normalizedModel: string) {
   }));
 
   const selectedSections = assemblySections.length > 0 ? assemblySections : fallbackAssemblySections;
+  const sourceBackedCanonicalPartCount = canonicalPartNumbers.size;
+  const sourceBackedRowCount = partRows.length;
+  const manifestExpectedPartCount = positiveNumber(sourceBackedCanonicalPartCount) || positiveNumber(sourceBackedRowCount);
 
   return {
     sectionSource: assemblySections.length > 0
@@ -165,8 +173,9 @@ async function loadSourceTruth(normalizedModel: string) {
         ? "provider_part_seed_rows"
         : "none",
     assemblySections: selectedSections,
-    sourceBackedCanonicalPartCount: canonicalPartNumbers.size,
-    sourceBackedRowCount: partRows.length,
+    sourceBackedCanonicalPartCount,
+    sourceBackedRowCount,
+    manifestExpectedPartCount,
     hasProviderAssemblySections: assemblySections.length > 0,
     hasProviderPartRows: partRows.length > 0,
   };
@@ -187,12 +196,11 @@ function buildDiagramParseForUi(existingDiagramParse: unknown, sourceTruth: Awai
     ...existing,
     visualTruth: {
       ...existingVisualTruth,
-      // This is intentionally source-backed only. The UI already prefers this field;
-      // do not allow model-generated part.section labels to masquerade as diagram assemblies.
       assemblyNames,
       assemblySource: sourceTruth.sectionSource,
       sourceBacked: assemblyNames.length > 0,
       sourceBackedPartCount: sourceTruth.sourceBackedCanonicalPartCount,
+      manifestExpectedPartCount: sourceTruth.manifestExpectedPartCount,
     },
   };
 }
@@ -219,6 +227,7 @@ export async function GET(request: Request) {
 
     const existing = existingRows[0];
     const diagramParse = buildDiagramParseForUi(existing?.diagramParse, sourceTruth);
+    const manifestExpectedPartCount = sourceTruth.manifestExpectedPartCount;
 
     if (!existing) {
       if (!sourceTruth.hasProviderPartRows && !sourceTruth.hasProviderAssemblySections) {
@@ -242,34 +251,54 @@ export async function GET(request: Request) {
         trustedTotalCountSource: null,
         trustedTotalCountSourceUrl: null,
         trustedTotalCountCheckedAt: null,
+        expectedPartCount: manifestExpectedPartCount,
+        expectedPartCountSource: sourceTruth.sectionSource,
+        expectedPartCountKind: manifestExpectedPartCount ? "source_backed_manifest_count" : "unknown",
         actualCanonicalPartCount: sourceTruth.sourceBackedCanonicalPartCount,
         actualPartCount: sourceTruth.sourceBackedRowCount,
-        partsComplete: false,
+        partsComplete: Boolean(manifestExpectedPartCount && sourceTruth.sourceBackedCanonicalPartCount >= manifestExpectedPartCount),
         retrievalState: "parts_seeded_pricing_needed",
         diagramParse,
         diagramAssemblySections: sourceTruth.assemblySections,
         sourceTruth: {
           ...sourceTruth,
           expectedCountIsTrusted: false,
-          expectedPartCount: null,
+          expectedPartCount: manifestExpectedPartCount,
+          expectedPartCountKind: manifestExpectedPartCount ? "source_backed_manifest_count" : "unknown",
           currentSourceBackedPartCount: sourceTruth.sourceBackedCanonicalPartCount,
         },
       });
     }
 
     const trustedTotalPartCount = existing.trustedTotalPartCount ?? existing.expectedPartCount ?? null;
+    const trustedExpected = positiveNumber(trustedTotalPartCount);
+    const expectedPartCount = trustedExpected || manifestExpectedPartCount;
+    const expectedPartCountKind = trustedExpected
+      ? "trusted_total_part_count"
+      : expectedPartCount
+        ? "source_backed_manifest_count"
+        : "unknown";
 
     return NextResponse.json({
       ...existing,
       diagramParse,
       trustedTotalPartCount,
+      expectedPartCount,
+      expectedPartCountSource: trustedExpected
+        ? existing.trustedTotalCountSource
+        : sourceTruth.sectionSource,
+      expectedPartCountSourceUrl: trustedExpected
+        ? existing.trustedTotalCountSourceUrl
+        : sourceTruth.assemblySections[0]?.providerAssemblyUrl || sourceTruth.assemblySections[0]?.diagramUrl || null,
+      expectedPartCountKind,
       actualCanonicalPartCount: existing.actualCanonicalPartCount || sourceTruth.sourceBackedCanonicalPartCount,
       actualPartCount: existing.actualPartCount || sourceTruth.sourceBackedRowCount,
       diagramAssemblySections: sourceTruth.assemblySections,
       sourceTruth: {
         ...sourceTruth,
-        expectedCountIsTrusted: typeof trustedTotalPartCount === "number" && trustedTotalPartCount > 0,
-        expectedPartCount: trustedTotalPartCount,
+        expectedCountIsTrusted: Boolean(trustedExpected),
+        expectedPartCount,
+        expectedPartCountKind,
         currentSourceBackedPartCount: sourceTruth.sourceBackedCanonicalPartCount,
         trustedTotalCountSource: existing.trustedTotalCountSource,
         trustedTotalCountSourceUrl: existing.trustedTotalCountSourceUrl,
