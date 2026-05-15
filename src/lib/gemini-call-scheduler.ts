@@ -6,7 +6,7 @@ import {
   type GeminiToolName,
 } from './gemini-tool-policies';
 
-type ScheduledGeminiCall<T> = {
+type ScheduledGeminiCall<T = any> = {
   tool?: GeminiToolName | string;
   bucket?: GeminiBucketName;
   model?: string;
@@ -14,7 +14,7 @@ type ScheduledGeminiCall<T> = {
   route?: string;
   jobId?: string;
   requestId?: string;
-  run: () => Promise<T>;
+  run: () => Promise<T> | T;
 };
 
 type BucketState = {
@@ -118,7 +118,7 @@ function logGeminiCall(input: {
   }
 }
 
-export async function scheduleGeminiCall<T>(input: ScheduledGeminiCall<T>): Promise<T> {
+export async function scheduleGeminiCall<T = any>(input: ScheduledGeminiCall<T>): Promise<T> {
   const policy = getGeminiBucketPolicy({
     tool: input.tool,
     bucket: input.bucket,
@@ -127,7 +127,7 @@ export async function scheduleGeminiCall<T>(input: ScheduledGeminiCall<T>): Prom
   });
 
   if (!enabled()) {
-    return input.run();
+    return await input.run();
   }
 
   const state = getState(policy.key);
