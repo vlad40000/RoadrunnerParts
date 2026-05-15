@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { scheduleGeminiCall } from '../../../src/lib/gemini-call-scheduler';
 import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '../../../src/features/bom/services/model-parts-cache';
 import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
+import { hydrateBomPricesFromDb, buildPricingSummary } from '../../../src/features/bom/services/part-pricing-hydrator';
 import { db } from '../../../src/server/db';
 import { modelSources } from '../../../src/server/db/schema/model-sources';
 
@@ -14,11 +15,18 @@ const BOM_MODEL = process.env.BOM_LITE_MODEL || process.env.GEMINI_LITE_MODEL ||
 
 const BOM_ROUTE_DEADLINE_MS = 110000;
 export const APPROVED_PRICE_SOURCES = [
+  'encompass.com',
+  'encompass',
+  'reliableparts.com',
+  'reliableparts',
+  'dlparts.com',
+  'dlparts',
+  'd&lparts',
+  'd&l parts',
   'fix.com',
   'repairclinic.com',
   'appliancepartspros.com',
   'searspartsdirect.com',
-  'encompass.com',
   'partselect.com',
   'partsdr.com',
 ] as const;
@@ -97,7 +105,8 @@ function logParseDiagnostics(text: string, err: any) {
 function normalizePriceSource(value: unknown) {
   const source = String(value || '').trim().toLowerCase();
   return APPROVED_PRICE_SOURCES.find((approved) => {
-    const regex = new RegExp(`(^|\\.)` + approved.replace('.', '\\.') + `($|/|\\?|#|$)`, 'i');
+    const escaped = approved.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(^|\\.|\\b)` + escaped + `($|/|\\?|#|\\b)`, 'i');
     return regex.test(source);
   }) || '';
 }
@@ -114,17 +123,27 @@ export function normalizeGeneratedParts(parts: any[] | null | undefined) {
     const price = Number(rawPrice);
     const priceSource = normalizePriceSource(rawSource);
 
-    // Include part regardless of price validity — flag unverified pricing
-    // so the UI can display the part list and the operator can verify prices manually.
+    // Model-supplied pricing is allowed only when it names an approved supplier.
+    // The supplier DB hydration layer below remains the authority and will overwrite this.
     const hasApprovedPrice = Number.isFinite(price) && price > 0 && !!priceSource;
 
     return [{
       ...part,
       price: hasApprovedPrice ? price : null,
-      priceSource: hasApprovedPrice ? priceSource : (rawSource ? String(rawSource) : 'unverified'),
+      priceSource: hasApprovedPrice ? priceSource : (rawSource ? String(rawSource) : 'supplier_price_required'),
       priceVerified: hasApprovedPrice,
+      pricingRequired: !hasApprovedPrice,
     }];
   });
+}
+
+async function finalizeBomParts(input: { model: string; parts: any[] }) {
+  const normalized = normalizeGeneratedParts(input.parts);
+  const priced = await hydrateBomPricesFromDb({ model: input.model, parts: normalized });
+  return {
+    parts: priced,
+    pricingSummary: buildPricingSummary(priced),
+  };
 }
 
 export async function POST(req: Request) {
@@ -152,16 +171,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing model' }, { status: 400 });
     }
 
-    // CACHE CHECK — return instantly if we've seen this model before. Do not discard rows only because pricing is missing.
+    // CACHE CHECK — return instantly if we've seen this model before. Pricing is still hydrated from supplier DB.
     const isFirstPass = !knownPartNumbers || knownPartNumbers.length === 0;
     if (isFirstPass) {
       const cached = await findCachedModelParts(model);
       if (cached?.parts && Array.isArray(cached.parts) && cached.parts.length > 0) {
         const cachedIsExhaustive = cached.isExhaustive === 'true';
-        console.log(`[BOM Route] Cache HIT for ${normalizeModelKey(model)} (Exhaustive: ${cachedIsExhaustive}) — returning stored data`);
+        const finalized = await finalizeBomParts({ model, parts: cached.parts });
+        console.log(`[BOM Route] Cache HIT for ${normalizeModelKey(model)} (Exhaustive: ${cachedIsExhaustive}) — returning stored data with supplier pricing`);
 
         return NextResponse.json({
-          parts: normalizeGeneratedParts(cached.parts),
+          parts: finalized.parts,
+          pricingSummary: finalized.pricingSummary,
+          pricingRequired: finalized.pricingSummary.missing > 0,
           modelMSRP: cached.msrp ? parseFloat(cached.msrp) : undefined,
           fromCache: true,
           isExhaustive: cachedIsExhaustive,
@@ -178,18 +200,20 @@ export async function POST(req: Request) {
         });
 
         if (result.sourceType === 'deterministic' && result.parts.length > 0) {
-          const parts = normalizeGeneratedParts(result.parts);
-          console.log(`[BOM Route] DETERMINISTIC HIT for ${normalizeModelKey(model)} — Found ${parts.length} parts`);
+          const finalized = await finalizeBomParts({ model, parts: result.parts });
+          console.log(`[BOM Route] DETERMINISTIC HIT for ${normalizeModelKey(model)} — Found ${finalized.parts.length} parts; priced ${finalized.pricingSummary.priced}/${finalized.pricingSummary.total}`);
 
           upsertModelPartsCache({
             model,
-            parts,
+            parts: finalized.parts,
             msrp: result.modelMSRP,
             isExhaustive: result.isExhaustive || false,
           }).catch(err => console.error('[BOM Route] Cache write failed (deterministic):', err));
 
           return NextResponse.json({
-            parts,
+            parts: finalized.parts,
+            pricingSummary: finalized.pricingSummary,
+            pricingRequired: finalized.pricingSummary.missing > 0,
             modelMSRP: result.modelMSRP,
             fromCache: false,
             isExhaustive: result.isExhaustive,
@@ -223,9 +247,10 @@ export async function POST(req: Request) {
       typeof passInstruction === 'string' && passInstruction.trim().length > 0
         ? passInstruction
         : `QUICK BOM PASS:
-Target approximately 40 valid OEM/serviceable parts with broad coverage across major categories.
-Focus on speed and reliability for the most common source-backed parts.`;
+Target approximately 40 valid OEM parts with broad coverage across major categories.
+Prioritize rows that can also be priced from approved suppliers.`;
 
+    const approvedSupplierList = APPROVED_PRICE_SOURCES.join(', ');
     const prompt = promptOverride || `You are an expert appliance parts researcher. Generate a Bill of Materials (BOM) for appliance model: ${model}.
 ${serial ? `Serial Number: ${serial}` : ''}
 ${manufactureDate ? `Approximate Manufacture Date: ${manufactureDate}` : ''}
@@ -239,17 +264,17 @@ KNOWN PART NUMBERS ALREADY FOUND (DO NOT REPEAT THESE):
 ${knownPartNumbers.length > 0 ? knownPartNumbers.join(', ') : 'NONE'}
 
 INSTRUCTIONS:
-- Use GOOGLE SEARCH to find the actual OEM parts list for this exact model on searspartsdirect.com, fix.com, repairclinic.com, or appliancepartspros.com.
+- Use GOOGLE SEARCH to find the actual OEM parts list for this exact model on searspartsdirect.com, encompass.com, reliableparts.com, dlparts.com, fix.com, repairclinic.com, appliancepartspros.com, partsdr.com, or partselect.com.
 - Use REAL manufacturer OEM part numbers only.
 - Do NOT include any part number already in the known list above.
-- Return valid, serviceable, or diagram-listed parts even when a verified market price is unavailable.
+- Return valid, serviceable, or diagram-listed parts.
+- Pricing is a priority: for each returned part, attempt to find supplier pricing from these approved suppliers: ${approvedSupplierList}.
+- Do not invent prices. If no approved supplier price is found, set "price" to null and set "priceSource" to "supplier_price_required".
+- Do not use $0.00 placeholders.
 - TARGET: Return approximately 40 parts per pass.
 - BATCHING LOGIC: If an EXPECTED TOTAL PART COUNT is provided, continue targeting ~40 parts per pass until the remaining count is less than 40, then deliver only that remainder.
 - If the real OEM BOM has fewer than 40 serviceable parts total, return all of them and stop immediately — do NOT invent or pad parts.
 - Only return parts that genuinely exist in OEM service documentation or real parts retailer sites for this exact model.
-- Pricing is preferred but not mandatory: search searspartsdirect.com, fix.com, repairclinic.com, appliancepartspros.com, encompass.com, partselect.com, or partsdr.com.
-- If a verified positive price is unavailable, set "price" to null and set "priceSource" to the source that backed the part row, or "unverified" if no pricing source exists.
-- Do not invent prices, use $0.00 placeholders, or discard source-backed OEM rows only because they are unpriced.
 
 OUTPUT FORMAT — return ONLY a valid JSON object, no markdown, no explanation:
 {
@@ -260,8 +285,8 @@ OUTPUT FORMAT — return ONLY a valid JSON object, no markdown, no explanation:
       "description": "Drive Motor",
       "section": "Gearcase, Motor, and Pump Parts",
       "compatibleModels": ["${model}"],
-      "avgRating": 4.5,
-      "reviewCount": 120,
+      "avgRating": 0,
+      "reviewCount": 0,
       "price": 89.99,
       "priceSource": "encompass.com"
     }
@@ -323,12 +348,17 @@ If a part does not fit any section, use the closest match — never omit a part 
 
     try {
       const parsed = JSON.parse(jsonCandidate);
-      parsed.parts = normalizeGeneratedParts(parsed.parts);
+      const finalized = await finalizeBomParts({ model, parts: parsed.parts });
+      parsed.parts = finalized.parts;
+      parsed.pricingSummary = finalized.pricingSummary;
+      parsed.pricingRequired = finalized.pricingSummary.missing > 0;
 
       // Graceful empty — 200 with flag so the UI degrades instead of hard erroring
       if (parsed.parts.length === 0) {
         return NextResponse.json({
           parts: [],
+          pricingSummary: finalized.pricingSummary,
+          pricingRequired: true,
           noPricedParts: true,
           priceNote: 'No source-backed parts were returned. Try again or check a parts retailer directly.',
         });
