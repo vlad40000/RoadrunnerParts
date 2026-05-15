@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { scheduleGeminiCall } from '../../../src/lib/gemini-call-scheduler';
 import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '../../../src/features/bom/services/model-parts-cache';
 import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
 import { db } from '../../../src/server/db';
@@ -9,6 +10,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 120; // Extended to support Google Search + Thinking
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const BOM_MODEL = process.env.BOM_LITE_MODEL || process.env.GEMINI_LITE_MODEL || 'gemini-3.1-flash-lite';
 
 const BOM_ROUTE_DEADLINE_MS = 110000;
 export const APPROVED_PRICE_SOURCES = [
@@ -99,7 +101,6 @@ function normalizePriceSource(value: unknown) {
     return regex.test(source);
   }) || '';
 }
-
 
 export function normalizeGeneratedParts(parts: any[] | null | undefined) {
   if (!Array.isArray(parts)) return [];
@@ -206,7 +207,7 @@ export async function POST(req: Request) {
     }
 
     const generativeModel = genAI.getGenerativeModel({
-      model: 'gemini-3.1-flash-lite',
+      model: BOM_MODEL,
       generationConfig: {
         temperature: 1.0,          // Gemini 3 default — never go below 1.0
         maxOutputTokens: 32000,    // Enough headroom for 150+ part BOMs as JSON
@@ -274,12 +275,20 @@ If a part does not fit any section, use the closest match — never omit a part 
     const aiCallStartedAt = Date.now();
     let rawText = '{"parts": []}';
     try {
-      const result = await generativeModel.generateContent(
-        {
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        },
-        { timeout: BOM_ROUTE_DEADLINE_MS },
-      );
+      const result = await scheduleGeminiCall({
+        tool: 'bom',
+        bucket: 'lite',
+        model: BOM_MODEL,
+        grounded: true,
+        route: 'app/api/bom',
+        requestId: normalizeModelKey(model),
+        run: () => generativeModel.generateContent(
+          {
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          },
+          { timeout: BOM_ROUTE_DEADLINE_MS },
+        ),
+      });
       const response = await result.response;
       rawText = response.text() || '{"parts": []}';
       console.log('[BOM API] AI call completed in ms:', elapsedMs(aiCallStartedAt));
@@ -306,7 +315,7 @@ If a part does not fit any section, use the closest match — never omit a part 
     // DB-FIRST: Log the raw AI output before parsing
     await db.insert(modelSources).values({
       normalizedModel: normalizeModelKey(model),
-      source: 'gemini-3.1-flash-lite',
+      source: BOM_MODEL,
       sourceUrl: 'ai-generation',
       raw: { prompt, output: rawText },
       status: 'completed'
