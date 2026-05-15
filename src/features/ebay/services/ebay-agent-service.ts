@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { scheduleGeminiCall } from "../../../lib/gemini-call-scheduler";
 import { MAY7_ROADRUNNER_EBAY_LISTING_PROMPT } from "../../bom/prompts/may7-rld-prompts";
 import {
   agenticListingEnvelopeSchema,
@@ -7,7 +8,7 @@ import {
   type AgenticListingResult,
 } from "../schemas";
 
-const EBAY_AGENT_MODEL = "gemini-3.1-flash-lite";
+const EBAY_AGENT_MODEL = process.env.EBAY_LITE_MODEL || process.env.GEMINI_LITE_MODEL || "gemini-3.1-flash-lite";
 
 function extractJsonObject(text: string): unknown {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -58,7 +59,15 @@ If the source evidence does not support compatibility, dimensions, OEM status, o
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
+      const result = await scheduleGeminiCall({
+        tool: "ebay",
+        bucket: "lite",
+        model: EBAY_AGENT_MODEL,
+        grounded: true,
+        route: "EbayAgentService.generateListing",
+        requestId: parsedReq.partNumber,
+        run: () => this.model.generateContent(prompt),
+      });
       const responseText = result.response.text();
       const parsed = agenticListingEnvelopeSchema.parse(extractJsonObject(responseText));
       const listing = parsed.listings[0];
@@ -78,13 +87,10 @@ If the source evidence does not support compatibility, dimensions, OEM status, o
   }
 
   async batchGenerate(requests: AgenticListingRequest[]): Promise<AgenticListingResult[]> {
-    const results: AgenticListingResult[] = [];
-    for (const req of requests) {
-      const res = await this.generateListing(req);
-      if (res) results.push(res);
-      // Small delay between requests to be polite to APIs
-      await new Promise(r => setTimeout(r, 500));
-    }
-    return results;
+    const settled = await Promise.allSettled(requests.map((req) => this.generateListing(req)));
+    return settled.flatMap((result) => {
+      if (result.status !== "fulfilled" || !result.value) return [];
+      return [result.value];
+    });
   }
 }
