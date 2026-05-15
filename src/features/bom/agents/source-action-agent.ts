@@ -323,6 +323,8 @@ export async function runSourceActionAgent(input: SourceActionInput) {
     if (!payload) throw new Error("No Sears CATALOG_API_RESPONSE found.");
 
     const catalogParts = parseSearsCatalogParts(payload);
+    const catalogModel = parseSearsCatalogModel(payload);
+    const expectedPartsTotal = positiveCount(catalogModel?.partCount);
     const extractedRows = catalogParts.map(p => ({
       section: p.sectionName || "All Model Parts",
       diagramNumber: p.diagramNumber,
@@ -342,17 +344,46 @@ export async function runSourceActionAgent(input: SourceActionInput) {
     const mergedRows = mergeRowsByPartNumber(existingRows, extractedRows);
 
     const pricedCount = checkPricedRows(mergedRows);
-    const pricingComplete = pricedCount > 0 && pricedCount >= mergedRows.length;
+    const partsComplete = expectedPartsTotal !== null
+      ? mergedRows.length >= expectedPartsTotal
+      : mergedRows.length > 0;
+    const pricingComplete = partsComplete && pricedCount > 0 && pricedCount >= mergedRows.length;
 
     await saveBomArtifacts(input.jobId, { finalRows: mergedRows });
     await updateBomJobSummary(input.jobId, {
       jobStage: "sears_parts_extracted",
       actualPartCount: mergedRows.length,
+      actualCanonicalPartCount: mergedRows.length,
+      actualUniqueParts: mergedRows.length,
+      rawRowCount: mergedRows.length,
+      uniqueRowCount: mergedRows.length,
+      expectedPartsTotal: expectedPartsTotal ?? job.expectedPartsTotal,
+      expectedPartsSource: expectedPartsTotal
+        ? "sears-partsdirect:CATALOG_API_RESPONSE"
+        : job.expectedPartsSource,
+      expectedPartCount: expectedPartsTotal ?? job.expectedPartCount,
+      trustedTotalPartCount: expectedPartsTotal ?? job.trustedTotalPartCount,
+      trustedTotalCountSource: expectedPartsTotal
+        ? "sears-partsdirect:CATALOG_API_RESPONSE"
+        : job.trustedTotalCountSource,
+      trustedTotalCountSourceUrl: expectedPartsTotal ? fetched.finalUrl : job.trustedTotalCountSourceUrl,
+      trustedTotalCountCheckedAt: expectedPartsTotal ? new Date() : job.trustedTotalCountCheckedAt,
+      coveragePct: expectedPartsTotal ? Math.min(1, mergedRows.length / expectedPartsTotal) : null,
+      partsComplete,
       verifiedPriceCount: pricedCount,
+      requiredPriceCount: mergedRows.length,
+      unpricedCount: Math.max(0, mergedRows.length - pricedCount),
       pricingComplete
     });
 
-    return { status: "sears_parts_extracted", rowCount: mergedRows.length, pricedCount };
+    return {
+      status: "sears_parts_extracted",
+      rowCount: mergedRows.length,
+      pricedCount,
+      expectedPartsTotal,
+      partsComplete,
+      pricingComplete,
+    };
   }
 
   if (input.task === "lock_supplier_target") {
@@ -821,6 +852,7 @@ export async function runSourceActionAgent(input: SourceActionInput) {
       brand: input.brand,
       model: input.canonicalModel,
       rows: rows as any,
+      maxTargetedLookups: rows.length,
       pricingOrder: [pricingSource],
     });
 
@@ -841,7 +873,13 @@ export async function runSourceActionAgent(input: SourceActionInput) {
 
     await updateBomJobSummary(input.jobId, {
       jobStage: `${input.task}_complete`,
-      retrievalState: pricingComplete ? "parts_partial" : "parts_partial",
+      retrievalState: job.partsComplete
+        ? pricingComplete
+          ? "bom_complete"
+          : verifiedPriceCount > 0
+            ? "parts_complete_pricing_partial"
+            : "parts_complete_pricing_missing"
+        : "parts_partial",
       actualPartCount: completion.actualPartCount,
       actualCanonicalPartCount: completion.actualCanonicalPartCount,
       requiredPriceCount,

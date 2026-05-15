@@ -9,6 +9,7 @@ export type ModelRunToolConfig = {
 
 export type GeminiModelId =
   | "gemini-3.1-flash-lite"
+  | "gemini-3.1-flash-lite-preview"
   | "gemini-3-flash-preview"
   | `gemini-${string}`;
 
@@ -60,7 +61,6 @@ export function normalizeGeminiModelId(model: unknown): GeminiModelId {
   if (/^nano[-\s]?banana$/i.test(value) || value === "gemini-2.5-flash-image") {
     return GEMINI_IMAGE_MODEL;
   }
-  if (value === "gemini-3.1-flash-lite-preview") return DEFAULT_GEMINI_TEXT_MODEL;
   if (value === "gemini-2.5-flash-preview-09-2025") return "gemini-2.5-flash";
   if (!isGeminiModelId(value)) {
     throw new Error(`Unsupported model provider: ${String(model)}. Roadrunner AI runs are Gemini-only.`);
