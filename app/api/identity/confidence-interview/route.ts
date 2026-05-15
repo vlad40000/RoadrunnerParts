@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { scheduleGeminiCall } from "../../../../src/lib/gemini-call-scheduler";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const IDENTITY_MODEL = process.env.IDENTITY_LITE_MODEL || process.env.GEMINI_LITE_MODEL || "gemini-3.1-flash-lite-preview";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -86,7 +88,7 @@ export async function POST(req: NextRequest) {
     const body: InterviewRequest = await req.json();
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-flash-lite-preview",
+      model: IDENTITY_MODEL,
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA as never,
@@ -163,7 +165,15 @@ ${historyText || "(none yet)"}`;
 
     contentParts.push({ text: "Evaluate all evidence and return your structured assessment." });
 
-    const result = await model.generateContent({ contents: [{ role: "user", parts: contentParts }] });
+    const result = await scheduleGeminiCall({
+      tool: "identity",
+      bucket: "lite",
+      model: IDENTITY_MODEL,
+      grounded: false,
+      route: "app/api/identity/confidence-interview",
+      requestId: body.partNumber,
+      run: () => model.generateContent({ contents: [{ role: "user", parts: contentParts }] }),
+    });
     const text = result.response.text();
     const parsed: InterviewResponse = JSON.parse(text);
 
