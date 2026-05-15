@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { scheduleGeminiCall } from '../../../../src/lib/gemini-call-scheduler';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const IDENTITY_CLASSIFIER_MODEL =
+  process.env.IDENTITY_LITE_MODEL || process.env.GEMINI_LITE_MODEL || 'gemini-3.1-flash-lite-preview';
 
 /**
  * POST /api/identity/classify-image
@@ -21,7 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ classification: 'unknown' });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const model = genAI.getGenerativeModel({ model: IDENTITY_CLASSIFIER_MODEL });
 
     const prompt = `You are an appliance image classifier. Classify this image into exactly one category:
 
@@ -33,14 +36,21 @@ export async function POST(req: Request) {
 
 Reply with ONLY the single word category. No explanation, no punctuation.`;
 
-    const result = await model.generateContent({
-      contents: [{
-        role: 'user',
-        parts: [
-          { text: prompt },
-          { inlineData: { data: imageBase64, mimeType: mimeType || 'image/jpeg' } },
-        ],
-      }],
+    const result = await scheduleGeminiCall({
+      tool: 'identity',
+      bucket: 'lite',
+      model: IDENTITY_CLASSIFIER_MODEL,
+      grounded: false,
+      route: 'app/api/identity/classify-image',
+      run: () => model.generateContent({
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: prompt },
+            { inlineData: { data: imageBase64, mimeType: mimeType || 'image/jpeg' } },
+          ],
+        }],
+      }),
     });
 
     const raw = result.response.text().trim().toLowerCase().split(/\s+/)[0];
