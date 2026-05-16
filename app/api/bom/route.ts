@@ -5,6 +5,7 @@ import { findCachedModelParts, normalizeModelKey, upsertModelPartsCache } from '
 import { orchestrateBomRetrieval } from '../../../src/features/bom/services/bom-orchestrator';
 import { hydrateBomPricesFromDb, buildPricingSummary } from '../../../src/features/bom/services/part-pricing-hydrator';
 import { findNextDbBomBatch } from '../../../src/features/bom/services/db-bom-batch';
+import { buildMasterPartsExtractionPrompt } from '../../../src/features/bom/prompts/master-parts-extraction-prompt';
 import { db } from '../../../src/server/db';
 import { modelSources } from '../../../src/server/db/schema/model-sources';
 
@@ -286,56 +287,27 @@ export async function POST(req: Request) {
     const resolvedPassInstruction =
       typeof passInstruction === 'string' && passInstruction.trim().length > 0
         ? passInstruction
-        : `QUICK BOM PASS:
-Target approximately 40 valid OEM parts with broad coverage across major categories.
-Prioritize rows that can also be priced from approved suppliers.`;
+        : `QUICK SECTION-BASED BOM PASS:
+Target approximately 40 real OEM/serviceable parts with broad coverage across official assembly diagram sections.
+First identify or validate the section manifest. Then extract rows section by section.
+Prioritize rows that can also be priced from approved suppliers, but do not fabricate prices.`;
 
     const approvedSupplierList = APPROVED_PRICE_SOURCES.join(', ');
-    const prompt = promptOverride || `You are an expert appliance parts researcher. Generate a Bill of Materials (BOM) for appliance model: ${model}.
-${serial ? `Serial Number: ${serial}` : ''}
-${manufactureDate ? `Approximate Manufacture Date: ${manufactureDate}` : ''}
-${expectedPartCount ? `EXPECTED TOTAL PART COUNT (OEM BOM): ${expectedPartCount}` : ''}
-
-CURRENT PASS NUMBER: ${passNumber}
-
-${resolvedPassInstruction}
-
-KNOWN PART NUMBERS ALREADY FOUND (DO NOT REPEAT THESE):
-${knownPartNumbers.length > 0 ? knownPartNumbers.join(', ') : 'NONE'}
-
-INSTRUCTIONS:
-- Use GOOGLE SEARCH to find the actual OEM parts list for this exact model on searspartsdirect.com, encompass.com, reliableparts.com, dlparts.com, fix.com, repairclinic.com, appliancepartspros.com, partsdr.com, or partselect.com.
-- Use REAL manufacturer OEM part numbers only.
-- Do NOT include any part number already in the known list above.
-- Return valid, serviceable, or diagram-listed parts.
-- Pricing is a priority: for each returned part, attempt to find supplier pricing from these approved suppliers: ${approvedSupplierList}.
-- Do not invent prices. If no approved supplier price is found, set "price" to null and set "priceSource" to "supplier_price_required".
-- Do not use $0.00 placeholders.
-- TARGET: Return approximately 40 parts per pass.
-- BATCHING LOGIC: If an EXPECTED TOTAL PART COUNT is provided, continue targeting ~40 parts per pass until the remaining count is less than 40, then deliver only that remainder.
-- If the real OEM BOM has fewer than 40 serviceable parts total, return all of them and stop immediately — do NOT invent or pad parts.
-- Only return parts that genuinely exist in OEM service documentation or real parts retailer sites for this exact model.
-
-OUTPUT FORMAT — return ONLY a valid JSON object, no markdown, no explanation:
-{
-  "parts": [
-    {
-      "id": 1,
-      "partNumber": "WP12345678",
-      "description": "Drive Motor",
-      "section": "Gearcase, Motor, and Pump Parts",
-      "compatibleModels": ["${model}"],
-      "avgRating": 0,
-      "reviewCount": 0,
-      "price": 89.99,
-      "priceSource": "encompass.com"
-    }
-  ],
-  "modelMSRP": 799.00
-}
-
-Valid section values: ${SECTION_ENUM.join(', ')}.
-If a part does not fit any section, use the closest match — never omit a part because of section uncertainty.`;
+    const sectionManifestContext = JSON.stringify({
+      legacyAllowedSectionLabels: SECTION_ENUM,
+      note: 'Use official provider/manufacturer section names when found. These labels are only legacy UI fallbacks, not source truth.',
+    }, null, 2);
+    const prompt = promptOverride || buildMasterPartsExtractionPrompt({
+      model,
+      serial,
+      manufactureDate,
+      passNumber,
+      passInstruction: resolvedPassInstruction,
+      knownPartNumbers: excludePartNumbers,
+      expectedPartCount,
+      approvedSupplierList,
+      sectionManifestJson: sectionManifestContext,
+    });
 
     const aiCallStartedAt = Date.now();
     let rawText = '{"parts": []}';
@@ -392,7 +364,7 @@ If a part does not fit any section, use the closest match — never omit a part 
       parsed.parts = finalized.parts;
       parsed.pricingSummary = finalized.pricingSummary;
       parsed.pricingRequired = finalized.pricingSummary.missing > 0;
-      parsed.retrievalState = finalized.parts.length > 0 ? 'parts_partial' : 'no_result';
+      parsed.retrievalState = parsed.summary?.retrievalState || (finalized.parts.length > 0 ? 'parts_partial' : 'no_result');
 
       // Graceful empty — 200 with flag so the UI degrades instead of hard erroring
       if (parsed.parts.length === 0) {
@@ -402,7 +374,9 @@ If a part does not fit any section, use the closest match — never omit a part 
           pricingRequired: true,
           noPricedParts: true,
           priceNote: 'No source-backed parts were returned. Try again or check a parts retailer directly.',
-          retrievalState: 'no_result',
+          retrievalState: parsed.summary?.retrievalState || 'no_result',
+          summary: parsed.summary,
+          sections: parsed.sections || [],
         });
       }
 
