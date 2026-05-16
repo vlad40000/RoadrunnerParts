@@ -14,6 +14,20 @@ function cleanText(value: unknown) {
   return text || null;
 }
 
+function absoluteEncompassUrl(value: unknown) {
+  const raw = cleanText(value);
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return `https://encompass.com${raw.startsWith("/") ? "" : "/"}${raw}`;
+}
+
+function buildEncompassSearchUrl(row: Row, normalizedModel: string) {
+  const route = cleanText(row.encompass_route || row.encompassRoute);
+  if (!route) return null;
+  const brand = encodeURIComponent(cleanText(row.brand) || route);
+  return `https://encompass.com/Exploded-View-Search/${String(route).toUpperCase()}/${brand}?searchTerm=${encodeURIComponent(normalizedModel)}`;
+}
+
 async function safeRows<T extends Row>(label: string, errors: Record<string, string>, fn: () => Promise<unknown>) {
   try {
     const rows = await fn();
@@ -55,7 +69,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: "Could not resolve model row.", errors }, { status: 500 });
   }
 
-  const [sources, sections, jobs, counts] = await Promise.all([
+  const [sources, encompassOptions, sections, jobs, counts] = await Promise.all([
     safeRows<Row>("provider_model_routes", errors, () => sql`
       select
         provider,
@@ -70,6 +84,24 @@ export async function GET(request: Request) {
       where upper(regexp_replace(model, '[^A-Z0-9]', '', 'g')) = ${normalizedModel}
       order by updated_at desc nulls last, created_at desc nulls last
       limit 100
+    `),
+    safeRows<Row>("encompass_model_urls", errors, () => sql`
+      select
+        brand,
+        encompass_route,
+        encompass_id,
+        model_number,
+        encoded_model_number,
+        normalized_model,
+        url,
+        source_file,
+        created_at
+      from encompass_model_urls
+      where normalized_model = ${normalizedModel}
+         or upper(regexp_replace(coalesce(model_number, ''), '[^A-Z0-9]', '', 'g')) = ${normalizedModel}
+         or upper(regexp_replace(coalesce(encoded_model_number, ''), '[^A-Z0-9]', '', 'g')) = ${normalizedModel}
+      order by encompass_route asc, encompass_id asc, created_at desc
+      limit 50
     `),
     safeRows<Row>("provider_assembly_sections", errors, () => sql`
       select
@@ -97,7 +129,7 @@ export async function GET(request: Request) {
       select id::text, job_type, source, status, priority, metadata, created_at, updated_at
       from retrieval_jobs
       where model_number = ${normalizedModel}
-        and job_type in ('hitl_review', 'selected_section_extract', 'pricing_lookup')
+        and job_type in ('hitl_review', 'selected_section_extract', 'pricing_lookup', 'playwright_diagram_discovery')
       order by created_at desc
       limit 100
     `),
@@ -105,11 +137,45 @@ export async function GET(request: Request) {
       select
         (select count(*)::int from provider_part_seed_rows where upper(regexp_replace(model, '[^A-Z0-9]', '', 'g')) = ${normalizedModel}) as provider_part_seed_rows,
         (select count(*)::int from bom_parts where model_id = ${modelRow.id}::uuid) as bom_parts,
-        (select count(*)::int from part_pricing where model_id = ${modelRow.id}::uuid and price is not null and price > 0) as priced_parts
+        (select count(*)::int from part_pricing where model_id = ${modelRow.id}::uuid and price is not null and price > 0) as priced_parts,
+        (select count(*)::int from encompass_model_urls where normalized_model = ${normalizedModel}) as encompass_exploded_view_options
     `),
   ]);
 
-  const candidateSources = sources.map((row, index) => ({
+  // Bridge Encompass indexed exploded-view rows into provider_model_routes so HITL and
+  // downstream deterministic workers see Encompass as a first-class provider option.
+  for (const row of encompassOptions) {
+    const modelUrl = absoluteEncompassUrl(row.url);
+    const route = cleanText(row.encompass_route);
+    const optionValue = cleanText(row.encompass_id) || route || modelUrl;
+    if (!modelUrl) continue;
+
+    await safeRows<Row>("promote_encompass_model_url", errors, () => sql`
+      insert into provider_model_routes (
+        brand,
+        model,
+        provider,
+        provider_model_url,
+        provider_option_value,
+        source_status,
+        source_file,
+        updated_at
+      ) values (
+        ${cleanText(row.brand)},
+        ${normalizedModel},
+        'encompass',
+        ${modelUrl},
+        ${optionValue},
+        'encompass_index_seeded',
+        ${cleanText(row.source_file) || 'encompass_model_urls'},
+        now()
+      )
+      on conflict do nothing
+      returning id::text
+    `);
+  }
+
+  const providerCandidateSources = sources.map((row, index) => ({
     id: `source-${index + 1}`,
     provider: row.provider,
     modelUrl: row.provider_model_url,
@@ -120,7 +186,30 @@ export async function GET(request: Request) {
     confidence: row.provider_model_url ? 0.75 : 0.35,
   }));
 
-  const candidateSections = sections.map((row) => ({
+  const encompassExplodedViewOptions = encompassOptions.map((row, index) => {
+    const modelUrl = absoluteEncompassUrl(row.url);
+    const routeSearchUrl = buildEncompassSearchUrl(row, normalizedModel);
+    return {
+      id: `encompass-option-${index + 1}`,
+      provider: "encompass",
+      brand: row.brand,
+      modelUrl,
+      explodedViewSearchUrl: routeSearchUrl,
+      optionValue: cleanText(row.encompass_id) || cleanText(row.encompass_route),
+      encompassRoute: row.encompass_route,
+      encompassId: row.encompass_id,
+      modelNumber: row.model_number,
+      encodedModelNumber: row.encoded_model_number,
+      sourceStatus: "encompass_index_seeded",
+      sourceFile: row.source_file || "encompass_model_urls",
+      confidence: modelUrl ? 0.88 : 0.55,
+      nextAction: "request_playwright_capture_or_select_as_provider_source",
+    };
+  });
+
+  const candidateSources = [...providerCandidateSources, ...encompassExplodedViewOptions];
+
+  const providerCandidateSections = sections.map((row) => ({
     id: row.id,
     sectionId: row.id,
     provider: row.provider,
@@ -138,6 +227,31 @@ export async function GET(request: Request) {
     requiresHitl: true,
   }));
 
+  // These are not final assembly sections yet; they are Encompass exploded-view
+  // provider options that should be visible to HITL so a human can choose them
+  // and trigger Playwright/BeautifulSoup discovery against the locked URL.
+  const encompassOptionSections = encompassExplodedViewOptions.map((option, index) => ({
+    id: `encompass-option-section-${index + 1}`,
+    sectionId: `encompass-option-section-${index + 1}`,
+    provider: "encompass",
+    optionValue: option.optionValue,
+    sectionName: `Encompass exploded view option${option.encompassRoute ? ` — ${option.encompassRoute}` : ""}${option.encompassId ? ` / ${option.encompassId}` : ""}`,
+    sectionSequence: index + 1,
+    sectionUrl: option.modelUrl,
+    diagramUrl: option.modelUrl,
+    imageUrl: null,
+    sectionFamily: "encompass_exploded_view_option",
+    sourceStatus: "encompass_index_seeded",
+    sourceFile: option.sourceFile,
+    sourceRow: null,
+    confidence: option.confidence,
+    requiresHitl: true,
+    isProviderSeedOption: true,
+    nextAction: "Run Playwright discovery to expand this Encompass option into real assembly sections.",
+  }));
+
+  const candidateSections = [...providerCandidateSections, ...encompassOptionSections];
+
   const packet = {
     packetId: `hitl-${normalizedModel}`,
     identity: {
@@ -150,13 +264,16 @@ export async function GET(request: Request) {
     },
     retrievalState: "hitl_review_required",
     candidateSources,
+    encompassExplodedViewOptions,
     candidateSections,
     existingCounts: counts[0] || {},
     jobs,
-    failureReason: candidateSections.length ? null : "NO_APPROVED_SECTION_MANIFEST",
-    recommendedAction: candidateSections.length
+    failureReason: candidateSections.length ? null : "NO_APPROVED_SECTION_MANIFEST_OR_ENCOMPASS_OPTION",
+    recommendedAction: providerCandidateSections.length
       ? "Review candidate assembly sections, select the correct ones, then queue selected section extraction."
-      : "Enter a provider model URL or run Playwright discovery to find assembly diagram sections.",
+      : encompassExplodedViewOptions.length
+        ? "Select an Encompass exploded-view option and run Playwright discovery to expand it into assembly sections."
+        : "Enter a provider model URL or run Playwright discovery to find assembly diagram sections.",
     errors,
   };
 
