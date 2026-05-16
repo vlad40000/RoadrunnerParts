@@ -275,9 +275,9 @@ export async function POST(req: Request) {
       model: BOM_MODEL,
       generationConfig: {
         temperature: 1.0,          // Gemini 3 default — never go below 1.0
-        maxOutputTokens: 32000,    // Enough headroom for 150+ part BOMs as JSON
+        maxOutputTokens: 12000,    // Compact batch prompt; keep output parse-safe.
         thinkingConfig: {
-          thinkingLevel: 'medium', // Low cuts off too early for multi-section BOM planning
+          thinkingLevel: 'low',
         },
         responseMimeType: 'application/json',
       },
@@ -287,10 +287,7 @@ export async function POST(req: Request) {
     const resolvedPassInstruction =
       typeof passInstruction === 'string' && passInstruction.trim().length > 0
         ? passInstruction
-        : `QUICK SECTION-BASED BOM PASS:
-Target approximately 40 real OEM/serviceable parts with broad coverage across official assembly diagram sections.
-First identify or validate the section manifest. Then extract rows section by section.
-Prioritize rows that can also be priced from approved suppliers, but do not fabricate prices.`;
+        : `COMPACT SECTION-BASED BOM PASS: return at most 12 real OEM/serviceable parts. Identify section context first. Do not fabricate prices.`;
 
     const approvedSupplierList = APPROVED_PRICE_SOURCES.join(', ');
     const sectionManifestContext = JSON.stringify({
@@ -336,11 +333,15 @@ Prioritize rows that can also be priced from approved suppliers, but do not fabr
         console.warn('[BOM API] AI call deadline exceeded at ms:', elapsedMs(aiCallStartedAt));
         return NextResponse.json(
           {
-            error: 'BOM generation timed out before completion.',
-            partial: { parts: [] },
+            parts: [],
+            pricingSummary: { total: 0, priced: 0, missing: 0 },
+            pricingRequired: true,
+            noPricedParts: true,
             timedOut: true,
+            retrievalState: 'parts_partial',
+            priceNote: 'BOM model call timed out. Use Check DB, section manifest, or retry a smaller pass.',
           },
-          { status: 504 },
+          { status: 200 },
         );
       }
       throw aiError;
@@ -373,7 +374,7 @@ Prioritize rows that can also be priced from approved suppliers, but do not fabr
           pricingSummary: finalized.pricingSummary,
           pricingRequired: true,
           noPricedParts: true,
-          priceNote: 'No source-backed parts were returned. Try again or check a parts retailer directly.',
+          priceNote: 'No source-backed parts were returned. Try Check DB/section manifest or retry a smaller pass.',
           retrievalState: parsed.summary?.retrievalState || 'no_result',
           summary: parsed.summary,
           sections: parsed.sections || [],
@@ -400,13 +401,16 @@ Prioritize rows that can also be priced from approved suppliers, but do not fabr
       return NextResponse.json(parsed);
     } catch (parseError) {
       logParseDiagnostics(rawText, parseError);
-      return NextResponse.json(
-        {
-          error: 'Invalid JSON returned by model output.',
-          detail: parseError instanceof Error ? parseError.message : String(parseError),
-        },
-        { status: 500 },
-      );
+      return NextResponse.json({
+        parts: [],
+        pricingSummary: { total: 0, priced: 0, missing: 0 },
+        pricingRequired: true,
+        noPricedParts: true,
+        malformedModelOutput: true,
+        retrievalState: 'parts_partial',
+        priceNote: 'The model returned malformed or truncated JSON. No fake parts were accepted. Retry a smaller pass or use section-backed DB retrieval.',
+        detail: parseError instanceof Error ? parseError.message : String(parseError),
+      });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown BOM error';
