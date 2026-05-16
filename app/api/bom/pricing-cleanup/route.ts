@@ -131,6 +131,26 @@ async function safeRows<T extends Row>(label: string, errors: Record<string, str
   }
 }
 
+async function ensureModelRow(normalizedModel: string, rawModel: string, errors: Record<string, string>) {
+  const existing = await safeRows<Row>("ensure_model_select", errors, () => sql`
+    select id::text, normalized_model
+    from appliance_models
+    where normalized_model = ${normalizedModel}
+    limit 1
+  `);
+  if (existing[0]?.id) return existing[0];
+
+  const inserted = await safeRows<Row>("ensure_model_insert", errors, () => sql`
+    insert into appliance_models (normalized_model, raw_model, retrieval_state, updated_at)
+    values (${normalizedModel}, ${rawModel || normalizedModel}, 'pricing_cleanup_started', now())
+    on conflict (normalized_model) do update set
+      raw_model = coalesce(appliance_models.raw_model, excluded.raw_model),
+      updated_at = now()
+    returning id::text, normalized_model
+  `);
+  return inserted[0] || null;
+}
+
 function normalizeInputPart(part: any, index: number, model: string) {
   const partNumber = normalizePartNumber(part?.partNumber || part?.part_number || part?.currentServicePartNumber || part?.current_service_part_number);
   if (!partNumber) return null;
@@ -142,6 +162,10 @@ function normalizeInputPart(part: any, index: number, model: string) {
     section: cleanText(part?.section || part?.section_name || part?.assemblyName) || "Source-backed BOM",
     compatibleModels: Array.isArray(part?.compatibleModels) ? part.compatibleModels : [model],
   };
+}
+
+function hasVerifiedPrice(part: any) {
+  return Boolean(part?.priceVerified && Number(part?.price) > 0) || Boolean(Number(part?.price) > 0 && (part?.priceSource || part?.priceSupplier));
 }
 
 export async function POST(request: Request) {
@@ -157,16 +181,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Missing model." }, { status: 400 });
     }
 
-    const [modelRow] = await sql`
-      insert into appliance_models (normalized_model, raw_model, retrieval_state, updated_at)
-      values (${normalizedModel}, ${inputModel || normalizedModel}, 'pricing_cleanup_started', now())
-      on conflict (normalized_model) do update set
-        raw_model = coalesce(appliance_models.raw_model, excluded.raw_model),
-        updated_at = now()
-      returning id::text, normalized_model
-    ` as Row[];
+    const modelRow = await ensureModelRow(normalizedModel, inputModel, errors);
+    if (!modelRow?.id) {
+      return NextResponse.json({ ok: false, error: "Could not resolve appliance model row.", errors }, { status: 500 });
+    }
 
-    const modelId = modelRow.id as string;
+    const modelId = String(modelRow.id);
     const candidates = new Map<string, PriceCandidate>();
 
     for (const part of inputParts) {
@@ -263,7 +283,7 @@ export async function POST(request: Request) {
       await sql`
         insert into part_pricing (model_id, source, part_number, price, currency, availability, price_url, captured_at)
         values (
-          ${modelId},
+          ${modelId}::uuid,
           ${candidate.source},
           ${candidate.partNumber},
           ${candidate.price},
@@ -319,14 +339,31 @@ export async function POST(request: Request) {
       ) rows
       where part_number is not null and part_number <> ''
       order by upper(regexp_replace(part_number, '[^A-Z0-9]', '', 'g')), section nulls last
-      limit 1000
+      limit 3000
+    `);
+
+    const existingPricingRows = await safeRows<Row>("part_pricing_after_upsert", errors, () => sql`
+      select
+        upper(regexp_replace(part_number, '[^A-Z0-9]', '', 'g')) as part_number,
+        source,
+        price::text as price,
+        currency,
+        availability,
+        price_url,
+        captured_at
+      from part_pricing
+      where model_id = ${modelId}::uuid
+        and price is not null
+        and price > 0
+      order by captured_at desc
+      limit 5000
     `);
 
     const partsForHydration = inputParts
       .map((part: any, index: number) => normalizeInputPart(part, index, normalizedModel))
       .filter(Boolean) as Row[];
 
-    const fallbackParts = sourceBackedRows.map((row, index) => ({
+    const sourceBackedParts = sourceBackedRows.map((row, index) => ({
       id: index + 1,
       partNumber: normalizePartNumber(row.part_number),
       description: cleanText(row.description) || normalizePartNumber(row.part_number),
@@ -336,13 +373,80 @@ export async function POST(request: Request) {
       sourceUrl: row.source_url,
     }));
 
-    const hydratedParts = await hydrateBomPricesFromDb({
-      model: normalizedModel,
-      parts: partsForHydration.length ? partsForHydration : fallbackParts,
-    });
+    const pricingOnlyParts = existingPricingRows.map((row, index) => ({
+      id: index + 1,
+      partNumber: normalizePartNumber(row.part_number),
+      description: normalizePartNumber(row.part_number),
+      section: "Pricing DB",
+      compatibleModels: [normalizedModel],
+      price: parseMoney(row.price) ?? undefined,
+      priceSource: row.source,
+      priceSupplier: row.source,
+      priceUrl: row.price_url,
+      priceCurrency: row.currency || "USD",
+      priceAvailability: row.availability,
+      priceCheckedAt: toIso(row.captured_at),
+      priceVerified: true,
+      pricingRequired: false,
+    }));
 
+    const hydrationBase = partsForHydration.length
+      ? partsForHydration
+      : sourceBackedParts.length
+        ? sourceBackedParts
+        : pricingOnlyParts;
+
+    const hydratedParts = await hydrateBomPricesFromDb({ model: normalizedModel, parts: hydrationBase });
     const pricingSummary = buildPricingSummary(hydratedParts);
-    const requiredPriceCount = Math.max(partsForHydration.length || fallbackParts.length || 0, pricingSummary.total);
+    const missingPriceParts = hydratedParts
+      .filter((part) => !hasVerifiedPrice(part))
+      .map((part) => ({
+        partNumber: normalizePartNumber(part.partNumber),
+        description: part.description || null,
+        section: part.section || null,
+        sourceUrl: part.sourceUrl || part.source_url || null,
+      }))
+      .filter((part) => part.partNumber);
+
+    const queuedRows = await safeRows<Row>("queue_missing_price_jobs", errors, () => sql`
+      insert into retrieval_jobs (
+        model_id,
+        model_number,
+        brand,
+        source,
+        job_type,
+        status,
+        priority,
+        metadata,
+        created_at,
+        updated_at
+      )
+      select
+        ${modelId}::uuid,
+        ${normalizedModel},
+        null,
+        'encompass',
+        'pricing_lookup',
+        'queued',
+        20,
+        jsonb_build_object(
+          'partNumber', missing.part_number,
+          'section', missing.section,
+          'supplierPriority', jsonb_build_array('encompass','reliableparts','dlparts','searspartsdirect','partsdr','partselect','appliancepartspros','repairclinic','fix','ebay'),
+          'source', 'pricing-cleanup-button'
+        ),
+        now(),
+        now()
+      from (
+        select *
+        from jsonb_to_recordset(${JSON.stringify(missingPriceParts)}::jsonb)
+          as missing(part_number text, description text, section text, source_url text)
+      ) missing
+      where missing.part_number is not null and missing.part_number <> ''
+      returning id::text, metadata
+    `);
+
+    const requiredPriceCount = Math.max(hydrationBase.length || 0, pricingSummary.total);
 
     await sql`
       update appliance_models
@@ -353,6 +457,7 @@ export async function POST(request: Request) {
         retrieval_state = case
           when ${pricingSummary.total > 0 && pricingSummary.missing === 0} then 'pricing_complete'
           when ${pricingSummary.priced > 0} then 'pricing_partial'
+          when ${queuedRows.length > 0} then 'pricing_lookup_queued'
           else retrieval_state
         end,
         updated_at = now()
@@ -366,17 +471,30 @@ export async function POST(request: Request) {
       cleanupSummary: {
         candidatesFound: candidates.size,
         pricesWrittenToDb: upserted.length,
+        existingPricingRows: existingPricingRows.length,
         inputParts: inputParts.length,
         sourceBackedParts: sourceBackedRows.length,
+        hydratedParts: hydratedParts.length,
+        missingPriceParts: missingPriceParts.length,
+        queuedPricingJobs: queuedRows.length,
         evidenceCounts: {
           bomCapturedPart: capturedRows.length,
           modelPartsRaw: rawRows.length,
           modelPartsCache: cacheRows.length,
         },
+        actionTaken: upserted.length > 0
+          ? "promoted_prices_to_part_pricing"
+          : existingPricingRows.length > 0
+            ? "hydrated_from_existing_part_pricing"
+            : queuedRows.length > 0
+              ? "queued_missing_pricing_jobs"
+              : "no_price_evidence_or_source_backed_parts_found",
         errors,
       },
       pricingSummary,
-      parts: hydratedParts,
+      missingPriceParts,
+      queuedPricingJobs: queuedRows,
+      parts: hydratedParts.map((part, index) => ({ ...part, id: index + 1 })),
     });
   } catch (error) {
     console.error("[BOM Pricing Cleanup] failed", error);
