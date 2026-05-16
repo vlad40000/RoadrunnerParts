@@ -55,13 +55,18 @@ SECTION_HINTS = [
     "small parts",
     "parts diagram",
     "schematic",
+    "schematics",
     "assembly",
+    "diagram",
+    "exploded view",
+    "parts list",
 ]
 
 PROVIDER_HOSTS = {
     "searspartsdirect.com": SourceProvider.SEARS_PARTSDIRECT,
     "reliableparts.com": SourceProvider.RELIABLE_PARTS,
     "encompass.com": SourceProvider.ENCOMPASS,
+    "dlpartscolookup.com": SourceProvider.DLPARTS,
     "dlpartsco.com": SourceProvider.DLPARTS,
     "dlparts.com": SourceProvider.DLPARTS,
     "partsdr.com": SourceProvider.PARTSDR,
@@ -70,6 +75,10 @@ PROVIDER_HOSTS = {
     "repairclinic.com": SourceProvider.REPAIRCLINIC,
     "fix.com": SourceProvider.FIX,
 }
+
+INTERACTIVE_LOOKUP_HOSTS = [
+    "dlpartscolookup.com",
+]
 
 
 def normalize_model(value: str) -> str:
@@ -92,6 +101,11 @@ def hash_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
 
 
+def is_interactive_lookup_url(url: str) -> bool:
+    lowered = url.lower()
+    return any(host in lowered for host in INTERACTIVE_LOOKUP_HOSTS)
+
+
 def fetch_with_requests(url: str, timeout: int = 20) -> tuple[str, str]:
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36",
@@ -102,10 +116,82 @@ def fetch_with_requests(url: str, timeout: int = 20) -> tuple[str, str]:
     return response.url, response.text
 
 
-def fetch_with_playwright(url: str, timeout_ms: int = 30000) -> tuple[str, str, str]:
+def try_submit_model_lookup(page, model: str) -> list[str]:
+    """Best-effort generic model lookup driver for sites with a model input.
+
+    This is intentionally conservative: it tries common text/search inputs, fills
+    the model, then clicks a lookup/search/submit button or presses Enter.
+    Site-specific adapters should replace this once selectors are confirmed.
+    """
+    actions: list[str] = []
+    selectors = [
+        "input[name*='model' i]",
+        "input[id*='model' i]",
+        "input[placeholder*='model' i]",
+        "input[type='search']",
+        "input[type='text']",
+        "input:not([type])",
+    ]
+
+    for selector in selectors:
+        try:
+            locator = page.locator(selector).first
+            if locator.count() <= 0:
+                continue
+            locator.fill(model, timeout=3000)
+            actions.append(f"filled:{selector}")
+            break
+        except Exception:
+            continue
+
+    if not actions:
+        return actions
+
+    button_selectors = [
+        "button:has-text('Lookup')",
+        "button:has-text('Look Up')",
+        "button:has-text('Search')",
+        "button:has-text('Submit')",
+        "input[type='submit']",
+        "button[type='submit']",
+    ]
+
+    clicked = False
+    for selector in button_selectors:
+        try:
+            locator = page.locator(selector).first
+            if locator.count() <= 0:
+                continue
+            locator.click(timeout=5000)
+            actions.append(f"clicked:{selector}")
+            clicked = True
+            break
+        except Exception:
+            continue
+
+    if not clicked:
+        try:
+            page.keyboard.press("Enter")
+            actions.append("pressed:Enter")
+        except Exception:
+            pass
+
+    try:
+        page.wait_for_load_state("networkidle", timeout=20000)
+    except Exception:
+        try:
+            page.wait_for_timeout(5000)
+        except Exception:
+            pass
+
+    return actions
+
+
+def fetch_with_playwright(url: str, model: str | None = None, timeout_ms: int = 30000) -> tuple[str, str, str, list[str]]:
     if sync_playwright is None:
         raise RuntimeError("playwright is not installed")
 
+    actions: list[str] = []
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(
@@ -115,15 +201,19 @@ def fetch_with_playwright(url: str, timeout_ms: int = 30000) -> tuple[str, str, 
             )
         )
         page.goto(url, wait_until="networkidle", timeout=timeout_ms)
+        if model and is_interactive_lookup_url(url):
+            actions.extend(try_submit_model_lookup(page, normalize_model(model)))
         title = page.title()
         html = page.content()
         final_url = page.url
         browser.close()
-        return final_url, title, html
+        return final_url, title, html, actions
 
 
-def should_use_playwright(html: str) -> bool:
+def should_use_playwright(url: str, html: str) -> bool:
     text = html.lower()
+    if is_interactive_lookup_url(url):
+        return True
     if len(html) < 1500:
         return True
     return any(
@@ -168,6 +258,44 @@ def extract_candidate_links(base_url: str, html: str, model: str) -> list[dict]:
     return list(unique.values())[:200]
 
 
+def extract_structured_section_candidates(base_url: str, html: str, model: str) -> list[dict]:
+    """Fallback parser for lookup-result pages where diagrams appear as cards/tables."""
+    soup = BeautifulSoup(html, "html.parser")
+    results: list[dict] = []
+    normalized_model = normalize_model(model)
+
+    candidate_nodes = soup.find_all(["tr", "li", "article", "section", "div"])
+    for node in candidate_nodes:
+        text = clean_text(node.get_text(" "))
+        if not text or len(text) > 800:
+            continue
+        lower = text.lower()
+        has_hint = any(hint in lower for hint in SECTION_HINTS)
+        has_model = normalized_model and normalized_model in normalize_model(text)
+        if not has_hint and not has_model:
+            continue
+
+        href = None
+        anchor = node.find("a", href=True)
+        if anchor:
+            href = requests.compat.urljoin(base_url, anchor.get("href"))
+
+        label = text[:160]
+        results.append({
+            "label": label,
+            "url": href or base_url,
+            "hint_match": has_hint,
+            "model_match": bool(has_model),
+            "structured": True,
+        })
+
+    unique: dict[str, dict] = {}
+    for result in results:
+        key = f"{result.get('url')}|{result.get('label')}"
+        unique.setdefault(key, result)
+    return list(unique.values())[:100]
+
+
 def section_name_from_link(label: str, url: str) -> str:
     label = clean_text(label)
     if label and len(label) <= 120:
@@ -182,11 +310,13 @@ def confidence_for_section(link: dict, model: str) -> float:
     label = str(link.get("label") or "").lower()
     url = str(link.get("url") or "").lower()
     combined = f"{label} {url}"
+    if link.get("structured"):
+        confidence += 0.1
     if link.get("hint_match"):
         confidence += 0.25
     if link.get("model_match"):
         confidence += 0.2
-    if any(word in combined for word in ["diagram", "schematic", "assembly", "parts"]):
+    if any(word in combined for word in ["diagram", "schematic", "assembly", "parts", "exploded"]):
         confidence += 0.1
     if normalize_model(model) and normalize_model(model) in normalize_model(combined):
         confidence += 0.1
@@ -206,19 +336,20 @@ def discover_from_url(
     page_title = None
     html = ""
     fetch_error = None
+    playwright_actions: list[str] = []
 
     try:
         final_url, html = fetch_with_requests(url)
-        if use_playwright or should_use_playwright(html):
+        if use_playwright or should_use_playwright(final_url, html):
             try:
-                final_url, page_title, html = fetch_with_playwright(final_url)
+                final_url, page_title, html, playwright_actions = fetch_with_playwright(final_url, model=model)
             except Exception as err:
                 fetch_error = f"playwright_failed: {err}"
     except Exception as err:
         fetch_error = f"requests_failed: {err}"
-        if use_playwright:
+        if use_playwright or is_interactive_lookup_url(url):
             try:
-                final_url, page_title, html = fetch_with_playwright(url)
+                final_url, page_title, html, playwright_actions = fetch_with_playwright(url, model=model)
                 fetch_error = None
             except Exception as pw_err:
                 fetch_error = f"requests_failed: {err}; playwright_failed: {pw_err}"
@@ -229,7 +360,7 @@ def discover_from_url(
         url=final_url,
         captured_at=datetime.utcnow(),
         text_hash=hash_text(html) if html else None,
-        notes=fetch_error,
+        notes="; ".join([value for value in [fetch_error, f"playwright_actions={playwright_actions}" if playwright_actions else None] if value]),
         quality=EvidenceQuality.MEDIUM if html else EvidenceQuality.NONE,
     )
 
@@ -245,6 +376,13 @@ def discover_from_url(
     )
 
     links = extract_candidate_links(final_url, html, model) if html else []
+    structured = extract_structured_section_candidates(final_url, html, model) if html else []
+    merged: dict[str, dict] = {}
+    for item in [*links, *structured]:
+        key = f"{item.get('url')}|{item.get('label')}"
+        merged.setdefault(key, item)
+    candidates = list(merged.values())
+
     candidate_source = CandidateSource(
         provider=provider,
         model_url=final_url,
@@ -253,11 +391,11 @@ def discover_from_url(
         serial_match=None,
         confidence=0.75 if html and normalize_model(model) in normalize_model(html + final_url) else 0.45,
         evidence=[evidence],
-        reason_flags=[fetch_error] if fetch_error else [],
+        reason_flags=[value for value in [fetch_error, "interactive_lookup_driven" if playwright_actions else None] if value],
     )
 
     sections: list[CandidateSection] = []
-    for index, link in enumerate(links, start=1):
+    for index, link in enumerate(candidates, start=1):
         section_name = section_name_from_link(link["label"], link["url"])
         confidence = confidence_for_section(link, model)
         sections.append(
@@ -267,7 +405,7 @@ def discover_from_url(
                 section_sequence=index,
                 provider=provider,
                 section_url=link["url"],
-                diagram_url=link["url"] if any(k in link["url"].lower() for k in ["diagram", "schematic", "assembly"]) else None,
+                diagram_url=link["url"] if any(k in link["url"].lower() for k in ["diagram", "schematic", "assembly", "lookup"]) else None,
                 expected_part_count=None,
                 confidence=confidence,
                 evidence=[evidence],
